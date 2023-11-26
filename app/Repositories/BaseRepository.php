@@ -39,7 +39,8 @@ class BaseRepository
         return true;
     }
 
-    public function save(?array $data = []) {
+    public function save(?array $data = []): bool
+    {
         if (!$this->doesModelExist()) {
             return $this->insert($data);
         } else {
@@ -47,13 +48,15 @@ class BaseRepository
         }
     }
     public function insert(array $data) {
-        $this->model = $this->getModelInstance($data);
-        $createListing = $this->user->listing()->save($this->model );
+        if (!$this->isModelSet()) {
+            $this->model = $this->getModelInstance($data);
+        }
+        $createListing = $this->model->save();
         if (!$createListing) {
             $this->addError('Error creating listing for user', $data);
             return false;
         }
-        return $this->saveListingRelations($data);
+        return true;
     }
 
     public function update(array $data) {
@@ -63,7 +66,7 @@ class BaseRepository
             $this->addError('Error saving listing', $data);
             return false;
         }
-        return $this->saveListingRelations($data);
+        return true;
     }
 
     public function delete() {
@@ -79,6 +82,10 @@ class BaseRepository
         $this->model = $model;
     }
 
+    protected function isModelSet(): bool
+    {
+        return isset($this->model);
+    }
     public function doesModelExist(): bool
     {
         return (
