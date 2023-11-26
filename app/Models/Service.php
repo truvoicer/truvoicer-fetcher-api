@@ -8,4 +8,8 @@ use Illuminate\Database\Eloquent\Model;
 class Service extends Model
 {
     use HasFactory;
+    public function serviceRequest()
+    {
+        return $this->hasMany(ServiceRequest::class);
+    }
 }

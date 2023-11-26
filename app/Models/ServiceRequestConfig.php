@@ -8,4 +8,8 @@ use Illuminate\Database\Eloquent\Model;
 class ServiceRequestConfig extends Model
 {
     use HasFactory;
+    public function serviceRequest()
+    {
+        return $this->belongsTo(ServiceRequest::class);
+    }
 }

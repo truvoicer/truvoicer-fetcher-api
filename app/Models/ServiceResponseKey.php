@@ -8,4 +8,8 @@ use Illuminate\Database\Eloquent\Model;
 class ServiceResponseKey extends Model
 {
     use HasFactory;
+    public function serviceRequestResponseKey()
+    {
+        return $this->belongsTo(ServiceRequestResponseKey::class);
+    }
 }

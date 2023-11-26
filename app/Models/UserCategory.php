@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 class UserCategory extends Model
 {
     use HasFactory;
+
     public function permission()
     {
         return $this->hasMany(Permission::class);

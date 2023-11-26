@@ -12,4 +12,8 @@ class Permission extends Model
     {
         return $this->belongsTo(UserCategory::class);
     }
+    public function userProvider()
+    {
+        return $this->belongsTo(UserProvider::class);
+    }
 }
