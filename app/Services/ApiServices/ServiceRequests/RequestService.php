@@ -1,0 +1,245 @@
+<?php
+
+namespace App\Services\ApiServices\ServiceRequests;
+
+use App\Models\Category;
+use App\Models\Service;
+use App\Models\Provider;
+use App\Models\ServiceRequest;
+use App\Models\ServiceRequestConfig;
+use App\Models\ServiceRequestParameter;
+use App\Models\ServiceRequestResponseKey;
+use App\Models\ServiceResponseKey;
+use App\Models\UserServiceRequest;
+use App\Services\ApiServices\ApiService;
+use App\Services\BaseService;
+use App\Services\Provider\ProviderService;
+use App\Services\Tools\HttpRequestService;
+use App\Services\Tools\UtilsService;
+use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
+use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
+
+class RequestService extends BaseService
+{
+    private $entityManager;
+    private $httpRequestService;
+    private $providerService;
+    private $serviceRepository;
+    private $serviceRequestRepository;
+    private $requestParametersRepo;
+    private $requestConfigRepo;
+    private $responseKeysRepo;
+    private $requestConfigService;
+    private $requestParametersService;
+    private $apiService;
+
+    public function __construct(EntityManagerInterface $entityManager, HttpRequestService $httpRequestService,
+                                ProviderService $providerService, RequestConfigService $requestConfigService,
+                                RequestParametersService $requestParametersService, ApiService $apiService,
+                                TokenStorageInterface $tokenStorage)
+    {
+        parent::__construct($tokenStorage);
+        $this->entityManager = $entityManager;
+        $this->httpRequestService = $httpRequestService;
+        $this->providerService = $providerService;
+        $this->apiService = $apiService;
+        $this->requestConfigService = $requestConfigService;
+        $this->requestParametersService = $requestParametersService;
+        $this->serviceRepository = $this->entityManager->getRepository(Service::class);
+        $this->serviceRequestRepository = $this->entityManager->getRepository(ServiceRequest::class);
+        $this->requestParametersRepo = $this->entityManager->getRepository(ServiceRequestParameter::class);
+        $this->responseKeysRepo = $this->entityManager->getRepository(ServiceResponseKey::class);
+        $this->requestConfigRepo = $this->entityManager->getRepository(ServiceRequestConfig::class);
+    }
+
+    public function findByQuery(string $query)
+    {
+        return $this->serviceRequestRepository->findByQuery($query);
+    }
+
+    public function findByParams(string $sort, string $order, int $count)
+    {
+        return $this->serviceRequestRepository->findByParams($sort, $order, $count);
+    }
+
+    public function getRequestByName(Provider $provider, string $serviceRequestName = null)
+    {
+        return $this->serviceRequestRepository->getRequestByName($provider, $serviceRequestName);
+    }
+
+    public function getRequestByRequestName(Provider $provider, string $serviceName = null)
+    {
+        return $this->serviceRequestRepository->getRequestByName($provider, $serviceName);
+    }
+
+    public function getServiceByRequestName(Provider $provider, string $serviceName = null)
+    {
+        return $this->serviceRepository->getServiceByRequestName($provider, $serviceName);
+    }
+
+    public function getServiceRequestById($id)
+    {
+        $getServiceRequest = $this->serviceRequestRepository->findOneBy(["id" => $id]);
+        if ($getServiceRequest === null) {
+            throw new BadRequestHttpException("Service request does not exist in database.");
+        }
+        return $this->castServiceRequest($getServiceRequest);
+    }
+
+    public function castServiceRequest(ServiceRequest $serviceRequest)
+    {
+        return $serviceRequest;
+    }
+
+    public function getUserServiceRequestByProvider(Provider $provider, string $sort, string $order, int $count)
+    {
+        return $this->serviceRequestRepository->getServiceRequestByProvider(
+            $provider,
+            $sort,
+            $order,
+            $count
+        );
+    }
+
+    public function getProviderServiceRequest(Service $service, Provider $provider)
+    {
+        return $this->serviceRequestRepository->findOneBy([
+            "service" => $service,
+            "provider" => $provider
+        ]);
+    }
+
+    public function getRequestConfigByName(Provider $provider, ServiceRequest $serviceRequest, string $configItemName)
+    {
+        return $this->requestConfigRepo->getRequestConfigByName($provider, $serviceRequest, $configItemName);
+    }
+
+    public function getRequestParametersByRequestName(Provider $provider, string $serviceRequestName = null)
+    {
+        return $this->requestParametersRepo->getRequestParametersByRequestName($provider, $serviceRequestName);
+    }
+
+    public function getResponseKeysByRequest(Provider $provider, ServiceRequest $serviceRequest)
+    {
+        return $this->responseKeysRepo->getResponseKeys($provider, $serviceRequest);
+    }
+
+    public function getSingleResponseKeyByRequest(Provider $provider, ServiceRequest $serviceRequest)
+    {
+        return $this->responseKeysRepo->getResponseKey($provider, $serviceRequest);
+    }
+
+
+    private function getServiceRequestObject(ServiceRequest $serviceRequest, Provider $provider,
+                                             Service $service, array $data)
+    {
+        $categoryRepo = $this->entityManager->getRepository(Category::class);
+        $serviceRequest->setProvider($provider);
+        $serviceRequest->setService($service);
+        $serviceRequest->setServiceRequestLabel($data['service_request_label']);
+        $serviceRequest->setServiceRequestName($data['service_request_name']);
+        if (!empty($data['pagination_type'])) {
+            $paginationType = null;
+            if (is_array($data['pagination_type']) && !empty($data['pagination_type']['name'])) {
+                $paginationType = $data['pagination_type']['name'];
+            } else if (is_string($data['pagination_type'])) {
+                $paginationType = $data['pagination_type'];
+            }
+            $serviceRequest->setPaginationType($paginationType);
+        }
+        if (!array_key_exists("category", $data) && !array_key_exists("id", $data["category"])) {
+            throw new BadRequestHttpException("No category selected.");
+        }
+        $category = $categoryRepo->findOneBy(["id" => $data["category"]["id"]]);
+        $serviceRequest->setCategory($category);
+        return $serviceRequest;
+    }
+
+    public function createServiceRequest(Provider $provider, array $data)
+    {
+        $apiAuthTypeProviderProperty = $this->providerService->getProviderPropertyObjectByName(
+            $provider, "api_authentication_type"
+        );
+        if (
+            !property_exists($apiAuthTypeProviderProperty, "property_value") ||
+            empty($apiAuthTypeProviderProperty->property_value)
+        ) {
+            throw new BadRequestHttpException(
+                "Provider property (api_authentication_type) has to be set before creating a service request."
+            );
+        }
+        if (empty($data["service_request_label"])) {
+            throw new BadRequestHttpException("Service request label is not set.");
+        }
+        $data['service_request_name'] = UtilsService::labelToName($data['service_request_label'], false, '-');
+        $service = $this->serviceRepository->findOneBy(["id" => $data["service_id"]]);
+        $serviceRequest = $this->getServiceRequestObject(new ServiceRequest(), $provider, $service, $data);
+        if ($this->httpRequestService->validateData($service)) {
+            $saveServiceRequest = $this->serviceRequestRepository->save($serviceRequest);
+            if ($saveServiceRequest) {
+                $this->requestConfigService->requestConfigValidator($serviceRequest);
+            }
+            return $saveServiceRequest;
+        }
+        return false;
+    }
+
+    public function updateServiceRequest(Provider $provider, ServiceRequest $serviceRequest, array $data)
+    {
+        if (isset($data["service"]['id'])) {
+            $serviceId = $data["service"]['id'];
+        } elseif (isset($data["service_id"])) {
+            $serviceId = $data["service_id"];
+        } else {
+            throw new BadRequestHttpException("Service id is not set.");
+        }
+        $service = $this->serviceRepository->find($serviceId);
+        if ($service === null) {
+            throw new BadRequestHttpException("Invalid service in request");
+        }
+        $getServiceRequest = $this->getServiceRequestObject($serviceRequest, $provider, $service, $data);
+        if ($this->httpRequestService->validateData($service)) {
+            return $this->serviceRequestRepository->save($getServiceRequest);
+        }
+        return false;
+    }
+
+    public function duplicateServiceRequest(ServiceRequest $serviceRequest, array $data)
+    {
+        return $this->serviceRequestRepository->duplicateServiceRequest($serviceRequest, $data);
+    }
+
+    public function mergeRequestResponseKeys(array $data)
+    {
+        $requestResponseKeyRepo = $this->entityManager->getRepository(ServiceRequestResponseKey::class);
+        $sourceServiceRequest = $this->getServiceRequestById($data["source_service_request_id"]);
+        $destinationServiceRequest = $this->getServiceRequestById($data["destination_service_request_id"]);
+        if ($sourceServiceRequest->getService()->getId() !== $destinationServiceRequest->getService()->getId()) {
+            throw new BadRequestHttpException(
+                sprintf(
+                    "Service mismatch: Error merging [Service Request: (%s), Service: (%s)] into [Service Request: (%s), Service: (%s)].",
+                    $sourceServiceRequest->getServiceRequestLabel(), $sourceServiceRequest->getService()->getServiceName(),
+                    $destinationServiceRequest->getServiceRequestLabel(), $destinationServiceRequest->getService()->getServiceName(),
+                )
+            );
+        }
+        return $requestResponseKeyRepo->mergeRequestResponseKeys($sourceServiceRequest, $destinationServiceRequest);
+    }
+
+    public function deleteServiceRequestById(int $id)
+    {
+        $serviceRequest = $this->serviceRequestRepository->findOneBy(["id" => $id]);
+        if ($serviceRequest === null) {
+            throw new BadRequestHttpException(sprintf("Service request id: %s not found in database.", $id));
+        }
+        return $this->deleteServiceRequest($serviceRequest);
+    }
+
+    public function deleteServiceRequest(ServiceRequest $serviceRequest)
+    {
+        return $this->serviceRequestRepository->delete($serviceRequest);
+    }
+
+
+}

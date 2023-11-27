@@ -39,6 +39,36 @@ class BaseRepository
         return true;
     }
 
+    public function findAll(): \Illuminate\Database\Eloquent\Collection
+    {
+        return $this->modelClassName::all();
+    }
+
+    public function findById(int $id): ?Model
+    {
+        return $this->modelClassName::find($id);
+    }
+
+    public function findBy(string $field, string $value): ?Model
+    {
+        return $this->modelClassName::where($field, $value)->first();
+    }
+
+    public function findByOrFail(string $field, string $value): Model
+    {
+        return $this->modelClassName::where($field, $value)->firstOrFail();
+    }
+
+    public function findByOrFailWith(string $field, string $value, array $with): Model
+    {
+        return $this->modelClassName::with($with)->where($field, $value)->firstOrFail();
+    }
+
+    public function findByWith(string $field, string $value, array $with): ?Model
+    {
+        return $this->modelClassName::with($with)->where($field, $value)->first();
+    }
+
     public function save(?array $data = []): bool
     {
         if (!$this->doesModelExist()) {
