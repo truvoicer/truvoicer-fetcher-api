@@ -34,7 +34,7 @@ class FileSystemService
     }
 
     public function getFileById(int $fileId) {
-        $file = $this->fileRepository->findOneBy(["id" => $fileId]);
+        $file = $this->fileRepository->findById($fileId);
         if ($file === null) {
             throw new BadRequestHttpException(sprintf("FileSystem item id:%s not found in database.",
                 $fileId
@@ -94,7 +94,7 @@ class FileSystemService
 
     public function updateFile(array $data)
     {
-        $file = $this->fileRepository->findOneBy(["id" => $data["id"]]);
+        $file = $this->fileRepository->findById($data["id"]);
         if ($file === null) {
             throw new BadRequestHttpException(sprintf("File id:%d not found in database.", $data["id"]));
         }
@@ -111,7 +111,7 @@ class FileSystemService
     }
 
     public function deleteFileById(int $fileId) {
-        $file = $this->fileRepository->findOneBy(["id" => $fileId]);
+        $file = $this->fileRepository->findById($fileId);
         if ($file === null) {
             throw new BadRequestHttpException(sprintf("File id: %s not found in database.", $fileId));
         }
@@ -122,7 +122,7 @@ class FileSystemService
     }
 
     public function deleteFileDownloadById(int $fileDownloadId) {
-        $fileDownload = $this->fileRepository->findOneBy(["id" => $fileDownloadId]);
+        $fileDownload = $this->fileRepository->findById($fileDownloadId);
         if ($fileDownload === null) {
             throw new BadRequestHttpException(sprintf("File download id: %s not found in database.", $fileDownloadId));
         }

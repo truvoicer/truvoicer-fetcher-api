@@ -93,7 +93,7 @@ class ProviderService extends BaseService
 
     public function getProviderPropertyRelationById(int $id)
     {
-        $providerProperty = $this->providerPropertyRepository->findOneBy(["id" => $id]);
+        $providerProperty = $this->providerPropertyRepository->findById($id);
         if ($providerProperty === null) {
             throw new BadRequestHttpException(sprintf("ProviderProperty relation id:%s not found in database.",
                 $id
@@ -224,8 +224,8 @@ class ProviderService extends BaseService
 
     public function getProviderServiceParametersById(int $providerId, int $serviceId)
     {
-        $service = $this->serviceRepository->findOneBy(["id" => $serviceId]);
-        $provider = $this->providerRepository->findOneBy(["id" => $providerId]);
+        $service = $this->serviceRepository->findById($serviceId);
+        $provider = $this->providerRepository->findById($providerId);
         return $this->providerRepository->getProviderServiceParameters($provider, $service);
     }
 

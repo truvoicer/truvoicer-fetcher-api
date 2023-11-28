@@ -56,7 +56,7 @@ class ResponseKeysService extends BaseService
     }
 
     public function getResponseKeyById(int $responseKeyId) {
-        $responseKey = $this->responseKeyRepository->findOneBy(["id" => $responseKeyId]);
+        $responseKey = $this->responseKeyRepository->findById($responseKeyId);
         if ($responseKey === null) {
             throw new BadRequestHttpException(sprintf("Response key id:%s not found in database.",
                 $responseKeyId
@@ -66,7 +66,7 @@ class ResponseKeysService extends BaseService
     }
 
     public function getRequestResponseKeyById(int $requestResponseKeyId) {
-        $requestResponseKey = $this->requestKeysRepo->findOneBy(["id" => $requestResponseKeyId]);
+        $requestResponseKey = $this->requestKeysRepo->findById($requestResponseKeyId);
         if ($requestResponseKey === null) {
             throw new BadRequestHttpException(sprintf("Request response key id:%s not found in database.",
                 $requestResponseKeyId
@@ -85,7 +85,7 @@ class ResponseKeysService extends BaseService
     private function getResponseKeyRequestItemObject(ResponseKeyRequestItem $responseKeyRequestItem,
                                                      ServiceRequestResponseKey $requestResponseKey, $serviceRequestId)
     {
-        $serviceRequest = $this->serviceRequestRepository->findOneBy(["id" => $serviceRequestId]);
+        $serviceRequest = $this->serviceRequestRepository->findById($serviceRequestId);
         $responseKeyRequestItem->setServiceRequest(
             $serviceRequest
         );
@@ -121,7 +121,7 @@ class ResponseKeysService extends BaseService
 
     public function createServiceResponseKeys(array $data)
     {
-        $service = $this->serviceRepository->findOneBy(["id" => $data["service_id"]]);
+        $service = $this->serviceRepository->findById($data["service_id"]);
         $responseKey = $this->getServiceResponseKeysObject(new ServiceResponseKey(), $service, $data);
         if ($this->httpRequestService->validateData($responseKey)) {
             return $this->responseKeyRepository->save($responseKey);
@@ -131,7 +131,7 @@ class ResponseKeysService extends BaseService
 
     public function updateServiceResponseKeys(ServiceResponseKey $serviceResponseKey, array $data)
     {
-        $service = $this->serviceRepository->findOneBy(["id" => $data["service_id"]]);
+        $service = $this->serviceRepository->findById($data["service_id"]);
         $responseKey = $this->getServiceResponseKeysObject($serviceResponseKey, $service, $data);
         if ($this->httpRequestService->validateData($responseKey)) {
             return $this->responseKeyRepository->save($responseKey);
@@ -140,7 +140,7 @@ class ResponseKeysService extends BaseService
     }
 
     public function deleteServiceResponseKeyById(int $id) {
-        $responseKey = $this->responseKeyRepository->findOneBy(["id" => $id]);
+        $responseKey = $this->responseKeyRepository->findById($id);
         if ($responseKey === null) {
             throw new BadRequestHttpException(sprintf("Service response key id: %s not found in database.", $id));
         }

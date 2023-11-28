@@ -66,7 +66,7 @@ class ApiService extends BaseService
     }
 
     public function getServiceById($id) {
-        $getService = $this->serviceRepository->findOneBy(["id" => $id]);
+        $getService = $this->serviceRepository->findById($id);
         if ($getService === null) {
             throw new BadRequestHttpException("Service does not exist in database.");
         }

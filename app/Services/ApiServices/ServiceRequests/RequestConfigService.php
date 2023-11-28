@@ -48,7 +48,7 @@ class RequestConfigService extends BaseService
     }
 
     public function getResponseKeysRequestsConfigList(int $serviceRequestId, int $providerId, string $sort, string $order, int $count) {
-        $serviceRequest = $this->serviceRequestRepository->findOneBy(["id" => $serviceRequestId]);
+        $serviceRequest = $this->serviceRequestRepository->findById($serviceRequestId);
         $provider = $this->providerService->getProviderById($providerId);
         $responseKeys = $this->responseKeysRepo->findBy(["service" => $serviceRequest->getService()]);
         $list = array_map(function ($item) use($provider, $serviceRequest) {
@@ -69,7 +69,7 @@ class RequestConfigService extends BaseService
     }
 
     public function findByParams(int $serviceRequestId, string $sort, string $order, int $count) {
-        $serviceRequest = $this->serviceRequestRepository->findOneBy(["id" => $serviceRequestId]);
+        $serviceRequest = $this->serviceRequestRepository->findById($serviceRequestId);
         if (!$serviceRequest) {
             return false;
         }

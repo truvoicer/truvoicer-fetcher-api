@@ -61,7 +61,7 @@ class PropertyService extends BaseService {
     }
 
     public function getPropertyById(int $propertyId) {
-        $property = $this->propertyRepository->findOneBy(["id" => $propertyId]);
+        $property = $this->propertyRepository->findById($propertyId);
         if ($property === null) {
             throw new BadRequestHttpException(sprintf("Property id:%s not found in database.",
                 $propertyId

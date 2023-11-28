@@ -94,7 +94,7 @@ class ScraperService extends BaseService
 
     public function getScraperById(int $scraperId)
     {
-        $scraper = $this->scraperRepository->findOneBy(["id" => $scraperId]);
+        $scraper = $this->scraperRepository->findById($scraperId);
         if ($scraper === null) {
             throw new BadRequestHttpException(sprintf("Scraper id:%s not found in database.",
                 $scraperId
@@ -105,7 +105,7 @@ class ScraperService extends BaseService
 
     public function getScraperScheduleById(int $scraperScheduleId)
     {
-        $scraperSchedule = $this->scraperScheduleRepo->findOneBy(["id" => $scraperScheduleId]);
+        $scraperSchedule = $this->scraperScheduleRepo->findById($scraperScheduleId);
         if ($scraperSchedule === null) {
             throw new BadRequestHttpException(sprintf("Scraper schedule id:%s not found in database.",
                 $scraperScheduleId
@@ -132,7 +132,7 @@ class ScraperService extends BaseService
 
     public function getScraperConfigById(int $scraperConfigId): ScraperConfig
     {
-        $scraperConfig = $this->scraperConfigRepo->findOneBy(["id" => $scraperConfigId]);
+        $scraperConfig = $this->scraperConfigRepo->findById($scraperConfigId);
         if ($scraperConfig === null) {
             throw new BadRequestHttpException(sprintf("Cron config id:%s not found in database.",
                 $scraperConfigId

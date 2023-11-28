@@ -80,7 +80,7 @@ class RequestService extends BaseService
 
     public function getServiceRequestById($id)
     {
-        $getServiceRequest = $this->serviceRequestRepository->findOneBy(["id" => $id]);
+        $getServiceRequest = $this->serviceRequestRepository->findById($id);
         if ($getServiceRequest === null) {
             throw new BadRequestHttpException("Service request does not exist in database.");
         }
@@ -151,7 +151,7 @@ class RequestService extends BaseService
         if (!array_key_exists("category", $data) && !array_key_exists("id", $data["category"])) {
             throw new BadRequestHttpException("No category selected.");
         }
-        $category = $categoryRepo->findOneBy(["id" => $data["category"]["id"]]);
+        $category = $categoryRepo->findById($data["category"]["id"]);
         $serviceRequest->setCategory($category);
         return $serviceRequest;
     }
@@ -173,7 +173,7 @@ class RequestService extends BaseService
             throw new BadRequestHttpException("Service request label is not set.");
         }
         $data['service_request_name'] = UtilsService::labelToName($data['service_request_label'], false, '-');
-        $service = $this->serviceRepository->findOneBy(["id" => $data["service_id"]]);
+        $service = $this->serviceRepository->findById($data["service_id"]);
         $serviceRequest = $this->getServiceRequestObject(new ServiceRequest(), $provider, $service, $data);
         if ($this->httpRequestService->validateData($service)) {
             $saveServiceRequest = $this->serviceRequestRepository->save($serviceRequest);
@@ -229,7 +229,7 @@ class RequestService extends BaseService
 
     public function deleteServiceRequestById(int $id)
     {
-        $serviceRequest = $this->serviceRequestRepository->findOneBy(["id" => $id]);
+        $serviceRequest = $this->serviceRequestRepository->findById($id);
         if ($serviceRequest === null) {
             throw new BadRequestHttpException(sprintf("Service request id: %s not found in database.", $id));
         }
