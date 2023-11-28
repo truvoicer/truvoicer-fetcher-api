@@ -24,8 +24,8 @@ class FileSystemService
     {
         $this->entityManager = $entityManager;
         $this->httpRequestService = $httpRequestService;
-        $this->fileRepository = $this->entityManager->getRepository(File::class);
-        $this->fileDownloadRepository = $this->entityManager->getRepository(FileDownload::class);
+        $this->fileRepository = new FileRepository();
+        $this->fileDownloadRepository = new FileDownloadRepository();
     }
 
     public function findByQuery(string $query)

@@ -42,9 +42,9 @@ class ApiService extends BaseService
         parent::__construct($tokenStorage);
         $this->entityManager = $entityManager;
         $this->httpRequestService = $httpRequestService;
-        $this->serviceRepository = $this->entityManager->getRepository(Service::class);
-        $this->serviceRequestRepository = $this->entityManager->getRepository(ServiceRequest::class);
-        $this->requestParametersRepo = $this->entityManager->getRepository(ServiceRequestParameter::class);
+        $this->serviceRepository = new ServiceRepository();
+        $this->serviceRequestRepository = new ServiceRequestRepository();
+        $this->requestParametersRepo = new ServiceRequestParameterRepository();
         $this->responseKeysService = $responseKeysService;
         $this->accessControlService = $accessControlService;
     }

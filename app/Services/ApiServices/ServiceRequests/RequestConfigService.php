@@ -8,6 +8,11 @@ use App\Models\ServiceRequestConfig;
 use App\Models\ServiceRequestParameter;
 use App\Models\ServiceResponseKey;
 use App\Library\Defaults\DefaultData;
+use App\Repositories\ServiceRepository;
+use App\Repositories\ServiceRequestConfigRepository;
+use App\Repositories\ServiceRequestParameterRepository;
+use App\Repositories\ServiceRequestRepository;
+use App\Repositories\ServiceResponseKeyRepository;
 use App\Services\ApiManager\ApiBase;
 use App\Services\BaseService;
 use App\Services\Provider\ProviderService;
@@ -40,11 +45,11 @@ class RequestConfigService extends BaseService
         $this->entityManager = $entityManager;
         $this->providerService = $providerService;
         $this->httpRequestService = $httpRequestService;
-        $this->serviceRepository = $this->entityManager->getRepository(Service::class);
-        $this->serviceRequestRepository = $this->entityManager->getRepository(ServiceRequest::class);
-        $this->requestParametersRepo = $this->entityManager->getRepository(ServiceRequestParameter::class);
-        $this->requestConfigRepo = $this->entityManager->getRepository(ServiceRequestConfig::class);
-        $this->responseKeysRepo = $this->entityManager->getRepository(ServiceResponseKey::class);
+        $this->serviceRepository = new ServiceRepository();
+        $this->serviceRequestRepository = new ServiceRequestRepository();
+        $this->requestParametersRepo = new ServiceRequestParameterRepository();
+        $this->requestConfigRepo = new ServiceRequestConfigRepository();
+        $this->responseKeysRepo = new ServiceResponseKeyRepository();
     }
 
     public function getResponseKeysRequestsConfigList(int $serviceRequestId, int $providerId, string $sort, string $order, int $count) {

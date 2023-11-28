@@ -10,6 +10,7 @@ use App\Models\Service;
 use App\Models\User;
 use App\Models\UserProvider;
 use App\Repositories\PermissionRepository;
+use App\Repositories\PropertyRepository;
 use App\Repositories\ProviderPropertyRepository;
 use App\Repositories\ProviderRepository;
 use App\Repositories\ServiceRepository;
@@ -55,13 +56,13 @@ class ProviderService extends BaseService
         $this->apiService = $apiService;
         $this->httpRequestService = $httpRequestService;
         $this->responseKeysService = $responseKeysService;
-        $this->permissionRepository = $this->em->getRepository(Permission::class);
-        $this->providerRepository = $this->em->getRepository(Provider::class);
-        $this->userProviderRepository = $this->em->getRepository(UserProvider::class);
-        $this->providerPropertyRepository = $this->em->getRepository(ProviderProperty::class);
+        $this->permissionRepository = new PermissionRepository();
+        $this->providerRepository = new ProviderRepository();
+        $this->userProviderRepository = new UserProviderRepository();
+        $this->providerPropertyRepository = new ProviderPropertyRepository();
         $this->propertyService = $propertyService;
         $this->categoryService = $categoryService;
-        $this->serviceRepository = $this->em->getRepository(Service::class);
+        $this->serviceRepository = new ServiceRepository();
         $this->accessControlService = $accessControlService;
     }
 
@@ -113,10 +114,9 @@ class ProviderService extends BaseService
 
     public function getUserProviderList(User $user, Provider $provider)
     {
-        return $this->userProviderRepository->findOneBy([
-            "user" => $user,
-            "provider" => $provider
-        ]);
+        $this->userProviderRepository->addWhere("user", $user->getId());
+        $this->userProviderRepository->addWhere("provider", $provider->getId());
+        return $this->userProviderRepository->findOne();
     }
 
     public function getProviderListByUser(string $sort = "provider_name", string $order = "asc", ?int $count = null, $user = null)
@@ -192,10 +192,12 @@ class ProviderService extends BaseService
     {
         $provider = $this->getProviderById($providerId);
 
-        $propertyRepo = $this->em->getRepository(Property::class);
+        $propertyRepo = new PropertyRepository();
         return array_map(function ($property) use ($provider) {
-            $repo = $this->em->getRepository(ProviderProperty::class);
-            $providerProperty = $repo->findOneBy(["provider" => $provider, "property" => $property]);
+            $repo = new ProviderPropertyRepository();
+            $repo->addWhere("provider", $provider->getId());
+            $repo->addWhere("property", $property->getId());
+            $providerProperty = $repo->findOne();
             $providerPropertyObject = new \stdClass();
             $providerPropertyObject->id = $property->getId();
             $providerPropertyObject->property_name = $property->getPropertyName();
@@ -259,13 +261,15 @@ class ProviderService extends BaseService
             throw new BadRequestHttpException("Provider label is required.");
         }
         $providerData['provider_name'] = UtilsService::labelToName($providerData['provider_label'], false, '-');
-        $checkProvider = $this->providerRepository->findOneBy(["provider_name" => $providerData['provider_name']]);
+        $this->providerRepository->addWhere("provider_name", $providerData['provider_name']);
+        $checkProvider = $this->providerRepository->findOne();
         if ($checkProvider !== null) {
             throw new BadRequestHttpException(sprintf("Provider (%s) already exists.", $providerData['provider_name']));
         }
         $provider = $this->setProviderObject(new Provider(), $providerData);
         if ($this->httpRequestService->validateData($provider)) {
-            $getAdminPermission = $this->permissionRepository->findOneBy(["name" => PermissionService::PERMISSION_ADMIN]);
+            $this->permissionRepository->addWhere("name", PermissionService::PERMISSION_ADMIN);
+            $getAdminPermission = $this->permissionRepository->findOne();
             if ($getAdminPermission === null) {
                 throw new BadRequestHttpException(
                     "Admin permission does not exist."
@@ -282,7 +286,7 @@ class ProviderService extends BaseService
         if (!array_key_exists("id", $providerData)) {
             throw new BadRequestHttpException("Provider id doesnt exist in request.");
         }
-        $getProvider = $this->providerRepository->findOneBy(['id' => $providerData["id"]]);
+        $getProvider = $this->providerRepository->findById($providerData["id"]);
         $provider = $this->setProviderObject($getProvider, $providerData);
         if ($this->httpRequestService->validateData($provider)) {
             return $this->providerRepository->updateProvider($provider);
@@ -298,8 +302,10 @@ class ProviderService extends BaseService
 
     public function updateProviderProperty(Provider $provider, Property $property, array $data)
     {
-        $providerPropertyRepo = $this->em->getRepository(ProviderProperty::class);
-        $providerProperty = $providerPropertyRepo->findOneBy(["provider" => $provider, "property" => $property]);
+        $providerPropertyRepo = new ProviderPropertyRepository();
+        $providerPropertyRepo->addWhere("provider", $provider->getId());
+        $providerPropertyRepo->addWhere("property", $property->getId());
+        $providerProperty = $providerPropertyRepo->findOne();
         if ($providerProperty !== null) {
             $providerProperty->setPropertyValue($data['property_value']);
             return $providerPropertyRepo->saveProviderProperty($providerProperty);
@@ -319,9 +325,9 @@ class ProviderService extends BaseService
 
     public function deleteProviderProperty(Provider $provider, Property $property)
     {
-        $providerProperty = $this->providerPropertyRepository->findOneBy([
-            "provider" => $provider,
-            "property" => $property]);
+        $this->providerPropertyRepository->addWhere("provider", $provider->getId());
+        $this->providerPropertyRepository->addWhere("property", $property->getId());
+        $providerProperty = $this->providerPropertyRepository->findOne();
 
         if ($providerProperty !== null) {
             return $this->providerPropertyRepository->deleteProviderProperty($providerProperty);

@@ -25,7 +25,7 @@ class PropertyService extends BaseService {
         parent::__construct($tokenStorage);
         $this->em = $entityManager;
         $this->httpRequestService = $httpRequestService;
-        $this->propertyRepository = $this->em->getRepository(Property::class);
+        $this->propertyRepository = new PropertyRepository();
         $this->accessControlService = $accessControlService;
     }
 
@@ -51,7 +51,8 @@ class PropertyService extends BaseService {
     }
 
     public function getPropertyByName(string $propertyName) {
-        $property = $this->propertyRepository->findOneBy(["property_name" => $propertyName]);
+        $this->propertyRepository->addWhere("property_name", $propertyName);
+        $property = $this->propertyRepository->findOne(["property_name" => $propertyName]);
         if ($property === null) {
             throw new BadRequestHttpException(sprintf("Property name:%s not found in database.",
                 $propertyName

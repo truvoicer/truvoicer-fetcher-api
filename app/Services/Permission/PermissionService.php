@@ -27,7 +27,7 @@ class PermissionService extends BaseService
         parent::__construct($tokenStorage);
         $this->entityManager = $entityManager;
         $this->httpRequestService = $httpRequestService;
-        $this->permissionRepository = $this->entityManager->getRepository(Permission::class);
+        $this->permissionRepository = new PermissionRepository();
     }
 
     public function findByParams(string $sort, string  $order, int $count) {

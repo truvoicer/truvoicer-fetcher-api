@@ -11,6 +11,13 @@ use App\Models\ServiceRequestParameter;
 use App\Models\ServiceRequestResponseKey;
 use App\Models\ServiceResponseKey;
 use App\Models\UserServiceRequest;
+use App\Repositories\CategoryRepository;
+use App\Repositories\ServiceRepository;
+use App\Repositories\ServiceRequestConfigRepository;
+use App\Repositories\ServiceRequestParameterRepository;
+use App\Repositories\ServiceRequestRepository;
+use App\Repositories\ServiceRequestResponseKeyRepository;
+use App\Repositories\ServiceResponseKeyRepository;
 use App\Services\ApiServices\ApiService;
 use App\Services\BaseService;
 use App\Services\Provider\ProviderService;
@@ -46,11 +53,11 @@ class RequestService extends BaseService
         $this->apiService = $apiService;
         $this->requestConfigService = $requestConfigService;
         $this->requestParametersService = $requestParametersService;
-        $this->serviceRepository = $this->entityManager->getRepository(Service::class);
-        $this->serviceRequestRepository = $this->entityManager->getRepository(ServiceRequest::class);
-        $this->requestParametersRepo = $this->entityManager->getRepository(ServiceRequestParameter::class);
-        $this->responseKeysRepo = $this->entityManager->getRepository(ServiceResponseKey::class);
-        $this->requestConfigRepo = $this->entityManager->getRepository(ServiceRequestConfig::class);
+        $this->serviceRepository = new ServiceRepository();
+        $this->serviceRequestRepository = new ServiceRequestRepository();
+        $this->requestParametersRepo = new ServiceRequestParameterRepository();
+        $this->responseKeysRepo = new ServiceResponseKeyRepository();
+        $this->requestConfigRepo = new ServiceRequestConfigRepository();
     }
 
     public function findByQuery(string $query)
@@ -104,10 +111,9 @@ class RequestService extends BaseService
 
     public function getProviderServiceRequest(Service $service, Provider $provider)
     {
-        return $this->serviceRequestRepository->findOneBy([
-            "service" => $service,
-            "provider" => $provider
-        ]);
+        $this->serviceRequestRepository->addWhere("service", $service->getId());
+        $this->serviceRequestRepository->addWhere("provider", $provider->getId());
+        return $this->serviceRequestRepository->findOne();
     }
 
     public function getRequestConfigByName(Provider $provider, ServiceRequest $serviceRequest, string $configItemName)
@@ -134,7 +140,7 @@ class RequestService extends BaseService
     private function getServiceRequestObject(ServiceRequest $serviceRequest, Provider $provider,
                                              Service $service, array $data)
     {
-        $categoryRepo = $this->entityManager->getRepository(Category::class);
+        $categoryRepo = new CategoryRepository();
         $serviceRequest->setProvider($provider);
         $serviceRequest->setService($service);
         $serviceRequest->setServiceRequestLabel($data['service_request_label']);
@@ -212,7 +218,7 @@ class RequestService extends BaseService
 
     public function mergeRequestResponseKeys(array $data)
     {
-        $requestResponseKeyRepo = $this->entityManager->getRepository(ServiceRequestResponseKey::class);
+        $requestResponseKeyRepo = new ServiceRequestResponseKeyRepository();
         $sourceServiceRequest = $this->getServiceRequestById($data["source_service_request_id"]);
         $destinationServiceRequest = $this->getServiceRequestById($data["destination_service_request_id"]);
         if ($sourceServiceRequest->getService()->getId() !== $destinationServiceRequest->getService()->getId()) {

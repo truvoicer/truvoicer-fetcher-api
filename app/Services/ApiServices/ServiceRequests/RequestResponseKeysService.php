@@ -8,6 +8,10 @@ use App\Models\ServiceRequest;
 use App\Models\ServiceRequestResponseKey;
 use App\Models\ServiceResponseKey;
 use App\Library\Defaults\DefaultData;
+use App\Repositories\ServiceRepository;
+use App\Repositories\ServiceRequestRepository;
+use App\Repositories\ServiceRequestResponseKeyRepository;
+use App\Repositories\ServiceResponseKeyRepository;
 use App\Services\BaseService;
 use App\Services\Tools\HttpRequestService;
 use Doctrine\ORM\EntityManagerInterface;
@@ -40,11 +44,11 @@ class RequestResponseKeysService extends BaseService
         parent::__construct($tokenStorage);
         $this->entityManager = $entityManager;
         $this->httpRequestService = $httpRequestService;
-        $this->serviceRepository = $this->entityManager->getRepository(Service::class);
-        $this->serviceRequestRepository = $this->entityManager->getRepository(ServiceRequest::class);
-        $this->responseKeyRepository = $this->entityManager->getRepository(ServiceResponseKey::class);
-        $this->requestKeysRepo = $this->entityManager->getRepository(ServiceRequestResponseKey::class);
-        $this->responseKeyRequestItemRepo = $this->entityManager->getRepository(ResponseKeyRequestItem::class);
+        $this->serviceRepository = new ServiceRepository();
+        $this->serviceRequestRepository = new ServiceRequestRepository();
+        $this->responseKeyRepository = new ServiceResponseKeyRepository();
+        $this->requestKeysRepo = new ServiceRequestResponseKeyRepository();
+//        $this->responseKeyRequestItemRepo = $this->entityManager->getRepository(ResponseKeyRequestItem::class);
     }
 
     public function findByParams(string $sort, string $order, int $count) {
@@ -234,10 +238,9 @@ class RequestResponseKeysService extends BaseService
     }
 
     public function updateRequestResponseKey(ServiceRequest $serviceRequest, ServiceResponseKey $serviceResponseKey, array $data) {
-        $requestResponseKey = $this->requestKeysRepo->findOneBy([
-            "service_request" => $serviceRequest,
-            "service_response_key" => $serviceResponseKey
-        ]);
+        $this->requestKeysRepo->addWhere("service_request", $serviceRequest->getId());
+        $this->requestKeysRepo->addWhere("service_response_key", $serviceResponseKey->getId());
+        $requestResponseKey = $this->requestKeysRepo->findOne();
 
         if ($requestResponseKey !== null) {
             $setRequestResponseKey = $this->setRequestResponseKeyObject(
@@ -255,10 +258,9 @@ class RequestResponseKeysService extends BaseService
     }
 
     public function deleteRequestResponseKey(ServiceRequest $serviceRequest, ServiceResponseKey $serviceResponseKey) {
-        $requestResponseKey = $this->requestKeysRepo->findOneBy([
-            "service_request" => $serviceRequest,
-            "service_response_key" => $serviceResponseKey
-        ]);
+        $this->requestKeysRepo->addWhere("service_request", $serviceRequest->getId());
+        $this->requestKeysRepo->addWhere("service_response_key", $serviceResponseKey->getId());
+        $requestResponseKey = $this->requestKeysRepo->findOne();
         if ($requestResponseKey !== null) {
             return $this->requestKeysRepo->deleteRequestResponseKeys($requestResponseKey);
         }

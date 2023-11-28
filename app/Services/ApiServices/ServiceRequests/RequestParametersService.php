@@ -5,6 +5,10 @@ use App\Models\Service;
 use App\Models\ServiceRequest;
 use App\Models\ServiceRequestParameter;
 use App\Models\ServiceResponseKey;
+use App\Repositories\ServiceRepository;
+use App\Repositories\ServiceRequestParameterRepository;
+use App\Repositories\ServiceRequestRepository;
+use App\Repositories\ServiceResponseKeyRepository;
 use App\Services\BaseService;
 use App\Services\Tools\HttpRequestService;
 use Doctrine\ORM\EntityManagerInterface;
@@ -26,10 +30,10 @@ class RequestParametersService extends BaseService
         parent::__construct($tokenStorage);
         $this->entityManager = $entityManager;
         $this->httpRequestService = $httpRequestService;
-        $this->serviceRepository = $this->entityManager->getRepository(Service::class);
-        $this->serviceRequestRepository = $this->entityManager->getRepository(ServiceRequest::class);
-        $this->requestParametersRepo = $this->entityManager->getRepository(ServiceRequestParameter::class);
-        $this->responseKeysRepo = $this->entityManager->getRepository(ServiceResponseKey::class);
+        $this->serviceRepository = new ServiceRepository();
+        $this->serviceRequestRepository = new ServiceRequestRepository();
+        $this->requestParametersRepo = new ServiceRequestParameterRepository();
+        $this->responseKeysRepo = new ServiceResponseKeyRepository();
     }
 
     public function findByParams(ServiceRequest $serviceRequest,  string $sort, string $order, int $count) {

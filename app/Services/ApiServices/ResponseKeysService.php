@@ -10,7 +10,10 @@ use App\Models\ServiceRequestParameter;
 use App\Models\ServiceRequestResponseKey;
 use App\Models\ServiceResponseKey;
 use App\Library\Defaults\DefaultData;
+use App\Repositories\ServiceRepository;
+use App\Repositories\ServiceRequestRepository;
 use App\Repositories\ServiceRequestResponseKeyRepository;
+use App\Repositories\ServiceResponseKeyRepository;
 use App\Services\BaseService;
 use App\Services\Tools\HttpRequestService;
 use App\Services\Tools\UtilsService;
@@ -44,11 +47,11 @@ class ResponseKeysService extends BaseService
         parent::__construct($tokenStorage);
         $this->entityManager = $entityManager;
         $this->httpRequestService = $httpRequestService;
-        $this->serviceRepository = $this->entityManager->getRepository(Service::class);
-        $this->serviceRequestRepository = $this->entityManager->getRepository(ServiceRequest::class);
-        $this->responseKeyRepository = $this->entityManager->getRepository(ServiceResponseKey::class);
-        $this->requestKeysRepo = $this->entityManager->getRepository(ServiceRequestResponseKey::class);
-        $this->responseKeyRequestItemRepo = $this->entityManager->getRepository(ResponseKeyRequestItem::class);
+        $this->serviceRepository = new ServiceRepository();
+        $this->serviceRequestRepository = new ServiceRequestRepository();
+        $this->responseKeyRepository = new ServiceResponseKeyRepository();
+        $this->requestKeysRepo = new ServiceRequestResponseKeyRepository();
+//        $this->responseKeyRequestItemRepo = $this->entityManager->getRepository(ResponseKeyRequestItem::class);
     }
 
     public function findByParams(string $sort, string $order, int $count) {

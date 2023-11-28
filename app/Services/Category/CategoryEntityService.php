@@ -23,17 +23,15 @@ class CategoryEntityService extends CategoryService
 
     public function getUserCategoryByUser(User $user, int $categoryId)
     {
-        return $this->userCategoryRepository->findOneBy([
-            "category" => $this->getCategoryById($categoryId),
-            "user" => $user
-        ]);
+        $this->userCategoryRepository->addWhere("category", $this->getCategoryById($categoryId));
+        $this->userCategoryRepository->addWhere("user", $user->getId());
+        return $this->userCategoryRepository->findOne();
     }
     public function getUserCategoryList(User $user, Category $category)
     {
-        return $this->userCategoryRepository->findOneBy([
-            "category" => $category,
-            "user" => $user
-        ]);
+        $this->userCategoryRepository->addWhere("category", $category);
+        $this->userCategoryRepository->addWhere("user", $user->getId());
+        return $this->userCategoryRepository->findMany();
     }
     public function getUserCategoryPermissionsListByUser(string $sort, string $order, ?int $count, $user = null)
     {
