@@ -33,37 +33,38 @@ class CategoryService extends BaseService
     protected UserCategoryRepository $userCategoryRepository;
     protected AccessControlService $accessControlService;
 
-    public function __construct(EntityManagerInterface $entityManager, HttpRequestService $httpRequestService,
-                                TokenStorageInterface $tokenStorage, AccessControlService $accessControlService)
+    public function __construct()
     {
-        parent::__construct($tokenStorage);
-        $this->entityManager = $entityManager;
-        $this->httpRequestService = $httpRequestService;
-        $this->userCategoryRepository = $this->entityManager->getRepository(UserCategory::class);
-        $this->permissionRepository = $this->entityManager->getRepository(Permission::class);
-        $this->categoryRepository = $this->entityManager->getRepository(Category::class);
-        $this->providerRepository = $this->entityManager->getRepository(Provider::class);
+        $this->userCategoryRepository = new UserCategoryRepository();
+        $this->permissionRepository = new PermissionRepository();
+        $this->categoryRepository = new CategoryRepository();
+        $this->providerRepository = new ProviderRepository();
         $this->accessControlService = $accessControlService;
     }
 
     public function getAllCategoriesArray()
     {
-        return $this->categoryRepository->getAllCategoriesArray();
+        return $this->categoryRepository->findAll()->toArray();
     }
 
     public function findByQuery(string $query)
     {
-        return $this->categoryRepository->findByQuery($query);
+        $this->categoryRepository->addWhere("category_label", "LIKE", "%" . $query . "%");
+        $this->categoryRepository->addWhere("category_name", "LIKE", "%" . $query . "%", "OR");
+        return $this->categoryRepository->findMany();
     }
 
     public function findByParams(string $sort, string $order, int $count)
     {
-        return $this->categoryRepository->findByParams($sort, $order, $count);
+        $this->categoryRepository->setOrderBy($order);
+        $this->categoryRepository->setSort($sort);
+        $this->categoryRepository->setLimit($count);
+        return $this->categoryRepository->findMany();
     }
 
     public function getCategoryList(string $sort, string $order, ?int $count)
     {
-        return $this->categoryRepository->findByParams(
+        return $this->findByParams(
             $sort,
             $order,
             $count
@@ -114,7 +115,7 @@ class CategoryService extends BaseService
         $providerArray = [];
         $i = 0;
         foreach ($selectedProvidersArray as $providerId) {
-            $provider = $this->providerRepository->findOneBy(["id" => (int)$providerId]);
+            $provider = $this->providerRepository->findById((int)$providerId);
             $checkPermission = $this->accessControlService->checkPermissionsForEntity(
                 ProviderEntityService::ENTITY_NAME, $provider, $user,
                 [
@@ -160,7 +161,7 @@ class CategoryService extends BaseService
 
     public function getCategoryById(int $categoryId)
     {
-        $category = $this->categoryRepository->findOneBy(["id" => $categoryId]);
+        $category = $this->categoryRepository->findById($categoryId);
         if ($category === null) {
             throw new BadRequestHttpException(sprintf("Category id:%s not found in database.",
                 $categoryId
@@ -182,7 +183,8 @@ class CategoryService extends BaseService
             throw new BadRequestHttpException("Category label is not set.");
         }
         $data['category_name'] = UtilsService::labelToName($data['category_label'], false, '-');
-        $checkCategory = $this->categoryRepository->findOneBy(["category_name" => $data['category_name']]);
+        $this->permissionRepository->addWhere("category_name", $data['category_name']);
+        $checkCategory = $this->categoryRepository->findOne();
         if ($checkCategory !== null) {
             throw new BadRequestHttpException(sprintf("Category (%s) already exists.", $data['category_name']));
         }
@@ -190,13 +192,14 @@ class CategoryService extends BaseService
         if ($this->httpRequestService->validateData(
             $category
         )) {
-            $getAdminPermission = $this->permissionRepository->findOneBy(["name" => PermissionService::PERMISSION_ADMIN]);
+            $this->permissionRepository->addWhere("name", PermissionService::PERMISSION_ADMIN);
+            $getAdminPermission = $this->permissionRepository->findOne();
             if ($getAdminPermission === null) {
                 throw new BadRequestHttpException(
                     "Admin permission does not exist."
                 );
             }
-            $createCategory = $this->categoryRepository->saveCategory($category);
+            $createCategory = $this->categoryRepository->setModel($category)->save();
             $this->userCategoryRepository->createUserCategory($this->user, $createCategory, [$getAdminPermission]);
             return $createCategory;
         }
@@ -208,7 +211,7 @@ class CategoryService extends BaseService
         if ($this->httpRequestService->validateData(
             $this->getCategoryObject($category, $data)
         )) {
-            return $this->categoryRepository->saveCategory($category);
+            return $this->categoryRepository->setModel($category)->save();
         }
         return false;
     }
@@ -216,19 +219,16 @@ class CategoryService extends BaseService
 
     public function deleteCategoryById(int $categoryId)
     {
-        $category = $this->categoryRepository->findOneBy(["id" => $categoryId]);
+        $category = $this->categoryRepository->findById($categoryId);
         if ($category === null) {
             throw new BadRequestHttpException(sprintf("Category id: %s not found in database.", $categoryId));
         }
-        return $this->categoryRepository->deleteCategory($category);
+        return $this->categoryRepository->setModel($category)->delete();
     }
 
     public function deleteCategory(Category $category)
     {
-        if ($category === null) {
-            return false;
-        }
-        return $this->categoryRepository->deleteCategory($category);
+        return $this->categoryRepository->setModel($category)->delete();
     }
 
 

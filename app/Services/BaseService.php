@@ -6,7 +6,7 @@ use App\Models\User;
 
 class BaseService
 {
-   private User $user;
+   protected User $user;
 
     /**
      * @return User

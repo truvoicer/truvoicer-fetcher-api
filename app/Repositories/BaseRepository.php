@@ -11,6 +11,11 @@ class BaseRepository
 
     protected string $modelClassName;
     protected Model $model;
+    private array $where = [];
+    private string $sort = 'asc';
+    private string $orderBy = 'id';
+    private int $limit = -1;
+    private int $offset = 0;
 
     /**
      * @throws \Exception
@@ -49,9 +54,39 @@ class BaseRepository
         return $this->modelClassName::find($id);
     }
 
-    public function findBy(string $field, string $value): ?Model
+    private function buildQuery() {
+        $query = $this->modelClassName::query();
+        foreach ($this->where as $index => $where) {
+            if ($index === 0) {
+                $query->where($where['field'], $where['compare'], $where['value']);
+                continue;
+            }
+            switch ($where['op']) {
+                case 'OR':
+                    $query->orWhere($where['field'], $where['compare'], $where['value']);
+                    break;
+                default:
+                    $query->where($where['field'], $where['compare'], $where['value']);
+                    break;
+            }
+        }
+        $query->orderBy($this->orderBy, $this->sort);
+        if ($this->limit > 0) {
+            $query->limit($this->limit);
+        }
+        if ($this->offset > 0) {
+            $query->offset($this->offset);
+        }
+        return $query;
+    }
+
+    public function findOne(): ?Model
     {
-        return $this->modelClassName::where($field, $value)->first();
+        return $this->buildQuery()->first();
+    }
+    public function findMany(): ?Model
+    {
+        return $this->buildQuery()->all();
     }
 
     public function findByOrFail(string $field, string $value): Model
@@ -107,7 +142,7 @@ class BaseRepository
         return true;
     }
 
-    public function setModel(Model $model): void
+    public function setModel(Model $model): self
     {
         $this->model = $model;
     }
@@ -123,4 +158,64 @@ class BaseRepository
             $this->model->exists
         );
     }
+
+    public function addWhere(string $field, string $value, ?string $compare = '=', ?string $op = 'AND'): self
+    {
+        $this->where[] = [
+            'field' => $field,
+            'value' => $value,
+            'compare' => $compare,
+            'op' => $op
+        ];
+    }
+    public function getWhere(): array
+    {
+        return $this->where;
+    }
+
+    public function setWhere(array $where): self
+    {
+        $this->where = $where;
+    }
+
+    public function getSort(): string
+    {
+        return $this->sort;
+    }
+
+    public function setSort(string $sort): self
+    {
+        $this->sort = $sort;
+    }
+
+    public function getOrderBy(): string
+    {
+        return $this->orderBy;
+    }
+
+    public function setOrderBy(string $orderBy): self
+    {
+        $this->orderBy = $orderBy;
+    }
+
+    public function getLimit(): int
+    {
+        return $this->limit;
+    }
+
+    public function setLimit(int $limit): self
+    {
+        $this->limit = $limit;
+    }
+
+    public function getOffset(): int
+    {
+        return $this->offset;
+    }
+
+    public function setOffset(int $offset): self
+    {
+        $this->offset = $offset;
+    }
+
 }

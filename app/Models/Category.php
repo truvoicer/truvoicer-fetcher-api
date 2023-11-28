@@ -9,6 +9,11 @@ class Category extends Model
 {
     use HasFactory;
 
+    private string $name;
+    private string $label;
+    protected $fillable = [
+
+    ];
     public function user()
     {
         return $this->belongsTo(User::class);
