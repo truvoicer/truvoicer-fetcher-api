@@ -10,4 +10,5 @@ class ProviderRepository extends BaseRepository
     {
         parent::__construct(Provider::class);
     }
+
 }

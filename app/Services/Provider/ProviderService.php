@@ -33,7 +33,6 @@ class ProviderService extends BaseService
 
     const SERVICE_ALIAS = "app.service.provider.provider_entity_service";
 
-    protected EntityManagerInterface $em;
     protected ProviderRepository $providerRepository;
     protected PermissionRepository $permissionRepository;
     protected UserProviderRepository $userProviderRepository;
@@ -51,8 +50,6 @@ class ProviderService extends BaseService
                                 ApiService $apiService, ResponseKeysService $responseKeysService,
                                 TokenStorageInterface $tokenStorage, AccessControlService $accessControlService)
     {
-        parent::__construct($tokenStorage);
-        $this->em = $entityManager;
         $this->apiService = $apiService;
         $this->httpRequestService = $httpRequestService;
         $this->responseKeysService = $responseKeysService;

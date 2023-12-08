@@ -54,6 +54,12 @@ class BaseRepository
         return $this->modelClassName::find($id);
     }
 
+    public function findByName(string $name = null)
+    {
+        $this->addWhere('name', $name);
+        return $this->findOne();
+    }
+
     private function buildQuery() {
         $query = $this->modelClassName::query();
         foreach ($this->where as $index => $where) {

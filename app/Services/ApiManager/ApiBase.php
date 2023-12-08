@@ -4,7 +4,6 @@ namespace App\Services\ApiManager;
 
 use App\Library\Defaults\DefaultData;
 use App\Services\BaseService;
-use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 
 class ApiBase extends BaseService
 {
@@ -87,8 +86,5 @@ class ApiBase extends BaseService
           'label' => 'Page'
       ],
     ];
-    public function __construct(TokenStorageInterface $tokenStorage)
-    {
-        parent::__construct($tokenStorage);
-    }
+
 }
