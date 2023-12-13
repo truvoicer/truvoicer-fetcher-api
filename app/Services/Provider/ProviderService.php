@@ -100,13 +100,12 @@ class ProviderService extends BaseService
         return $providerProperty;
     }
 
-    public function getProviderList(string $sort = "provider_name", string $order = "asc", int $count = null)
+    public function getProviderList(string $sort = "name", string $order = "asc", int $count = null)
     {
-        return $this->providerRepository->findByParams(
-            $sort,
-            $order,
-            $count
-        );
+        $this->providerRepository->setOrderBy($order);
+        $this->providerRepository->setSort($sort);
+        $this->providerRepository->setLimit($count);
+        return $this->providerRepository->findMany();
     }
 
     public function getUserProviderList(User $user, Provider $provider)
@@ -190,6 +189,10 @@ class ProviderService extends BaseService
         $provider = $this->getProviderById($providerId);
 
         $propertyRepo = new PropertyRepository();
+        $propertyRepo->setOrderBy($order);
+        $propertyRepo->setSort($sort);
+        $propertyRepo->setLimit($count);
+
         return array_map(function ($property) use ($provider) {
             $repo = new ProviderPropertyRepository();
             $repo->addWhere("provider", $provider->getId());
@@ -202,7 +205,7 @@ class ProviderService extends BaseService
             $providerPropertyObject->value_type = $property->getValueType();
             $providerPropertyObject->value_choices = $property->getValueChoices();
             return $providerPropertyObject;
-        }, $propertyRepo->findByParams($sort, $order, $count));
+        }, $propertyRepo->findMany());
     }
 
     public function getProviderPropertyValue(Provider $provider, string $propertyName)

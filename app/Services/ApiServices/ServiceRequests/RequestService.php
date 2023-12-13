@@ -67,7 +67,10 @@ class RequestService extends BaseService
 
     public function findByParams(string $sort, string $order, int $count)
     {
-        return $this->serviceRequestRepository->findByParams($sort, $order, $count);
+        $this->serviceRequestRepository->setOrderBy($order);
+        $this->serviceRequestRepository->setSort($sort);
+        $this->serviceRequestRepository->setLimit($count);
+        return $this->serviceRequestRepository->findMany();
     }
 
     public function getRequestByName(Provider $provider, string $serviceRequestName = null)

@@ -52,7 +52,10 @@ class RequestResponseKeysService extends BaseService
     }
 
     public function findByParams(string $sort, string $order, int $count) {
-        return $this->responseKeyRepository->findByParams($sort, $order, $count);
+        $this->responseKeyRepository->setOrderBy($order);
+        $this->responseKeyRepository->setSort($sort);
+        $this->responseKeyRepository->setLimit($count);
+        return $this->responseKeyRepository->findMany();
     }
 
     public function getResponseKeyById(int $responseKeyId) {

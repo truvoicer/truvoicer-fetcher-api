@@ -19,6 +19,6 @@ class Provider extends Model
     }
     public function property()
     {
-        return $this->hasMany(Category::class);
+        return $this->hasMany(Property::class);
     }
 }

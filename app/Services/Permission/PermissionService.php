@@ -31,7 +31,10 @@ class PermissionService extends BaseService
     }
 
     public function findByParams(string $sort, string  $order, int $count) {
-        return  $this->permissionRepository->findByParams($sort,  $order, $count);
+        $this->permissionRepository->setOrderBy($order);
+        $this->permissionRepository->setSort($sort);
+        $this->permissionRepository->setLimit($count);
+        return $this->permissionRepository->findMany();
     }
 
 
@@ -48,17 +51,17 @@ class PermissionService extends BaseService
     public function createPermission($name)
     {
         $this->httpRequestService->validateData(
-            $this->permissionRepository->buildPermissionObject(new Permission(), $name)
+            $this->permissionRepository->buildPermissionData($name)
         );
         return $this->permissionRepository->createPermission($name);
     }
 
     public function updatePermission(Permission $permission, $name)
     {
-        $this->httpRequestService->validateData(
-            $this->permissionRepository->buildPermissionObject($permission, $name)
+        return $this->permissionRepository->savePermission(
+            $permission,
+            $this->permissionRepository->buildPermissionData($name)
         );
-        return $this->permissionRepository->savePermission($permission);
     }
 
     public function deletePermission(Permission $permission)

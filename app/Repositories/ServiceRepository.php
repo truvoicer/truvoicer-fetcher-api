@@ -10,4 +10,10 @@ class ServiceRepository extends BaseRepository
     {
         parent::__construct(Service::class);
     }
+    public function findByQuery($query)
+    {
+        $this->addWhere("label", "LIKE", "%$query%");
+        $this->addWhere("name", "LIKE", "%$query%", "OR");
+        return $this->findMany();
+    }
 }

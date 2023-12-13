@@ -107,7 +107,10 @@ class FileSystemService
     }
 
     public function findByParams(string $sort, string  $order, int $count) {
-        return  $this->fileRepository->findByParams($sort,  $order, $count);
+        $this->fileRepository->setOrderBy($order);
+        $this->fileRepository->setSort($sort);
+        $this->fileRepository->setLimit($count);
+        return $this->fileRepository->findMany();
     }
 
     public function deleteFileById(int $fileId) {

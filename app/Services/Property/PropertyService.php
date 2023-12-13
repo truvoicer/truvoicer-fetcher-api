@@ -29,12 +29,11 @@ class PropertyService extends BaseService {
         $this->accessControlService = $accessControlService;
     }
 
-    public function findPropertiesByParams(string $sort = "property_name", ?string $order = "asc", ?int $count= null) {
-        return $this->propertyRepository->findByParams(
-            $sort,
-            $order,
-            $count
-        );
+    public function findPropertiesByParams(string $sort = "name", ?string $order = "asc", ?int $count= null) {
+        $this->propertyRepository->setOrderBy($order);
+        $this->propertyRepository->setSort($sort);
+        $this->propertyRepository->setLimit($count);
+        return $this->propertyRepository->findMany();
     }
     public function getAllPropertiesArray() {
         return $this->propertyRepository->getAllPropertiesArray();

@@ -95,6 +95,20 @@ class BaseRepository
         return $this->buildQuery()->all();
     }
 
+    public function findByLabelOrName($query)
+    {
+        $this->addWhere("label", "LIKE", "%$query%");
+        $this->addWhere("name", "LIKE", "%$query%", "OR");
+        return $this->findMany();
+    }
+
+    public function findAllWithParams(string $sort = "name", ?string $order = "asc", ?int $count= null) {
+        $this->setOrderBy($order);
+        $this->setSort($sort);
+        $this->setLimit($count);
+        return $this->findMany();
+    }
+
     public function findByOrFail(string $field, string $value): Model
     {
         return $this->modelClassName::where($field, $value)->firstOrFail();
@@ -151,6 +165,7 @@ class BaseRepository
     public function setModel(Model $model): self
     {
         $this->model = $model;
+        return $this;
     }
 
     protected function isModelSet(): bool
@@ -182,6 +197,7 @@ class BaseRepository
     public function setWhere(array $where): self
     {
         $this->where = $where;
+        return $this;
     }
 
     public function getSort(): string
@@ -192,6 +208,7 @@ class BaseRepository
     public function setSort(string $sort): self
     {
         $this->sort = $sort;
+        return $this;
     }
 
     public function getOrderBy(): string
@@ -202,6 +219,7 @@ class BaseRepository
     public function setOrderBy(string $orderBy): self
     {
         $this->orderBy = $orderBy;
+        return $this;
     }
 
     public function getLimit(): int
@@ -212,6 +230,7 @@ class BaseRepository
     public function setLimit(int $limit): self
     {
         $this->limit = $limit;
+        return $this;
     }
 
     public function getOffset(): int
@@ -222,6 +241,11 @@ class BaseRepository
     public function setOffset(int $offset): self
     {
         $this->offset = $offset;
+        return $this;
     }
 
+    public function getModel(): Model
+    {
+        return $this->model;
+    }
 }
