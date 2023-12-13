@@ -24,4 +24,8 @@ class ServiceRequest extends Model
     {
         return $this->hasMany(ServiceRequestResponseKey::class);
     }
+    public function provider()
+    {
+        return $this->belongsTo(Provider::class);
+    }
 }

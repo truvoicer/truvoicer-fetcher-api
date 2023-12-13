@@ -17,6 +17,10 @@ class Provider extends Model
     {
         return $this->hasMany(Category::class);
     }
+    public function serviceRequest()
+    {
+        return $this->hasMany(ServiceRequest::class);
+    }
     public function property()
     {
         return $this->hasMany(Property::class);

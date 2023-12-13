@@ -53,60 +53,24 @@ class ProviderRepository extends BaseRepository
     }
 
     public function createProviderProperty(Provider $provider, Property $property, string $propertyValue) {
-        $this->_em = $this->repositoryHelpers->getEntityManager($this->_em);
-        try {
-            $providerProp = new ProviderProperty();
-            $providerProp->setProvider($provider);
-            $providerProp->setProperty($property);
-            $providerProp->setPropertyValue($propertyValue);
-            $provider->addProviderProperty($providerProp);
-            $this->getEntityManager()->persist($providerProp);
-            $this->getEntityManager()->flush();
-            return $providerProp;
-        } catch (\Exception $exception) {
-            return [
-                "status" => "error",
-                "message" => $exception->getMessage()
-            ];
-        }
+        return $provider->property()->save($property);
     }
 
     public function getProviderProperty(Provider $provider, Property $property) {
-        $em = $this->getEntityManager();
-        $providerPropertyRepo = $em->getRepository(ProviderProperty::class);
-        return $providerPropertyRepo->findOneBy(["provider" => $provider, "property" => $property]);
+        return $provider->property()->where('property_id', $property->id)->first();
     }
 
     public function getProviderPropsByProviderId(int $providerId) {
-        $em = $this->getEntityManager();
-        $provider = $this->findOneBy(["id" => $providerId]);
-        return $em->createQuery("SELECT   provprop FROM App\Entity\Property prop
-                                   JOIN App\Entity\Provider provider
-                                   JOIN App\Entity\ProviderProperty provprop
-                                   WHERE provprop.provider = :provider")
-            ->setParameter('provider', $provider)
-            ->getResult();
+        $provider = $this->getProviderById($providerId);
+        return $provider->property()->get();
     }
 
     public function deleteProvider(Provider $provider) {
-        $entityManager = $this->getEntityManager();
-        $getProvider = $this->findOneBy(["id" => $provider->getId()]);
-        if ($getProvider != null) {
-            $entityManager->remove($getProvider);
-            $entityManager->flush();
-            return true;
-        }
-        return false;
+        $this->setModel($provider);
+        return $this->delete();
     }
     public function deleteProviderPropsByProvider(Provider $provider) {
-        $em = $this->getEntityManager();
-        return $em->createQuery("DELETE FROM App\Entity\ProviderProperty provprop WHERE provprop.provider = :provider")
-            ->setParameter("provider", $provider)->execute();
-    }
-    public function deleteProviderCategories(Provider $provider) {
-        $em = $this->getEntityManager();
-        return $em->createQuery("DELETE FROM App\Entity\ProviderProperty provprop WHERE provprop.provider = :provider")
-            ->setParameter("provider", $provider)->execute();
+        return $provider->property()->delete();
     }
 
 }
