@@ -18,6 +18,7 @@ use App\Services\BaseService;
 use App\Services\Provider\ProviderService;
 use App\Services\Tools\HttpRequestService;
 use Doctrine\ORM\EntityManagerInterface;
+use Illuminate\Database\Eloquent\Model;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 
@@ -84,7 +85,7 @@ class RequestConfigService extends BaseService
         return $this->requestConfigRepo->findByParams($serviceRequest, $sort, $order, $count);
     }
 
-    public function requestConfigValidator(ServiceRequest $serviceRequest) {
+    public function requestConfigValidator(Model $serviceRequest) {
         $provider = $serviceRequest->getProvider();
         $apiAuthTypeProviderProperty = $this->providerService->getProviderPropertyObjectByName(
             $provider, "api_authentication_type"
@@ -112,29 +113,21 @@ class RequestConfigService extends BaseService
         return true;
     }
 
-    private function getRequestConfigObject(ServiceRequestConfig $requestConfig,
-                                                       ServiceRequest $serviceRequest, array $data)
+    private function getRequestConfigData(ServiceRequest $serviceRequest, array $data)
     {
-        $requestConfig->setItemName($data['item_name']);
-        $requestConfig->setValueType($data['selected_value_type']);
-        $requestConfig->setItemValue($data['item_value']);
-        if (isset($data['item_array_value']) && is_array($data['item_array_value'])) {
-            $requestConfig->setItemArrayValue($data['item_array_value']);
+        if (!isset($data['item_array_value']) || !is_array($data['item_array_value'])) {
+            unset($data['item_array_value']);
         }
-        if (isset($data['item_value_choices']) && is_array($data['item_value_choices'])) {
-            $requestConfig->setItemValueChoices($data['item_value_choices']);
+        if (!isset($data['item_value_choices']) || !is_array($data['item_value_choices'])) {
+            unset($data['item_value_choices']);
         }
-        $requestConfig->setServiceRequest($serviceRequest);
-        return $requestConfig;
+        $data['service_request_id'] = $serviceRequest->id;
+        return $data;
     }
 
     public function createRequestConfig(ServiceRequest $serviceRequest, array $data)
     {
-        $requestConfig = $this->getRequestConfigObject(new ServiceRequestConfig(), $serviceRequest, $data);
-        if ($this->httpRequestService->validateData($requestConfig)) {
-            return $this->requestConfigRepo->save($requestConfig);
-        }
-        return false;
+        return $this->requestConfigRepo->save($this->getRequestConfigData($serviceRequest, $data));
     }
 
     public function createDefaultRequestConfigs(ServiceRequest $serviceRequest, array $defaultConfig = []) {
@@ -168,11 +161,7 @@ class RequestConfigService extends BaseService
 
     public function updateRequestConfig(ServiceRequest $serviceRequest, ServiceRequestConfig $serviceRequestConfig, array $data)
     {
-        $requestConfig = $this->getRequestConfigObject($serviceRequestConfig, $serviceRequest, $data);
-        if ($this->httpRequestService->validateData($requestConfig)) {
-            return $this->requestConfigRepo->save($requestConfig);
-        }
-        return false;
+        return $this->requestConfigRepo->save($this->getRequestConfigData($serviceRequest, $data));
     }
 
     public function deleteRequestConfigById(int $id) {
@@ -184,6 +173,7 @@ class RequestConfigService extends BaseService
     }
 
     public function deleteRequestConfig(ServiceRequestConfig $serviceRequestConfig) {
+        $this->requestConfigRepo->setModel($serviceRequestConfig);
         return $this->requestConfigRepo->delete($serviceRequestConfig);
     }
 }

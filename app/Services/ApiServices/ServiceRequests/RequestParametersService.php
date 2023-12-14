@@ -40,31 +40,20 @@ class RequestParametersService extends BaseService
         return $this->requestParametersRepo->findByParams($serviceRequest, $sort, $order, $count);
     }
 
-    private function getServiceRequestParametersObject(ServiceRequestParameter $requestParameters,
-                                                       ServiceRequest $serviceRequest, array $data)
+    private function getServiceRequestParametersObject(ServiceRequest $serviceRequest, array $data)
     {
-        $requestParameters->setParameterValue($data['parameter_value']);
-        $requestParameters->setParameterName($data['parameter_name']);
-        $requestParameters->setServiceRequest($serviceRequest);
-        return $requestParameters;
+        $data['service_request_id'] = $serviceRequest->id;
+        return $data;
     }
 
     public function createRequestParameter(ServiceRequest $serviceRequest, array $data)
     {
-        $requestParameter = $this->getServiceRequestParametersObject(new ServiceRequestParameter(), $serviceRequest, $data);
-        if ($this->httpRequestService->validateData($requestParameter)) {
-            return $this->requestParametersRepo->save($requestParameter);
-        }
-        return false;
+        return $this->requestParametersRepo->save($this->getServiceRequestParametersObject($serviceRequest, $data));
     }
 
     public function updateRequestParameter(ServiceRequestParameter $serviceRequestParameter, ServiceRequest $serviceRequest, array $data)
     {
-        $requestParameter = $this->getServiceRequestParametersObject($serviceRequestParameter, $serviceRequest, $data);
-        if ($this->httpRequestService->validateData($requestParameter)) {
-            return $this->requestParametersRepo->save($requestParameter);
-        }
-        return false;
+        return $this->requestParametersRepo->save($this->getServiceRequestParametersObject($serviceRequest, $data));
     }
 
     public function deleteRequestParameterById(int $id) {
@@ -76,6 +65,7 @@ class RequestParametersService extends BaseService
     }
 
     public function deleteRequestParameter(ServiceRequestParameter $serviceRequestParameter) {
-        return $this->requestParametersRepo->delete($serviceRequestParameter);
+        $this->requestParametersRepo->setModel($serviceRequestParameter);
+        return $this->requestParametersRepo->delete();
     }
 }

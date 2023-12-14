@@ -140,14 +140,11 @@ class RequestService extends BaseService
     }
 
 
-    private function getServiceRequestObject(ServiceRequest $serviceRequest, Provider $provider,
-                                             Service $service, array $data)
+    private function getServiceRequestObject(Provider $provider, Service $service, array $data)
     {
         $categoryRepo = new CategoryRepository();
-        $serviceRequest->setProvider($provider);
-        $serviceRequest->setService($service);
-        $serviceRequest->setServiceRequestLabel($data['service_request_label']);
-        $serviceRequest->setServiceRequestName($data['service_request_name']);
+        $data['service_id'] = $service->id;
+        $data['provider_id'] = $provider->id;
         if (!empty($data['pagination_type'])) {
             $paginationType = null;
             if (is_array($data['pagination_type']) && !empty($data['pagination_type']['name'])) {
@@ -155,14 +152,14 @@ class RequestService extends BaseService
             } else if (is_string($data['pagination_type'])) {
                 $paginationType = $data['pagination_type'];
             }
-            $serviceRequest->setPaginationType($paginationType);
+            $data['pagination_type'] = $paginationType;
         }
         if (!array_key_exists("category", $data) && !array_key_exists("id", $data["category"])) {
             throw new BadRequestHttpException("No category selected.");
         }
         $category = $categoryRepo->findById($data["category"]["id"]);
-        $serviceRequest->setCategory($category);
-        return $serviceRequest;
+        $data['category_id'] = $category->id;
+        return $data;
     }
 
     public function createServiceRequest(Provider $provider, array $data)
@@ -183,15 +180,12 @@ class RequestService extends BaseService
         }
         $data['service_request_name'] = UtilsService::labelToName($data['service_request_label'], false, '-');
         $service = $this->serviceRepository->findById($data["service_id"]);
-        $serviceRequest = $this->getServiceRequestObject(new ServiceRequest(), $provider, $service, $data);
-        if ($this->httpRequestService->validateData($service)) {
-            $saveServiceRequest = $this->serviceRequestRepository->save($serviceRequest);
-            if ($saveServiceRequest) {
-                $this->requestConfigService->requestConfigValidator($serviceRequest);
-            }
-            return $saveServiceRequest;
+        $saveServiceRequest = $this->serviceRequestRepository->save($this->getServiceRequestObject($provider, $service, $data));
+        if ($saveServiceRequest) {
+            $this->requestConfigService->requestConfigValidator($this->serviceRequestRepository->getModel());
         }
-        return false;
+        return $saveServiceRequest;
+
     }
 
     public function updateServiceRequest(Provider $provider, ServiceRequest $serviceRequest, array $data)
@@ -207,11 +201,7 @@ class RequestService extends BaseService
         if ($service === null) {
             throw new BadRequestHttpException("Invalid service in request");
         }
-        $getServiceRequest = $this->getServiceRequestObject($serviceRequest, $provider, $service, $data);
-        if ($this->httpRequestService->validateData($service)) {
-            return $this->serviceRequestRepository->save($getServiceRequest);
-        }
-        return false;
+        return $this->serviceRequestRepository->save($this->getServiceRequestObject($provider, $service, $data));
     }
 
     public function duplicateServiceRequest(ServiceRequest $serviceRequest, array $data)
@@ -247,7 +237,8 @@ class RequestService extends BaseService
 
     public function deleteServiceRequest(ServiceRequest $serviceRequest)
     {
-        return $this->serviceRequestRepository->delete($serviceRequest);
+        $this->serviceRequestRepository->setModel($serviceRequest);
+        return $this->serviceRequestRepository->delete();
     }
 
 
