@@ -2,6 +2,9 @@
 
 namespace App\Repositories;
 
+use App\Models\Category;
+use App\Models\Permission;
+use App\Models\User;
 use App\Models\UserCategory;
 
 class UserCategoryRepository extends BaseRepository
@@ -13,62 +16,27 @@ class UserCategoryRepository extends BaseRepository
 
     public function findCategoriesByUser(User $user, string $sort,  string $order, ?int $count)
     {
-        $query = $this->createQueryBuilder('userCategory')
-            ->where("userCategory.user = :user")
-            ->leftJoin('userCategory.category','category')
-            ->setParameter("user", $user)
-            ->orderBy("category.$sort", $order);
-
-        if ($count !== null && $count > 0) {
-            $query->setMaxResults($count);
-        }
-        return $query->getQuery()
-            ->getResult()
-            ;
-    }
-
-    public function saveUserCategory(UserCategory $userCategory) {
-        $this->getEntityManager()->persist($userCategory);
-        $this->getEntityManager()->flush();
-        return $userCategory;
+        $this->addWhere('user_id', $user->id);
+        return $this->findAllWithParams($sort, $order, $count);
     }
 
     public function createUserCategory(User $user, Category $category, array $permissions = []) {
-        $userCategory = new UserCategory();
-        $userCategory->setUser($user);
-        $userCategory->setCategory($category);
+        $saveUserCategory = $user->category()->save($category);
         foreach ($permissions as $permission) {
             if ($permission instanceof Permission) {
-                $userCategory->addPermission($permission);
+                $saveUserCategory->permission()->save($permission);
             }
         }
-        return $this->saveUserCategory($userCategory);
+        return $saveUserCategory;
     }
 
     public function deleteUserCategoriessRelationsByUser(User $user)
     {
-        $getUserCategories = $this->findBy(["user" => $user]);
-        foreach ($getUserCategories as $userCategory) {
-            $this->delete($userCategory);
-        }
-        return true;
+        return $user->category()->delete();
     }
 
     public function deleteUserCategoriessRelationsByCategory(User $user, Category $category)
     {
-        $getUserCategories = $this->findBy(["user" => $user, "category" => $category]);
-        foreach ($getUserCategories as $userCategory) {
-            $this->delete($userCategory);
-        }
-        return true;
-    }
-
-    public function delete(UserCategory $userCategory) {
-        if ($userCategory != null) {
-            $this->getEntityManager()->remove($userCategory);
-            $this->getEntityManager()->flush();
-            return true;
-        }
-        return false;
+        return $user->category()->where('category_id', $category->id)->delete();
     }
 }

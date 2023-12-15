@@ -43,20 +43,12 @@ class SerializerService
 
     public function entityToArray($entity, array $groups = ['main'])
     {
-        $normalizer = new ObjectNormalizer($this->classMetadataFactory, new CamelCaseToSnakeCaseNameConverter(), null,
-            null, null, null, $this->getDefaultContext());
-        $serializer = new Serializer([$normalizer]);
-        return $serializer->normalize($entity, null,
-            [
-                "groups" => $groups
-            ]);
+        return $entity;
     }
 
-    public function entityArrayToArray(array $entityArray, array $groups = ['main'])
+    public function entityArrayToArray($entityArray, array $groups = ['main'])
     {
-        return array_map(function ($item) use ($groups) {
-            return $this->entityToArray($item, $groups);
-        }, $entityArray);
+        return $entityArray;
     }
 
     public function entityToXml($entity, array $groups)

@@ -1,17 +1,17 @@
 <?php
-namespace App\Controller\Api\Backend;
+namespace App\Http\Controllers\Api\Backend;
 
-use App\Controller\Api\BaseController;
+use App\Http\Controllers\Controller;
 use App\Entity\ApiToken;
 use App\Entity\User;
-use App\Service\ApiServices\ServiceRequests\RequestService;
-use App\Service\Category\CategoryService;
-use App\Service\Permission\AccessControlService;
-use App\Service\Provider\ProviderService;
-use App\Service\Tools\HttpRequestService;
-use App\Service\SecurityService;
-use App\Service\Tools\SerializerService;
-use App\Service\UserService;
+use App\Services\ApiServices\ServiceRequests\RequestService;
+use App\Services\Category\CategoryService;
+use App\Services\Permission\AccessControlService;
+use App\Services\Provider\ProviderService;
+use App\Services\Tools\HttpRequestService;
+use App\Services\SecurityService;
+use App\Services\Tools\SerializerService;
+use App\Services\User\UserAdminService;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
@@ -24,20 +24,20 @@ use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
  * @IsGranted("ROLE_ADMIN")
  * @Route("/api/admin/user")
  */
-class AdminController extends BaseController
+class AdminController extends Controller
 {
-    private UserService $userService;
+    private UserAdminService $userService;
 
     /**
      * AdminController constructor.
      * Initialises services used in this controller
      *
-     * @param UserService $userService
+     * @param UserAdminService $userService
      * @param SerializerService $serializerService
      * @param HttpRequestService $httpRequestService
      * @param AccessControlService $accessControlService
      */
-    public function __construct(UserService $userService, SerializerService $serializerService,
+    public function __construct(UserAdminService $userService, SerializerService $serializerService,
                                 HttpRequestService $httpRequestService,
                                 AccessControlService $accessControlService)
     {
@@ -61,7 +61,7 @@ class AdminController extends BaseController
             $request->get('order', "asc"),
             (int) $request->get('count', null)
         );
-        return $this->jsonResponseSuccess("success", $this->serializerService->entityArrayToArray($getUsers));
+        return $this->sendSuccessResponse("success", $this->serializerService->entityArrayToArray($getUsers));
     }
 
     /**
@@ -73,7 +73,7 @@ class AdminController extends BaseController
      */
     public function getSingleUser(User $user)
     {
-        return $this->jsonResponseSuccess("success", $this->serializerService->entityToArray($user));
+        return $this->sendSuccessResponse("success", $this->serializerService->entityToArray($user));
     }
 
     /**
@@ -85,7 +85,7 @@ class AdminController extends BaseController
      */
     public function getApiToken(ApiToken $apiToken)
     {
-        return $this->jsonResponseSuccess("success", $this->serializerService->entityToArray($apiToken));
+        return $this->sendSuccessResponse("success", $this->serializerService->entityToArray($apiToken));
     }
 
     /**
@@ -104,7 +104,7 @@ class AdminController extends BaseController
             $request->get('order', "asc"),
             (int) $request->get('count', null)
         );
-        return $this->jsonResponseSuccess("success",
+        return $this->sendSuccessResponse("success",
             $this->serializerService->entityArrayToArray($getApiTokens)
         );
     }
@@ -119,7 +119,7 @@ class AdminController extends BaseController
      */
     public function generateNewApiToken(User $user)
     {
-        return $this->jsonResponseSuccess("success",
+        return $this->sendSuccessResponse("success",
             $this->serializerService->entityToArray($this->userService->setApiToken($user, "user")));
     }
 
@@ -133,7 +133,7 @@ class AdminController extends BaseController
     public function updateApiTokenExpiry(User $user, ApiToken $apiToken, Request $request)
     {
         $requestData = $this->httpRequestService->getRequestData($request, true);
-        return $this->jsonResponseSuccess("Successfully updated token.",
+        return $this->sendSuccessResponse("Successfully updated token.",
             $this->serializerService->entityToArray($this->userService->updateApiTokenExpiry($apiToken, $requestData)));
     }
 
@@ -148,9 +148,9 @@ class AdminController extends BaseController
     {
         $delete = $this->userService->deleteApiToken($apiToken);
         if (!$delete) {
-            return $this->jsonResponseFail("Error deleting api token", $this->serializerService->entityToArray($delete, ['main']));
+            return $this->sendErrorResponse("Error deleting api token", $this->serializerService->entityToArray($delete, ['main']));
         }
-        return $this->jsonResponseSuccess("Api Token deleted.", $this->serializerService->entityToArray($delete, ['main']));
+        return $this->sendSuccessResponse("Api Token deleted.", $this->serializerService->entityToArray($delete, ['main']));
     }
 
     /**
@@ -165,9 +165,9 @@ class AdminController extends BaseController
             $this->httpRequestService->getRequestData($request, true));
 
         if(!$create) {
-            return $this->jsonResponseFail("Error inserting user");
+            return $this->sendErrorResponse("Error inserting user");
         }
-        return $this->jsonResponseSuccess("User inserted",
+        return $this->sendSuccessResponse("User inserted",
             $this->serializerService->entityToArray($create, ['main']));
     }
 
@@ -184,9 +184,9 @@ class AdminController extends BaseController
             $user,
             $this->httpRequestService->getRequestData($request, true));
         if(!$update) {
-            return $this->jsonResponseFail("Error updating user");
+            return $this->sendErrorResponse("Error updating user");
         }
-        return $this->jsonResponseSuccess("User updated",
+        return $this->sendSuccessResponse("User updated",
             $this->serializerService->entityToArray($update, ['main']));
     }
 
@@ -201,8 +201,8 @@ class AdminController extends BaseController
     {
         $delete = $this->userService->deleteUser($user);
         if (!$delete) {
-            return $this->jsonResponseFail("Error deleting user", $this->serializerService->entityToArray($delete, ['main']));
+            return $this->sendErrorResponse("Error deleting user", $this->serializerService->entityToArray($delete, ['main']));
         }
-        return $this->jsonResponseSuccess("User deleted.", $this->serializerService->entityToArray($delete, ['main']));
+        return $this->sendSuccessResponse("User deleted.", $this->serializerService->entityToArray($delete, ['main']));
     }
 }

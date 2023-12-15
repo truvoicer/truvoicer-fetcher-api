@@ -1,22 +1,14 @@
 <?php
-namespace App\Service;
+namespace App\Services;
 
-use App\Services\Tools\HttpRequestService;
-use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\Security\Core\Exception\CustomUserMessageAuthenticationException;
+use http\Exception\BadHeaderException;
+use Illuminate\Http\Request;
 
 class SecurityService
 {
     const SUPPORTED_METHODS = [
         "GET", "POST", "PUT"
     ];
-
-    private $httpRequestService;
-
-    public function __construct(HttpRequestService $httpRequestService)
-    {
-        $this->httpRequestService = $httpRequestService;
-    }
 
     public function isSupported(Request $request)
     {
@@ -62,32 +54,12 @@ class SecurityService
 
     public function getTokenFromHeader($headerValue) {
         if ($headerValue === null || $headerValue === "") {
-            throw new CustomUserMessageAuthenticationException("Empty authorization header.");
+            throw new BadHeaderException("Empty authorization header.");
         }
         if (!substr( $headerValue, 0, 7 ) === "Bearer ") {
-            throw new CustomUserMessageAuthenticationException("Invalid Bearer token.");
+            throw new BadHeaderException("Invalid Bearer token.");
         }
         return str_replace("Bearer ", "", $headerValue);
     }
 
-    public function getCredentials(Request $request) {
-        $requestData = $this->httpRequestService->getRequestData($request, true);
-
-        if (!array_key_exists("email", $requestData) ||
-            $requestData["email"] === "" ||
-            $requestData["email"] === null
-        ) {
-            throw new CustomUserMessageAuthenticationException("Invalid email.");
-        }
-        if (!array_key_exists("password", $requestData) ||
-            $requestData["password"] === "" ||
-            $requestData["password"] === null
-        ) {
-            throw new CustomUserMessageAuthenticationException("Invalid password.");
-        }
-        return [
-            'email' => $requestData['email'],
-            'password' => $requestData['password'],
-        ];
-    }
 }

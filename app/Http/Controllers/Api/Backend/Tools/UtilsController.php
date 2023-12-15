@@ -1,18 +1,18 @@
 <?php
-namespace App\Controller\Api\Backend\Tools;
+namespace App\Http\Controllers\Api\Backend\Tools;
 
-use App\Controller\Api\BaseController;
+use App\Http\Controllers\Controller;
 use App\Entity\File;
 use App\Entity\Provider;
-use App\Service\ApiManager\ApiBase;
-use App\Service\Permission\AccessControlService;
-use App\Service\Permission\PermissionService;
-use App\Service\Tools\FileSystem\Downloads\DownloadsFileSystemService;
-use App\Service\Tools\HttpRequestService;
-use App\Service\Tools\SerializerService;
-use App\Service\Tools\FileSystem\FileSystemService;
-use App\Service\Tools\VariablesService;
-use App\Service\UserService;
+use App\Services\ApiManager\ApiBase;
+use App\Services\Permission\AccessControlService;
+use App\Services\Permission\PermissionService;
+use App\Services\Tools\FileSystem\Downloads\DownloadsFileSystemService;
+use App\Services\Tools\HttpRequestService;
+use App\Services\Tools\SerializerService;
+use App\Services\Tools\FileSystem\FileSystemService;
+use App\Services\Tools\VariablesService;
+use App\Services\User\UserAdminService;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
@@ -26,10 +26,10 @@ use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
  * @IsGranted("ROLE_USER")
  * @Route("/api/tools/utils")
  */
-class UtilsController extends BaseController
+class UtilsController extends Controller
 {
     private FileSystemService $fileSystemService;
-    private UserService $userService;
+    private UserAdminService $userService;
 
     /**
      * ExportController constructor.
@@ -38,11 +38,11 @@ class UtilsController extends BaseController
      * @param SerializerService $serializerService
      * @param HttpRequestService $httpRequestService
      * @param FileSystemService $fileSystemService
-     * @param UserService $userService
+     * @param UserAdminService $userService
      * @param AccessControlService $accessControlService
      */
     public function __construct(SerializerService $serializerService, HttpRequestService $httpRequestService,
-                                FileSystemService $fileSystemService, UserService $userService,
+                                FileSystemService $fileSystemService, UserAdminService $userService,
                                 AccessControlService $accessControlService)
     {
 
@@ -62,11 +62,11 @@ class UtilsController extends BaseController
     public function getVariableList(Request $request, VariablesService $variablesService)
     {
         if (!$request->query->has('type')) {
-            return $this->jsonResponseFail("Missing type parameter", []);
+            return $this->sendErrorResponse("Missing type parameter", []);
         }
         $variableType = $request->query->get('type');
 
-        return $this->jsonResponseSuccess(
+        return $this->sendSuccessResponse(
             "success",
             $variablesService->getVariables($variableType)
         );
@@ -80,7 +80,7 @@ class UtilsController extends BaseController
      */
     public function getPaginationTypes()
     {
-        return $this->jsonResponseSuccess(
+        return $this->sendSuccessResponse(
             "success",
             ApiBase::PAGINATION_TYPES
         );

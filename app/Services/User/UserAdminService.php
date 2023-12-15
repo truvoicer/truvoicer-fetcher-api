@@ -4,11 +4,17 @@ namespace App\Services\User;
 
 use App\Models\Role;
 use App\Models\User;
+use App\Repositories\UserRepository;
 use App\Services\Auth\AuthService;
 use App\Services\BaseService;
 use Illuminate\Support\Facades\Hash;
 class UserAdminService extends BaseService
 {
+    private UserRepository $userRepository;
+    public function __construct()
+    {
+        $this->userRepository = new UserRepository();
+    }
 
     public function createUser(array $userData)
     {
@@ -39,6 +45,11 @@ class UserAdminService extends BaseService
         }
         $token = $this->getUser()->createToken('admin', [$getAbility])->plainTextToken;
         return $token;
+    }
+
+    public function getUserByEmail(string $email)
+    {
+        return $this->userRepository->getUserByEmail($email);
     }
 
 }

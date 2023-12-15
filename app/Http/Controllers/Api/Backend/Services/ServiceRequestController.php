@@ -1,18 +1,18 @@
 <?php
-namespace App\Controller\Api\Backend\Services;
+namespace App\Http\Controllers\Api\Backend\Services;
 
-use App\Controller\Api\BaseController;
+use App\Http\Controllers\Controller;
 use App\Entity\Provider;
 use App\Entity\Service;
 use App\Entity\ServiceRequest;
-use App\Service\ApiManager\Operations\RequestOperation;
-use App\Service\ApiServices\ApiService;
-use App\Service\Permission\AccessControlService;
-use App\Service\Permission\PermissionService;
-use App\Service\Tools\HttpRequestService;
-use App\Service\Provider\ProviderService;
-use App\Service\ApiServices\ServiceRequests\RequestService;
-use App\Service\Tools\SerializerService;
+use App\Services\ApiManager\Operations\RequestOperation;
+use App\Services\ApiServices\ApiService;
+use App\Services\Permission\AccessControlService;
+use App\Services\Permission\PermissionService;
+use App\Services\Tools\HttpRequestService;
+use App\Services\Provider\ProviderService;
+use App\Services\ApiServices\ServiceRequests\RequestService;
+use App\Services\Tools\SerializerService;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -28,7 +28,7 @@ use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
  *
  * @Route("/api/provider/{provider}/service/request")
  */
-class ServiceRequestController extends BaseController
+class ServiceRequestController extends Controller
 {
     const DEFAULT_ENTITY = "provider";
 
@@ -69,7 +69,7 @@ class ServiceRequestController extends BaseController
      */
     public function getServiceRequestList(Provider $provider, Request $request)
     {
-        $getServices = $this->requestService->getUserServiceRequestByProvider(
+        $getServices = $this->requestService->getUserAdminServiceRequestByProvider(
             $provider,
             $request->get('sort', "service_request_name"),
             $request->get('order', "asc"),
@@ -77,18 +77,18 @@ class ServiceRequestController extends BaseController
         );
 
         if ($this->isGranted('ROLE_SUPER_ADMIN') || $this->isGranted('ROLE_ADMIN')) {
-            return $this->jsonResponseSuccess("success",
+            return $this->sendSuccessResponse("success",
                 $this->serializerService->entityArrayToArray($getServices, ["list"])
             );
         }
         $this->accessControlService->checkPermissionsForEntity(
-            self::DEFAULT_ENTITY, $provider, $this->getUser(),
+            self::DEFAULT_ENTITY, $provider, $request->user(),
             [
                 PermissionService::PERMISSION_ADMIN,
                 PermissionService::PERMISSION_READ,
             ]
         );
-        return $this->jsonResponseSuccess("success",
+        return $this->sendSuccessResponse("success",
             $this->serializerService->entityArrayToArray($getServices, ["list"])
         );
     }
@@ -107,14 +107,14 @@ class ServiceRequestController extends BaseController
         $data = $request->query->all();
         if (!$this->isGranted('ROLE_SUPER_ADMIN') && !$this->isGranted('ROLE_ADMIN')) {
             $this->accessControlService->checkPermissionsForEntity(
-                self::DEFAULT_ENTITY, $provider, $this->getUser(),
+                self::DEFAULT_ENTITY, $provider, $request->user(),
                 [
                     PermissionService::PERMISSION_ADMIN,
                     PermissionService::PERMISSION_READ,
                 ],
             );
         }
-        return $this->jsonResponseSuccess(
+        return $this->sendSuccessResponse(
             "success",
             $this->serializerService->entityToArray(
                 $this->requestService->getProviderServiceRequest($service, $provider)
@@ -135,7 +135,7 @@ class ServiceRequestController extends BaseController
         $data = $this->httpRequestService->getRequestData($request, true);
         if (!$this->isGranted('ROLE_SUPER_ADMIN') && !$this->isGranted('ROLE_ADMIN')) {
             $this->accessControlService->checkPermissionsForEntity(
-                self::DEFAULT_ENTITY, $provider, $this->getUser(),
+                self::DEFAULT_ENTITY, $provider, $request->user(),
                 [
                     PermissionService::PERMISSION_ADMIN,
                     PermissionService::PERMISSION_WRITE,
@@ -144,9 +144,9 @@ class ServiceRequestController extends BaseController
         }
         $create = $this->requestService->createServiceRequest($provider, $data);
         if(!$create) {
-            return $this->jsonResponseFail("Error inserting service request");
+            return $this->sendErrorResponse("Error inserting service request");
         }
-        return $this->jsonResponseSuccess("Service request inserted",
+        return $this->sendSuccessResponse("Service request inserted",
             $this->serializerService->entityToArray($create, ['single']));
     }
 
@@ -164,7 +164,7 @@ class ServiceRequestController extends BaseController
         $data = $this->httpRequestService->getRequestData($request, true);
         if (!$this->isGranted('ROLE_SUPER_ADMIN') && !$this->isGranted('ROLE_ADMIN')) {
             $this->accessControlService->checkPermissionsForEntity(
-                self::DEFAULT_ENTITY, $provider, $this->getUser(),
+                self::DEFAULT_ENTITY, $provider, $request->user(),
                 [
                     PermissionService::PERMISSION_ADMIN,
                     PermissionService::PERMISSION_UPDATE,
@@ -174,9 +174,9 @@ class ServiceRequestController extends BaseController
         $update = $this->requestService->updateServiceRequest($provider, $serviceRequest, $data);
 
         if(!$update) {
-            return $this->jsonResponseFail("Error updating service request");
+            return $this->sendErrorResponse("Error updating service request");
         }
-        return $this->jsonResponseSuccess("Service request updated",
+        return $this->sendSuccessResponse("Service request updated",
             $this->serializerService->entityToArray($update, ['single']));
     }
 
@@ -196,7 +196,7 @@ class ServiceRequestController extends BaseController
     public function runApiRequest(Provider $provider, RequestOperation $requestOperation, Request $request) {
         if (!$this->isGranted('ROLE_SUPER_ADMIN') && !$this->isGranted('ROLE_ADMIN')) {
             $this->accessControlService->checkPermissionsForEntity(
-                self::DEFAULT_ENTITY, $provider, $this->getUser(),
+                self::DEFAULT_ENTITY, $provider, $request->user(),
                 [
                     PermissionService::PERMISSION_ADMIN,
                     PermissionService::PERMISSION_READ,
@@ -206,7 +206,7 @@ class ServiceRequestController extends BaseController
         $data = $request->query->all();
 
         if (!isset($data["request_type"]) || $data["request_type"] === null || $data["request_type"] === "") {
-            return $this->jsonResponseFail("Api request type not found in the request.");
+            return $this->sendErrorResponse("Api request type not found in the request.");
         }
 
         $requestOperation->setProviderName($data['provider']);
@@ -229,7 +229,7 @@ class ServiceRequestController extends BaseController
     {
         if (!$this->isGranted('ROLE_SUPER_ADMIN') && !$this->isGranted('ROLE_ADMIN')) {
             $this->accessControlService->checkPermissionsForEntity(
-                self::DEFAULT_ENTITY, $provider, $this->getUser(),
+                self::DEFAULT_ENTITY, $provider, $request->user(),
                 [
                     PermissionService::PERMISSION_ADMIN,
                     PermissionService::PERMISSION_WRITE,
@@ -242,9 +242,9 @@ class ServiceRequestController extends BaseController
             $this->httpRequestService->getRequestData($request, true));
 
         if(!$update) {
-            return $this->jsonResponseFail("Error duplicating service request");
+            return $this->sendErrorResponse("Error duplicating service request");
         }
-        return $this->jsonResponseSuccess("Service request duplicated",
+        return $this->sendSuccessResponse("Service request duplicated",
             $this->serializerService->entityToArray($update, ['single']));
     }
 
@@ -259,7 +259,7 @@ class ServiceRequestController extends BaseController
     {
         if (!$this->isGranted('ROLE_SUPER_ADMIN') && !$this->isGranted('ROLE_ADMIN')) {
             $this->accessControlService->checkPermissionsForEntity(
-                self::DEFAULT_ENTITY, $provider, $this->getUser(),
+                self::DEFAULT_ENTITY, $provider, $request->user(),
                 [
                     PermissionService::PERMISSION_ADMIN,
                     PermissionService::PERMISSION_UPDATE,
@@ -270,9 +270,9 @@ class ServiceRequestController extends BaseController
             $this->httpRequestService->getRequestData($request, true));
 
         if(!$update) {
-            return $this->jsonResponseFail("Error merging response keys");
+            return $this->sendErrorResponse("Error merging response keys");
         }
-        return $this->jsonResponseSuccess("Request keys merge successful");
+        return $this->sendSuccessResponse("Request keys merge successful");
     }
 
     /**
@@ -288,7 +288,7 @@ class ServiceRequestController extends BaseController
     {
         if (!$this->isGranted('ROLE_SUPER_ADMIN') && !$this->isGranted('ROLE_ADMIN')) {
             $this->accessControlService->checkPermissionsForEntity(
-                self::DEFAULT_ENTITY, $provider, $this->getUser(),
+                self::DEFAULT_ENTITY, $provider, $request->user(),
                 [
                     PermissionService::PERMISSION_ADMIN,
                     PermissionService::PERMISSION_DELETE,
@@ -297,9 +297,9 @@ class ServiceRequestController extends BaseController
         }
         $delete = $this->requestService->deleteServiceRequest($serviceRequest);
         if (!$delete) {
-            return $this->jsonResponseFail("Error deleting service request", $this->serializerService->entityToArray($delete, ['single']));
+            return $this->sendErrorResponse("Error deleting service request", $this->serializerService->entityToArray($delete, ['single']));
         }
-        return $this->jsonResponseSuccess("Service request deleted.", $this->serializerService->entityToArray($delete, ['single']));
+        return $this->sendSuccessResponse("Service request deleted.", $this->serializerService->entityToArray($delete, ['single']));
     }
 
     /**
@@ -314,14 +314,14 @@ class ServiceRequestController extends BaseController
     {
         if (!$this->isGranted('ROLE_SUPER_ADMIN') && !$this->isGranted('ROLE_ADMIN')) {
             $this->accessControlService->checkPermissionsForEntity(
-                self::DEFAULT_ENTITY, $provider, $this->getUser(),
+                self::DEFAULT_ENTITY, $provider, $request->user(),
                 [
                     PermissionService::PERMISSION_ADMIN,
                     PermissionService::PERMISSION_READ,
                 ],
             );
         }
-        return $this->jsonResponseSuccess(
+        return $this->sendSuccessResponse(
             "success",
             $this->serializerService->entityToArray($serviceRequest, ["single"])
         );

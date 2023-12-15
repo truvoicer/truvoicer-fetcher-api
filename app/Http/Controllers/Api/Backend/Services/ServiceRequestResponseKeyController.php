@@ -1,19 +1,19 @@
 <?php
-namespace App\Controller\Api\Backend\Services;
+namespace App\Http\Controllers\Api\Backend\Services;
 
-use App\Controller\Api\BaseController;
+use App\Http\Controllers\Controller;
 use App\Entity\Provider;
 use App\Entity\ServiceRequest;
 use App\Entity\ServiceRequestResponseKey;
 use App\Entity\ServiceResponseKey;
-use App\Service\ApiServices\ApiService;
-use App\Service\ApiServices\ServiceRequests\RequestResponseKeysService;
-use App\Service\Permission\AccessControlService;
-use App\Service\Permission\PermissionService;
-use App\Service\Tools\HttpRequestService;
-use App\Service\Provider\ProviderService;
-use App\Service\ApiServices\ResponseKeysService;
-use App\Service\Tools\SerializerService;
+use App\Services\ApiServices\ApiService;
+use App\Services\ApiServices\ServiceRequests\RequestResponseKeysService;
+use App\Services\Permission\AccessControlService;
+use App\Services\Permission\PermissionService;
+use App\Services\Tools\HttpRequestService;
+use App\Services\Provider\ProviderService;
+use App\Services\ApiServices\ResponseKeysService;
+use App\Services\Tools\SerializerService;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
@@ -26,7 +26,7 @@ use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
  * @IsGranted("ROLE_USER")
  * @Route("/api/provider/{provider}/service/request/{id}/response/key")
  */
-class ServiceRequestResponseKeyController extends BaseController
+class ServiceRequestResponseKeyController extends Controller
 {
     const DEFAULT_ENTITY = "provider";
 
@@ -70,7 +70,7 @@ class ServiceRequestResponseKeyController extends BaseController
     {
         $requestResponseKeysArray = [];
         $isPermitted = $this->accessControlService->checkPermissionsForEntity(
-            self::DEFAULT_ENTITY, $provider, $this->getUser(),
+            self::DEFAULT_ENTITY, $provider, $request->user(),
             [
                 PermissionService::PERMISSION_ADMIN,
                 PermissionService::PERMISSION_READ,
@@ -89,7 +89,7 @@ class ServiceRequestResponseKeyController extends BaseController
             );
             $requestResponseKeysArray = $this->serializerService->entityArrayToArray($responseKeys, ["response_key"]);
         }
-        return $this->jsonResponseSuccess("success", $requestResponseKeysArray);
+        return $this->sendSuccessResponse("success", $requestResponseKeysArray);
     }
 
     /**
@@ -105,7 +105,7 @@ class ServiceRequestResponseKeyController extends BaseController
     {
         if (!$this->isGranted('ROLE_SUPER_ADMIN') && !$this->isGranted('ROLE_ADMIN')) {
             $this->accessControlService->checkPermissionsForEntity(
-                self::DEFAULT_ENTITY, $provider, $this->getUser(),
+                self::DEFAULT_ENTITY, $provider, $request->user(),
                 [
                     PermissionService::PERMISSION_ADMIN,
                     PermissionService::PERMISSION_READ,
@@ -113,7 +113,7 @@ class ServiceRequestResponseKeyController extends BaseController
             );
         }
         $getRequestResponseKey = $this->requestResponseKeysService->getRequestResponseKeyObjectById($serviceRequest, $serviceResponseKey);
-        return $this->jsonResponseSuccess("success", $this->serializerService->entityToArray($getRequestResponseKey, ["response_key"]));
+        return $this->sendSuccessResponse("success", $this->serializerService->entityToArray($getRequestResponseKey, ["response_key"]));
     }
 
     /**
@@ -128,7 +128,7 @@ class ServiceRequestResponseKeyController extends BaseController
     public function createRequestResponseKey(Provider $provider, ServiceRequest $serviceRequest, ServiceResponseKey $serviceResponseKey, Request $request) {
         if (!$this->isGranted('ROLE_SUPER_ADMIN') && !$this->isGranted('ROLE_ADMIN')) {
             $this->accessControlService->checkPermissionsForEntity(
-                self::DEFAULT_ENTITY, $provider, $this->getUser(),
+                self::DEFAULT_ENTITY, $provider, $request->user(),
                 [
                     PermissionService::PERMISSION_ADMIN,
                     PermissionService::PERMISSION_WRITE,
@@ -139,9 +139,9 @@ class ServiceRequestResponseKeyController extends BaseController
         $requestData = $this->httpRequestService->getRequestData($request);
         $create = $this->requestResponseKeysService->createRequestResponseKey($serviceRequest, $serviceResponseKey, $requestData->data);
         if(!$create) {
-            return $this->jsonResponseFail("Error adding response key.");
+            return $this->sendErrorResponse("Error adding response key.");
         }
-        return $this->jsonResponseSuccess("Successfully added response key.",
+        return $this->sendSuccessResponse("Successfully added response key.",
             $this->serializerService->entityToArray($create, ["single"]));
     }
 
@@ -158,7 +158,7 @@ class ServiceRequestResponseKeyController extends BaseController
     {
         if (!$this->isGranted('ROLE_SUPER_ADMIN') && !$this->isGranted('ROLE_ADMIN')) {
             $this->accessControlService->checkPermissionsForEntity(
-                self::DEFAULT_ENTITY, $provider, $this->getUser(),
+                self::DEFAULT_ENTITY, $provider, $request->user(),
                 [
                     PermissionService::PERMISSION_ADMIN,
                     PermissionService::PERMISSION_UPDATE,
@@ -170,9 +170,9 @@ class ServiceRequestResponseKeyController extends BaseController
             $this->httpRequestService->getRequestData($request, true));
 
         if(!$update) {
-            return $this->jsonResponseFail("Error updating service response key");
+            return $this->sendErrorResponse("Error updating service response key");
         }
-        return $this->jsonResponseSuccess("Service response key updated",
+        return $this->sendSuccessResponse("Service response key updated",
             $this->serializerService->entityToArray($update, ['single']));
     }
 
@@ -189,7 +189,7 @@ class ServiceRequestResponseKeyController extends BaseController
     {
         if (!$this->isGranted('ROLE_SUPER_ADMIN') && !$this->isGranted('ROLE_ADMIN')) {
             $this->accessControlService->checkPermissionsForEntity(
-                self::DEFAULT_ENTITY, $provider, $this->getUser(),
+                self::DEFAULT_ENTITY, $provider, $request->user(),
                 [
                     PermissionService::PERMISSION_ADMIN,
                     PermissionService::PERMISSION_DELETE,
@@ -198,8 +198,8 @@ class ServiceRequestResponseKeyController extends BaseController
         }
         $delete = $this->requestResponseKeysService->deleteRequestResponseKey($serviceRequest, $serviceResponseKey);
         if (!$delete) {
-            return $this->jsonResponseFail("Error deleting service response key", $this->serializerService->entityToArray($delete, ['single']));
+            return $this->sendErrorResponse("Error deleting service response key", $this->serializerService->entityToArray($delete, ['single']));
         }
-        return $this->jsonResponseSuccess("Response key service deleted.", $this->serializerService->entityToArray($delete, ['single']));
+        return $this->sendSuccessResponse("Response key service deleted.", $this->serializerService->entityToArray($delete, ['single']));
     }
 }

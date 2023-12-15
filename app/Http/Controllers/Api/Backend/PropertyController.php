@@ -1,14 +1,14 @@
 <?php
 
-namespace App\Controller\Api\Backend;
+namespace App\Http\Controllers\Api\Backend;
 
-use App\Controller\Api\BaseController;
+use App\Http\Controllers\Controller;
 use App\Entity\Property;
 use App\Repository\PropertyRepository;
-use App\Service\Permission\AccessControlService;
-use App\Service\Tools\HttpRequestService;
-use App\Service\Property\PropertyService;
-use App\Service\Tools\SerializerService;
+use App\Services\Permission\AccessControlService;
+use App\Services\Tools\HttpRequestService;
+use App\Services\Property\PropertyService;
+use App\Services\Tools\SerializerService;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
@@ -21,7 +21,7 @@ use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
  * @IsGranted("ROLE_ADMIN")
  * @Route("/api/property")
  */
-class PropertyController extends BaseController
+class PropertyController extends Controller
 {
     private PropertyRepository $propertyRepository;
     private PropertyService $propertyService;
@@ -66,7 +66,7 @@ class PropertyController extends BaseController
                 )
             );
         }
-        return $this->jsonResponseSuccess("success",
+        return $this->sendSuccessResponse("success",
             $properties
         );
     }
@@ -80,7 +80,7 @@ class PropertyController extends BaseController
      */
     public function getProperty(Property $property)
     {
-        return $this->jsonResponseSuccess("success",
+        return $this->sendSuccessResponse("success",
             $this->serializerService->entityToArray($property, ["main"]));
     }
 
@@ -97,9 +97,9 @@ class PropertyController extends BaseController
         $updateProperty = $this->propertyService->updateProperty($property, $requestData);
 
         if (!$updateProperty) {
-            return $this->jsonResponseFail("Error updating property");
+            return $this->sendErrorResponse("Error updating property");
         }
-        return $this->jsonResponseSuccess("Property updated", $this->serializerService->entityToArray($updateProperty, ['main']));
+        return $this->sendSuccessResponse("Property updated", $this->serializerService->entityToArray($updateProperty, ['main']));
     }
 
     /**
@@ -115,9 +115,9 @@ class PropertyController extends BaseController
 
         $createProperty = $this->propertyService->createProperty($requestData);
         if (!$createProperty) {
-            return $this->jsonResponseFail("Error creating property");
+            return $this->sendErrorResponse("Error creating property");
         }
-        return $this->jsonResponseSuccess("Property created", $this->serializerService->entityToArray($createProperty, ['main']));
+        return $this->sendSuccessResponse("Property created", $this->serializerService->entityToArray($createProperty, ['main']));
     }
 
 
@@ -132,8 +132,8 @@ class PropertyController extends BaseController
     {
         $delete = $this->propertyService->deleteProperty($property);
         if (!$delete) {
-            return $this->jsonResponseFail("Error deleting property", $this->serializerService->entityToArray($delete, ['main']));
+            return $this->sendErrorResponse("Error deleting property", $this->serializerService->entityToArray($delete, ['main']));
         }
-        return $this->jsonResponseSuccess("Property deleted.", $this->serializerService->entityToArray($delete, ['main']));
+        return $this->sendSuccessResponse("Property deleted.", $this->serializerService->entityToArray($delete, ['main']));
     }
 }

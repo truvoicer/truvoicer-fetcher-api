@@ -1,14 +1,14 @@
 <?php
 
-namespace App\Controller\Api\Backend;
+namespace App\Http\Controllers\Api\Backend;
 
-use App\Controller\Api\BaseController;
+use App\Http\Controllers\Controller;
 use App\Entity\Category;
-use App\Service\Permission\AccessControlService;
-use App\Service\Permission\PermissionService;
-use App\Service\Tools\HttpRequestService;
-use App\Service\Category\CategoryService;
-use App\Service\Tools\SerializerService;
+use App\Services\Permission\AccessControlService;
+use App\Services\Permission\PermissionService;
+use App\Services\Tools\HttpRequestService;
+use App\Services\Category\CategoryService;
+use App\Services\Tools\SerializerService;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
@@ -21,7 +21,7 @@ use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
  * @IsGranted("ROLE_USER")
  * @Route("/api/category")
  */
-class CategoryController extends BaseController
+class CategoryController extends Controller
 {
     const DEFAULT_ENTITY = "category";
 
@@ -67,10 +67,10 @@ class CategoryController extends BaseController
                 $request->get('sort', "category_name"),
                 $request->get('order', "asc"),
                 (int)$request->get('count', null),
-                $this->getUser()
+                $request->user()
             );
         }
-        return $this->jsonResponseSuccess("success",
+        return $this->sendSuccessResponse("success",
             $this->serializerService->entityArrayToArray($categories)
         );
     }
@@ -86,14 +86,14 @@ class CategoryController extends BaseController
     {
         if (!$this->isGranted('ROLE_SUPER_ADMIN') && !$this->isGranted('ROLE_ADMIN')) {
             $this->accessControlService->checkPermissionsForEntity(
-                self::DEFAULT_ENTITY, $category, $this->getUser(),
+                self::DEFAULT_ENTITY, $category, $request->user(),
                 [
                     PermissionService::PERMISSION_ADMIN,
                     PermissionService::PERMISSION_READ,
                 ],
             );
         }
-        return $this->jsonResponseSuccess("success",
+        return $this->sendSuccessResponse("success",
             $this->serializerService->entityToArray($category));
     }
 
@@ -109,9 +109,9 @@ class CategoryController extends BaseController
         $requestData = $this->httpRequestService->getRequestData($request, true);
         $create = $this->categoryService->createCategory($requestData);
         if (!$create) {
-            return $this->jsonResponseFail("Error creating category.");
+            return $this->sendErrorResponse("Error creating category.");
         }
-        return $this->jsonResponseSuccess("Successfully created category.",
+        return $this->sendSuccessResponse("Successfully created category.",
             $this->serializerService->entityToArray($create));
     }
 
@@ -126,7 +126,7 @@ class CategoryController extends BaseController
     {
         if (!$this->isGranted('ROLE_SUPER_ADMIN') && !$this->isGranted('ROLE_ADMIN')) {
             $this->accessControlService->checkPermissionsForEntity(
-                self::DEFAULT_ENTITY, $category, $this->getUser(),
+                self::DEFAULT_ENTITY, $category, $request->user(),
                 [
                     PermissionService::PERMISSION_ADMIN,
                     PermissionService::PERMISSION_UPDATE,
@@ -136,9 +136,9 @@ class CategoryController extends BaseController
         $requestData = $this->httpRequestService->getRequestData($request, true);
         $create = $this->categoryService->updateCategory($category, $requestData);
         if (!$create) {
-            return $this->jsonResponseFail("Error updating category.");
+            return $this->sendErrorResponse("Error updating category.");
         }
-        return $this->jsonResponseSuccess("Successfully updated category.",
+        return $this->sendSuccessResponse("Successfully updated category.",
             $this->serializerService->entityToArray($create));
     }
 
@@ -153,7 +153,7 @@ class CategoryController extends BaseController
     {
         if (!$this->isGranted('ROLE_SUPER_ADMIN') && !$this->isGranted('ROLE_ADMIN')) {
             $this->accessControlService->checkPermissionsForEntity(
-                self::DEFAULT_ENTITY, $category, $this->getUser(),
+                self::DEFAULT_ENTITY, $category, $request->user(),
                 [
                     PermissionService::PERMISSION_ADMIN,
                     PermissionService::PERMISSION_DELETE,
@@ -162,8 +162,8 @@ class CategoryController extends BaseController
         }
         $delete = $this->categoryService->deleteCategory($category);
         if (!$delete) {
-            return $this->jsonResponseFail("Error deleting category", $this->serializerService->entityToArray($delete, ['main']));
+            return $this->sendErrorResponse("Error deleting category", $this->serializerService->entityToArray($delete, ['main']));
         }
-        return $this->jsonResponseSuccess("Category deleted.", $this->serializerService->entityToArray($delete, ['main']));
+        return $this->sendSuccessResponse("Category deleted.", $this->serializerService->entityToArray($delete, ['main']));
     }
 }

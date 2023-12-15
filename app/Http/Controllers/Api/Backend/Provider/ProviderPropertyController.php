@@ -1,16 +1,16 @@
 <?php
 
-namespace App\Controller\Api\Backend\Provider;
+namespace App\Http\Controllers\Api\Backend\Provider;
 
-use App\Controller\Api\BaseController;
+use App\Http\Controllers\Controller;
 use App\Entity\Property;
 use App\Entity\Provider;
 use App\Repository\ProviderRepository;
-use App\Service\Permission\AccessControlService;
-use App\Service\Permission\PermissionService;
-use App\Service\Tools\HttpRequestService;
-use App\Service\Provider\ProviderService;
-use App\Service\Tools\SerializerService;
+use App\Services\Permission\AccessControlService;
+use App\Services\Permission\PermissionService;
+use App\Services\Tools\HttpRequestService;
+use App\Services\Provider\ProviderService;
+use App\Services\Tools\SerializerService;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
@@ -23,7 +23,7 @@ use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
  * @IsGranted("ROLE_USER")
  * @Route("/api/provider/{provider}/property")
  */
-class ProviderPropertyController extends BaseController
+class ProviderPropertyController extends Controller
 {
     const DEFAULT_ENTITY = "provider";
 
@@ -63,7 +63,7 @@ class ProviderPropertyController extends BaseController
     {
         if (!$this->isGranted('ROLE_SUPER_ADMIN') && !$this->isGranted('ROLE_ADMIN')) {
             $this->accessControlService->checkPermissionsForEntity(
-                self::DEFAULT_ENTITY, $provider, $this->getUser(),
+                self::DEFAULT_ENTITY, $provider, $request->user(),
                 [
                     PermissionService::PERMISSION_ADMIN,
                     PermissionService::PERMISSION_READ,
@@ -76,7 +76,7 @@ class ProviderPropertyController extends BaseController
             $request->get('order', "asc"),
             (int)$request->get('count', null)
         );
-        return $this->jsonResponseSuccess("success", $getProviderProps);
+        return $this->sendSuccessResponse("success", $getProviderProps);
     }
 
     /**
@@ -92,14 +92,14 @@ class ProviderPropertyController extends BaseController
     {
         if (!$this->isGranted('ROLE_SUPER_ADMIN') && !$this->isGranted('ROLE_ADMIN')) {
             $this->accessControlService->checkPermissionsForEntity(
-                self::DEFAULT_ENTITY, $provider, $this->getUser(),
+                self::DEFAULT_ENTITY, $provider, $request->user(),
                 [
                     PermissionService::PERMISSION_ADMIN,
                     PermissionService::PERMISSION_READ,
                 ],
             );
         }
-        return $this->jsonResponseSuccess("success",
+        return $this->sendSuccessResponse("success",
             $this->providerService->getProviderPropertyObjectById($provider, $property)
         );
     }
@@ -119,7 +119,7 @@ class ProviderPropertyController extends BaseController
     {
         if (!$this->isGranted('ROLE_SUPER_ADMIN') && !$this->isGranted('ROLE_ADMIN')) {
             $this->accessControlService->checkPermissionsForEntity(
-                self::DEFAULT_ENTITY, $provider, $this->getUser(),
+                self::DEFAULT_ENTITY, $provider, $request->user(),
                 [
                     PermissionService::PERMISSION_ADMIN,
                     PermissionService::PERMISSION_WRITE,
@@ -130,9 +130,9 @@ class ProviderPropertyController extends BaseController
         $requestData = $this->httpRequestService->getRequestData($request);
         $create = $this->providerService->createProviderProperty($provider, $requestData->data);
         if (!$create) {
-            return $this->jsonResponseFail("Error adding provider property.");
+            return $this->sendErrorResponse("Error adding provider property.");
         }
-        return $this->jsonResponseSuccess("Successfully added provider property.",
+        return $this->sendSuccessResponse("Successfully added provider property.",
             $this->serializerService->entityToArray($create));
     }
 
@@ -151,7 +151,7 @@ class ProviderPropertyController extends BaseController
     {
         if (!$this->isGranted('ROLE_SUPER_ADMIN') && !$this->isGranted('ROLE_ADMIN')) {
             $this->accessControlService->checkPermissionsForEntity(
-                self::DEFAULT_ENTITY, $provider, $this->getUser(),
+                self::DEFAULT_ENTITY, $provider, $request->user(),
                 [
                     PermissionService::PERMISSION_ADMIN,
                     PermissionService::PERMISSION_UPDATE,
@@ -162,9 +162,9 @@ class ProviderPropertyController extends BaseController
         $update = $this->providerService->updateProviderProperty($provider, $property, $data);
 
         if (!$update) {
-            return $this->jsonResponseFail("Error updating provider property");
+            return $this->sendErrorResponse("Error updating provider property");
         }
-        return $this->jsonResponseSuccess("Provider property updated",
+        return $this->sendSuccessResponse("Provider property updated",
             $this->serializerService->entityToArray($update));
     }
 
@@ -183,7 +183,7 @@ class ProviderPropertyController extends BaseController
         $requestData = $this->httpRequestService->getRequestData($request, true);
         if (!$this->isGranted('ROLE_SUPER_ADMIN') && !$this->isGranted('ROLE_ADMIN')) {
             $this->accessControlService->checkPermissionsForEntity(
-                self::DEFAULT_ENTITY, $provider, $this->getUser(),
+                self::DEFAULT_ENTITY, $provider, $request->user(),
                 [
                     PermissionService::PERMISSION_ADMIN,
                     PermissionService::PERMISSION_DELETE,
@@ -192,8 +192,8 @@ class ProviderPropertyController extends BaseController
         }
         $delete = $this->providerService->deleteProviderProperty($provider, $property);
         if (!$delete) {
-            return $this->jsonResponseFail("Error deleting provider property value", $this->serializerService->entityToArray($delete, ['main']));
+            return $this->sendErrorResponse("Error deleting provider property value", $this->serializerService->entityToArray($delete, ['main']));
         }
-        return $this->jsonResponseSuccess("Provider property value deleted.", $this->serializerService->entityToArray($delete, ['main']));
+        return $this->sendSuccessResponse("Provider property value deleted.", $this->serializerService->entityToArray($delete, ['main']));
     }
 }

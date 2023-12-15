@@ -33,18 +33,69 @@ class AuthController extends Controller
 
         $token = $user->createToken('admin', ['api:superuser'])->plainTextToken;
         if (!$token) {
-            return response()->json([
-                'message' => 'Error generating token'
-            ], Response::HTTP_UNPROCESSABLE_ENTITY);
+            return $this->sendErrorResponse(
+                'Error generating token',
+                [],
+                [],
+                Response::HTTP_UNPROCESSABLE_ENTITY
+            );
         }
-        return response()->json([
-            'token' => $token
-        ]);
+        return $this->sendSuccessResponse(
+            'Authenticated',
+            [
+                'token' => $token
+            ]
+        );
     }
 
-    public function validateToken(Request $request) {
+    public function validateToken() {
         return $this->sendSuccessResponse(
             'Authenticated'
         );
+    }
+
+    public function getSingleUserByApiToken(Request $request)
+    {
+        return $this->sendSuccessResponse("success", $request->user());
+    }
+
+    public function accountTokenLogin(Request $request): Response
+    {
+        $user = $request->user();
+        $apiToken = $user->currentAccessToken();
+        $data = [
+            // you may want to customize or obfuscate the message first
+            'message' => 'Successfully logged in.',
+            'session' => [
+                "email" => $user->email,
+                "access_token" => $apiToken,
+//                "expires_at" => $apiToken->getExpiresAt()->getTimestamp()
+            ],
+        ];
+        return $this->sendSuccessResponse("success", $data);
+    }
+
+    public function getAccountDetails(Request $request)
+    {
+        $user = $this->userAdminService->getUserByEmail($request->get("email"));
+        return $this->sendSuccessResponse("Success", $user);
+    }
+
+    public function newToken(Request $request) {
+        $user = $this->userAdminService->getUserByEmail($request->get("email"));
+        $token = $user->createToken('admin', ['api:superuser'])->plainTextToken;
+        if (!$token) {
+            return $this->sendErrorResponse(
+                'Error generating token',
+                [],
+                [],
+                Response::HTTP_UNPROCESSABLE_ENTITY
+            );
+        }
+        return $this->sendSuccessResponse("Api token", [
+            "token: " => $token,
+//            "expiresAt" => $setApiToken->getExpiresAt()->format("Y-m-d H:i:s"),
+            "email" => $user->email
+        ]);
     }
 }

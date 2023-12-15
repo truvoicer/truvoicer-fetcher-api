@@ -1,17 +1,17 @@
 <?php
 
-namespace App\Controller\Api\Backend;
+namespace App\Http\Controllers\Api\Backend;
 
-use App\Controller\Api\BaseController;
+use App\Http\Controllers\Controller;
 use App\Entity\Permission;
 use App\Entity\User;
-use App\Service\Category\CategoryService;
-use App\Service\Permission\AccessControlService;
-use App\Service\Permission\PermissionEntities;
-use App\Service\Permission\PermissionService;
-use App\Service\Provider\ProviderService;
-use App\Service\Tools\HttpRequestService;
-use App\Service\Tools\SerializerService;
+use App\Services\Category\CategoryService;
+use App\Services\Permission\AccessControlService;
+use App\Services\Permission\PermissionEntities;
+use App\Services\Permission\PermissionService;
+use App\Services\Provider\ProviderService;
+use App\Services\Tools\HttpRequestService;
+use App\Services\Tools\SerializerService;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
@@ -23,7 +23,7 @@ use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
  *
  * @IsGranted("ROLE_SUPER_ADMIN")
  */
-class PermissionController extends BaseController
+class PermissionController extends Controller
 {
     private PermissionService $permissionService;
 
@@ -55,7 +55,7 @@ class PermissionController extends BaseController
      */
     public function getProviderList(Request $request, ProviderService $providerService)
     {
-        return $this->jsonResponseSuccess("success",
+        return $this->sendSuccessResponse("success",
             $this->serializerService->entityArrayToArray(
                 $providerService->getProviderList(
                     $request->get('sort', "provider_name"),
@@ -75,7 +75,7 @@ class PermissionController extends BaseController
      */
     public function getCategoryList(Request $request, CategoryService $categoryService)
     {
-        return $this->jsonResponseSuccess(
+        return $this->sendSuccessResponse(
             "success",
             $this->serializerService->entityArrayToArray(
                 $categoryService->findByParams(
@@ -102,7 +102,7 @@ class PermissionController extends BaseController
             $request->get('order', "asc"),
             (int)$request->get('count', null)
         );
-        return $this->jsonResponseSuccess("success",
+        return $this->sendSuccessResponse("success",
             $this->serializerService->entityArrayToArray($getPermissions));
     }
 
@@ -115,7 +115,7 @@ class PermissionController extends BaseController
      */
     public function getSinglePermission(Permission $permission)
     {
-        return $this->jsonResponseSuccess("success",
+        return $this->sendSuccessResponse("success",
             $this->serializerService->entityToArray($permission));
     }
 
@@ -129,7 +129,7 @@ class PermissionController extends BaseController
      */
     public function getProtectedEntitiesList()
     {
-        return $this->jsonResponseSuccess(
+        return $this->sendSuccessResponse(
             "success",
             PermissionEntities::PROTECTED_ENTITIES
         );
@@ -147,7 +147,7 @@ class PermissionController extends BaseController
      */
     public function getUserEntityPermissionList(string $entity, User $user)
     {
-        return $this->jsonResponseSuccess(
+        return $this->sendSuccessResponse(
             "Successfully fetched permission list",
             $this->serializerService->entityArrayToArray(
                 $this->accessControlService->getPermissionEntities()->getUserEntityPermissionList($entity, $user),
@@ -168,7 +168,7 @@ class PermissionController extends BaseController
      */
     public function getUserEntityPermission(string $entity, int $id, User $user)
     {
-        return $this->jsonResponseSuccess(
+        return $this->sendSuccessResponse(
             "Successfully fetched permissions",
             $this->serializerService->entityToArray(
                 $this->accessControlService->getPermissionEntities()->getUserEntityPermission($entity, $id, $user),
@@ -187,7 +187,7 @@ class PermissionController extends BaseController
     public function saveUserEntityPermissions(User $user, Request $request)
     {
         $requestData = $this->httpRequestService->getRequestData($request, true);
-        return $this->jsonResponseSuccess(
+        return $this->sendSuccessResponse(
             "Entity permissions saved successfully",
             $this->serializerService->entityToArray(
                 $this->accessControlService->getPermissionEntities()->saveUserEntityPermissions(
@@ -212,7 +212,7 @@ class PermissionController extends BaseController
         $this->accessControlService->getPermissionEntities()->deleteUserEntityPermissions(
             $entity, $id, $user
         );
-        return $this->jsonResponseSuccess("success", []);
+        return $this->sendSuccessResponse("success", []);
     }
 
     /**
@@ -227,9 +227,9 @@ class PermissionController extends BaseController
         $requestData = $this->httpRequestService->getRequestData($request, true);
         $create = $this->permissionService->createPermission($requestData["name"]);
         if (!$create) {
-            return $this->jsonResponseFail("Error creating permission.");
+            return $this->sendErrorResponse("Error creating permission.");
         }
-        return $this->jsonResponseSuccess("Successfully created permission.",
+        return $this->sendSuccessResponse("Successfully created permission.",
             $this->serializerService->entityToArray($create));
     }
 
@@ -245,9 +245,9 @@ class PermissionController extends BaseController
         $requestData = $this->httpRequestService->getRequestData($request, true);
         $update = $this->permissionService->updatePermission($permission, $requestData["name"]);
         if (!$update) {
-            return $this->jsonResponseFail("Error updating permission.");
+            return $this->sendErrorResponse("Error updating permission.");
         }
-        return $this->jsonResponseSuccess("Successfully updated permission.",
+        return $this->sendSuccessResponse("Successfully updated permission.",
             $this->serializerService->entityToArray($update));
     }
 
@@ -263,8 +263,8 @@ class PermissionController extends BaseController
         $requestData = $this->httpRequestService->getRequestData($request, true);
         $delete = $this->permissionService->deletePermissionById($requestData['item_id']);
         if (!$delete) {
-            return $this->jsonResponseFail("Error deleting permission", $this->serializerService->entityToArray($delete, ['main']));
+            return $this->sendErrorResponse("Error deleting permission", $this->serializerService->entityToArray($delete, ['main']));
         }
-        return $this->jsonResponseSuccess("Permission deleted.", $this->serializerService->entityToArray($delete, ['main']));
+        return $this->sendSuccessResponse("Permission deleted.", $this->serializerService->entityToArray($delete, ['main']));
     }
 }

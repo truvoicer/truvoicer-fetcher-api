@@ -1,14 +1,14 @@
 <?php
 
-namespace App\Controller\Api\Backend\Services;
+namespace App\Http\Controllers\Api\Backend\Services;
 
-use App\Controller\Api\BaseController;
+use App\Http\Controllers\Controller;
 use App\Entity\Service;
-use App\Service\ApiServices\ApiService;
-use App\Service\Permission\AccessControlService;
-use App\Service\Tools\HttpRequestService;
-use App\Service\Provider\ProviderService;
-use App\Service\Tools\SerializerService;
+use App\Services\ApiServices\ApiService;
+use App\Services\Permission\AccessControlService;
+use App\Services\Tools\HttpRequestService;
+use App\Services\Provider\ProviderService;
+use App\Services\Tools\SerializerService;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
@@ -21,7 +21,7 @@ use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
  * @IsGranted("ROLE_USER")
  * @Route("/api/service")
  */
-class ServiceController extends BaseController
+class ServiceController extends Controller
 {
     private ProviderService $providerService;   // Initialise provider service
     private ApiService $apiServicesService;     // Initialise api services service
@@ -61,7 +61,7 @@ class ServiceController extends BaseController
             $request->get('order', "asc"),
             (int)$request->get('count', null)
         );
-        return $this->jsonResponseSuccess("success",
+        return $this->sendSuccessResponse("success",
             $this->serializerService->entityArrayToArray($getServices, ["list"]));
     }
 
@@ -75,7 +75,7 @@ class ServiceController extends BaseController
      */
     public function getService(Service $service)
     {
-        return $this->jsonResponseSuccess("success",
+        return $this->sendSuccessResponse("success",
             $this->serializerService->entityToArray($service, ["single"]));
     }
 
@@ -94,9 +94,9 @@ class ServiceController extends BaseController
             $this->httpRequestService->getRequestData($request, true));
 
         if (!$create) {
-            return $this->jsonResponseFail("Error inserting service");
+            return $this->sendErrorResponse("Error inserting service");
         }
-        return $this->jsonResponseSuccess("Service inserted",
+        return $this->sendSuccessResponse("Service inserted",
             $this->serializerService->entityToArray($create, ['single']));
     }
 
@@ -116,9 +116,9 @@ class ServiceController extends BaseController
             $this->httpRequestService->getRequestData($request, true));
 
         if (!$update) {
-            return $this->jsonResponseFail("Error updating service");
+            return $this->sendErrorResponse("Error updating service");
         }
-        return $this->jsonResponseSuccess("Service updated",
+        return $this->sendSuccessResponse("Service updated",
             $this->serializerService->entityToArray($update, ['single']));
     }
 
@@ -136,8 +136,8 @@ class ServiceController extends BaseController
     {
         $delete = $this->apiServicesService->deleteService($service);
         if (!$delete) {
-            return $this->jsonResponseFail("Error deleting service", $this->serializerService->entityToArray($delete, ['single']));
+            return $this->sendErrorResponse("Error deleting service", $this->serializerService->entityToArray($delete, ['single']));
         }
-        return $this->jsonResponseSuccess("Service deleted.", $this->serializerService->entityToArray($delete, ['single']));
+        return $this->sendSuccessResponse("Service deleted.", $this->serializerService->entityToArray($delete, ['single']));
     }
 }

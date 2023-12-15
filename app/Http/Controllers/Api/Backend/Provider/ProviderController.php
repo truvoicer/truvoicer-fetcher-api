@@ -1,16 +1,16 @@
 <?php
 
-namespace App\Controller\Api\Backend\Provider;
+namespace App\Http\Controllers\Api\Backend\Provider;
 
-use App\Controller\Api\BaseController;
+use App\Http\Controllers\Controller;
 use App\Entity\Property;
 use App\Entity\Provider;
 use App\Repository\ProviderRepository;
-use App\Service\Permission\AccessControlService;
-use App\Service\Permission\PermissionService;
-use App\Service\Tools\HttpRequestService;
-use App\Service\Provider\ProviderService;
-use App\Service\Tools\SerializerService;
+use App\Services\Permission\AccessControlService;
+use App\Services\Permission\PermissionService;
+use App\Services\Tools\HttpRequestService;
+use App\Services\Provider\ProviderService;
+use App\Services\Tools\SerializerService;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
@@ -23,7 +23,7 @@ use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
  * @IsGranted("ROLE_USER")
  * @Route("/api/provider")
  */
-class ProviderController extends BaseController
+class ProviderController extends Controller
 {
     const DEFAULT_ENTITY = "provider";
 
@@ -70,10 +70,10 @@ class ProviderController extends BaseController
                 $request->get('sort', "provider_name"),
                 $request->get('order', "asc"),
                 (int)$request->get('count', null),
-                $this->getUser()
+                $request->user()
             );
         }
-        return $this->jsonResponseSuccess(
+        return $this->sendSuccessResponse(
             "success",
             $this->serializerService->entityArrayToArray(
                 $providers,
@@ -91,14 +91,14 @@ class ProviderController extends BaseController
     {
         if (!$this->isGranted('ROLE_SUPER_ADMIN') && !$this->isGranted('ROLE_ADMIN')) {
             $this->accessControlService->checkPermissionsForEntity(
-                self::DEFAULT_ENTITY, $provider, $this->getUser(),
+                self::DEFAULT_ENTITY, $provider, $request->user(),
                 [
                     PermissionService::PERMISSION_ADMIN,
                     PermissionService::PERMISSION_READ,
                 ],
             );
         }
-        return $this->jsonResponseSuccess("success",
+        return $this->sendSuccessResponse("success",
             $this->serializerService->entityToArray($provider, ["single"]));
     }
 
@@ -115,9 +115,9 @@ class ProviderController extends BaseController
             $this->httpRequestService->getRequestData($request, true));
 
         if (!$createProvider) {
-            return $this->jsonResponseFail("Error inserting provider");
+            return $this->sendErrorResponse("Error inserting provider");
         }
-        return $this->jsonResponseSuccess("Provider added",
+        return $this->sendSuccessResponse("Provider added",
             $this->serializerService->entityToArray($createProvider, ['main']));
     }
 
@@ -133,7 +133,7 @@ class ProviderController extends BaseController
     {
         if (!$this->isGranted('ROLE_SUPER_ADMIN') && !$this->isGranted('ROLE_ADMIN')) {
             $this->accessControlService->checkPermissionsForEntity(
-                self::DEFAULT_ENTITY, $provider, $this->getUser(),
+                self::DEFAULT_ENTITY, $provider, $request->user(),
                 [
                     PermissionService::PERMISSION_ADMIN,
                     PermissionService::PERMISSION_UPDATE,
@@ -145,9 +145,9 @@ class ProviderController extends BaseController
             $this->httpRequestService->getRequestData($request, true));
 
         if (!$updateProvider) {
-            return $this->jsonResponseFail("Error updating provider");
+            return $this->sendErrorResponse("Error updating provider");
         }
-        return $this->jsonResponseSuccess("Provider updated",
+        return $this->sendSuccessResponse("Provider updated",
             $this->serializerService->entityToArray($updateProvider, ['main']));
     }
 
@@ -163,7 +163,7 @@ class ProviderController extends BaseController
     {
         if (!$this->isGranted('ROLE_SUPER_ADMIN') && !$this->isGranted('ROLE_ADMIN')) {
             $this->accessControlService->checkPermissionsForEntity(
-                self::DEFAULT_ENTITY, $provider, $this->getUser(),
+                self::DEFAULT_ENTITY, $provider, $request->user(),
                 [
                     PermissionService::PERMISSION_ADMIN,
                     PermissionService::PERMISSION_DELETE,
@@ -172,8 +172,8 @@ class ProviderController extends BaseController
         }
         $delete = $this->providerService->deleteProvider($provider);
         if (!$delete) {
-            return $this->jsonResponseFail("Error deleting provider", $this->serializerService->entityToArray($delete, ['main']));
+            return $this->sendErrorResponse("Error deleting provider", $this->serializerService->entityToArray($delete, ['main']));
         }
-        return $this->jsonResponseSuccess("Provider deleted.", $this->serializerService->entityToArray($delete, ['main']));
+        return $this->sendSuccessResponse("Provider deleted.", $this->serializerService->entityToArray($delete, ['main']));
     }
 }

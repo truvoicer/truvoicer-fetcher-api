@@ -1,14 +1,14 @@
 <?php
-namespace App\Controller\Api\Backend\Tools;
+namespace App\Http\Controllers\Api\Backend\Tools;
 
-use App\Controller\Api\BaseController;
-use App\Service\Permission\AccessControlService;
-use App\Service\Tools\HttpRequestService;
-use App\Service\SecurityService;
-use App\Service\Tools\SerializerService;
-use App\Service\Tools\IExport\ExportService;
-use App\Service\Tools\IExport\ImportService;
-use App\Service\UserService;
+use App\Http\Controllers\Controller;
+use App\Services\Permission\AccessControlService;
+use App\Services\Tools\HttpRequestService;
+use App\Services\SecurityService;
+use App\Services\Tools\SerializerService;
+use App\Services\Tools\IExport\ExportService;
+use App\Services\Tools\IExport\ImportService;
+use App\Services\User\UserAdminService;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
@@ -22,10 +22,10 @@ use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
  * @IsGranted("ROLE_USER")
  * @Route("/api/tools")
  */
-class ImportExportController extends BaseController
+class ImportExportController extends Controller
 {
     private SecurityService $securityService;
-    private UserService $userService;
+    private UserAdminService $userService;
     private ExportService $exportService;
 
     /**
@@ -35,11 +35,11 @@ class ImportExportController extends BaseController
      * @param SerializerService $serializerService
      * @param HttpRequestService $httpRequestService
      * @param SecurityService $securityService
-     * @param UserService $userService
+     * @param UserAdminService $userService
      * @param AccessControlService $accessControlService
      */
     public function __construct(SerializerService $serializerService, HttpRequestService $httpRequestService,
-                                SecurityService $securityService, UserService $userService,
+                                SecurityService $securityService, UserAdminService $userService,
                                 AccessControlService $accessControlService, ExportService $exportService)
     {
 
@@ -57,8 +57,8 @@ class ImportExportController extends BaseController
      */
     public function getExportList(Request $request)
     {
-        return $this->jsonResponseSuccess("Export Response.",
-            $this->exportService->getExportEntityListData($this->getUser())
+        return $this->sendSuccessResponse("Export Response.",
+            $this->exportService->getExportEntityListData($request->user())
         );
     }
 
@@ -72,7 +72,7 @@ class ImportExportController extends BaseController
     {
         $requestData = $this->httpRequestService->getRequestData($request, true);
         $xmlDataArray = $this->exportService->getExportXmlDataArray($requestData);
-        return $this->jsonResponseSuccess("Export Response.", $this->exportService->storeXmlDataFromArray($xmlDataArray));
+        return $this->sendSuccessResponse("Export Response.", $this->exportService->storeXmlDataFromArray($xmlDataArray));
     }
 
     /**
@@ -82,7 +82,7 @@ class ImportExportController extends BaseController
      */
     public function runImport(Request $request, ImportService $importService)
     {
-        return $this->jsonResponseSuccess("success", $importService->runImporter($request));
+        return $this->sendSuccessResponse("success", $importService->runImporter($request));
     }
 
     /**
@@ -92,7 +92,7 @@ class ImportExportController extends BaseController
      */
     public function runImportMappings(Request $request, ImportService $importService)
     {
-        return $this->jsonResponseSuccess("success", $importService->runMappingsImporter($request));
+        return $this->sendSuccessResponse("success", $importService->runMappingsImporter($request));
     }
 
 }

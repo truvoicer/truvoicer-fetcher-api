@@ -1,14 +1,14 @@
 <?php
-namespace App\Controller\Api\Backend\Tools;
+namespace App\Http\Controllers\Api\Backend\Tools;
 
-use App\Controller\Api\BaseController;
+use App\Http\Controllers\Controller;
 use App\Entity\File;
-use App\Service\Permission\AccessControlService;
-use App\Service\Tools\FileSystem\Downloads\DownloadsFileSystemService;
-use App\Service\Tools\HttpRequestService;
-use App\Service\Tools\SerializerService;
-use App\Service\Tools\FileSystem\FileSystemService;
-use App\Service\UserService;
+use App\Services\Permission\AccessControlService;
+use App\Services\Tools\FileSystem\Downloads\DownloadsFileSystemService;
+use App\Services\Tools\HttpRequestService;
+use App\Services\Tools\SerializerService;
+use App\Services\Tools\FileSystem\FileSystemService;
+use App\Services\User\UserAdminService;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
@@ -22,10 +22,10 @@ use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
  * @IsGranted("ROLE_USER")
  * @Route("/api/tools/filesystem")
  */
-class FileSystemController extends BaseController
+class FileSystemController extends Controller
 {
     private FileSystemService $fileSystemService;
-    private UserService $userService;
+    private UserAdminService $userService;
 
     /**
      * ExportController constructor.
@@ -34,11 +34,11 @@ class FileSystemController extends BaseController
      * @param SerializerService $serializerService
      * @param HttpRequestService $httpRequestService
      * @param FileSystemService $fileSystemService
-     * @param UserService $userService
+     * @param UserAdminService $userService
      * @param AccessControlService $accessControlService
      */
     public function __construct(SerializerService $serializerService, HttpRequestService $httpRequestService,
-                                FileSystemService $fileSystemService, UserService $userService,
+                                FileSystemService $fileSystemService, UserAdminService $userService,
                                 AccessControlService $accessControlService)
     {
 
@@ -56,9 +56,9 @@ class FileSystemController extends BaseController
     public function downloadFile(File $file, DownloadsFileSystemService $fileSystemService) {
         $getFileDownloadLink = $fileSystemService->getFileDownloadUrl($file);
         if ($getFileDownloadLink === null) {
-            return $this->jsonResponseFail("Error downloading file.". []);
+            return $this->sendErrorResponse("Error downloading file.". []);
         }
-        return $this->jsonResponseSuccess("File download success", [
+        return $this->sendSuccessResponse("File download success", [
             "url" => $getFileDownloadLink
         ]);
     }
@@ -75,7 +75,7 @@ class FileSystemController extends BaseController
             $request->get('order', "asc"),
             (int)$request->get('count', null)
         );
-        return $this->jsonResponseSuccess("success",
+        return $this->sendSuccessResponse("success",
             $this->serializerService->entityArrayToArray($getServices, ["list"]));
     }
 
@@ -86,7 +86,7 @@ class FileSystemController extends BaseController
      */
     public function getSingleFile(File $file)
     {
-        return $this->jsonResponseSuccess("success",
+        return $this->sendSuccessResponse("success",
             $this->serializerService->entityToArray($file, ["single"]));
     }
 
@@ -99,8 +99,8 @@ class FileSystemController extends BaseController
     {
         $delete = $this->fileSystemService->deleteFile($file);
         if (!$delete) {
-            return $this->jsonResponseFail("Error deleting file", $this->serializerService->entityToArray($delete, ['single']));
+            return $this->sendErrorResponse("Error deleting file", $this->serializerService->entityToArray($delete, ['single']));
         }
-        return $this->jsonResponseSuccess("File deleted.", $this->serializerService->entityToArray($delete, ['single']));
+        return $this->sendSuccessResponse("File deleted.", $this->serializerService->entityToArray($delete, ['single']));
     }
 }

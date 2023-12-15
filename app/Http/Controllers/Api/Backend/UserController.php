@@ -1,18 +1,19 @@
 <?php
-namespace App\Controller\Api\Backend;
+namespace App\Http\Controllers\Api\Backend;
 
-use App\Controller\Api\BaseController;
+use App\Http\Controllers\Controller;
 use App\Entity\ApiToken;
 use App\Entity\User;
-use App\Service\ApiServices\ServiceRequests\RequestService;
-use App\Service\Category\CategoryService;
-use App\Service\Permission\AccessControlService;
-use App\Service\Permission\PermissionEntities;
-use App\Service\Provider\ProviderService;
-use App\Service\Tools\HttpRequestService;
-use App\Service\SecurityService;
-use App\Service\Tools\SerializerService;
-use App\Service\UserService;
+use App\Services\ApiServices\ServiceRequests\RequestService;
+use App\Services\Category\CategoryService;
+use App\Services\Permission\AccessControlService;
+use App\Services\Permission\PermissionEntities;
+use App\Services\Provider\ProviderService;
+use App\Services\Tools\HttpRequestService;
+use App\Services\SecurityService;
+use App\Services\Tools\SerializerService;
+use App\Services\User\UserAdminService;
+use Laravel\Sanctum\PersonalAccessToken;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
@@ -24,20 +25,20 @@ use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
  *
  * @IsGranted("ROLE_USER")
  */
-class UserController extends BaseController
+class UserController extends Controller
 {
-    private UserService $userService;
+    private UserAdminService $userService;
 
     /**
      * AdminController constructor.
      * Initialises services used in this controller
      *
-     * @param UserService $userService
+     * @param UserAdminService $userService
      * @param SerializerService $serializerService
      * @param HttpRequestService $httpRequestService
      * @param AccessControlService $accessControlService
      */
-    public function __construct(UserService $userService, SerializerService $serializerService,
+    public function __construct(UserAdminService $userService, SerializerService $serializerService,
                                 HttpRequestService $httpRequestService,
                                 AccessControlService $accessControlService)
     {
@@ -46,17 +47,11 @@ class UserController extends BaseController
         $this->userService = $userService;
     }
 
-    /**
-     * Gets a single user based on the id in the request url
-     *
-     * @Route("/api/user/detail", name="api_get_user_detail", methods={"GET"})
-     * @return \Symfony\Component\HttpFoundation\JsonResponse
-     */
-    public function getSessionUserDetail()
+    public function getSessionUserDetail(Request $request)
     {
-        return $this->jsonResponseSuccess(
+        return $this->sendSuccessResponse(
             "success",
-            $this->serializerService->entityToArray($this->getUser())
+            $this->serializerService->entityToArray($request->user())
         );
     }
 
@@ -69,91 +64,56 @@ class UserController extends BaseController
      */
     public function getProtectedEntitiesList()
     {
-        return $this->jsonResponseSuccess(
+        return $this->sendSuccessResponse(
             "success",
             PermissionEntities::PROTECTED_ENTITIES
         );
     }
 
-    /**
-     * Gets a user mappings
-     *
-     * @Route("/api/user/permission/entity/{entity}/list", name="api_get_single_session_entity_permission_list", methods={"GET"})
-     * @param string $entity
-     * @param User $user
-     * @param ProviderService $providerService
-     * @param CategoryService $categoryService
-     * @return \Symfony\Component\HttpFoundation\JsonResponse
-     */
-    public function getUserEntityPermissionList(string $entity)
+    public function getUserEntityPermissionList(string $entity, Request $request)
     {
-        return $this->jsonResponseSuccess(
+        return $this->sendSuccessResponse(
             "Successfully fetched permission list",
             $this->serializerService->entityArrayToArray(
-                $this->accessControlService->getPermissionEntities()->getUserEntityPermissionList($entity, $this->getUser()),
+                $this->accessControlService->getPermissionEntities()->getUserEntityPermissionList($entity, $request->user()),
                 ["list"]
             )
         );
     }
 
-    /**
-     * Gets a user mappings
-     *
-     * @Route("/api/user/permission/entity/{entity}/{id}", name="api_get_single_session_user_entity_permission", methods={"GET"})
-     * @param string $entity
-     * @param User $user
-     * @param ProviderService $providerService
-     * @param CategoryService $categoryService
-     * @return \Symfony\Component\HttpFoundation\JsonResponse
-     */
-    public function getUserEntityPermission(string $entity, int $id)
+    public function getUserEntityPermission(string $entity, int $id, Request $request)
     {
-        return $this->jsonResponseSuccess(
+        return $this->sendSuccessResponse(
             "Successfully fetched permissions",
             $this->serializerService->entityToArray(
-                $this->accessControlService->getPermissionEntities()->getUserEntityPermission($entity, $id, $this->getUser()),
+                $this->accessControlService->getPermissionEntities()->getUserEntityPermission($entity, $id, $request->user()),
                 ["list"]
             )
         );
     }
 
-    /**
-     * Gets a single api token based on the api token id in the request url
-     *
-     * @Route("/api/user/api-token/{id}/detail", name="api_get_session_user_api_token", methods={"GET"})
-     * @param ApiToken $apiToken
-     * @return \Symfony\Component\HttpFoundation\JsonResponse
-     */
-    public function getSessionUserApiToken(ApiToken $apiToken)
+    public function getSessionUserApiToken(PersonalAccessToken $personalAccessToken, Request $request)
     {
-        if (!$this->userService->apiTokenBelongsToUser($this->getUser(), $apiToken)) {
-            return $this->jsonResponseFail(
+        if (!$this->userService->apiTokenBelongsToUser($request->user(), $personalAccessToken)) {
+            return $this->sendErrorResponse(
                 "Operation not permitted"
             );
         }
-        return $this->jsonResponseSuccess(
+        return $this->sendSuccessResponse(
             "success",
-            $this->serializerService->entityToArray($apiToken)
+            $this->serializerService->entityToArray($personalAccessToken)
         );
     }
 
-    /**
-     * Gets a list of usee api tokens based on the user id in the request url
-     *
-     * @Route("/api/user/api-tokens", name="api_get_session_user_api_token_list", methods={"GET"})
-     * @param User $user
-     * @param Request $request
-     * @return \Symfony\Component\HttpFoundation\JsonResponse
-     */
     public function getSessionUserApiTokenList(Request $request)
     {
         $getApiTokens = $this->userService->findApiTokensByParams(
-            $this->getUser(),
+            $request->user(),
             $request->get('sort', "id"),
             $request->get('order', "asc"),
             (int) $request->get('count', null)
         );
-        return $this->jsonResponseSuccess("success",
+        return $this->sendSuccessResponse("success",
             $this->serializerService->entityArrayToArray(
                 array_filter($getApiTokens, function ($token, $key) {
                     return $token->getType() === "user";
@@ -171,9 +131,9 @@ class UserController extends BaseController
      */
     public function generateSessionUserApiToken()
     {
-        return $this->jsonResponseSuccess("success",
+        return $this->sendSuccessResponse("success",
             $this->serializerService->entityToArray(
-                $this->userService->setApiToken($this->getUser(), "user")
+                $this->userService->setApiToken($request->user(), "user")
             )
         );
     }
@@ -190,16 +150,16 @@ class UserController extends BaseController
         $requestData = $this->httpRequestService->getRequestData($request, true);
         $apiToken = $this->userService->getApiTokenById($requestData['item_id']);
 
-        if (!$this->userService->apiTokenBelongsToUser($this->getUser(), $apiToken)) {
-            return $this->jsonResponseFail(
+        if (!$this->userService->apiTokenBelongsToUser($request->user(), $apiToken)) {
+            return $this->sendErrorResponse(
                 "Operation not permitted"
             );
         }
         $delete = $this->userService->deleteApiToken($apiToken);
         if (!$delete) {
-            return $this->jsonResponseFail("Error deleting api token", $this->serializerService->entityToArray($delete, ['main']));
+            return $this->sendErrorResponse("Error deleting api token", $this->serializerService->entityToArray($delete, ['main']));
         }
-        return $this->jsonResponseSuccess("Api Token deleted.", $this->serializerService->entityToArray($delete, ['main']));
+        return $this->sendSuccessResponse("Api Token deleted.", $this->serializerService->entityToArray($delete, ['main']));
     }
 
     /**
@@ -212,12 +172,12 @@ class UserController extends BaseController
     public function updateSessionUser(Request $request)
     {
         $update = $this->userService->updateSessionUser(
-            $this->getUser(),
+            $request->user(),
             $this->httpRequestService->getRequestData($request, true));
         if(!$update) {
-            return $this->jsonResponseFail("Error updating user");
+            return $this->sendErrorResponse("Error updating user");
         }
-        return $this->jsonResponseSuccess("User updated",
+        return $this->sendSuccessResponse("User updated",
             $this->serializerService->entityToArray($update, ['main']));
     }
 }

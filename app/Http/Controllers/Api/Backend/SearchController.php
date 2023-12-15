@@ -1,11 +1,11 @@
 <?php
-namespace App\Controller\Api\Backend;
+namespace App\Http\Controllers\Api\Backend;
 
-use App\Controller\Api\BaseController;
-use App\Service\Permission\AccessControlService;
-use App\Service\SearchService;
-use App\Service\Tools\HttpRequestService;
-use App\Service\Tools\SerializerService;
+use App\Http\Controllers\Controller;
+use App\Services\Permission\AccessControlService;
+use App\Services\SearchService;
+use App\Services\Tools\HttpRequestService;
+use App\Services\Tools\SerializerService;
 use Symfony\Component\Routing\Annotation\Route;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 
@@ -16,7 +16,7 @@ use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
  *
  * @IsGranted("ROLE_USER")
  */
-class SearchController extends BaseController
+class SearchController extends Controller
 {
     private SearchService $searchService;
 
@@ -54,6 +54,6 @@ class SearchController extends BaseController
                 return $this->serializerService->entityToArray($item, ["search"]);
             }, $searchArray["items"]);
         }
-        return $this->jsonResponseSuccess("success", $searchArray);
+        return $this->sendSuccessResponse("success", $searchArray);
     }
 }

@@ -1,17 +1,17 @@
 <?php
-namespace App\Controller\Api\Backend\Services;
+namespace App\Http\Controllers\Api\Backend\Services;
 
-use App\Controller\Api\BaseController;
+use App\Http\Controllers\Controller;
 use App\Entity\Provider;
 use App\Entity\ServiceRequest;
 use App\Entity\ServiceRequestConfig;
-use App\Service\ApiServices\ApiService;
-use App\Service\Permission\AccessControlService;
-use App\Service\Permission\PermissionService;
-use App\Service\Tools\HttpRequestService;
-use App\Service\Provider\ProviderService;
-use App\Service\ApiServices\ServiceRequests\RequestConfigService;
-use App\Service\Tools\SerializerService;
+use App\Services\ApiServices\ApiService;
+use App\Services\Permission\AccessControlService;
+use App\Services\Permission\PermissionService;
+use App\Services\Tools\HttpRequestService;
+use App\Services\Provider\ProviderService;
+use App\Services\ApiServices\ServiceRequests\RequestConfigService;
+use App\Services\Tools\SerializerService;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
@@ -24,7 +24,7 @@ use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
  * @IsGranted("ROLE_USER")
  * @Route("/api/provider/{provider}/service/request/{id}/config")
  */
-class ServiceRequestConfigController extends BaseController
+class ServiceRequestConfigController extends Controller
 {
     const DEFAULT_ENTITY = "provider";
 
@@ -67,7 +67,7 @@ class ServiceRequestConfigController extends BaseController
     {
         $requestConfigArray = [];
         $isPermitted = $this->accessControlService->checkPermissionsForEntity(
-            self::DEFAULT_ENTITY, $provider, $this->getUser(),
+            self::DEFAULT_ENTITY, $provider, $request->user(),
             [
                 PermissionService::PERMISSION_ADMIN,
                 PermissionService::PERMISSION_READ,
@@ -86,7 +86,7 @@ class ServiceRequestConfigController extends BaseController
             );
             $requestConfigArray = $this->serializerService->entityArrayToArray($findRequestConfigs, ["list"]);
         }
-        return $this->jsonResponseSuccess("success", $requestConfigArray);
+        return $this->sendSuccessResponse("success", $requestConfigArray);
     }
 
     /**
@@ -101,14 +101,14 @@ class ServiceRequestConfigController extends BaseController
     {
         if (!$this->isGranted('ROLE_SUPER_ADMIN') && !$this->isGranted('ROLE_ADMIN')) {
             $this->accessControlService->checkPermissionsForEntity(
-                self::DEFAULT_ENTITY, $provider, $this->getUser(),
+                self::DEFAULT_ENTITY, $provider, $request->user(),
                 [
                     PermissionService::PERMISSION_ADMIN,
                     PermissionService::PERMISSION_READ,
                 ]
             );
         }
-        return $this->jsonResponseSuccess("success",
+        return $this->sendSuccessResponse("success",
             $this->serializerService->entityToArray($serviceRequestConfig, ["single"]));
     }
 
@@ -124,7 +124,7 @@ class ServiceRequestConfigController extends BaseController
     public function createRequestConfig(Provider $provider, ServiceRequest $serviceRequest, Request $request) {
         if (!$this->isGranted('ROLE_SUPER_ADMIN') && !$this->isGranted('ROLE_ADMIN')) {
             $this->accessControlService->checkPermissionsForEntity(
-                self::DEFAULT_ENTITY, $provider, $this->getUser(),
+                self::DEFAULT_ENTITY, $provider, $request->user(),
                 [
                     PermissionService::PERMISSION_ADMIN,
                     PermissionService::PERMISSION_WRITE,
@@ -138,9 +138,9 @@ class ServiceRequestConfigController extends BaseController
         );
 
         if(!$create) {
-            return $this->jsonResponseFail("Error inserting config item");
+            return $this->sendErrorResponse("Error inserting config item");
         }
-        return $this->jsonResponseSuccess("Config item inserted",
+        return $this->sendSuccessResponse("Config item inserted",
             $this->serializerService->entityToArray($create, ['single']));
     }
 
@@ -157,7 +157,7 @@ class ServiceRequestConfigController extends BaseController
     {
         if (!$this->isGranted('ROLE_SUPER_ADMIN') && !$this->isGranted('ROLE_ADMIN')) {
             $this->accessControlService->checkPermissionsForEntity(
-                self::DEFAULT_ENTITY, $provider, $this->getUser(),
+                self::DEFAULT_ENTITY, $provider, $request->user(),
                 [
                     PermissionService::PERMISSION_ADMIN,
                     PermissionService::PERMISSION_UPDATE,
@@ -169,9 +169,9 @@ class ServiceRequestConfigController extends BaseController
             $this->httpRequestService->getRequestData($request, true));
 
         if(!$update) {
-            return $this->jsonResponseFail("Error updating config item");
+            return $this->sendErrorResponse("Error updating config item");
         }
-        return $this->jsonResponseSuccess("Config item updated",
+        return $this->sendSuccessResponse("Config item updated",
             $this->serializerService->entityToArray($update, ['single']));
     }
 
@@ -188,7 +188,7 @@ class ServiceRequestConfigController extends BaseController
     {
         if (!$this->isGranted('ROLE_SUPER_ADMIN') && !$this->isGranted('ROLE_ADMIN')) {
             $this->accessControlService->checkPermissionsForEntity(
-                self::DEFAULT_ENTITY, $provider, $this->getUser(),
+                self::DEFAULT_ENTITY, $provider, $request->user(),
                 [
                     PermissionService::PERMISSION_ADMIN,
                     PermissionService::PERMISSION_DELETE,
@@ -197,8 +197,8 @@ class ServiceRequestConfigController extends BaseController
         }
         $delete = $this->requestConfigService->deleteRequestConfig($serviceRequestConfig);
         if (!$delete) {
-            return $this->jsonResponseFail("Error deleting config item", $this->serializerService->entityToArray($delete, ['single']));
+            return $this->sendErrorResponse("Error deleting config item", $this->serializerService->entityToArray($delete, ['single']));
         }
-        return $this->jsonResponseSuccess("Config item deleted.", $this->serializerService->entityToArray($delete, ['single']));
+        return $this->sendSuccessResponse("Config item deleted.", $this->serializerService->entityToArray($delete, ['single']));
     }
 }

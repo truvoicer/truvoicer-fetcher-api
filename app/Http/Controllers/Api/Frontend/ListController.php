@@ -1,17 +1,17 @@
 <?php
-namespace App\Controller\Api\Frontend;
+namespace App\Http\Controllers\Api\Frontend;
 
-use App\Controller\Api\BaseController;
+use App\Http\Controllers\Controller;
 use App\Entity\Category;
 use App\Entity\Service;
-use App\Service\ApiServices\ApiService;
-use App\Service\ApiServices\ResponseKeysService;
-use App\Service\ApiServices\ServiceRequests\RequestConfigService;
-use App\Service\Category\CategoryService;
-use App\Service\Permission\AccessControlService;
-use App\Service\Provider\ProviderService;
-use App\Service\Tools\HttpRequestService;
-use App\Service\Tools\SerializerService;
+use App\Services\ApiServices\ApiService;
+use App\Services\ApiServices\ResponseKeysService;
+use App\Services\ApiServices\ServiceRequests\RequestConfigService;
+use App\Services\Category\CategoryService;
+use App\Services\Permission\AccessControlService;
+use App\Services\Provider\ProviderService;
+use App\Services\Tools\HttpRequestService;
+use App\Services\Tools\SerializerService;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\Routing\Annotation\Route;
@@ -22,7 +22,7 @@ use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
  *
  * @IsGranted("ROLE_USER")
  */
-class ListController extends BaseController
+class ListController extends Controller
 {
     private ProviderService $providerService;
     private CategoryService $categoryService;
@@ -50,11 +50,11 @@ class ListController extends BaseController
             $request->query->get("filter") === null ||
             $request->query->get("filter") === ""
         ) {
-            return $this->jsonResponseSuccess("success",
-                $this->categoryService->getCategoryProviderList($category, $this->getUser()));
+            return $this->sendSuccessResponse("success",
+                $this->categoryService->getCategoryProviderList($category, $request->user()));
         }
-        return $this->jsonResponseSuccess("success",
-            $this->categoryService->getCategorySelectedProvidersList($request->query->get("filter"), $this->getUser()));
+        return $this->sendSuccessResponse("success",
+            $this->categoryService->getCategorySelectedProvidersList($request->query->get("filter"), $request->user()));
     }
 
     /**
@@ -73,7 +73,7 @@ class ListController extends BaseController
         } elseif (isset($data["service_name"])) {
             $responseKeys = $responseKeysService->getResponseKeysByServiceName($data['service_name']);
         }
-        return $this->jsonResponseSuccess("success",
+        return $this->sendSuccessResponse("success",
             $this->serializerService->entityArrayToArray($responseKeys, ["list"]));
     }
     /**
@@ -86,7 +86,7 @@ class ListController extends BaseController
      */
     public function frontendServiceList(Request $request, ApiService $apiService)
     {
-        return $this->jsonResponseSuccess("success",
+        return $this->sendSuccessResponse("success",
             $this->serializerService->entityArrayToArray($apiService->findByParams(), ["list"]));
     }
 }

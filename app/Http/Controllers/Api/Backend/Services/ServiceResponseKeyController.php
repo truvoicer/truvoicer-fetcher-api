@@ -1,15 +1,15 @@
 <?php
-namespace App\Controller\Api\Backend\Services;
+namespace App\Http\Controllers\Api\Backend\Services;
 
-use App\Controller\Api\BaseController;
+use App\Http\Controllers\Controller;
 use App\Entity\Service;
 use App\Entity\ServiceResponseKey;
-use App\Service\ApiServices\ApiService;
-use App\Service\Permission\AccessControlService;
-use App\Service\Tools\HttpRequestService;
-use App\Service\Provider\ProviderService;
-use App\Service\ApiServices\ResponseKeysService;
-use App\Service\Tools\SerializerService;
+use App\Services\ApiServices\ApiService;
+use App\Services\Permission\AccessControlService;
+use App\Services\Tools\HttpRequestService;
+use App\Services\Provider\ProviderService;
+use App\Services\ApiServices\ResponseKeysService;
+use App\Services\Tools\SerializerService;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
@@ -22,7 +22,7 @@ use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
  * @IsGranted("ROLE_USER")
  * @Route("/api/service/{service}/response/key")
  */
-class ServiceResponseKeyController extends BaseController
+class ServiceResponseKeyController extends Controller
 {
     private ProviderService $providerService;
     private ApiService $apiServicesService;
@@ -67,7 +67,7 @@ class ServiceResponseKeyController extends BaseController
         } elseif (isset($data["service_name"])) {
             $responseKeys = $this->responseKeysService->getResponseKeysByServiceName($data['service_name']);
         }
-        return $this->jsonResponseSuccess("success",
+        return $this->sendSuccessResponse("success",
             $this->serializerService->entityArrayToArray($responseKeys, ["list"]));
     }
 
@@ -81,7 +81,7 @@ class ServiceResponseKeyController extends BaseController
      */
     public function getServiceResponseKey(ServiceResponseKey $serviceResponseKey)
     {
-        return $this->jsonResponseSuccess("success",
+        return $this->sendSuccessResponse("success",
             $this->serializerService->entityToArray($serviceResponseKey, ["single"]));
     }
 
@@ -99,9 +99,9 @@ class ServiceResponseKeyController extends BaseController
             $this->httpRequestService->getRequestData($request, true));
 
         if(!$create) {
-            return $this->jsonResponseFail("Error inserting service response key");
+            return $this->sendErrorResponse("Error inserting service response key");
         }
-        return $this->jsonResponseSuccess("Service response key inserted",
+        return $this->sendSuccessResponse("Service response key inserted",
             $this->serializerService->entityToArray($create, ['single']));
     }
 
@@ -121,9 +121,9 @@ class ServiceResponseKeyController extends BaseController
             $this->httpRequestService->getRequestData($request, true));
 
         if(!$update) {
-            return $this->jsonResponseFail("Error updating service response key");
+            return $this->sendErrorResponse("Error updating service response key");
         }
-        return $this->jsonResponseSuccess("Service response key updated",
+        return $this->sendSuccessResponse("Service response key updated",
             $this->serializerService->entityToArray($update, ['single']));
     }
 
@@ -140,8 +140,8 @@ class ServiceResponseKeyController extends BaseController
     {
         $delete = $this->responseKeysService->deleteServiceResponseKey($serviceResponseKey);
         if (!$delete) {
-            return $this->jsonResponseFail("Error deleting service response key", $this->serializerService->entityToArray($delete, ['single']));
+            return $this->sendErrorResponse("Error deleting service response key", $this->serializerService->entityToArray($delete, ['single']));
         }
-        return $this->jsonResponseSuccess("Response key service deleted.", $this->serializerService->entityToArray($delete, ['single']));
+        return $this->sendSuccessResponse("Response key service deleted.", $this->serializerService->entityToArray($delete, ['single']));
     }
 }

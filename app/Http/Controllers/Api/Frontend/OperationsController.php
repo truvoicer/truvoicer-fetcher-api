@@ -1,12 +1,12 @@
 <?php
 
-namespace App\Controller\Api\Frontend;
+namespace App\Http\Controllers\Api\Frontend;
 
-use App\Controller\Api\BaseController;
-use App\Service\ApiManager\Operations\RequestOperation;
-use App\Service\Permission\AccessControlService;
-use App\Service\Tools\HttpRequestService;
-use App\Service\Tools\SerializerService;
+use App\Http\Controllers\Controller;
+use App\Services\ApiManager\Operations\RequestOperation;
+use App\Services\Permission\AccessControlService;
+use App\Services\Tools\HttpRequestService;
+use App\Services\Tools\SerializerService;
 use Symfony\Component\Cache\Adapter\FilesystemAdapter;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -20,7 +20,7 @@ use Symfony\Contracts\Cache\ItemInterface;
  *
  * @IsGranted("ROLE_USER")
  */
-class OperationsController extends BaseController
+class OperationsController extends Controller
 {
 
     public function __construct(HttpRequestService $httpRequestService,

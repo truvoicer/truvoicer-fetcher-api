@@ -1,23 +1,23 @@
 <?php
 
-namespace App\Controller\Api\Backend\Scrapers;
+namespace App\Http\Controllers\Api\Backend\Scrapers;
 
-use App\Controller\Api\BaseController;
+use App\Http\Controllers\Controller;
 use App\Entity\ScraperConfig;
 use App\Entity\Scraper;
 use App\Entity\ScraperResponseKey;
 use App\Entity\ScraperSchedule;
 use App\Entity\ServiceRequest;
 use App\Entity\ServiceResponseKey;
-use App\Service\ApiManager\Operations\RequestOperation;
-use App\Service\ApiServices\ApiService;
-use App\Service\Permission\AccessControlService;
-use App\Service\Scraper\ScraperService;
-use App\Service\Tools\HttpRequestService;
-use App\Service\Provider\ProviderService;
-use App\Service\ApiServices\ServiceRequests\RequestService;
-use App\Service\Tools\SerializerService;
-use App\Service\UserService;
+use App\Services\ApiManager\Operations\RequestOperation;
+use App\Services\ApiServices\ApiService;
+use App\Services\Permission\AccessControlService;
+use App\Services\Scraper\ScraperService;
+use App\Services\Tools\HttpRequestService;
+use App\Services\Provider\ProviderService;
+use App\Services\ApiServices\ServiceRequests\RequestService;
+use App\Services\Tools\SerializerService;
+use App\Services\User\UserAdminService;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -32,7 +32,7 @@ use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
  * @IsGranted("ROLE_USER")
  * @Route("/api/scraper")
  */
-class ScrapersController extends BaseController
+class ScrapersController extends Controller
 {
     // Initialise services variables for this controller
     private ProviderService $providerService;
@@ -77,7 +77,7 @@ class ScrapersController extends BaseController
             $request->get('order', "asc"),
             (int)$request->get('count', null)
         );
-        return $this->jsonResponseSuccess("success",
+        return $this->sendSuccessResponse("success",
             $this->serializerService->entityArrayToArray($getServices, ["list"]));
     }
 
@@ -86,7 +86,7 @@ class ScrapersController extends BaseController
      */
     public function getScraper(Scraper $scraper)
     {
-        return $this->jsonResponseSuccess("success",
+        return $this->sendSuccessResponse("success",
             $this->serializerService->entityToArray($scraper, ["single"]));
     }
 
@@ -95,7 +95,7 @@ class ScrapersController extends BaseController
      */
     public function getScraperSchedule(ScraperSchedule $scraperSchedule)
     {
-        return $this->jsonResponseSuccess("success",
+        return $this->sendSuccessResponse("success",
             $this->serializerService->entityToArray($scraperSchedule, ["single"]));
     }
 
@@ -104,7 +104,7 @@ class ScrapersController extends BaseController
      */
     public function getScraperScheduleByScraperId(Scraper $scraper)
     {
-        return $this->jsonResponseSuccess("success",
+        return $this->sendSuccessResponse("success",
             $this->serializerService->entityToArray(
                 $this->scraperService->getScraperScheduleByScraper($scraper),
                 ["single"]
@@ -119,7 +119,7 @@ class ScrapersController extends BaseController
      */
     public function fetchScraperConfigAction(ScraperConfig $scraperConfig)
     {
-        return $this->jsonResponseSuccess(
+        return $this->sendSuccessResponse(
             "",
             $this->serializerService->entityToArray($scraperConfig, ["single"])
         );
@@ -130,7 +130,7 @@ class ScrapersController extends BaseController
      */
     public function getScraperConfigByScraperId(Scraper $scraper)
     {
-        return $this->jsonResponseSuccess("success",
+        return $this->sendSuccessResponse("success",
             $this->serializerService->entityToArray(
                 $this->scraperService->getScraperConfigByScraper($scraper),
                 ["single"]
@@ -145,11 +145,11 @@ class ScrapersController extends BaseController
     {
         $scraperResponseKey = $this->scraperService->findScraperResponseKey($scraper, $responseKey);
         if ($scraperResponseKey === null) {
-            return $this->jsonResponseSuccess("success",
+            return $this->sendSuccessResponse("success",
                 []
             );
         }
-        return $this->jsonResponseSuccess("success",
+        return $this->sendSuccessResponse("success",
             $this->serializerService->entityToArray($scraperResponseKey, ["single"])
         );
     }
@@ -160,7 +160,7 @@ class ScrapersController extends BaseController
     public function getScraperResponseKeyList(Scraper $scraper)
     {
         $scraperResponseKey = $this->scraperService->findScraperResponseKeyList($scraper);
-        return $this->jsonResponseSuccess("success",
+        return $this->sendSuccessResponse("success",
             $this->serializerService->entityToArray($scraperResponseKey, ["list"])
         );
     }
@@ -168,11 +168,11 @@ class ScrapersController extends BaseController
     /**
      * @Route("/{scraper}/job/request", name="api_send_scraper_job", methods={"POST"})
      */
-    public function sendScraperJob(Scraper $scraper, Request $request, UserService $userService)
+    public function sendScraperJob(Scraper $scraper, Request $request, UserAdminService $userService)
     {
-//        $apiToken = $userService->getLatestToken($this->getUser());
+//        $apiToken = $userService->getLatestToken($request->user());
 //        if ($apiToken === null) {
-//            return $this->jsonResponseFail("Error retrieving api token");
+//            return $this->sendErrorResponse("Error retrieving api token");
 //        }
 //        $create = $this->scraperService->sendScraperJob(
 //            $scraper,
@@ -181,9 +181,9 @@ class ScrapersController extends BaseController
 //        );
 //
 //        if (!$create) {
-//            return $this->jsonResponseFail("Error sending scraper job");
+//            return $this->sendErrorResponse("Error sending scraper job");
 //        }
-        return $this->jsonResponseSuccess("Scraper inserted",
+        return $this->sendSuccessResponse("Scraper inserted",
             $this->serializerService->scraperEntityToArray($scraper, ['job'])
         );
     }
@@ -197,9 +197,9 @@ class ScrapersController extends BaseController
             $this->httpRequestService->getRequestData($request, true));
 
         if (!$create) {
-            return $this->jsonResponseFail("Error inserting scraper");
+            return $this->sendErrorResponse("Error inserting scraper");
         }
-        return $this->jsonResponseSuccess("Scraper inserted",
+        return $this->sendSuccessResponse("Scraper inserted",
             $this->serializerService->entityToArray($create, ['single']));
     }
 
@@ -213,9 +213,9 @@ class ScrapersController extends BaseController
             $this->httpRequestService->getRequestData($request, true));
 
         if (!$update) {
-            return $this->jsonResponseFail("Error updating scraper");
+            return $this->sendErrorResponse("Error updating scraper");
         }
-        return $this->jsonResponseSuccess("Scraper updated",
+        return $this->sendSuccessResponse("Scraper updated",
             $this->serializerService->entityToArray($update, ['single']));
     }
 
@@ -229,9 +229,9 @@ class ScrapersController extends BaseController
             $this->httpRequestService->getRequestData($request, true));
 
         if (!$create) {
-            return $this->jsonResponseFail("Error inserting scraper schedule");
+            return $this->sendErrorResponse("Error inserting scraper schedule");
         }
-        return $this->jsonResponseSuccess("Scraper schedule inserted",
+        return $this->sendSuccessResponse("Scraper schedule inserted",
             $this->serializerService->entityToArray($create, ['single']));
     }
 
@@ -245,9 +245,9 @@ class ScrapersController extends BaseController
             $this->httpRequestService->getRequestData($request, true));
 
         if (!$update) {
-            return $this->jsonResponseFail("Error updating scraper schedule");
+            return $this->sendErrorResponse("Error updating scraper schedule");
         }
-        return $this->jsonResponseSuccess("Scraper schedule updated",
+        return $this->sendSuccessResponse("Scraper schedule updated",
             $this->serializerService->entityToArray($update, ['single']));
     }
 
@@ -262,9 +262,9 @@ class ScrapersController extends BaseController
             $this->httpRequestService->getRequestData($request, true));
 
         if (!$create) {
-            return $this->jsonResponseFail("Error inserting scraper response key");
+            return $this->sendErrorResponse("Error inserting scraper response key");
         }
-        return $this->jsonResponseSuccess("Scraper response key inserted",
+        return $this->sendSuccessResponse("Scraper response key inserted",
             $this->serializerService->entityToArray($create, ['single']));
     }
 
@@ -278,9 +278,9 @@ class ScrapersController extends BaseController
             $this->httpRequestService->getRequestData($request, true));
 
         if (!$update) {
-            return $this->jsonResponseFail("Error updating scraper response key");
+            return $this->sendErrorResponse("Error updating scraper response key");
         }
-        return $this->jsonResponseSuccess("Scraper response key updated",
+        return $this->sendSuccessResponse("Scraper response key updated",
             $this->serializerService->entityToArray($update, ['single']));
     }
 
@@ -295,9 +295,9 @@ class ScrapersController extends BaseController
             $this->httpRequestService->getRequestData($request, true));
 
         if (!$create) {
-            return $this->jsonResponseFail("Error inserting scraper config");
+            return $this->sendErrorResponse("Error inserting scraper config");
         }
-        return $this->jsonResponseSuccess("Cron config inserted",
+        return $this->sendSuccessResponse("Cron config inserted",
             $this->serializerService->entityToArray($create, ['single']));
     }
 
@@ -314,9 +314,9 @@ class ScrapersController extends BaseController
             $this->httpRequestService->getRequestData($request, true));
 
         if (!$update) {
-            return $this->jsonResponseFail("Error updating scraper config");
+            return $this->sendErrorResponse("Error updating scraper config");
         }
-        return $this->jsonResponseSuccess("Cron config updated",
+        return $this->sendSuccessResponse("Cron config updated",
             $this->serializerService->entityToArray($update, ['single']));
     }
 
@@ -333,17 +333,17 @@ class ScrapersController extends BaseController
             $scraperConfig
         );
         if (!$deleteScraperConfigById) {
-            return $this->jsonResponseFail(
+            return $this->sendErrorResponse(
                 "Error deleting",
                 []
             );
         }
-        return $this->jsonResponseSuccess(
+        return $this->sendSuccessResponse(
             "Successfully deleted",
             []
         );
     }
-    
+
     /**
      * @Route("/{scraper}/delete", name="api_delete_scraper", methods={"POST"})
      * @param Request $request
@@ -353,8 +353,8 @@ class ScrapersController extends BaseController
     {
         $delete = $this->scraperService->deleteScraper($scraper);
         if (!$delete) {
-            return $this->jsonResponseFail("Error deleting scraper", $this->serializerService->entityToArray($delete, ['single']));
+            return $this->sendErrorResponse("Error deleting scraper", $this->serializerService->entityToArray($delete, ['single']));
         }
-        return $this->jsonResponseSuccess("Scraper deleted.", $this->serializerService->entityToArray($delete, ['single']));
+        return $this->sendSuccessResponse("Scraper deleted.", $this->serializerService->entityToArray($delete, ['single']));
     }
 }
