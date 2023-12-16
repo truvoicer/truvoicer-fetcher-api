@@ -2,19 +2,16 @@
 namespace App\Http\Controllers\Api\Backend;
 
 use App\Http\Controllers\Controller;
+use App\Service\SearchService;
 use App\Services\Permission\AccessControlService;
-use App\Services\SearchService;
 use App\Services\Tools\HttpRequestService;
 use App\Services\Tools\SerializerService;
-use Symfony\Component\Routing\Annotation\Route;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 
 /**
  * Contains api endpoint functions for search related tasks
  *
  * Require ROLE_ADMIN for *every* controller method in this class.
  *
- * @IsGranted("ROLE_USER")
  */
 class SearchController extends Controller
 {
@@ -38,14 +35,6 @@ class SearchController extends Controller
         $this->searchService = $searchService;
     }
 
-    /**
-     * Performs a database search based on query parameters in the get request
-     * Returns array of search results
-     *
-     * @Route("/api/admin/search/{query}", name="api_admin_search", methods={"GET"})
-     * @param string $query
-     * @return \Symfony\Component\HttpFoundation\JsonResponse
-     */
     public function search(string $query)
     {
         $searchArray = $this->searchService->performSearch($query);

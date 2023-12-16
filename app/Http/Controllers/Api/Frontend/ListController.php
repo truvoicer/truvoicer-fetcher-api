@@ -2,8 +2,7 @@
 namespace App\Http\Controllers\Api\Frontend;
 
 use App\Http\Controllers\Controller;
-use App\Entity\Category;
-use App\Entity\Service;
+use App\Models\Category;
 use App\Services\ApiServices\ApiService;
 use App\Services\ApiServices\ResponseKeysService;
 use App\Services\ApiServices\ServiceRequests\RequestConfigService;
@@ -12,15 +11,12 @@ use App\Services\Permission\AccessControlService;
 use App\Services\Provider\ProviderService;
 use App\Services\Tools\HttpRequestService;
 use App\Services\Tools\SerializerService;
-use Symfony\Component\HttpFoundation\Request;
+use Illuminate\Http\Request;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
-use Symfony\Component\Routing\Annotation\Route;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 
 /**
  * Require ROLE_ADMIN for *every* controller method in this class.
  *
- * @IsGranted("ROLE_USER")
  */
 class ListController extends Controller
 {
@@ -36,11 +32,6 @@ class ListController extends Controller
         $this->categoryService = $categoryService;
     }
 
-    /**
-     * @Route("/api/category/{category_name}/providers", name="api_get_category_provider_list", methods={"GET"})
-     * @param Category $category
-     * @return \Symfony\Component\HttpFoundation\JsonResponse
-     */
     public function getCategoryProviderList(Category $category, Request $request)
     {
         if ($category === null) {
@@ -61,9 +52,6 @@ class ListController extends Controller
      * Get a list of response keys.
      * Returns a list of response keys based on the request query parameters
      *
-     * @Route("/api/service/response/key/list", name="api_frontend_service_response_key_list", methods={"GET"})
-     * @param Request $request
-     * @return \Symfony\Component\HttpFoundation\JsonResponse
      */
     public function frontendServiceResponseKeyList(Request $request, ResponseKeysService $responseKeysService)
     {
@@ -80,9 +68,6 @@ class ListController extends Controller
      * Get a list of response keys.
      * Returns a list of response keys based on the request query parameters
      *
-     * @Route("/api/service/list", name="api_frontend_service_list", methods={"GET"})
-     * @param Request $request
-     * @return \Symfony\Component\HttpFoundation\JsonResponse
      */
     public function frontendServiceList(Request $request, ApiService $apiService)
     {

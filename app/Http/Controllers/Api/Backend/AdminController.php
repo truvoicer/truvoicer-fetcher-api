@@ -2,8 +2,7 @@
 namespace App\Http\Controllers\Api\Backend;
 
 use App\Http\Controllers\Controller;
-use App\Entity\ApiToken;
-use App\Entity\User;
+use App\Models\User;
 use App\Services\ApiServices\ServiceRequests\RequestService;
 use App\Services\Category\CategoryService;
 use App\Services\Permission\AccessControlService;
@@ -12,17 +11,14 @@ use App\Services\Tools\HttpRequestService;
 use App\Services\SecurityService;
 use App\Services\Tools\SerializerService;
 use App\Services\User\UserAdminService;
-use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\Routing\Annotation\Route;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
+use Illuminate\Http\Request;
+use Laravel\Sanctum\PersonalAccessToken;
 
 /**
  * Contains api endpoint functions for admin related tasks
  *
  * Require ROLE_ADMIN for *every* controller method in this class.
  *
- * @IsGranted("ROLE_ADMIN")
- * @Route("/api/admin/user")
  */
 class AdminController extends Controller
 {
@@ -50,9 +46,6 @@ class AdminController extends Controller
      * Gets a list of users based on the request query data
      * Returns successful json response and array of user objects
      *
-     * @Route("/list", name="api_get_users", methods={"GET"})
-     * @param Request $request
-     * @return \Symfony\Component\HttpFoundation\JsonResponse
      */
     public function getUsersList(Request $request)
     {
@@ -67,9 +60,6 @@ class AdminController extends Controller
     /**
      * Gets a single user based on the id in the request url
      *
-     * @Route("/{id}", name="api_get_single_user", methods={"GET"})
-     * @param User $user
-     * @return \Symfony\Component\HttpFoundation\JsonResponse
      */
     public function getSingleUser(User $user)
     {
@@ -79,11 +69,8 @@ class AdminController extends Controller
     /**
      * Gets a single api token based on the api token id in the request url
      *
-     * @Route("/api-token/{apiToken}/detail", name="api_get_single_api_token", methods={"GET"})
-     * @param ApiToken $apiToken
-     * @return \Symfony\Component\HttpFoundation\JsonResponse
      */
-    public function getApiToken(ApiToken $apiToken)
+    public function getApiToken(PersonalAccessToken $apiToken)
     {
         return $this->sendSuccessResponse("success", $this->serializerService->entityToArray($apiToken));
     }
@@ -91,10 +78,6 @@ class AdminController extends Controller
     /**
      * Gets a list of usee api tokens based on the user id in the request url
      *
-     * @Route("/{user}/api-tokens", name="api_get_user_api_tokens", methods={"GET"})
-     * @param User $user
-     * @param Request $request
-     * @return \Symfony\Component\HttpFoundation\JsonResponse
      */
     public function getUserApiTokens(User $user, Request $request)
     {
@@ -113,24 +96,21 @@ class AdminController extends Controller
      * Generates a new api token for a single user
      * User is based on the id in the request url
      *
-     * @Route("/{user}/api-token/generate", name="generate_user_api_token", methods={"GET"})
-     * @param User $user
-     * @return \Symfony\Component\HttpFoundation\JsonResponse
      */
     public function generateNewApiToken(User $user)
     {
         return $this->sendSuccessResponse("success",
-            $this->serializerService->entityToArray($this->userService->setApiToken($user, "user")));
+            $this->serializerService->entityToArray(
+                $this->userService->createUserToken($user)
+            )
+        );
     }
 
     /**
      * Updates a single token expiry date based on the request post data
      *
-     * @Route("/{user}/api-token/{apiToken}/update", name="user_api_token_expiry", methods={"POST"})
-     * @param Request $request
-     * @return \Symfony\Component\HttpFoundation\JsonResponse
      */
-    public function updateApiTokenExpiry(User $user, ApiToken $apiToken, Request $request)
+    public function updateApiTokenExpiry(User $user, PersonalAccessToken $apiToken, Request $request)
     {
         $requestData = $this->httpRequestService->getRequestData($request, true);
         return $this->sendSuccessResponse("Successfully updated token.",
@@ -140,11 +120,8 @@ class AdminController extends Controller
     /**
      * Delete a single api token based the request post data.
      *
-     * @Route("/{user}/api-token/{apiToken}/delete", name="user_api_token_delete", methods={"POST"})
-     * @param Request $request
-     * @return \Symfony\Component\HttpFoundation\JsonResponse
      */
-    public function deleteApiToken(User $user, ApiToken $apiToken, Request $request)
+    public function deleteApiToken(User $user, PersonalAccessToken $apiToken, Request $request)
     {
         $delete = $this->userService->deleteApiToken($apiToken);
         if (!$delete) {
@@ -156,9 +133,6 @@ class AdminController extends Controller
     /**
      * Creates a user based on the request post data
      *
-     * @param Request $request
-     * @Route("/create", name="api_create_user", methods={"POST"})
-     * @return \Symfony\Component\HttpFoundation\JsonResponse
      */
     public function createUser(Request $request) {
         $create = $this->userService->createUser(
@@ -174,9 +148,6 @@ class AdminController extends Controller
     /**
      * Updates a user based on the post request data
      *
-     * @param Request $request
-     * @Route("/{user}/update", name="api_update_user", methods={"POST"})
-     * @return \Symfony\Component\HttpFoundation\JsonResponse
      */
     public function updateUser(User $user, Request $request)
     {
@@ -193,9 +164,6 @@ class AdminController extends Controller
     /**
      * Deletes a user based on the post request data
      *
-     * @param Request $request
-     * @Route("/{user}/delete", name="api_delete_user", methods={"POST"})
-     * @return \Symfony\Component\HttpFoundation\JsonResponse
      */
     public function deleteUser(User $user, Request $request)
     {

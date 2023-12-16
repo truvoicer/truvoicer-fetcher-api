@@ -3,8 +3,8 @@
 namespace App\Http\Controllers\Api\Backend;
 
 use App\Http\Controllers\Controller;
-use App\Entity\Permission;
-use App\Entity\User;
+use App\Models\Permission;
+use App\Models\User;
 use App\Services\Category\CategoryService;
 use App\Services\Permission\AccessControlService;
 use App\Services\Permission\PermissionEntities;
@@ -12,16 +12,12 @@ use App\Services\Permission\PermissionService;
 use App\Services\Provider\ProviderService;
 use App\Services\Tools\HttpRequestService;
 use App\Services\Tools\SerializerService;
-use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\Routing\Annotation\Route;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 
 /**
  * Contains api endpoint functions for permission related tasks
  *
- * Require ROLE_ADMIN for *every* controller method in this class.
- *
- * @IsGranted("ROLE_SUPER_ADMIN")
  */
 class PermissionController extends Controller
 {
@@ -46,13 +42,6 @@ class PermissionController extends Controller
         $this->permissionService = $permissionService;
     }
 
-    /**
-     * Gets a list of providers from the database based on the get request query parameters
-     *
-     * @Route("/api/permission/provider/list", name="api_permission_get_providers", methods={"GET"})
-     * @param Request $request
-     * @return \Symfony\Component\HttpFoundation\JsonResponse
-     */
     public function getProviderList(Request $request, ProviderService $providerService)
     {
         return $this->sendSuccessResponse("success",
@@ -66,13 +55,6 @@ class PermissionController extends Controller
         );
     }
 
-    /**
-     * Gets a list of providers from the database based on the get request query parameters
-     *
-     * @Route("/api/permission/category/list", name="api_permission_get_categories", methods={"GET"})
-     * @param Request $request
-     * @return \Symfony\Component\HttpFoundation\JsonResponse
-     */
     public function getCategoryList(Request $request, CategoryService $categoryService)
     {
         return $this->sendSuccessResponse(
@@ -88,13 +70,6 @@ class PermissionController extends Controller
         );
     }
 
-    /**
-     * Gets a list of permissions from database based on the request get query parameters
-     *
-     * @Route("/api/permission/list", name="api_get_permissions", methods={"GET"})
-     * @param Request $request
-     * @return \Symfony\Component\HttpFoundation\JsonResponse
-     */
     public function getPermissions(Request $request)
     {
         $getPermissions = $this->permissionService->findByParams(
@@ -106,27 +81,12 @@ class PermissionController extends Controller
             $this->serializerService->entityArrayToArray($getPermissions));
     }
 
-    /**
-     * Gets a single permission from the database based on the get request query parameters
-     *
-     * @Route("/api/permission/{id}", name="api_get_single_permission", methods={"GET"})
-     * @param Permission $permission
-     * @return \Symfony\Component\HttpFoundation\JsonResponse
-     */
     public function getSinglePermission(Permission $permission)
     {
         return $this->sendSuccessResponse("success",
             $this->serializerService->entityToArray($permission));
     }
 
-
-    /**
-     * Gets a user mappings
-     *
-     * @Route("/api/permission/user/{id}/entity/list", name="api_get_user_entity_list", methods={"GET"})
-     * @param User $user
-     * @return \Symfony\Component\HttpFoundation\JsonResponse
-     */
     public function getProtectedEntitiesList()
     {
         return $this->sendSuccessResponse(
@@ -135,16 +95,6 @@ class PermissionController extends Controller
         );
     }
 
-    /**
-     * Gets a user mappings
-     *
-     * @Route("/api/permission/user/{user}/entity/{entity}/list", name="api_get_single_entity_permission_list", methods={"GET"})
-     * @param string $entity
-     * @param User $user
-     * @param ProviderService $providerService
-     * @param CategoryService $categoryService
-     * @return \Symfony\Component\HttpFoundation\JsonResponse
-     */
     public function getUserEntityPermissionList(string $entity, User $user)
     {
         return $this->sendSuccessResponse(
@@ -156,16 +106,6 @@ class PermissionController extends Controller
         );
     }
 
-    /**
-     * Gets a user mappings
-     *
-     * @Route("/api/permission/user/{user}/entity/{entity}/{id}", name="api_get_single_user_entity_permission", methods={"GET"})
-     * @param string $entity
-     * @param User $user
-     * @param ProviderService $providerService
-     * @param CategoryService $categoryService
-     * @return \Symfony\Component\HttpFoundation\JsonResponse
-     */
     public function getUserEntityPermission(string $entity, int $id, User $user)
     {
         return $this->sendSuccessResponse(
@@ -180,9 +120,7 @@ class PermissionController extends Controller
     /**
      * Gets a user mappings
      *
-     * @Route("/api/permission/user/{user}/entity/save", name="api_save_user_entity_permissions", methods={"POST"})
      * @param User $user
-     * @return \Symfony\Component\HttpFoundation\JsonResponse
      */
     public function saveUserEntityPermissions(User $user, Request $request)
     {
@@ -201,11 +139,9 @@ class PermissionController extends Controller
     /**
      * Gets a user mappings
      *
-     * @Route("/api/permission/user/{user}/entity/{entity}/{id}/delete", name="api_delete_entity_permissions", methods={"POST"})
      * @param string $entity
      * @param User $user
      * @param int $id
-     * @return \Symfony\Component\HttpFoundation\JsonResponse
      */
     public function deleteUserEntityPermissions(string $entity, User $user, int $id)
     {
@@ -219,8 +155,7 @@ class PermissionController extends Controller
      * Creates a new permission based on the request post data
      *
      * @param Request $request
-     * @Route("/api/permission/create", name="api_create_permission", methods={"POST"})
-     * @return \Symfony\Component\HttpFoundation\JsonResponse
+     * @return JsonResponse
      */
     public function createPermission(Request $request)
     {
@@ -237,8 +172,6 @@ class PermissionController extends Controller
      * Updates a new permission based on request post data
      *
      * @param Request $request
-     * @Route("/api/permission/{permission}/update", name="api_update_permission", methods={"POST"})
-     * @return \Symfony\Component\HttpFoundation\JsonResponse
      */
     public function updatePermission(Permission $permission, Request $request)
     {
@@ -255,8 +188,6 @@ class PermissionController extends Controller
      * Deletes a permission based on the request post data
      *
      * @param Request $request
-     * @Route("/api/permission/delete", name="api_delete_permission", methods={"POST"})
-     * @return \Symfony\Component\HttpFoundation\JsonResponse
      */
     public function deletePermission(Request $request)
     {

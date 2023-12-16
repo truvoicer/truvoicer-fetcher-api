@@ -5,6 +5,9 @@ namespace App\Http\Controllers\Api\Auth;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginRequest;
 use App\Models\User;
+use App\Services\Permission\AccessControlService;
+use App\Services\Tools\HttpRequestService;
+use App\Services\Tools\SerializerService;
 use App\Services\User\UserAdminService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -13,12 +16,20 @@ use Symfony\Component\HttpFoundation\Response;
 class AuthController extends Controller
 {
     private UserAdminService $userAdminService;
-    public function __construct(UserAdminService $userAdminService)
+    public function __construct(
+        HttpRequestService $httpRequestService,
+        SerializerService $serializerService,
+        UserAdminService $userAdminService,
+        AccessControlService $accessControlService
+    )
     {
+
+        parent::__construct($accessControlService, $httpRequestService, $serializerService);
         $this->userAdminService = $userAdminService;
     }
 
-    public function login(LoginRequest $request) {
+    public function login(LoginRequest $request): \Illuminate\Http\JsonResponse
+    {
         $user = User::where('email', $request->get('email'))->first();
         if (!$user) {
             return response()->json([
@@ -48,13 +59,14 @@ class AuthController extends Controller
         );
     }
 
-    public function validateToken() {
+    public function validateToken(): \Illuminate\Http\JsonResponse
+    {
         return $this->sendSuccessResponse(
             'Authenticated'
         );
     }
 
-    public function getSingleUserByApiToken(Request $request)
+    public function getSingleUserByApiToken(Request $request): \Illuminate\Http\JsonResponse
     {
         return $this->sendSuccessResponse("success", $request->user());
     }
@@ -75,13 +87,14 @@ class AuthController extends Controller
         return $this->sendSuccessResponse("success", $data);
     }
 
-    public function getAccountDetails(Request $request)
+    public function getAccountDetails(Request $request): \Illuminate\Http\JsonResponse
     {
         $user = $this->userAdminService->getUserByEmail($request->get("email"));
         return $this->sendSuccessResponse("Success", $user);
     }
 
-    public function newToken(Request $request) {
+    public function newToken(Request $request): \Illuminate\Http\JsonResponse
+    {
         $user = $this->userAdminService->getUserByEmail($request->get("email"));
         $token = $user->createToken('admin', ['api:superuser'])->plainTextToken;
         if (!$token) {

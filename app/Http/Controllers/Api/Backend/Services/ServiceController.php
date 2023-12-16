@@ -3,23 +3,19 @@
 namespace App\Http\Controllers\Api\Backend\Services;
 
 use App\Http\Controllers\Controller;
-use App\Entity\Service;
+use App\Models\Service;
 use App\Services\ApiServices\ApiService;
 use App\Services\Permission\AccessControlService;
 use App\Services\Tools\HttpRequestService;
 use App\Services\Provider\ProviderService;
 use App\Services\Tools\SerializerService;
-use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\Routing\Annotation\Route;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
+use Illuminate\Http\Request;
 
 /**
  * Contains Api endpoint functions for api service related operations
  *
  * Require ROLE_ADMIN for *every* controller method in this class.
  *
- * @IsGranted("ROLE_USER")
- * @Route("/api/service")
  */
 class ServiceController extends Controller
 {
@@ -50,11 +46,8 @@ class ServiceController extends Controller
      * Get service list function
      * returns a list of api services based on the request query parameters
      *
-     * @Route("/list", name="api_get_services", methods={"GET"})
-     * @param Request $request
-     * @return \Symfony\Component\HttpFoundation\JsonResponse
      */
-    public function getServices(Request $request)
+    public function getServices(Request $request): \Illuminate\Http\JsonResponse
     {
         $getServices = $this->apiServicesService->findByParams(
             $request->get('sort', "service_name"),
@@ -69,11 +62,8 @@ class ServiceController extends Controller
      * Get a single api service
      * Returns a single api service based on the id passed in the request url
      *
-     * @Route("/{id}", name="api_get_service", methods={"GET"})
-     * @param Service $service
-     * @return \Symfony\Component\HttpFoundation\JsonResponse
      */
-    public function getService(Service $service)
+    public function getService(Service $service): \Illuminate\Http\JsonResponse
     {
         return $this->sendSuccessResponse("success",
             $this->serializerService->entityToArray($service, ["single"]));
@@ -84,11 +74,8 @@ class ServiceController extends Controller
      * Returns json success message and api service data on successful creation
      * Returns error response and message on fail
      *
-     * @param Request $request
-     * @Route("/create", name="api_create_service", methods={"POST"})
-     * @return \Symfony\Component\HttpFoundation\JsonResponse
      */
-    public function createService(Request $request)
+    public function createService(Request $request): \Illuminate\Http\JsonResponse
     {
         $create = $this->apiServicesService->createService(
             $this->httpRequestService->getRequestData($request, true));
@@ -105,11 +92,8 @@ class ServiceController extends Controller
      * Returns json success message and api service data on successful update
      * Returns error response and message on fail
      *
-     * @param Request $request
-     * @Route("/{service}/update", name="api_update_service", methods={"POST"})
-     * @return \Symfony\Component\HttpFoundation\JsonResponse
      */
-    public function updateService(Service $service, Request $request)
+    public function updateService(Service $service, Request $request): \Illuminate\Http\JsonResponse
     {
         $update = $this->apiServicesService->updateService(
             $service,
@@ -127,12 +111,8 @@ class ServiceController extends Controller
      * Returns json success message and api service data on successful delete
      * Returns error response and message on fail
      *
-     * @param Service $service
-     * @param Request $request
-     * @return \Symfony\Component\HttpFoundation\JsonResponse
-     * @Route("/{service}/delete", name="api_delete_service", methods={"POST"})
      */
-    public function deleteService(Service $service, Request $request)
+    public function deleteService(Service $service, Request $request): \Illuminate\Http\JsonResponse
     {
         $delete = $this->apiServicesService->deleteService($service);
         if (!$delete) {

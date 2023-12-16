@@ -2,27 +2,24 @@
 namespace App\Http\Controllers\Api\Backend\Services;
 
 use App\Http\Controllers\Controller;
-use App\Entity\Provider;
-use App\Entity\ServiceRequest;
-use App\Entity\ServiceRequestParameter;
+use App\Models\Provider;
+use App\Models\ServiceRequest;
+use App\Models\ServiceRequestParameter;
 use App\Services\ApiServices\ApiService;
+use App\Services\Auth\AuthService;
 use App\Services\Permission\AccessControlService;
 use App\Services\Permission\PermissionService;
 use App\Services\Tools\HttpRequestService;
 use App\Services\Provider\ProviderService;
 use App\Services\ApiServices\ServiceRequests\RequestParametersService;
 use App\Services\Tools\SerializerService;
-use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\Routing\Annotation\Route;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
+use Illuminate\Http\Request;
 
 /**
  * Contains Api endpoint functions for api service request parameter related operations
  *
  * Require ROLE_ADMIN for *every* controller method in this class.
  *
- * @IsGranted("ROLE_USER")
- * @Route("/api/provider/{provider}/service/request/{serviceRequest}/parameter")
  */
 class ServiceRequestParameterController extends Controller
 {
@@ -59,9 +56,6 @@ class ServiceRequestParameterController extends Controller
      * Get a list of service request parameters.
      * Returns a list of service request parameters based on the request query parameters
      *
-     * @Route("/list", name="api_get_service_request_parameter_list", methods={"GET"})
-     * @param Request $request
-     * @return \Symfony\Component\HttpFoundation\JsonResponse
      */
     public function getServiceRequestParameterList(Provider $provider, ServiceRequest $serviceRequest, Request $request)
     {
@@ -74,8 +68,8 @@ class ServiceRequestParameterController extends Controller
             ],
             false
         );
-        if ($this->isGranted('ROLE_SUPER_ADMIN') ||
-            $this->isGranted('ROLE_ADMIN') ||
+        if ($request->user()->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_SUPERUSER)) ||
+            $request->user()->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_ADMIN)) ||
             $isPermitted
         ) {
             $findRequestParameters = $this->requestParametersService->findByParams(
@@ -93,13 +87,10 @@ class ServiceRequestParameterController extends Controller
      * Get a single service request parameter
      * Returns a single service request parameter based on the id passed in the request url
      *
-     * @Route("/list/single", name="api_get_single_service_request_parameter", methods={"GET"})
-     * @param ServiceRequest $serviceRequest
-     * @return \Symfony\Component\HttpFoundation\JsonResponse
      */
-    public function getSingleServiceRequestParameters(Provider $provider, ServiceRequest $serviceRequest)
+    public function getSingleServiceRequestParameters(Provider $provider, ServiceRequest $serviceRequest, Request $request)
     {
-        if (!$this->isGranted('ROLE_SUPER_ADMIN') && !$this->isGranted('ROLE_ADMIN')) {
+        if (!$request->user()->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_SUPERUSER)) && !$request->user()->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_ADMIN))) {
             $this->accessControlService->checkPermissionsForEntity(
                 self::DEFAULT_ENTITY, $provider, $request->user(),
                 [
@@ -116,13 +107,10 @@ class ServiceRequestParameterController extends Controller
      * Get a single service request parameter
      * Returns a single service request parameter based on the id passed in the request url
      *
-     * @Route("/{serviceRequestParameter}", name="api_get_service_request_parameter", methods={"GET"})
-     * @param ServiceRequestParameter $serviceRequestParameter
-     * @return \Symfony\Component\HttpFoundation\JsonResponse
      */
-    public function getServiceRequestParameter(Provider $provider, ServiceRequestParameter $serviceRequestParameter)
+    public function getServiceRequestParameter(Provider $provider, ServiceRequestParameter $serviceRequestParameter, Request $request)
     {
-        if (!$this->isGranted('ROLE_SUPER_ADMIN') && !$this->isGranted('ROLE_ADMIN')) {
+        if (!$request->user()->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_SUPERUSER)) && !$request->user()->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_ADMIN))) {
             $this->accessControlService->checkPermissionsForEntity(
                 self::DEFAULT_ENTITY, $provider, $request->user(),
                 [
@@ -141,13 +129,10 @@ class ServiceRequestParameterController extends Controller
      * Returns json success message and api service request data on successful creation
      * Returns error response and message on fail
      *
-     * @param Request $request
-     * @Route("/create", name="api_create_service_request_parameter", methods={"POST"})
-     * @return \Symfony\Component\HttpFoundation\JsonResponse
      */
     public function createServiceRequestParameter(Provider $provider, ServiceRequest $serviceRequest, Request $request) {
 
-        if (!$this->isGranted('ROLE_SUPER_ADMIN') && !$this->isGranted('ROLE_ADMIN')) {
+        if (!$request->user()->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_SUPERUSER)) && !$request->user()->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_ADMIN))) {
             $this->accessControlService->checkPermissionsForEntity(
                 self::DEFAULT_ENTITY, $provider, $request->user(),
                 [
@@ -171,13 +156,10 @@ class ServiceRequestParameterController extends Controller
      * Returns json success message and api service request parameter data on successful update
      * Returns error response and message on fail
      *
-     * @param Request $request
-     * @Route("/{serviceRequestParameter}/update", name="api_update_service_request_parameter", methods={"POST"})
-     * @return \Symfony\Component\HttpFoundation\JsonResponse
      */
     public function updateServiceRequestParameter(Provider $provider, ServiceRequest $serviceRequest, ServiceRequestParameter $serviceRequestParameter, Request $request)
     {
-        if (!$this->isGranted('ROLE_SUPER_ADMIN') && !$this->isGranted('ROLE_ADMIN')) {
+        if (!$request->user()->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_SUPERUSER)) && !$request->user()->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_ADMIN))) {
             $this->accessControlService->checkPermissionsForEntity(
                 self::DEFAULT_ENTITY, $provider, $request->user(),
                 [
@@ -200,13 +182,10 @@ class ServiceRequestParameterController extends Controller
      * Returns json success message and api service request parameter data on successful delete
      * Returns error response and message on fail
      *
-     * @param Request $request
-     * @Route("/{serviceRequestParameter}/delete", name="api_delete_service_request_parameter", methods={"POST"})
-     * @return \Symfony\Component\HttpFoundation\JsonResponse
      */
     public function deleteServiceRequestParameter(Provider $provider, ServiceRequestParameter $serviceRequestParameter, Request $request)
     {
-        if (!$this->isGranted('ROLE_SUPER_ADMIN') && !$this->isGranted('ROLE_ADMIN')) {
+        if (!$request->user()->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_SUPERUSER)) && !$request->user()->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_ADMIN))) {
             $this->accessControlService->checkPermissionsForEntity(
                 self::DEFAULT_ENTITY, $provider, $request->user(),
                 [

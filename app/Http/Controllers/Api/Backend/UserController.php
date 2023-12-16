@@ -2,8 +2,6 @@
 namespace App\Http\Controllers\Api\Backend;
 
 use App\Http\Controllers\Controller;
-use App\Entity\ApiToken;
-use App\Entity\User;
 use App\Services\ApiServices\ServiceRequests\RequestService;
 use App\Services\Category\CategoryService;
 use App\Services\Permission\AccessControlService;
@@ -13,17 +11,14 @@ use App\Services\Tools\HttpRequestService;
 use App\Services\SecurityService;
 use App\Services\Tools\SerializerService;
 use App\Services\User\UserAdminService;
+use Illuminate\Http\Request;
 use Laravel\Sanctum\PersonalAccessToken;
-use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\Routing\Annotation\Route;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 
 /**
  * Contains api endpoint functions for admin related tasks
  *
  * Require ROLE_ADMIN for *every* controller method in this class.
  *
- * @IsGranted("ROLE_USER")
  */
 class UserController extends Controller
 {
@@ -55,13 +50,6 @@ class UserController extends Controller
         );
     }
 
-    /**
-     * Gets a user mappings
-     *
-     * @Route("/api/user/permission/entity/list", name="api_get_session_user_entity_list", methods={"GET"})
-     * @param User $user
-     * @return \Symfony\Component\HttpFoundation\JsonResponse
-     */
     public function getProtectedEntitiesList()
     {
         return $this->sendSuccessResponse(
@@ -122,29 +110,15 @@ class UserController extends Controller
         );
     }
 
-    /**
-     * Generates a new api token for a single user
-     * User is based on the id in the request url
-     *
-     * @Route("/api/user/api-token/generate", name="generate_session_user_api_token", methods={"GET"})
-     * @return \Symfony\Component\HttpFoundation\JsonResponse
-     */
-    public function generateSessionUserApiToken()
+    public function generateSessionUserApiToken(Request $request)
     {
         return $this->sendSuccessResponse("success",
             $this->serializerService->entityToArray(
-                $this->userService->setApiToken($request->user(), "user")
+                $this->userService->createUserToken($request->user())
             )
         );
     }
 
-    /**
-     * Delete a single api token based the request post data.
-     *
-     * @Route("/api/user/api-token/delete", name="session_user_api_token_delete", methods={"POST"})
-     * @param Request $request
-     * @return \Symfony\Component\HttpFoundation\JsonResponse
-     */
     public function deleteSessionUserApiToken(Request $request)
     {
         $requestData = $this->httpRequestService->getRequestData($request, true);
@@ -161,17 +135,9 @@ class UserController extends Controller
         }
         return $this->sendSuccessResponse("Api Token deleted.", $this->serializerService->entityToArray($delete, ['main']));
     }
-
-    /**
-     * Updates a user based on the post request data
-     *
-     * @param Request $request
-     * @Route("/api/user/update", name="api_update_session_user", methods={"POST"})
-     * @return \Symfony\Component\HttpFoundation\JsonResponse
-     */
     public function updateSessionUser(Request $request)
     {
-        $update = $this->userService->updateSessionUser(
+        $update = $this->userService->updateUser(
             $request->user(),
             $this->httpRequestService->getRequestData($request, true));
         if(!$update) {

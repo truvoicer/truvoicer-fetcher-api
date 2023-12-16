@@ -3,23 +3,16 @@
 namespace App\Http\Controllers\Api\Backend;
 
 use App\Http\Controllers\Controller;
-use App\Entity\Property;
-use App\Repository\PropertyRepository;
+use App\Models\Property;
+use App\Repositories\PropertyRepository;
 use App\Services\Permission\AccessControlService;
 use App\Services\Tools\HttpRequestService;
 use App\Services\Property\PropertyService;
 use App\Services\Tools\SerializerService;
-use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\Routing\Annotation\Route;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
+use Illuminate\Http\Request;
 
 /**
  * Contains api endpoint functions for properties related tasks
- *
- * Require ROLE_ADMIN for *every* controller method in this class.
- *
- * @IsGranted("ROLE_ADMIN")
- * @Route("/api/property")
  */
 class PropertyController extends Controller
 {
@@ -46,14 +39,6 @@ class PropertyController extends Controller
         $this->propertyService = $propertyService;
     }
 
-    /**
-     * Gets a list of properties from the database based on
-     * the get request query parameters
-     *
-     * @Route("/list", name="api_get_properties", methods={"GET"})
-     * @param Request $request
-     * @return \Symfony\Component\HttpFoundation\JsonResponse
-     */
     public function getPropertyList(Request $request)
     {
         $properties = [];
@@ -71,26 +56,12 @@ class PropertyController extends Controller
         );
     }
 
-    /**
-     * Gets a single property from the database based on the get request query parameters
-     *
-     * @Route("/{id}", name="api_get_property", methods={"GET"})
-     * @param Property $property
-     * @return \Symfony\Component\HttpFoundation\JsonResponse
-     */
     public function getProperty(Property $property)
     {
         return $this->sendSuccessResponse("success",
             $this->serializerService->entityToArray($property, ["main"]));
     }
 
-    /**
-     * Updates a property in the database based on the post request data
-     *
-     * @param Request $request
-     * @Route("/{property}/update", name="api_update_property", methods={"POST"})
-     * @return \Symfony\Component\HttpFoundation\JsonResponse
-     */
     public function updateProperty(Property $property, Request $request)
     {
         $requestData = $this->httpRequestService->getRequestData($request, true);
@@ -102,13 +73,6 @@ class PropertyController extends Controller
         return $this->sendSuccessResponse("Property updated", $this->serializerService->entityToArray($updateProperty, ['main']));
     }
 
-    /**
-     * Creates a property in the database based on the post request data
-     *
-     * @param Request $request
-     * @Route("/create", name="api_create_property", methods={"POST"})
-     * @return \Symfony\Component\HttpFoundation\JsonResponse
-     */
     public function createProperty(Request $request)
     {
         $requestData = $this->httpRequestService->getRequestData($request, true);
@@ -120,14 +84,6 @@ class PropertyController extends Controller
         return $this->sendSuccessResponse("Property created", $this->serializerService->entityToArray($createProperty, ['main']));
     }
 
-
-    /**
-     * Deletes a property in the database based on the post request data
-     *
-     * @Route("/{property}/delete", name="api_delete_property", methods={"POST"})
-     * @param Request $request
-     * @return \Symfony\Component\HttpFoundation\JsonResponse
-     */
     public function deleteProperty(Property $property, Request $request)
     {
         $delete = $this->propertyService->deleteProperty($property);

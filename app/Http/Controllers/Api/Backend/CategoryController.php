@@ -3,23 +3,20 @@
 namespace App\Http\Controllers\Api\Backend;
 
 use App\Http\Controllers\Controller;
-use App\Entity\Category;
+use App\Models\Category;
+use App\Services\Auth\AuthService;
 use App\Services\Permission\AccessControlService;
 use App\Services\Permission\PermissionService;
 use App\Services\Tools\HttpRequestService;
 use App\Services\Category\CategoryService;
 use App\Services\Tools\SerializerService;
-use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\Routing\Annotation\Route;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
+use Illuminate\Http\Request;
 
 /**
  * Contains api endpoint functions for category related tasks
  *
  * Require ROLE_ADMIN for *every* controller method in this class.
  *
- * @IsGranted("ROLE_USER")
- * @Route("/api/category")
  */
 class CategoryController extends Controller
 {
@@ -50,13 +47,11 @@ class CategoryController extends Controller
     /**
      * Gets a list of categories from database based on the request get query parameters
      *
-     * @Route("/list", name="api_get_categories", methods={"GET"})
      * @param Request $request
-     * @return \Symfony\Component\HttpFoundation\JsonResponse
      */
     public function getCategories(Request $request)
     {
-        if ($this->isGranted('ROLE_SUPER_ADMIN') || $this->isGranted('ROLE_ADMIN')) {
+        if ($request->user()->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_SUPERUSER)) || $request->user()->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_ADMIN))) {
             $categories = $this->categoryService->getCategoryList(
                 $request->get('sort', "category_name"),
                 $request->get('order', "asc"),
@@ -78,13 +73,10 @@ class CategoryController extends Controller
     /**
      * Gets a single category from the database based on the get request query parameters
      *
-     * @Route("/{category}", name="api_get_single_category", methods={"GET"})
-     * @param Category $category
-     * @return \Symfony\Component\HttpFoundation\JsonResponse
      */
-    public function getSingleCategory(Category $category)
+    public function getSingleCategory(Category $category, Request $request)
     {
-        if (!$this->isGranted('ROLE_SUPER_ADMIN') && !$this->isGranted('ROLE_ADMIN')) {
+        if (!$request->user()->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_SUPERUSER)) && !$request->user()->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_ADMIN))) {
             $this->accessControlService->checkPermissionsForEntity(
                 self::DEFAULT_ENTITY, $category, $request->user(),
                 [
@@ -97,13 +89,6 @@ class CategoryController extends Controller
             $this->serializerService->entityToArray($category));
     }
 
-    /**
-     * Creates a new category based on the request post data
-     *
-     * @param Request $request
-     * @Route("/create", name="api_create_category", methods={"POST"})
-     * @return \Symfony\Component\HttpFoundation\JsonResponse
-     */
     public function createCategory(Request $request)
     {
         $requestData = $this->httpRequestService->getRequestData($request, true);
@@ -115,16 +100,9 @@ class CategoryController extends Controller
             $this->serializerService->entityToArray($create));
     }
 
-    /**
-     * Updates a new category based on request post data
-     *
-     * @param Request $request
-     * @Route("/{category}/update", name="api_update_category", methods={"POST"})
-     * @return \Symfony\Component\HttpFoundation\JsonResponse
-     */
     public function updateCategory(Category $category, Request $request)
     {
-        if (!$this->isGranted('ROLE_SUPER_ADMIN') && !$this->isGranted('ROLE_ADMIN')) {
+        if (!$request->user()->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_SUPERUSER)) && !$request->user()->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_ADMIN))) {
             $this->accessControlService->checkPermissionsForEntity(
                 self::DEFAULT_ENTITY, $category, $request->user(),
                 [
@@ -142,16 +120,9 @@ class CategoryController extends Controller
             $this->serializerService->entityToArray($create));
     }
 
-    /**
-     * Deletes a category based on the request post data
-     *
-     * @param Request $request
-     * @Route("/{category}/delete", name="api_delete_category", methods={"POST"})
-     * @return \Symfony\Component\HttpFoundation\JsonResponse
-     */
     public function deleteCategory(Category $category, Request $request)
     {
-        if (!$this->isGranted('ROLE_SUPER_ADMIN') && !$this->isGranted('ROLE_ADMIN')) {
+        if (!$request->user()->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_SUPERUSER)) && !$request->user()->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_ADMIN))) {
             $this->accessControlService->checkPermissionsForEntity(
                 self::DEFAULT_ENTITY, $category, $request->user(),
                 [

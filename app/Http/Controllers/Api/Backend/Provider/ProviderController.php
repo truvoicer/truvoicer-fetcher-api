@@ -3,25 +3,21 @@
 namespace App\Http\Controllers\Api\Backend\Provider;
 
 use App\Http\Controllers\Controller;
-use App\Entity\Property;
-use App\Entity\Provider;
-use App\Repository\ProviderRepository;
+use App\Models\Provider;
+use App\Repositories\ProviderRepository;
+use App\Services\Auth\AuthService;
 use App\Services\Permission\AccessControlService;
 use App\Services\Permission\PermissionService;
 use App\Services\Tools\HttpRequestService;
 use App\Services\Provider\ProviderService;
 use App\Services\Tools\SerializerService;
-use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\Routing\Annotation\Route;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
+use Illuminate\Http\Request;
 
 /**
  * Contains api endpoint functions for provider related tasks
  *
  * Require ROLE_ADMIN for *every* controller method in this class.
  *
- * @IsGranted("ROLE_USER")
- * @Route("/api/provider")
  */
 class ProviderController extends Controller
 {
@@ -53,13 +49,14 @@ class ProviderController extends Controller
     /**
      * Gets a list of providers from the database based on the get request query parameters
      *
-     * @Route("/list", name="api_get_providers", methods={"GET"})
-     * @param Request $request
-     * @return \Symfony\Component\HttpFoundation\JsonResponse
      */
-    public function getProviderList(Request $request)
+    public function getProviderList(Request $request): \Illuminate\Http\JsonResponse
     {
-        if ($this->isGranted('ROLE_SUPER_ADMIN') || $this->isGranted('ROLE_ADMIN')) {
+        $user = $request->user();
+        if (
+            $user->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_SUPERUSER)) ||
+            $user->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_ADMIN))
+        ) {
             $providers = $this->providerService->getProviderList(
                 $request->get('sort', "provider_name"),
                 $request->get('order', "asc"),
@@ -83,13 +80,10 @@ class ProviderController extends Controller
     /**
      * Gets a single provider from the database based on the id in the get request url
      *
-     * @Route("/{provider}", name="api_get_provider", methods={"GET"})
-     * @param Provider $provider
-     * @return \Symfony\Component\HttpFoundation\JsonResponse
      */
-    public function getProvider(Provider $provider)
+    public function getProvider(Provider $provider, Request $request): \Illuminate\Http\JsonResponse
     {
-        if (!$this->isGranted('ROLE_SUPER_ADMIN') && !$this->isGranted('ROLE_ADMIN')) {
+        if (!$request->user()->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_SUPERUSER)) && !$request->user()->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_ADMIN))) {
             $this->accessControlService->checkPermissionsForEntity(
                 self::DEFAULT_ENTITY, $provider, $request->user(),
                 [
@@ -105,11 +99,8 @@ class ProviderController extends Controller
     /**
      * Creates a provider in the database based on the post request data
      *
-     * @param Request $request
-     * @Route("/create", name="api_create_provider", methods={"POST"})
-     * @return \Symfony\Component\HttpFoundation\JsonResponse
      */
-    public function createProvider(Request $request)
+    public function createProvider(Request $request): \Illuminate\Http\JsonResponse
     {
         $createProvider = $this->providerService->createProvider(
             $this->httpRequestService->getRequestData($request, true));
@@ -125,13 +116,10 @@ class ProviderController extends Controller
     /**
      * Updates a provider in the database based on the post request data
      *
-     * @param Request $request
-     * @Route("/{provider}/update", name="api_update_provider", methods={"POST"})
-     * @return \Symfony\Component\HttpFoundation\JsonResponse
      */
-    public function updateProvider(Provider $provider, Request $request)
+    public function updateProvider(Provider $provider, Request $request): \Illuminate\Http\JsonResponse
     {
-        if (!$this->isGranted('ROLE_SUPER_ADMIN') && !$this->isGranted('ROLE_ADMIN')) {
+        if (!$request->user()->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_SUPERUSER)) && !$request->user()->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_ADMIN))) {
             $this->accessControlService->checkPermissionsForEntity(
                 self::DEFAULT_ENTITY, $provider, $request->user(),
                 [
@@ -155,13 +143,10 @@ class ProviderController extends Controller
     /**
      * Deletes a provider in the database based on the post request data
      *
-     * @param Request $request
-     * @return \Symfony\Component\HttpFoundation\JsonResponse
-     * @Route("/{provider}/delete", name="api_delete_provider", methods={"POST"})
      */
-    public function deleteProvider(Provider $provider, Request $request)
+    public function deleteProvider(Provider $provider, Request $request): \Illuminate\Http\JsonResponse
     {
-        if (!$this->isGranted('ROLE_SUPER_ADMIN') && !$this->isGranted('ROLE_ADMIN')) {
+        if (!$request->user()->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_SUPERUSER)) && !$request->user()->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_ADMIN))) {
             $this->accessControlService->checkPermissionsForEntity(
                 self::DEFAULT_ENTITY, $provider, $request->user(),
                 [

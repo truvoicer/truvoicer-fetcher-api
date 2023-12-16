@@ -2,15 +2,9 @@
 
 namespace App\Services\ApiServices\ServiceRequests;
 
-use App\Models\Category;
 use App\Models\Service;
 use App\Models\Provider;
 use App\Models\ServiceRequest;
-use App\Models\ServiceRequestConfig;
-use App\Models\ServiceRequestParameter;
-use App\Models\ServiceRequestResponseKey;
-use App\Models\ServiceResponseKey;
-use App\Models\UserServiceRequest;
 use App\Repositories\CategoryRepository;
 use App\Repositories\ServiceRepository;
 use App\Repositories\ServiceRequestConfigRepository;
@@ -23,31 +17,26 @@ use App\Services\BaseService;
 use App\Services\Provider\ProviderService;
 use App\Services\Tools\HttpRequestService;
 use App\Services\Tools\UtilsService;
-use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
-use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 
 class RequestService extends BaseService
 {
-    private $entityManager;
-    private $httpRequestService;
-    private $providerService;
-    private $serviceRepository;
-    private $serviceRequestRepository;
-    private $requestParametersRepo;
-    private $requestConfigRepo;
-    private $responseKeysRepo;
-    private $requestConfigService;
-    private $requestParametersService;
-    private $apiService;
+    private HttpRequestService $httpRequestService;
+    private ProviderService $providerService;
+    private ServiceRepository $serviceRepository;
+    private ServiceRequestRepository $serviceRequestRepository;
+    private ServiceRequestParameterRepository $requestParametersRepo;
+    private ServiceRequestConfigRepository $requestConfigRepo;
+    private ServiceResponseKeyRepository $responseKeysRepo;
+    private RequestConfigService $requestConfigService;
+    private RequestParametersService $requestParametersService;
+    private ApiService $apiService;
 
-    public function __construct(EntityManagerInterface $entityManager, HttpRequestService $httpRequestService,
+    public function __construct(HttpRequestService $httpRequestService,
                                 ProviderService $providerService, RequestConfigService $requestConfigService,
-                                RequestParametersService $requestParametersService, ApiService $apiService,
-                                TokenStorageInterface $tokenStorage)
+                                RequestParametersService $requestParametersService, ApiService $apiService
+    )
     {
-        parent::__construct($tokenStorage);
-        $this->entityManager = $entityManager;
         $this->httpRequestService = $httpRequestService;
         $this->providerService = $providerService;
         $this->apiService = $apiService;

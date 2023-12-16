@@ -2,25 +2,21 @@
 namespace App\Http\Controllers\Api\Backend\Services;
 
 use App\Http\Controllers\Controller;
-use App\Entity\Service;
-use App\Entity\ServiceResponseKey;
+use App\Models\Service;
+use App\Models\ServiceResponseKey;
 use App\Services\ApiServices\ApiService;
 use App\Services\Permission\AccessControlService;
 use App\Services\Tools\HttpRequestService;
 use App\Services\Provider\ProviderService;
 use App\Services\ApiServices\ResponseKeysService;
 use App\Services\Tools\SerializerService;
-use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\Routing\Annotation\Route;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
+use Illuminate\Http\Request;
 
 /**
  * Contains Api endpoint functions for api service response keys related operations
  *
  * Require ROLE_ADMIN for *every* controller method in this class.
  *
- * @IsGranted("ROLE_USER")
- * @Route("/api/service/{service}/response/key")
  */
 class ServiceResponseKeyController extends Controller
 {
@@ -55,9 +51,6 @@ class ServiceResponseKeyController extends Controller
      * Get a list of response keys.
      * Returns a list of response keys based on the request query parameters
      *
-     * @Route("/list", name="api_get_service_response_key_list", methods={"GET"})
-     * @param Request $request
-     * @return \Symfony\Component\HttpFoundation\JsonResponse
      */
     public function getServiceResponseKeyList(Service $service, Request $request)
     {
@@ -66,18 +59,18 @@ class ServiceResponseKeyController extends Controller
             $responseKeys = $this->responseKeysService->getResponseKeysByServiceId($data['service_id']);
         } elseif (isset($data["service_name"])) {
             $responseKeys = $this->responseKeysService->getResponseKeysByServiceName($data['service_name']);
+        } else {
+            return $this->sendErrorResponse("Error service id or name not in request",);
         }
         return $this->sendSuccessResponse("success",
-            $this->serializerService->entityArrayToArray($responseKeys, ["list"]));
+            $this->serializerService->entityArrayToArray($responseKeys, ["list"])
+        );
     }
 
     /**
      * Get a single service response key
      * Returns a single service response key based on the id passed in the request url
      *
-     * @Route("/{id}", name="api_get_service_response_key", methods={"GET"})
-     * @param ServiceResponseKey $serviceResponseKey
-     * @return \Symfony\Component\HttpFoundation\JsonResponse
      */
     public function getServiceResponseKey(ServiceResponseKey $serviceResponseKey)
     {
@@ -90,9 +83,6 @@ class ServiceResponseKeyController extends Controller
      * Returns json success message and api service response key data on successful creation
      * Returns error response and message on fail
      *
-     * @param Request $request
-     * @Route("/create", name="api_create_service_response_key", methods={"POST"})
-     * @return \Symfony\Component\HttpFoundation\JsonResponse
      */
     public function createServiceResponseKey(Request $request) {
         $create = $this->responseKeysService->createServiceResponseKeys(
@@ -110,9 +100,6 @@ class ServiceResponseKeyController extends Controller
      * Returns json success message and api service response key data on successful update
      * Returns error response and message on fail
      *
-     * @param Request $request
-     * @Route("/{serviceResponseKey}/update", name="api_update_service_response_key", methods={"POST"})
-     * @return \Symfony\Component\HttpFoundation\JsonResponse
      */
     public function updateServiceResponseKey(ServiceResponseKey $serviceResponseKey, Request $request)
     {
@@ -132,9 +119,6 @@ class ServiceResponseKeyController extends Controller
      * Returns json success message and api service response key data on successful delete
      * Returns error response and message on fail
      *
-     * @param Request $request
-     * @Route("/{serviceResponseKey}/delete", name="api_delete_service_response_key", methods={"POST"})
-     * @return \Symfony\Component\HttpFoundation\JsonResponse
      */
     public function deleteServiceResponseKey(ServiceResponseKey $serviceResponseKey, Request $request)
     {

@@ -2,31 +2,27 @@
 namespace App\Http\Controllers\Api\Backend\Services;
 
 use App\Http\Controllers\Controller;
-use App\Entity\Provider;
-use App\Entity\Service;
-use App\Entity\ServiceRequest;
+use App\Models\Provider;
+use App\Models\Service;
+use App\Models\ServiceRequest;
 use App\Services\ApiManager\Operations\RequestOperation;
 use App\Services\ApiServices\ApiService;
+use App\Services\Auth\AuthService;
 use App\Services\Permission\AccessControlService;
 use App\Services\Permission\PermissionService;
 use App\Services\Tools\HttpRequestService;
 use App\Services\Provider\ProviderService;
 use App\Services\ApiServices\ServiceRequests\RequestService;
 use App\Services\Tools\SerializerService;
+use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\JsonResponse;
-use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\Routing\Annotation\Route;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 
 /**
  * Contains Api endpoint functions for api service related request operations
  *
  * Require ROLE_ADMIN for *every* controller method in this class.
  *
- * @IsGranted("ROLE_USER")
- *
- * @Route("/api/provider/{provider}/service/request")
  */
 class ServiceRequestController extends Controller
 {
@@ -63,20 +59,17 @@ class ServiceRequestController extends Controller
      * Get list of service requests function
      * Returns a list of service requests based on the request query parameters
      *
-     * @Route("/list", name="api_get_service_request_list", methods={"GET"})
-     * @param Request $request
-     * @return JsonResponse
      */
-    public function getServiceRequestList(Provider $provider, Request $request)
+    public function getServiceRequestList(Provider $provider, Request $request): \Illuminate\Http\JsonResponse
     {
-        $getServices = $this->requestService->getUserAdminServiceRequestByProvider(
+        $getServices = $this->requestService->getUserServiceRequestByProvider(
             $provider,
             $request->get('sort', "service_request_name"),
             $request->get('order', "asc"),
             (int) $request->get('count', null)
         );
 
-        if ($this->isGranted('ROLE_SUPER_ADMIN') || $this->isGranted('ROLE_ADMIN')) {
+        if ($request->user()->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_SUPERUSER)) || $request->user()->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_ADMIN))) {
             return $this->sendSuccessResponse("success",
                 $this->serializerService->entityArrayToArray($getServices, ["list"])
             );
@@ -98,14 +91,11 @@ class ServiceRequestController extends Controller
      * Get a provider service request based on the provider and service in the request data
      * Returns a single provider service request
      *
-     * @Route("/service/{service}", name="api_get_provider_service_request", methods={"GET"})
-     * @param Request $request
-     * @return JsonResponse
      */
-    public function getProviderServiceRequest(Provider $provider, Service $service, Request $request)
+    public function getProviderServiceRequest(Provider $provider, Service $service, Request $request): \Illuminate\Http\JsonResponse
     {
         $data = $request->query->all();
-        if (!$this->isGranted('ROLE_SUPER_ADMIN') && !$this->isGranted('ROLE_ADMIN')) {
+        if (!$request->user()->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_SUPERUSER)) && !$request->user()->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_ADMIN))) {
             $this->accessControlService->checkPermissionsForEntity(
                 self::DEFAULT_ENTITY, $provider, $request->user(),
                 [
@@ -127,13 +117,14 @@ class ServiceRequestController extends Controller
      * Returns json success message and api service request data on successful creation
      * Returns error response and message on fail
      *
+     * @param Provider $provider
      * @param Request $request
-     * @Route("/create", name="api_create_service_request", methods={"POST"})
      * @return JsonResponse
      */
-    public function createServiceRequest(Provider $provider, Request $request) {
+    public function createServiceRequest(Provider $provider, Request $request): JsonResponse
+    {
         $data = $this->httpRequestService->getRequestData($request, true);
-        if (!$this->isGranted('ROLE_SUPER_ADMIN') && !$this->isGranted('ROLE_ADMIN')) {
+        if (!$request->user()->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_SUPERUSER)) && !$request->user()->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_ADMIN))) {
             $this->accessControlService->checkPermissionsForEntity(
                 self::DEFAULT_ENTITY, $provider, $request->user(),
                 [
@@ -155,14 +146,11 @@ class ServiceRequestController extends Controller
      * Returns json success message and api service request data on successful update
      * Returns error response and message on fail
      *
-     * @param Request $request
-     * @Route("/{serviceRequest}/update", name="api_update_service_request", methods={"POST"})
-     * @return JsonResponse
      */
-    public function updateServiceRequest(Provider $provider, ServiceRequest $serviceRequest, Request $request)
+    public function updateServiceRequest(Provider $provider, ServiceRequest $serviceRequest, Request $request): \Illuminate\Http\JsonResponse
     {
         $data = $this->httpRequestService->getRequestData($request, true);
-        if (!$this->isGranted('ROLE_SUPER_ADMIN') && !$this->isGranted('ROLE_ADMIN')) {
+        if (!$request->user()->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_SUPERUSER)) && !$request->user()->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_ADMIN))) {
             $this->accessControlService->checkPermissionsForEntity(
                 self::DEFAULT_ENTITY, $provider, $request->user(),
                 [
@@ -188,13 +176,10 @@ class ServiceRequestController extends Controller
      * - provider
      * - (Parameters set for the provider service request)
      *
-     * @param RequestOperation $requestOperation
-     * @param Request $request
-     * @return JsonResponse
-     * @Route("/test-run", name="run_service_api_request", methods={"GET"})
      */
-    public function runApiRequest(Provider $provider, RequestOperation $requestOperation, Request $request) {
-        if (!$this->isGranted('ROLE_SUPER_ADMIN') && !$this->isGranted('ROLE_ADMIN')) {
+    public function runApiRequest(Provider $provider, RequestOperation $requestOperation, Request $request): JsonResponse|\Illuminate\Http\JsonResponse
+    {
+        if (!$request->user()->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_SUPERUSER)) && !$request->user()->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_ADMIN))) {
             $this->accessControlService->checkPermissionsForEntity(
                 self::DEFAULT_ENTITY, $provider, $request->user(),
                 [
@@ -205,7 +190,7 @@ class ServiceRequestController extends Controller
         }
         $data = $request->query->all();
 
-        if (!isset($data["request_type"]) || $data["request_type"] === null || $data["request_type"] === "") {
+        if (empty($data["request_type"])) {
             return $this->sendErrorResponse("Api request type not found in the request.");
         }
 
@@ -221,13 +206,10 @@ class ServiceRequestController extends Controller
     /**
      * Duplicate a providers' service request
      *
-     * @param Request $request
-     * @Route("/{serviceRequest}/duplicate", name="api_duplicate_service_request", methods={"POST"})
-     * @return JsonResponse
      */
-    public function duplicateServiceRequest(Provider $provider, ServiceRequest $serviceRequest, Request $request)
+    public function duplicateServiceRequest(Provider $provider, ServiceRequest $serviceRequest, Request $request): \Illuminate\Http\JsonResponse
     {
-        if (!$this->isGranted('ROLE_SUPER_ADMIN') && !$this->isGranted('ROLE_ADMIN')) {
+        if (!$request->user()->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_SUPERUSER)) && !$request->user()->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_ADMIN))) {
             $this->accessControlService->checkPermissionsForEntity(
                 self::DEFAULT_ENTITY, $provider, $request->user(),
                 [
@@ -251,13 +233,10 @@ class ServiceRequestController extends Controller
     /**
      * Merge a providers' service request response keys
      *
-     * @param Request $request
-     * @Route("/response-keys/merge", name="api_merge_service_request_response_keys", methods={"POST"})
-     * @return JsonResponse
      */
-    public function mergeServiceRequestResponseKeys(Provider $provider, Request $request)
+    public function mergeServiceRequestResponseKeys(Provider $provider, Request $request): \Illuminate\Http\JsonResponse
     {
-        if (!$this->isGranted('ROLE_SUPER_ADMIN') && !$this->isGranted('ROLE_ADMIN')) {
+        if (!$request->user()->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_SUPERUSER)) && !$request->user()->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_ADMIN))) {
             $this->accessControlService->checkPermissionsForEntity(
                 self::DEFAULT_ENTITY, $provider, $request->user(),
                 [
@@ -280,13 +259,10 @@ class ServiceRequestController extends Controller
      * Returns json success message and api service request data on successful delete
      * Returns error response and message on fail
      *
-     * @param Request $request
-     * @Route("/{serviceRequest}/delete", name="api_delete_service_request", methods={"POST"})
-     * @return JsonResponse
      */
-    public function deleteServiceRequest(Provider $provider, ServiceRequest $serviceRequest, Request $request)
+    public function deleteServiceRequest(Provider $provider, ServiceRequest $serviceRequest, Request $request): \Illuminate\Http\JsonResponse
     {
-        if (!$this->isGranted('ROLE_SUPER_ADMIN') && !$this->isGranted('ROLE_ADMIN')) {
+        if (!$request->user()->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_SUPERUSER)) && !$request->user()->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_ADMIN))) {
             $this->accessControlService->checkPermissionsForEntity(
                 self::DEFAULT_ENTITY, $provider, $request->user(),
                 [
@@ -306,13 +282,10 @@ class ServiceRequestController extends Controller
      * Get a single api service request
      * Returns a single api service request based on the id passed in the request url
      *
-     * @Route("/{serviceRequest}", name="api_get_service_request", methods={"GET"})
-     * @param ServiceRequest $serviceRequest
-     * @return JsonResponse
      */
-    public function getServiceRequest(Provider $provider, ServiceRequest $serviceRequest)
+    public function getServiceRequest(Provider $provider, ServiceRequest $serviceRequest, Request $request): \Illuminate\Http\JsonResponse
     {
-        if (!$this->isGranted('ROLE_SUPER_ADMIN') && !$this->isGranted('ROLE_ADMIN')) {
+        if (!$request->user()->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_SUPERUSER)) && !$request->user()->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_ADMIN))) {
             $this->accessControlService->checkPermissionsForEntity(
                 self::DEFAULT_ENTITY, $provider, $request->user(),
                 [

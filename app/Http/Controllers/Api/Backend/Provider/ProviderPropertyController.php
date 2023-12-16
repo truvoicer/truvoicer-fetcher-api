@@ -3,25 +3,22 @@
 namespace App\Http\Controllers\Api\Backend\Provider;
 
 use App\Http\Controllers\Controller;
-use App\Entity\Property;
-use App\Entity\Provider;
-use App\Repository\ProviderRepository;
+use App\Models\Property;
+use App\Models\Provider;
+use App\Repositories\ProviderRepository;
+use App\Services\Auth\AuthService;
 use App\Services\Permission\AccessControlService;
 use App\Services\Permission\PermissionService;
 use App\Services\Tools\HttpRequestService;
 use App\Services\Provider\ProviderService;
 use App\Services\Tools\SerializerService;
-use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\Routing\Annotation\Route;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
+use Illuminate\Http\Request;
 
 /**
  * Contains api endpoint functions for provider related tasks
  *
  * Require ROLE_ADMIN for *every* controller method in this class.
  *
- * @IsGranted("ROLE_USER")
- * @Route("/api/provider/{provider}/property")
  */
 class ProviderPropertyController extends Controller
 {
@@ -54,14 +51,10 @@ class ProviderPropertyController extends Controller
      * Gets a list of related provider property objects based on the get request
      * query parameters
      *
-     * @Route("/list", name="api_get_provider_property_list", methods={"GET"})
-     * @param Provider $provider
-     * @param Request $request
-     * @return \Symfony\Component\HttpFoundation\JsonResponse
      */
-    public function getProviderPropertyList(Provider $provider, Request $request)
+    public function getProviderPropertyList(Provider $provider, Request $request): \Illuminate\Http\JsonResponse
     {
-        if (!$this->isGranted('ROLE_SUPER_ADMIN') && !$this->isGranted('ROLE_ADMIN')) {
+        if (!$request->user()->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_SUPERUSER)) && !$request->user()->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_ADMIN))) {
             $this->accessControlService->checkPermissionsForEntity(
                 self::DEFAULT_ENTITY, $provider, $request->user(),
                 [
@@ -71,7 +64,7 @@ class ProviderPropertyController extends Controller
             );
         }
         $getProviderProps = $this->providerService->getProviderProperties(
-            $provider->getId(),
+            $provider->id,
             $request->get('sort', "property_name"),
             $request->get('order', "asc"),
             (int)$request->get('count', null)
@@ -83,14 +76,10 @@ class ProviderPropertyController extends Controller
      * Gets a single related provider property based on
      * the provider id and property id in the url
      *
-     * @Route("/{property}", name="api_get_provider_property", methods={"GET"})
-     * @param Provider $provider
-     * @param Property $property
-     * @return \Symfony\Component\HttpFoundation\JsonResponse
      */
-    public function getProviderProperty(Provider $provider, Property $property)
+    public function getProviderProperty(Provider $provider, Property $property, Request $request): \Illuminate\Http\JsonResponse
     {
-        if (!$this->isGranted('ROLE_SUPER_ADMIN') && !$this->isGranted('ROLE_ADMIN')) {
+        if (!$request->user()->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_SUPERUSER)) && !$request->user()->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_ADMIN))) {
             $this->accessControlService->checkPermissionsForEntity(
                 self::DEFAULT_ENTITY, $provider, $request->user(),
                 [
@@ -109,15 +98,10 @@ class ProviderPropertyController extends Controller
      * Required data request data fields:
      * - provider_id
      * - property_id
-     *
-     * @param Provider $provider
-     * @param Request $request
-     * @return \Symfony\Component\HttpFoundation\JsonResponse
-     * @Route("/create", name="api_create_provider_property", methods={"POST"})
      */
-    public function createProviderProperty(Provider $provider, Request $request)
+    public function createProviderProperty(Provider $provider, Request $request): \Illuminate\Http\JsonResponse
     {
-        if (!$this->isGranted('ROLE_SUPER_ADMIN') && !$this->isGranted('ROLE_ADMIN')) {
+        if (!$request->user()->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_SUPERUSER)) && !$request->user()->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_ADMIN))) {
             $this->accessControlService->checkPermissionsForEntity(
                 self::DEFAULT_ENTITY, $provider, $request->user(),
                 [
@@ -142,14 +126,10 @@ class ProviderPropertyController extends Controller
      * - provider_id
      * - property_id
      *
-     * @param Provider $provider
-     * @param Request $request
-     * @return \Symfony\Component\HttpFoundation\JsonResponse
-     * @Route("/{property}/update", name="api_update_provider_property_relation", methods={"POST"})
      */
-    public function updateProviderProperty(Provider $provider, Property $property, Request $request)
+    public function updateProviderProperty(Provider $provider, Property $property, Request $request): \Illuminate\Http\JsonResponse
     {
-        if (!$this->isGranted('ROLE_SUPER_ADMIN') && !$this->isGranted('ROLE_ADMIN')) {
+        if (!$request->user()->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_SUPERUSER)) && !$request->user()->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_ADMIN))) {
             $this->accessControlService->checkPermissionsForEntity(
                 self::DEFAULT_ENTITY, $provider, $request->user(),
                 [
@@ -174,14 +154,11 @@ class ProviderPropertyController extends Controller
      * - item_id (property_id)
      * - extra->provider_id
      *
-     * @param Request $request
-     * @return \Symfony\Component\HttpFoundation\JsonResponse
-     * @Route("/{property}/delete", name="api_delete_provider_property", methods={"POST"})
      */
-    public function deleteProviderProperty(Provider $provider, Property $property, Request $request)
+    public function deleteProviderProperty(Provider $provider, Property $property, Request $request): \Illuminate\Http\JsonResponse
     {
         $requestData = $this->httpRequestService->getRequestData($request, true);
-        if (!$this->isGranted('ROLE_SUPER_ADMIN') && !$this->isGranted('ROLE_ADMIN')) {
+        if (!$request->user()->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_SUPERUSER)) && !$request->user()->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_ADMIN))) {
             $this->accessControlService->checkPermissionsForEntity(
                 self::DEFAULT_ENTITY, $provider, $request->user(),
                 [

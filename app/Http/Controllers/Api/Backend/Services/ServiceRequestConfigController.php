@@ -2,27 +2,24 @@
 namespace App\Http\Controllers\Api\Backend\Services;
 
 use App\Http\Controllers\Controller;
-use App\Entity\Provider;
-use App\Entity\ServiceRequest;
-use App\Entity\ServiceRequestConfig;
+use App\Models\Provider;
+use App\Models\ServiceRequest;
+use App\Models\ServiceRequestConfig;
 use App\Services\ApiServices\ApiService;
+use App\Services\Auth\AuthService;
 use App\Services\Permission\AccessControlService;
 use App\Services\Permission\PermissionService;
 use App\Services\Tools\HttpRequestService;
 use App\Services\Provider\ProviderService;
 use App\Services\ApiServices\ServiceRequests\RequestConfigService;
 use App\Services\Tools\SerializerService;
-use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\Routing\Annotation\Route;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
+use Illuminate\Http\Request;
 
 /**
  * Contains Api endpoint functions for service request config related operations
  *
  * Require ROLE_ADMIN for *every* controller method in this class.
  *
- * @IsGranted("ROLE_USER")
- * @Route("/api/provider/{provider}/service/request/{id}/config")
  */
 class ServiceRequestConfigController extends Controller
 {
@@ -61,9 +58,8 @@ class ServiceRequestConfigController extends Controller
      * Get list of service request configs function
      * Returns a list of service request configs based on the request query parameters
      *
-     * @Route("/list", name="api_get_service_request_config_list", methods={"GET"})
      */
-    public function getRequestConfigList(Provider $provider, Request $request)
+    public function getRequestConfigList(Provider $provider, Request $request): \Illuminate\Http\JsonResponse
     {
         $requestConfigArray = [];
         $isPermitted = $this->accessControlService->checkPermissionsForEntity(
@@ -74,8 +70,8 @@ class ServiceRequestConfigController extends Controller
             ],
             false
         );
-        if ($this->isGranted('ROLE_SUPER_ADMIN') ||
-            $this->isGranted('ROLE_ADMIN') ||
+        if ($request->user()->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_SUPERUSER)) ||
+            $request->user()->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_ADMIN)) ||
             $isPermitted
         ) {
             $findRequestConfigs = $this->requestConfigService->findByParams(
@@ -93,13 +89,10 @@ class ServiceRequestConfigController extends Controller
      * Get a single service request config
      * Returns a single service request config based on the id passed in the request url
      *
-     * @Route("/{serviceRequestConfig}", name="api_get_service_request_config", methods={"GET"})
-     * @param ServiceRequestConfig $serviceRequestConfig
-     * @return \Symfony\Component\HttpFoundation\JsonResponse
      */
-    public function getServiceRequestConfig(Provider $provider, ServiceRequestConfig $serviceRequestConfig)
+    public function getServiceRequestConfig(Provider $provider, ServiceRequestConfig $serviceRequestConfig, Request $request): \Illuminate\Http\JsonResponse
     {
-        if (!$this->isGranted('ROLE_SUPER_ADMIN') && !$this->isGranted('ROLE_ADMIN')) {
+        if (!$request->user()->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_SUPERUSER)) && !$request->user()->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_ADMIN))) {
             $this->accessControlService->checkPermissionsForEntity(
                 self::DEFAULT_ENTITY, $provider, $request->user(),
                 [
@@ -117,12 +110,10 @@ class ServiceRequestConfigController extends Controller
      * Returns json success message and service request config data on successful creation
      * Returns error response and message on fail
      *
-     * @param Request $request
-     * @Route("/create", name="api_create_service_request_config", methods={"POST"})
-     * @return \Symfony\Component\HttpFoundation\JsonResponse
      */
-    public function createRequestConfig(Provider $provider, ServiceRequest $serviceRequest, Request $request) {
-        if (!$this->isGranted('ROLE_SUPER_ADMIN') && !$this->isGranted('ROLE_ADMIN')) {
+    public function createRequestConfig(Provider $provider, ServiceRequest $serviceRequest, Request $request): \Illuminate\Http\JsonResponse
+    {
+        if (!$request->user()->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_SUPERUSER)) && !$request->user()->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_ADMIN))) {
             $this->accessControlService->checkPermissionsForEntity(
                 self::DEFAULT_ENTITY, $provider, $request->user(),
                 [
@@ -149,13 +140,10 @@ class ServiceRequestConfigController extends Controller
      * Returns json success message and service request config data on successful update
      *
      * Returns error response and message on fail
-     * @param Request $request
-     * @Route("/{serviceRequestConfig}/update", name="api_update_service_request_config", methods={"POST"})
-     * @return \Symfony\Component\HttpFoundation\JsonResponse
      */
-    public function updateRequestConfig(Provider $provider, ServiceRequest $serviceRequest, ServiceRequestConfig $serviceRequestConfig, Request $request)
+    public function updateRequestConfig(Provider $provider, ServiceRequest $serviceRequest, ServiceRequestConfig $serviceRequestConfig, Request $request): \Illuminate\Http\JsonResponse
     {
-        if (!$this->isGranted('ROLE_SUPER_ADMIN') && !$this->isGranted('ROLE_ADMIN')) {
+        if (!$request->user()->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_SUPERUSER)) && !$request->user()->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_ADMIN))) {
             $this->accessControlService->checkPermissionsForEntity(
                 self::DEFAULT_ENTITY, $provider, $request->user(),
                 [
@@ -180,13 +168,10 @@ class ServiceRequestConfigController extends Controller
      * Returns json success message and service request config data on successful deletion
      *
      * Returns error response and message on fail
-     * @param Request $request
-     * @Route("/{serviceRequestConfig}/delete", name="api_delete_service_request_config", methods={"POST"})
-     * @return \Symfony\Component\HttpFoundation\JsonResponse
      */
-    public function deleteRequestConfig(Provider $provider, ServiceRequestConfig $serviceRequestConfig, Request $request)
+    public function deleteRequestConfig(Provider $provider, ServiceRequestConfig $serviceRequestConfig, Request $request): \Illuminate\Http\JsonResponse
     {
-        if (!$this->isGranted('ROLE_SUPER_ADMIN') && !$this->isGranted('ROLE_ADMIN')) {
+        if (!$request->user()->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_SUPERUSER)) && !$request->user()->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_ADMIN))) {
             $this->accessControlService->checkPermissionsForEntity(
                 self::DEFAULT_ENTITY, $provider, $request->user(),
                 [
