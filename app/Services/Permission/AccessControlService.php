@@ -2,23 +2,26 @@
 namespace App\Services\Permission;
 
 use App\Models\User;
+use App\Services\Auth\AuthService;
+use App\Services\User\UserAdminService;
+use App\Traits\User\UserTrait;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
-use Symfony\Component\Security\Core\Authorization\AuthorizationChecker;
-use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
 
 class AccessControlService
 {
+    use UserTrait;
     protected PermissionEntities $permissionEntities;
-    protected AuthorizationCheckerInterface $authorizationChecker;
 
-    public function __construct(PermissionEntities $permissionEntities, AuthorizationCheckerInterface $authorizationChecker)
+    public function __construct(PermissionEntities $permissionEntities)
     {
         $this->permissionEntities = $permissionEntities;
-        $this->authorizationChecker = $authorizationChecker;
     }
 
-    public function checkPermissionsForEntity(string $entity, object $entityObject, User $user, array $allowedPermissions = [],
+    public function checkPermissionsForEntity(string $entity, object $entityObject, ?User $user = null, array $allowedPermissions = [],
                                               bool $showException = true) {
+        if ($user instanceof User) {
+            $this->setUser($user);
+        }
         $serviceObject = $this->getPermissionEntities()->getServiceObjectByEntityName($entity);
         $functionName = sprintf("getUser%sList", ucfirst($entity));
         $this->getPermissionEntities()->validateServiceObjectFunction($serviceObject, $functionName);
@@ -45,10 +48,11 @@ class AccessControlService
 
     public function inAdminGroup(): bool
     {
+        $user = $this->getUser();
          return (
-            $this->getAuthorizationChecker()->isGranted('ROLE_SUPER_ADMIN') ||
-            $this->getAuthorizationChecker()->isGranted('ROLE_ADMIN')
-        );
+            UserAdminService::userTokenHasAbility($user, AuthService::ABILITY_SUPERUSER) ||
+            UserAdminService::userTokenHasAbility($user, AuthService::ABILITY_ADMIN)
+         );
     }
 
     /**
@@ -57,13 +61,5 @@ class AccessControlService
     public function getPermissionEntities(): PermissionEntities
     {
         return $this->permissionEntities;
-    }
-
-    /**
-     * @return AuthorizationCheckerInterface
-     */
-    public function getAuthorizationChecker(): AuthorizationCheckerInterface
-    {
-        return $this->authorizationChecker;
     }
 }

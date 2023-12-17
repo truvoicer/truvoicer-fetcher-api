@@ -1,31 +1,14 @@
 <?php
-namespace App\Service;
+namespace App\Services;
 
-use Symfony\Component\DependencyInjection\ContainerInterface;
+use Illuminate\Support\Facades\App;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 
 class ServiceFactory
 {
-    /**
-     * @var ContainerInterface
-     */
-    protected $container;
-//
-    public function __construct(
-        ContainerInterface $container
-    ) {
-        $this->container = $container;
-    }
-
-    /**
-     * @throws \Exception
-     */
     public function getService(string $serviceId) {
         try {
-            $service = $this->container->get(
-                $serviceId,
-                ContainerInterface::NULL_ON_INVALID_REFERENCE
-            );
+            $service = App::make($serviceId);
             if (!$service) {
                 throw new BadRequestHttpException(sprintf("Invalid service [%s]", $serviceId));
             }
@@ -33,7 +16,6 @@ class ServiceFactory
         } catch (\Exception $e) {
             throw new BadRequestHttpException($e->getMessage());
         }
-        return false;
     }
 
 }

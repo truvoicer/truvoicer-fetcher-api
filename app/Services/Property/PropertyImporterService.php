@@ -3,15 +3,11 @@ namespace App\Services\Property;
 
 use App\Models\Property;
 use App\Services\Permission\AccessControlService;
-use App\Services\Tools\HttpRequestService;
-use Doctrine\ORM\EntityManagerInterface;
-use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 
 class PropertyImporterService extends PropertyService {
 
-    public function __construct(EntityManagerInterface $entityManager, HttpRequestService $httpRequestService,
-                                TokenStorageInterface $tokenStorage, AccessControlService $accessControlService) {
-        parent::__construct($entityManager, $httpRequestService, $tokenStorage, $accessControlService);
+    public function __construct(AccessControlService $accessControlService) {
+        parent::__construct($accessControlService);
     }
 
     public function import(array $data, array $mappings = []) {

@@ -97,11 +97,14 @@ class AdminController extends Controller
      * User is based on the id in the request url
      *
      */
-    public function generateNewApiToken(User $user)
+    public function generateNewApiToken(User $user, Request $request)
     {
         return $this->sendSuccessResponse("success",
             $this->serializerService->entityToArray(
-                $this->userService->createUserToken($user)
+                $this->userService->createUserToken(
+                    $user,
+                    $request->query->get('role_id')
+                )
             )
         );
     }

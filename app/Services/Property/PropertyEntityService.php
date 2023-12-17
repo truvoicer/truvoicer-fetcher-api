@@ -2,9 +2,6 @@
 namespace App\Services\Property;
 
 use App\Services\Permission\AccessControlService;
-use App\Services\Tools\HttpRequestService;
-use Doctrine\ORM\EntityManagerInterface;
-use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 
 class PropertyEntityService extends PropertyService
 {
@@ -12,10 +9,9 @@ class PropertyEntityService extends PropertyService
 
     protected AccessControlService $accessControlService;
 
-    public function __construct(EntityManagerInterface $entityManager, HttpRequestService $httpRequestService,
-                                TokenStorageInterface $tokenStorage, AccessControlService $accessControlService)
+    public function __construct(AccessControlService $accessControlService)
     {
-        parent::__construct($entityManager, $httpRequestService, $tokenStorage, $accessControlService);
+        parent::__construct($accessControlService);
     }
 
 }

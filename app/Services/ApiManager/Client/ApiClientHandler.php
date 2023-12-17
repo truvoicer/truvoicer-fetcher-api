@@ -3,9 +3,8 @@ namespace App\Services\ApiManager\Client;
 
 use App\Services\ApiManager\ApiBase;
 use App\Services\ApiManager\Client\Entity\ApiRequest;
-use Symfony\Component\HttpClient\HttpClient;
-use Symfony\Component\Mailer\Exception\TransportException;
-use Symfony\Contracts\HttpClient\Exception\TransportExceptionInterface;
+use Exception;
+use Illuminate\Support\Facades\Http;
 
 class ApiClientHandler extends ApiBase
 {
@@ -17,6 +16,9 @@ class ApiClientHandler extends ApiBase
         $this->requestConfig = [];
     }
 
+    /**
+     * @throws Exception
+     */
     public function sendRequest(ApiRequest $apiRequest)
     {
         try {
@@ -24,11 +26,29 @@ class ApiClientHandler extends ApiBase
             $this->setHeaders($apiRequest->getHeaders());
             $this->setPostData($apiRequest->getBody());
             $this->setRequestAuth($apiRequest->getAuthentication());
-            $client = HttpClient::create();
-            return $client->request($apiRequest->getMethod(), $apiRequest->getUrl(), $this->requestConfig);
 
-        } catch (TransportExceptionInterface $e) {
-            throw new TransportException($e->getMessage());
+
+//            return $client->request($apiRequest->getMethod(), $apiRequest->getUrl(), $this->requestConfig);
+            switch ($apiRequest->getMethod()) {
+                case 'GET':
+                    return Http::withHeaders($apiRequest->getHeaders())
+                        ->withQueryParameters($apiRequest->getQuery())
+                        ->get($apiRequest->getUrl());
+                case 'POST':
+                    return Http::withHeaders($apiRequest->getHeaders())
+                        ->withBody($apiRequest->getBody())
+                        ->post($apiRequest->getUrl());
+                case 'PUT':
+                    return Http::withHeaders($apiRequest->getHeaders())->put($apiRequest->getUrl(), $apiRequest->getBody());
+                case 'DELETE':
+                    return Http::withHeaders($apiRequest->getHeaders())->delete($apiRequest->getUrl());
+                case 'PATCH':
+                    return Http::withHeaders($apiRequest->getHeaders())->patch($apiRequest->getUrl(), $apiRequest->getBody());
+            }
+            return Http::withHeaders($apiRequest->getHeaders())->get($apiRequest->getUrl());
+
+        } catch (Exception $e) {
+            throw new Exception($e->getMessage());
         }
     }
 

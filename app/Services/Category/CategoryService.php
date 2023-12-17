@@ -3,29 +3,25 @@
 namespace App\Services\Category;
 
 use App\Models\Category;
-use App\Models\Permission;
-use App\Models\Provider;
 use App\Models\User;
-use App\Models\UserCategory;
 use App\Repositories\CategoryRepository;
 use App\Repositories\PermissionRepository;
 use App\Repositories\ProviderRepository;
 use App\Repositories\UserCategoryRepository;
+use App\Services\Auth\AuthService;
 use App\Services\BaseService;
 use App\Services\Permission\AccessControlService;
 use App\Services\Permission\PermissionService;
 use App\Services\Provider\ProviderEntityService;
 use App\Services\Tools\HttpRequestService;
 use App\Services\Tools\UtilsService;
-use Doctrine\ORM\EntityManagerInterface;
+use App\Services\User\UserAdminService;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
-use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 
 class CategoryService extends BaseService
 {
     const SERVICE_ALIAS = "app.service.category.category_entity_service";
 
-    protected EntityManagerInterface $entityManager;
     protected HttpRequestService $httpRequestService;
     protected PermissionRepository $permissionRepository;
     protected ProviderRepository $providerRepository;
@@ -33,7 +29,7 @@ class CategoryService extends BaseService
     protected UserCategoryRepository $userCategoryRepository;
     protected AccessControlService $accessControlService;
 
-    public function __construct()
+    public function __construct(AccessControlService $accessControlService)
     {
         $this->userCategoryRepository = new UserCategoryRepository();
         $this->permissionRepository = new PermissionRepository();
@@ -84,15 +80,15 @@ class CategoryService extends BaseService
         }, $getCategories);
     }
 
-    public function findUserPermittedCategories(string $sort, string $order, ?int $count, $user = null) {
+    public function findUserPermittedCategories(string $sort, string $order, ?int $count, ?User $user = null) {
         $getCategories = $this->findUserCategories(
             $sort,
             $order,
             $count
         );
         if (
-            $this->accessControlService->getAuthorizationChecker()->isGranted('ROLE_SUPER_ADMIN') ||
-            $this->accessControlService->getAuthorizationChecker()->isGranted('ROLE_ADMIN')
+            UserAdminService::userTokenHasAbility($user, AuthService::ABILITY_SUPERUSER) ||
+            UserAdminService::userTokenHasAbility($user, AuthService::ABILITY_ADMIN)
         ) {
             return $this->getCategoryList($sort, $order, $count);
         }

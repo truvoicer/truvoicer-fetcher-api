@@ -5,28 +5,17 @@ use App\Models\Property;
 use App\Repositories\PropertyRepository;
 use App\Services\BaseService;
 use App\Services\Permission\AccessControlService;
-use App\Services\Tools\HttpRequestService;
-use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
-use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 
 class PropertyService extends BaseService {
 
     const SERVICE_ALIAS = "app.service.property.property_entity_service";
 
-    protected EntityManagerInterface $em;
     protected PropertyRepository $propertyRepository;
-    protected HttpRequestService $httpRequestService;
-    protected AccessControlService $accessControlService;
 
-    public function __construct(EntityManagerInterface $entityManager, HttpRequestService $httpRequestService,
-                                TokenStorageInterface $tokenStorage, AccessControlService $accessControlService)
+    public function __construct(AccessControlService $accessControlService)
     {
-        parent::__construct($tokenStorage);
-        $this->em = $entityManager;
-        $this->httpRequestService = $httpRequestService;
         $this->propertyRepository = new PropertyRepository();
-        $this->accessControlService = $accessControlService;
     }
 
     public function findPropertiesByParams(string $sort = "name", ?string $order = "asc", ?int $count= null) {
@@ -39,19 +28,20 @@ class PropertyService extends BaseService {
         return $this->propertyRepository->getAllPropertiesArray();
     }
 
-    private function setPropertyObject(Property $property, array $propertyData) {
-        $property->setPropertyName($propertyData['property_name']);
-        $property->setPropertyLabel($propertyData['property_label']);
-        $property->setValueType($propertyData['value_type']);
+    private function setPropertyObject(array $propertyData) {
+        $data = [];
+        $data['name'] = $propertyData['name'];
+        $data['label'] = $propertyData['label'];
+        $data['value_type'] = $propertyData['value_type'];
         if (isset($propertyData['value_choices']) && is_array($propertyData['value_choices'])) {
-            $property->setValueChoices($propertyData['value_choices']);
+            $data['value_choices'] = $propertyData['value_choices'];
         }
-        return $property;
+        return $data;
     }
 
     public function getPropertyByName(string $propertyName) {
-        $this->propertyRepository->addWhere("property_name", $propertyName);
-        $property = $this->propertyRepository->findOne(["property_name" => $propertyName]);
+        $this->propertyRepository->addWhere("name", $propertyName);
+        $property = $this->propertyRepository->findOne();
         if ($property === null) {
             throw new BadRequestHttpException(sprintf("Property name:%s not found in database.",
                 $propertyName
@@ -71,19 +61,14 @@ class PropertyService extends BaseService {
     }
 
     public function createProperty(array $propertyData) {
-        $property = $this->setPropertyObject(new Property(), $propertyData);
-        if ($this->httpRequestService->validateData($property)) {
-            return $this->propertyRepository->createProperty($property);
-        }
-        return false;
+        $property = $this->setPropertyObject($propertyData);
+        return $this->propertyRepository->createProperty($property);
     }
 
     public function updateProperty(Property $property,  $propertyData) {
-        $getProperty = $this->setPropertyObject($property, $propertyData);
-        if($this->httpRequestService->validateData($getProperty)) {
-            return $this->propertyRepository->updateProperty($getProperty);
-        }
-        return false;
+        $getProperty = $this->setPropertyObject($propertyData);
+        $getProperty['id'] = $property->id;
+        return $this->propertyRepository->updateProperty($property, $getProperty);
     }
 
     public function deletePropertyById(int $propertyId) {

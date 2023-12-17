@@ -19,6 +19,10 @@ class UserAdminService extends BaseService
         $this->userRepository = new UserRepository();
     }
 
+    public static function userTokenHasAbility(User $user, string $ability) {
+        return $user->tokenCan(AuthService::getApiAbility($ability));
+    }
+
     public function findByParams(string $sort, string $order, int $count) {
         return $this->userRepository->findAllWithParams($sort, $order, $count);
     }
@@ -33,24 +37,20 @@ class UserAdminService extends BaseService
 
     public function createPublicUserToken()
     {
-        $getAbility = AuthService::getApiAbility(AuthService::ABILITY_APP_USER);
-        if (!$getAbility) {
+        $role = Role::where('name', AuthService::ABILITY_APP_USER)->first();
+        if (!$role instanceof Role) {
             return false;
         }
-        $token = $this->getUser()->createToken('admin', [$getAbility])->plainTextToken;
+        $token = $this->getUser()->createToken($role->name, [$role->ability])->plainTextToken;
         return $token;
     }
-    public function createUserToken(int $roleId)
+    public function createUserToken(User $user, int $roleId)
     {
         $role = Role::where('id', $roleId)->first();
         if (!$role instanceof Role) {
             return false;
         }
-        $getAbility = AuthService::getApiAbility($role->name);
-        if (!$getAbility) {
-            return false;
-        }
-        $token = $this->getUser()->createToken('admin', [$getAbility])->plainTextToken;
+        $token = $user->createToken($role->name, [$role->ability])->plainTextToken;
         return $token;
     }
 
@@ -80,7 +80,7 @@ class UserAdminService extends BaseService
         return $user->tokens()->orderBy($sort, $order)->limit($count)->get();
     }
 
-    public function generateUserPassword(User $user, array $data, $type)
+    public function generateUserPassword(array $data, $type)
     {
         if ((array_key_exists("change_password", $data) && $data["change_password"]) || $type === "insert") {
             if (!array_key_exists("confirm_password", $data) || !array_key_exists("new_password", $data)) {
@@ -93,7 +93,7 @@ class UserAdminService extends BaseService
             if ($data["confirm_password"] !== $data["new_password"]) {
                 throw new BadRequestHttpException("Confirm and New Password fields don't match.");
             }
-            return $this->passwordEncoder->hashPassword($user, $data['new_password']);
+            return Hash::make($data['new_password']);
         }
         return false;
     }

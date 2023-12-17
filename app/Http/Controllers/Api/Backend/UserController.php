@@ -112,9 +112,13 @@ class UserController extends Controller
 
     public function generateSessionUserApiToken(Request $request)
     {
+        $user = $request->user();
         return $this->sendSuccessResponse("success",
             $this->serializerService->entityToArray(
-                $this->userService->createUserToken($request->user())
+                $this->userService->createUserToken(
+                    $request->user(),
+                    $user->getRole()->id
+                )
             )
         );
     }

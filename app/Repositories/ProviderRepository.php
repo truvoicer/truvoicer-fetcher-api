@@ -46,10 +46,10 @@ class ProviderRepository extends BaseRepository
         return $userProviderRepo->createUserProvider($user, $this->model, $permissions);
     }
 
-    public function updateProvider(Provider $provider)
+    public function updateProvider(Provider $provider, array $data)
     {
         $this->setModel($provider);
-        return $this->save();
+        return $this->save($data);
     }
 
     public function createProviderProperty(Provider $provider, Property $property, string $propertyValue) {

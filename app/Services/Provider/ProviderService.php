@@ -2,13 +2,9 @@
 
 namespace App\Services\Provider;
 
-use App\Models\Permission;
 use App\Models\Property;
 use App\Models\Provider;
-use App\Models\ProviderProperty;
-use App\Models\Service;
 use App\Models\User;
-use App\Models\UserProvider;
 use App\Repositories\PermissionRepository;
 use App\Repositories\PropertyRepository;
 use App\Repositories\ProviderPropertyRepository;
@@ -16,17 +12,16 @@ use App\Repositories\ProviderRepository;
 use App\Repositories\ServiceRepository;
 use App\Repositories\UserProviderRepository;
 use App\Services\ApiServices\ApiService;
+use App\Services\Auth\AuthService;
 use App\Services\BaseService;
 use App\Services\Category\CategoryService;
 use App\Services\Permission\AccessControlService;
 use App\Services\Permission\PermissionService;
 use App\Services\Property\PropertyService;
 use App\Services\ApiServices\ResponseKeysService;
-use App\Services\Tools\HttpRequestService;
 use App\Services\Tools\UtilsService;
-use Doctrine\ORM\EntityManagerInterface;
+use App\Services\User\UserAdminService;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
-use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 
 class ProviderService extends BaseService
 {
@@ -39,19 +34,20 @@ class ProviderService extends BaseService
     protected ProviderPropertyRepository $providerPropertyRepository;
     protected PropertyService $propertyService;
     protected ServiceRepository $serviceRepository;
-    protected HttpRequestService $httpRequestService;
     protected CategoryService $categoryService;
     protected ApiService $apiService;
     protected ResponseKeysService $responseKeysService;
     protected AccessControlService $accessControlService;
 
-    public function __construct(EntityManagerInterface $entityManager, HttpRequestService $httpRequestService,
-                                PropertyService $propertyService, CategoryService $categoryService,
-                                ApiService $apiService, ResponseKeysService $responseKeysService,
-                                TokenStorageInterface $tokenStorage, AccessControlService $accessControlService)
+    public function __construct(
+        PropertyService      $propertyService,
+        CategoryService      $categoryService,
+        ApiService           $apiService,
+        ResponseKeysService  $responseKeysService,
+        AccessControlService $accessControlService
+    )
     {
         $this->apiService = $apiService;
-        $this->httpRequestService = $httpRequestService;
         $this->responseKeysService = $responseKeysService;
         $this->permissionRepository = new PermissionRepository();
         $this->providerRepository = new ProviderRepository();
@@ -137,12 +133,12 @@ class ProviderService extends BaseService
             $user
         );
         if (
-            $this->accessControlService->getAuthorizationChecker()->isGranted('ROLE_SUPER_ADMIN') ||
-            $this->accessControlService->getAuthorizationChecker()->isGranted('ROLE_ADMIN')
+            UserAdminService::userTokenHasAbility($user, AuthService::ABILITY_SUPERUSER) ||
+            UserAdminService::userTokenHasAbility($user, AuthService::ABILITY_ADMIN)
         ) {
             return $this->getProviderList($sort, $order, $count);
         }
-        return array_filter($getProviders, function ($provider) use($user) {
+        return array_filter($getProviders, function ($provider) use ($user) {
             return $this->accessControlService->checkPermissionsForEntity(
                 ProviderEntityService::ENTITY_NAME, $provider, $user,
                 [
@@ -231,25 +227,23 @@ class ProviderService extends BaseService
         return $this->providerRepository->getProviderServiceParameters($provider, $service);
     }
 
-    private function setProviderObject(Provider $provider, array $providerData)
+    private function setProviderObject(array $providerData)
     {
         try {
-            $provider->setProviderName($providerData['provider_name']);
-            $provider->setProviderLabel($providerData['provider_label']);
-            $provider->setProviderApiBaseUrl($providerData['provider_api_base_url']);
-            $provider->setProviderAccessKey($providerData['provider_access_key']);
-            $provider->setProviderSecretKey($providerData['provider_secret_key']);
-            $provider->setProviderUserId($providerData['provider_user_id']);
-            foreach ($provider->getCategory() as $category) {
-                $provider->removeCategory($category);
-            }
-            if (isset($providerData['category']) && count($providerData['category']) > 0) {
-                foreach ($providerData['category'] as $category) {
-                    $category = $this->categoryService->getCategoryById($category['id']);
-                    $provider->addCategory($category);
-                }
-            }
-            return $provider;
+            $data = [];
+            $data['name'] = $providerData['name'];
+            $data['label'] = $providerData['label'];
+            $data['api_base_url'] = $providerData['api_base_url'];
+            $data['access_key'] = $providerData['access_key'];
+            $data['secret_key'] = $providerData['secret_key'];
+            $data['user_id'] = $providerData['user_id'];
+//            if (isset($providerData['category']) && count($providerData['category']) > 0) {
+//                foreach ($providerData['category'] as $category) {
+//                    $category = $this->categoryService->getCategoryById($category['id']);
+//                    $provider->addCategory($category);
+//                }
+//            }
+            return $data;
         } catch (\Exception $exception) {
             throw new BadRequestHttpException($exception->getMessage());
         }
@@ -266,32 +260,24 @@ class ProviderService extends BaseService
         if ($checkProvider !== null) {
             throw new BadRequestHttpException(sprintf("Provider (%s) already exists.", $providerData['provider_name']));
         }
-        $provider = $this->setProviderObject(new Provider(), $providerData);
-        if ($this->httpRequestService->validateData($provider)) {
-            $this->permissionRepository->addWhere("name", PermissionService::PERMISSION_ADMIN);
-            $getAdminPermission = $this->permissionRepository->findOne();
-            if ($getAdminPermission === null) {
-                throw new BadRequestHttpException(
-                    "Admin permission does not exist."
-                );
-            }
-            return $this->providerRepository->createProvider($this->user, $provider, [$getAdminPermission]);
+        $provider = $this->setProviderObject($providerData);
+        $this->permissionRepository->addWhere("name", PermissionService::PERMISSION_ADMIN);
+        $getAdminPermission = $this->permissionRepository->findOne();
+        if ($getAdminPermission === null) {
+            throw new BadRequestHttpException(
+                "Admin permission does not exist."
+            );
         }
-        return false;
+        return $this->providerRepository->createProvider($this->user, $provider, [$getAdminPermission]);
+
     }
 
 
     public function updateProvider(Provider $provider, array $providerData)
     {
-        if (!array_key_exists("id", $providerData)) {
-            throw new BadRequestHttpException("Provider id doesnt exist in request.");
-        }
-        $getProvider = $this->providerRepository->findById($providerData["id"]);
-        $provider = $this->setProviderObject($getProvider, $providerData);
-        if ($this->httpRequestService->validateData($provider)) {
-            return $this->providerRepository->updateProvider($provider);
-        }
-        return false;
+        $providerData = $this->setProviderObject($providerData);
+        $providerData['id'] = $provider->id;
+        return $this->providerRepository->updateProvider($provider, $providerData);
     }
 
     public function createProviderProperty(Provider $provider, array $providerPropData)

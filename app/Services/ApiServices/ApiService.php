@@ -6,8 +6,6 @@ use App\Repositories\ServiceRepository;
 use App\Repositories\ServiceRequestParameterRepository;
 use App\Repositories\ServiceRequestRepository;
 use App\Services\BaseService;
-use App\Services\Permission\AccessControlService;
-use App\Services\Tools\HttpRequestService;
 use App\Services\Tools\UtilsService;;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 
@@ -15,29 +13,21 @@ class ApiService extends BaseService
 {
     const SERVICE_ALIAS = "app.service.api_services.api_service_entity_service";
 
-    protected HttpRequestService $httpRequestService;
     protected ServiceRepository $serviceRepository;
     protected ServiceRequestRepository $serviceRequestRepository;
     protected ServiceRequestParameterRepository $requestParametersRepo;
     protected ResponseKeysService $responseKeysService;
-    protected AccessControlService $accessControlService;
 
     /**
      * ApiServicesService constructor.
-     * @param HttpRequestService $httpRequestService
      * @param ResponseKeysService $responseKeysService
-     * @param AccessControlService $accessControlService
      */
-    public function __construct(HttpRequestService $httpRequestService,
-                                ResponseKeysService $responseKeysService,
-                                AccessControlService $accessControlService)
+    public function __construct(ResponseKeysService $responseKeysService)
     {
-        $this->httpRequestService = $httpRequestService;
         $this->serviceRepository = new ServiceRepository();
         $this->serviceRequestRepository = new ServiceRequestRepository();
         $this->requestParametersRepo = new ServiceRequestParameterRepository();
         $this->responseKeysService = $responseKeysService;
-        $this->accessControlService = $accessControlService;
     }
 
     public function findByQuery(string $query)

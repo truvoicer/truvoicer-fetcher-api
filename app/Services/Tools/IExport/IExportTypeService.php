@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Services\Tools\IExport;
 
 use App\Models\Category;
@@ -45,12 +46,15 @@ class IExportTypeService extends BaseService
     protected SerializerService $serializerService;
     protected AccessControlService $accessControlService;
 
-    public function __construct(CategoryImporterService $categoryMappingsService, ProviderImporterService $providerMappingsService,
-                                ApiServiceImporterService $apiServiceMappingsService, SerializerService $serializerService,
-                                PropertyImporterService $propertyImporterService, AccessControlService $accessControlService,
-                                TokenStorageInterface $tokenStorage)
+    public function __construct(
+        CategoryImporterService   $categoryMappingsService,
+        ProviderImporterService   $providerMappingsService,
+        ApiServiceImporterService $apiServiceMappingsService,
+        SerializerService         $serializerService,
+        PropertyImporterService   $propertyImporterService,
+        AccessControlService      $accessControlService
+    )
     {
-        parent::__construct($tokenStorage);
         $this->categoryImporterService = $categoryMappingsService;
         $this->providerImporterService = $providerMappingsService;
         $this->apiServiceImporterService = $apiServiceMappingsService;
@@ -60,7 +64,7 @@ class IExportTypeService extends BaseService
     }
 
     public static function getImportMappingValue(string $importTypeName, string $destEntity, string $sourceEntity,
-                                           string $sourceItemName, array $mappings)
+                                                 string $sourceItemName, array $mappings)
     {
         if (count($mappings) === 0) {
             return null;
@@ -136,9 +140,9 @@ class IExportTypeService extends BaseService
                         ],
                         false
                     );
-                    return $isPermitted? $category : false;
+                    return $isPermitted ? $category : false;
                 case self::EXPORT_TYPES["PROVIDERS"]:
-                    $provider =  $this->providerImporterService->getProviderById($item["id"]);
+                    $provider = $this->providerImporterService->getProviderById($item["id"]);
                     if ($this->accessControlService->inAdminGroup()) {
                         return $provider;
                     }
@@ -150,7 +154,7 @@ class IExportTypeService extends BaseService
                         ],
                         false
                     );
-                    return $isPermitted? $provider : false;
+                    return $isPermitted ? $provider : false;
                 case self::EXPORT_TYPES["SERVICES"]:
                     return $this->apiServiceImporterService->getServiceById($item["id"]);
                 case self::EXPORT_TYPES["PROPERTIES"]:

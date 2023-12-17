@@ -21,8 +21,12 @@ class ExportService
     private ServiceFactory $serviceFactory;
     protected AccessControlService $accessControlService;
 
-    public function __construct(SerializerService $serializerService, DownloadsFileSystemService $downloadsFileSystemService,
-                                IExportTypeService $iExportTypeService, ServiceFactory $serviceFactory, AccessControlService $accessControlService
+    public function __construct(
+        SerializerService          $serializerService,
+        DownloadsFileSystemService $downloadsFileSystemService,
+        IExportTypeService         $iExportTypeService,
+        ServiceFactory             $serviceFactory,
+        AccessControlService       $accessControlService
     )
     {
         $this->serializerService = $serializerService;
