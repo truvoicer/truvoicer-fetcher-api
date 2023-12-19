@@ -1,67 +1,33 @@
 <?php
 namespace App\Services\ApiManager\Response\Entity;
 
-use App\Services\ApiManager\Client\Entity\ApiRequest;
-use Symfony\Component\Serializer\Annotation\Groups;
 
 class ApiResponse
 {
-    /**
-     * @Groups({"main"})
-     */
+
     private $status;
 
-    /**
-     * @Groups({"main"})
-     */
     private $contentType;
 
-    /**
-     * @Groups({"main"})
-     */
     private $provider;
 
-    /**
-     * @Groups({"main"})
-     */
     private $requestService;
 
-    /**
-     * @Groups({"main"})
-     */
     private $category;
 
-    /**
-     * @Groups({"main"})
-     */
     private $requestData;
 
-    /**
-     * @Groups({"main"})
-     */
     private $extraData;
 
-    /**
-     * @Groups({"main"})
-     */
     private array $apiRequest;
 
-    /**
-     * @Groups({"main"})
-     */
     private ?string $paginationType = null;
 
-    /**
-     * @return array
-     */
     public function getApiRequest(): array
     {
         return $this->apiRequest;
     }
 
-    /**
-     * @param array $apiRequest
-     */
     public function setApiRequest(array $apiRequest): void
     {
         $this->apiRequest = $apiRequest;

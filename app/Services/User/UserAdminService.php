@@ -69,7 +69,7 @@ class UserAdminService extends BaseService
         return PersonalAccessToken::where('id', $id)->first();
     }
 
-    public function updateApiTokenExpiry(ApiToken $apiToken, array $data)
+    public function updateApiTokenExpiry(PersonalAccessToken $apiToken, array $data)
     {
         return true;
 //        return $this->apiTokenRepository->updateTokenExpiry($apiToken, new \DateTime($data["expires_at"]), "user");

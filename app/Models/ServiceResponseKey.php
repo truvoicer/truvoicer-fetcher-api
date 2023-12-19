@@ -12,4 +12,8 @@ class ServiceResponseKey extends Model
     {
         return $this->belongsTo(ServiceRequestResponseKey::class);
     }
+    public function service()
+    {
+        return $this->belongsTo(Service::class);
+    }
 }

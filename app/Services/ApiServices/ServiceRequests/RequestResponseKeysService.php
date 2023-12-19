@@ -1,7 +1,7 @@
 <?php
 namespace App\Services\ApiServices\ServiceRequests;
 
-use App\Models\ResponseKeyRequestItem;
+//use App\Models\ResponseKeyRequestItem;
 use App\Models\Service;
 use App\Models\Provider;
 use App\Models\ServiceRequest;
@@ -13,20 +13,14 @@ use App\Repositories\ServiceRequestRepository;
 use App\Repositories\ServiceRequestResponseKeyRepository;
 use App\Repositories\ServiceResponseKeyRepository;
 use App\Services\BaseService;
-use App\Services\Tools\HttpRequestService;
-use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
-use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 
 class RequestResponseKeysService extends BaseService
 {
-    private $entityManager;
-    private $httpRequestService;
-    private $serviceRepository;
-    private $serviceRequestRepository;
-    private $requestKeysRepo;
-    private $responseKeyRepository;
-    private $responseKeyRequestItemRepo;
+    private ServiceRepository $serviceRepository;
+    private ServiceRequestRepository $serviceRequestRepository;
+    private ServiceRequestResponseKeyRepository $requestKeysRepo;
+    private ServiceResponseKeyRepository $responseKeyRepository;
     private $defaultRequestResponseKeyData = [
         "response_key_value" => "",
         "show_in_response" => false,
@@ -38,12 +32,8 @@ class RequestResponseKeysService extends BaseService
         "is_service_request" => false,
         "has_array_value" => false,
     ];
-    public function __construct(EntityManagerInterface $entityManager, HttpRequestService $httpRequestService,
-                                TokenStorageInterface $tokenStorage)
+    public function __construct()
     {
-        parent::__construct($tokenStorage);
-        $this->entityManager = $entityManager;
-        $this->httpRequestService = $httpRequestService;
         $this->serviceRepository = new ServiceRepository();
         $this->serviceRequestRepository = new ServiceRequestRepository();
         $this->responseKeyRepository = new ServiceResponseKeyRepository();
@@ -86,23 +76,23 @@ class RequestResponseKeysService extends BaseService
         $responseKeyData['value'] = $data['value'];
         return $responseKeyData;
     }
-    private function getResponseKeyRequestItemObject(ResponseKeyRequestItem $responseKeyRequestItem,
-                                                     ServiceRequestResponseKey $requestResponseKey, $serviceRequestId)
-    {
-        $serviceRequest = $this->serviceRequestRepository->findById($serviceRequestId);
-        $responseKeyRequestItem->setServiceRequest(
-            $serviceRequest
-        );
-        $responseKeyRequestItem->setServiceRequestResponseKey($requestResponseKey);
-        return $responseKeyRequestItem;
-    }
+//    private function getResponseKeyRequestItemObject(ResponseKeyRequestItem $responseKeyRequestItem,
+//                                                     ServiceRequestResponseKey $requestResponseKey, $serviceRequestId)
+//    {
+//        $serviceRequest = $this->serviceRequestRepository->findById($serviceRequestId);
+//        $responseKeyRequestItem->setServiceRequest(
+//            $serviceRequest
+//        );
+//        $responseKeyRequestItem->setServiceRequestResponseKey($requestResponseKey);
+//        return $responseKeyRequestItem;
+//    }
 
     public function getResponseKeysByServiceId(int $serviceId) {
-        $service = $this->serviceRepository->findBy(["id" => $serviceId]);
+        $service = $this->serviceRepository->findById($serviceId);
         if ($service === null) {
-            throw new BadRequestHttpException(sprintf("Service id:%s not found.". $serviceId));
+            throw new BadRequestHttpException(sprintf("Service id:%s not found.", $serviceId));
         }
-        return $this->responseKeyRepository->findBy(["service" => $service]);
+        return $this->responseKeyRepository->findById($service->id);
     }
 
     public function createDefaultServiceResponseKeys(Service $service) {
@@ -155,7 +145,7 @@ class RequestResponseKeysService extends BaseService
     }
 
     public function getRequestResponseKeys(ServiceRequest $serviceRequest, string $sort = "key_name", string $order = "asc", int $count = null) {
-        $responseKeys = $this->responseKeyRepository->findBy(["service" => $serviceRequest->getService()]);
+        $responseKeys = $serviceRequest->service()->first()->responseKey()->get()->toArray();
         return array_map(function ($responseKey) use($serviceRequest) {
             return $this->getRequestResponseKey($serviceRequest, $responseKey);
         }, $responseKeys);

@@ -1,31 +1,25 @@
 <?php
-namespace App\Service;
+
+namespace App\Services;
 
 use App\Services\ApiServices\ApiService;
 use App\Services\ApiServices\ServiceRequests\RequestService;
 use App\Services\Category\CategoryService;
 use App\Services\Provider\ProviderService;
-use App\Services\Tools\HttpRequestService;
-use Doctrine\ORM\EntityManagerInterface;
-use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 
 class SearchService extends BaseService
 {
-    private $entityManager;
-    private $httpRequestService;
-    private $providerService;
-    private $requestService;
-    private $categoryService;
-    private $apiService;
+    private ProviderService $providerService;
+    private RequestService $requestService;
+    private CategoryService $categoryService;
+    private ApiService $apiService;
 
-    public function __construct(EntityManagerInterface $entityManager, HttpRequestService $httpRequestService,
-                                ProviderService $providerService, RequestService $requestService,
-                                CategoryService $categoryService, ApiService $apiService,
-                                TokenStorageInterface $tokenStorage)
-    {
-        parent::__construct($tokenStorage);
-        $this->entityManager = $entityManager;
-        $this->httpRequestService = $httpRequestService;
+    public function __construct(
+        ProviderService $providerService,
+        RequestService $requestService,
+        CategoryService $categoryService,
+        ApiService $apiService
+    ) {
         $this->providerService = $providerService;
         $this->requestService = $requestService;
         $this->categoryService = $categoryService;
@@ -37,8 +31,8 @@ class SearchService extends BaseService
         $getProviders = $this->providerService->findByQuery($query);
         if (count($getProviders) > 0) {
             return [
-              "type" => "provider",
-              "items" => $getProviders
+                "type" => "provider",
+                "items" => $getProviders
             ];
         }
 

@@ -2,36 +2,24 @@
 
 namespace App\Services\Tools\FileSystem\Downloads;
 
-use App\Models\User;
-use App\Services\Tools\HttpRequestService;
 use App\Services\Tools\FileSystem\FileSystemService;
 use App\Services\Tools\FileSystem\FileSystemServiceBase;
-use Doctrine\ORM\EntityManagerInterface;
-use League\Flysystem\FilesystemInterface;
-use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
-use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 
 class DownloadsFileSystemService extends FileSystemServiceBase
 {
-    const FILE_SYSTEM_NAME = "downloads_filesystem";
+    const FILE_SYSTEM_NAME = "downloads";
 
-    private FilesystemInterface $downloadsFilesystem;
 
-    public function __construct(string $projectDir, string $uploadTempDir, FilesystemInterface $downloadsFilesystem,
-                                FileSystemService $fileSystemService, ParameterBagInterface $parameterBag, TokenStorageInterface $tokenStorage)
+    public function __construct(FileSystemService $fileSystemService)
     {
-        parent::__construct($projectDir, $uploadTempDir, $fileSystemService, $parameterBag, $tokenStorage);
-        $this->downloadsFilesystem = $downloadsFilesystem;
+        parent::__construct($fileSystemService, self::FILE_SYSTEM_NAME);
     }
 
     /**
      * @param string $dir
      * @param string $fileName
      * @param string $fileContents
-     * @return bool
-     * @throws \League\Flysystem\FileExistsException
-     * @throws \League\Flysystem\FileNotFoundException
      */
     public function storeNewDownloadsFile(string $dir, string $fileName, string $fileContents)
     {
@@ -64,9 +52,5 @@ class DownloadsFileSystemService extends FileSystemServiceBase
             throw new BadRequestHttpException(sprintf("Error opening file stream for path: (%s)", $path));
         }
         return $resource;
-    }
-
-    public function getDownloadsFilesystem() {
-        return $this->downloadsFilesystem;
     }
 }

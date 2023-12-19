@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Services\Provider;
 
 use App\Models\Provider;
@@ -10,26 +11,29 @@ use App\Services\ApiServices\ResponseKeysService;
 use App\Services\Category\CategoryService;
 use App\Services\Permission\AccessControlService;
 use App\Services\Property\PropertyService;
-use App\Services\Tools\HttpRequestService;
 use App\Services\Tools\IExport\IExportTypeService;
-use Doctrine\Common\Collections\ArrayCollection;
-use Doctrine\Common\Collections\Collection;
-use Doctrine\ORM\EntityManagerInterface;
-use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 
 class ProviderImporterService extends ProviderService
 {
 
-    public function __construct(EntityManagerInterface $entityManager, HttpRequestService $httpRequestService,
-                                PropertyService $propertyService, CategoryService $categoryService,
-                                ApiService $apiService, ResponseKeysService $responseKeysService,
-                                TokenStorageInterface $tokenStorage, AccessControlService $accessControlService) {
-        parent::__construct($entityManager, $httpRequestService, $propertyService, $categoryService, $apiService,
-            $responseKeysService, $tokenStorage, $accessControlService
+    public function __construct(
+        PropertyService $propertyService,
+        CategoryService $categoryService,
+        ApiService $apiService,
+        ResponseKeysService $responseKeysService,
+        AccessControlService $accessControlService
+    ) {
+        parent::__construct(
+            $propertyService,
+            $categoryService,
+            $apiService,
+            $responseKeysService,
+            $accessControlService
         );
     }
 
-    private function buildServiceRequests(Provider $provider, array $mappings) {
+    private function buildServiceRequests(Provider $provider, array $mappings)
+    {
         foreach ($provider->getServiceRequests() as $sourceServiceRequest) {
             $destService = $this->apiService->getServiceById(
                 IExportTypeService::getImportMappingValue(
@@ -78,41 +82,43 @@ class ProviderImporterService extends ProviderService
         return $sourceServiceRequest;
     }
 
-    private function buildServiceRequestResponseKeys(ServiceRequest $sourceServiceRequest, Service $destService) {
-            foreach ($sourceServiceRequest->getServiceRequestResponseKeys() as $responseKey) {
-                if ($responseKey->getServiceResponseKey() === null) {
-                    $sourceServiceRequest->removeServiceRequestResponseKey($responseKey);
-                    continue;
-                }
-                if ($responseKey->getResponseKeyValue() === null) {
-                    $sourceServiceRequest->removeServiceRequestResponseKey($responseKey);
-                    continue;
-                }
-                $getResponseKeyByName = $this->responseKeysService->getServiceResponseKeyByName(
-                    $destService,
-                    $responseKey->getServiceResponseKey()->getKeyName()
-                );
-                if ($getResponseKeyByName === null) {
-                    $createResponseKey = $this->responseKeysService->createServiceResponseKeys([
-                        "service_id" => $destService->getId(),
-                        "key_name" => $responseKey->getServiceResponseKey()->getKeyName(),
-                        "key_value" => $responseKey->getServiceResponseKey()->getKeyValue()
-                    ]);
-                    if ($createResponseKey instanceof ServiceResponseKey) {
-                        $responseKey->setServiceResponseKey($createResponseKey);
-                    } else {
-                        $responseKey->setServiceResponseKey(null);
-                        continue;
-                    }
-                } else {
-                    $responseKey->setServiceResponseKey($getResponseKeyByName);
-                }
+    private function buildServiceRequestResponseKeys(ServiceRequest $sourceServiceRequest, Service $destService)
+    {
+        foreach ($sourceServiceRequest->getServiceRequestResponseKeys() as $responseKey) {
+            if ($responseKey->getServiceResponseKey() === null) {
+                $sourceServiceRequest->removeServiceRequestResponseKey($responseKey);
+                continue;
             }
+            if ($responseKey->getResponseKeyValue() === null) {
+                $sourceServiceRequest->removeServiceRequestResponseKey($responseKey);
+                continue;
+            }
+            $getResponseKeyByName = $this->responseKeysService->getServiceResponseKeyByName(
+                $destService,
+                $responseKey->getServiceResponseKey()->getKeyName()
+            );
+            if ($getResponseKeyByName === null) {
+                $createResponseKey = $this->responseKeysService->createServiceResponseKeys([
+                    "service_id" => $destService->getId(),
+                    "key_name" => $responseKey->getServiceResponseKey()->getKeyName(),
+                    "key_value" => $responseKey->getServiceResponseKey()->getKeyValue()
+                ]);
+                if ($createResponseKey instanceof ServiceResponseKey) {
+                    $responseKey->setServiceResponseKey($createResponseKey);
+                } else {
+                    $responseKey->setServiceResponseKey(null);
+                    continue;
+                }
+            } else {
+                $responseKey->setServiceResponseKey($getResponseKeyByName);
+            }
+        }
 
         return $sourceServiceRequest;
     }
 
-    private function buildProviderProperties(Provider $provider, array $mappings) {
+    private function buildProviderProperties(Provider $provider, array $mappings)
+    {
         foreach ($provider->getProviderProperties() as $providerProperty) {
             $property = $this->propertyService->getPropertyById(
                 IExportTypeService::getImportMappingValue(
@@ -128,7 +134,8 @@ class ProviderImporterService extends ProviderService
         return $provider;
     }
 
-    private function buildProviderCategories(Provider $provider, array $mappings) {
+    private function buildProviderCategories(Provider $provider, array $mappings)
+    {
         $destProviderCategory = $this->categoryService->getCategoryById(
             IExportTypeService::getImportMappingValue(
                 $provider->getProviderName(),

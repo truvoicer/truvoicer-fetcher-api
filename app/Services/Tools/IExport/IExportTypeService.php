@@ -12,13 +12,11 @@ use App\Services\Category\CategoryEntityService;
 use App\Services\Category\CategoryImporterService;
 use App\Services\Permission\AccessControlService;
 use App\Services\Permission\PermissionService;
-use App\Services\Property\PropertyEntityService;
 use App\Services\Property\PropertyImporterService;
 use App\Services\Provider\ProviderEntityService;
 use App\Services\Provider\ProviderImporterService;
 use App\Services\Tools\SerializerService;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
-use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 
 class IExportTypeService extends BaseService
 {

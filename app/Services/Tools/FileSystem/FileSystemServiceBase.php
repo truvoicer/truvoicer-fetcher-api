@@ -4,30 +4,20 @@ namespace App\Services\Tools\FileSystem;
 use App\Models\File;
 use App\Models\FileDownload;
 use App\Services\BaseService;
-use App\Services\Tools\HttpRequestService;
-use Doctrine\ORM\EntityManagerInterface;
-use League\Flysystem\FilesystemInterface;
-use Symfony\Component\Asset\Context\RequestStackContext;
-use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
-use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
-use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
+use Illuminate\Contracts\Filesystem\Filesystem;
+use Illuminate\Support\Facades\Storage;
 
 class FileSystemServiceBase extends BaseService
 {
     const FILE_DOWNLOAD_ROOT_PATH = "/files/download/file/%s";
-    protected string $projectDir;
-    protected string $uploadTempDir;
+    protected string $fileSystemName;
+    protected Filesystem $filesystem;
     public FileSystemService $fileSystemService;
-    protected ParameterBagInterface $parameterBag;
 
-    public function __construct(string $projectDir, string $uploadTempDir, FileSystemService $fileSystemService,
-                                ParameterBagInterface $parameterBag, TokenStorageInterface $tokenStorage)
+    public function __construct(FileSystemService $fileSystemService, string $fileSystemName)
     {
-        parent::__construct($tokenStorage);
-        $this->projectDir = $projectDir;
-        $this->uploadTempDir = $uploadTempDir;
         $this->fileSystemService = $fileSystemService;
-        $this->parameterBag = $parameterBag;
+        $this->setFilesystem(Storage::disk($fileSystemName));
     }
 
     public function getFileDownloadUrl(File $file) {
@@ -36,8 +26,18 @@ class FileSystemServiceBase extends BaseService
     }
 
     protected function buildDownloadUrl(FileDownload $fileDownload) {
-        return $this->parameterBag->get("app.base_url") . sprintf(
+        return env('SITE_BASE_URL') . sprintf(
             self::FILE_DOWNLOAD_ROOT_PATH, $fileDownload->getDownloadKey()
             );
+    }
+
+    public function getFilesystem(): Filesystem
+    {
+        return $this->filesystem;
+    }
+
+    public function setFilesystem(Filesystem $filesystem): void
+    {
+        $this->filesystem = $filesystem;
     }
 }

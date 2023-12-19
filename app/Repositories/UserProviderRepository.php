@@ -34,13 +34,6 @@ class UserProviderRepository extends BaseRepository
 
     }
 
-    public function saveUserProvider(UserProvider $userProvider)
-    {
-        $this->getEntityManager()->persist($userProvider);
-        $this->getEntityManager()->flush();
-        return $userProvider;
-    }
-
     public function createUserProvider(User $user, Provider $provider, array $permissions = [])
     {
         $saveUserProvider = $user->provider()->save($provider);

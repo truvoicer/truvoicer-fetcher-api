@@ -7,22 +7,17 @@ use App\Models\FileDownload;
 use App\Repositories\FileDownloadRepository;
 use App\Repositories\FileRepository;
 use App\Services\Tools\HttpRequestService;
-use App\Services\Tools\FileSystem\Downloads\DownloadsFileSystemService;
-use App\Services\Tools\FileSystem\Uploads\UploadsFileSystemService;
-use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 
 class FileSystemService
 {
 
-    private EntityManagerInterface $entityManager;
     private HttpRequestService $httpRequestService;
     private FileRepository $fileRepository;
     private FileDownloadRepository $fileDownloadRepository;
 
-    public function __construct(EntityManagerInterface $entityManager, HttpRequestService $httpRequestService)
+    public function __construct(HttpRequestService $httpRequestService)
     {
-        $this->entityManager = $entityManager;
         $this->httpRequestService = $httpRequestService;
         $this->fileRepository = new FileRepository();
         $this->fileDownloadRepository = new FileDownloadRepository();

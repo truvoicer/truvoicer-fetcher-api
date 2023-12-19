@@ -3,26 +3,15 @@ namespace App\Services\Tools\FileSystem\Uploads;
 
 use App\Services\Tools\FileSystem\FileSystemService;
 use App\Services\Tools\FileSystem\FileSystemServiceBase;
-use League\Flysystem\FilesystemInterface;
-use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
-use Symfony\Component\Filesystem\Exception\IOExceptionInterface;
-use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
-use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 
 class UploadsFileSystemService extends FileSystemServiceBase
 {
-    const FILE_SYSTEM_NAME = "upload_temp_filesystem";
+    const FILE_SYSTEM_NAME = "uploads";
 
-    private FilesystemInterface $uploadTempFilesystem;
-
-    public function __construct(string $projectDir, string $uploadTempDir, FilesystemInterface $uploadTempFilesystem,
-                                FileSystemService $fileSystemService, ParameterBagInterface $parameterBag, TokenStorageInterface $tokenStorage) {
-        parent::__construct($projectDir, $uploadTempDir, $fileSystemService, $parameterBag, $tokenStorage);
-        $this->projectDir = $projectDir;
-        $this->uploadTempDir = $uploadTempDir;
-        $this->uploadTempFilesystem = $uploadTempFilesystem;
+    public function __construct(FileSystemService $fileSystemService) {
+        parent::__construct($fileSystemService, self::FILE_SYSTEM_NAME);
     }
 
     public function getUploadedFilePath(UploadedFile $uploadedFile) {
@@ -32,7 +21,7 @@ class UploadsFileSystemService extends FileSystemServiceBase
         try {
             $filesystem->copy($uploadedFile->getRealPath(), $copyToPath);
             return $uploadedFile->getFileName() . ".xml";
-        } catch (IOExceptionInterface $exception) {
+        } catch (\Exception $exception) {
             echo "An error occurred while creating your directory at ".$exception->getPath();
             return false;
         }

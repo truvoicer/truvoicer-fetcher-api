@@ -1,35 +1,24 @@
 <?php
 namespace App\Services\ApiServices\ServiceRequests;
 
-use App\Models\Service;
 use App\Models\ServiceRequest;
 use App\Models\ServiceRequestParameter;
-use App\Models\ServiceResponseKey;
 use App\Repositories\ServiceRepository;
 use App\Repositories\ServiceRequestParameterRepository;
 use App\Repositories\ServiceRequestRepository;
 use App\Repositories\ServiceResponseKeyRepository;
 use App\Services\BaseService;
-use App\Services\Tools\HttpRequestService;
-use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
-use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 
 class RequestParametersService extends BaseService
 {
-    private $entityManager;
-    private $httpRequestService;
-    private $serviceRepository;
-    private $serviceRequestRepository;
-    private $requestParametersRepo;
-    private $responseKeysRepo;
+    private ServiceRepository $serviceRepository;
+    private ServiceRequestRepository $serviceRequestRepository;
+    private ServiceRequestParameterRepository $requestParametersRepo;
+    private ServiceResponseKeyRepository $responseKeysRepo;
 
-    public function __construct(EntityManagerInterface $entityManager, HttpRequestService $httpRequestService,
-                                TokenStorageInterface $tokenStorage)
+    public function __construct()
     {
-        parent::__construct($tokenStorage);
-        $this->entityManager = $entityManager;
-        $this->httpRequestService = $httpRequestService;
         $this->serviceRepository = new ServiceRepository();
         $this->serviceRequestRepository = new ServiceRequestRepository();
         $this->requestParametersRepo = new ServiceRequestParameterRepository();

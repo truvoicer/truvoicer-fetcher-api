@@ -1,12 +1,8 @@
 <?php
 namespace App\Services\ApiServices\ServiceRequests;
 
-use App\Models\Provider;
-use App\Models\Service;
 use App\Models\ServiceRequest;
 use App\Models\ServiceRequestConfig;
-use App\Models\ServiceRequestParameter;
-use App\Models\ServiceResponseKey;
 use App\Library\Defaults\DefaultData;
 use App\Repositories\ServiceRepository;
 use App\Repositories\ServiceRequestConfigRepository;
@@ -16,11 +12,8 @@ use App\Repositories\ServiceResponseKeyRepository;
 use App\Services\ApiManager\ApiBase;
 use App\Services\BaseService;
 use App\Services\Provider\ProviderService;
-use App\Services\Tools\HttpRequestService;
-use Doctrine\ORM\EntityManagerInterface;
 use Illuminate\Database\Eloquent\Model;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
-use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 
 class RequestConfigService extends BaseService
 {
@@ -30,8 +23,7 @@ class RequestConfigService extends BaseService
     const REQUEST_CONFIG_ITEM_VALUE = "item_value";
     const REQUEST_CONFIG_ITEM_ARRAY_VALUE = "item_array_value";
     const REQUEST_CONFIG_ITEM_VALUE_CHOICES = "item_value_choices";
-    private $entityManager;
-    private $httpRequestService;
+
     private $serviceRepository;
     private $providerService;
     private $serviceRequestRepository;
@@ -39,13 +31,9 @@ class RequestConfigService extends BaseService
     private $requestConfigRepo;
     private $responseKeysRepo;
 
-    public function __construct(EntityManagerInterface $entityManager, HttpRequestService $httpRequestService,
-                                ProviderService $providerService, TokenStorageInterface $tokenStorage)
+    public function __construct(ProviderService $providerService)
     {
-        parent::__construct($tokenStorage);
-        $this->entityManager = $entityManager;
         $this->providerService = $providerService;
-        $this->httpRequestService = $httpRequestService;
         $this->serviceRepository = new ServiceRepository();
         $this->serviceRequestRepository = new ServiceRequestRepository();
         $this->requestParametersRepo = new ServiceRequestParameterRepository();
@@ -56,7 +44,10 @@ class RequestConfigService extends BaseService
     public function getResponseKeysRequestsConfigList(int $serviceRequestId, int $providerId, string $sort, string $order, int $count) {
         $serviceRequest = $this->serviceRequestRepository->findById($serviceRequestId);
         $provider = $this->providerService->getProviderById($providerId);
-        $responseKeys = $this->responseKeysRepo->findBy(["service" => $serviceRequest->getService()]);
+
+        $this->responseKeysRepo->addWhere("service", $serviceRequest->service()->id);
+        $responseKeys = $serviceRequest->service()->get()->responseKey()->get()->toArray();
+
         $list = array_map(function ($item) use($provider, $serviceRequest) {
             $listObject = new \stdClass();
             $listObject->key_name = $item->getId();

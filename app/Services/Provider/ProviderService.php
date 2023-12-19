@@ -71,7 +71,7 @@ class ProviderService extends BaseService
 
     public function getProviderById(int $providerId)
     {
-        $provider = $this->providerRepository->find($providerId);
+        $provider = $this->providerRepository->findById($providerId);
         if ($provider === null) {
             throw new BadRequestHttpException(sprintf("Provider id:%s not found in database.",
                 $providerId

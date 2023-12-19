@@ -5,7 +5,6 @@ namespace App\Services\ApiManager\Operations;
 use App\Models\Provider;
 use App\Models\ServiceRequest;
 use App\Services\ApiManager\ApiBase;
-use App\Services\ApiManager\Client\Amazon\AmazonApiManager;
 use App\Services\ApiManager\Client\ApiClientHandler;
 use App\Services\ApiManager\Client\Entity\ApiRequest;
 use App\Services\ApiManager\Client\Oauth\Oauth;
@@ -18,7 +17,6 @@ use App\Services\Tools\SerializerService;
 use DateTime;
 use Exception;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
-use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 
 class BaseOperations extends ApiBase
 {
@@ -41,9 +39,8 @@ class BaseOperations extends ApiBase
 
     public function __construct(ProviderService $providerService, SerializerService $serializerService, Oauth $oauth,
                                 ResponseManager $responseManager, CategoryService $categoryService, ApiClientHandler $apiClientHandler,
-                                ApiRequest $apiRequest, EventsService $eventsService, RequestService $requestService, TokenStorageInterface $tokenStorage)
+                                ApiRequest $apiRequest, EventsService $eventsService, RequestService $requestService)
     {
-        parent::__construct($tokenStorage);
         $this->providerService = $providerService;
         $this->serializerService = $serializerService;
         $this->oath = $oauth;

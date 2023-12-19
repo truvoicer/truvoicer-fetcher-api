@@ -12,4 +12,8 @@ class Service extends Model
     {
         return $this->hasMany(ServiceRequest::class);
     }
+    public function serviceResponseKey()
+    {
+        return $this->hasMany(ServiceResponseKey::class);
+    }
 }

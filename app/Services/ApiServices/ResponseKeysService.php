@@ -1,12 +1,10 @@
 <?php
 namespace App\Services\ApiServices;
 
-use App\Models\Category;
-use App\Models\ResponseKeyRequestItem;
+//use App\Models\ResponseKeyRequestItem;
 use App\Models\Service;
 use App\Models\Provider;
 use App\Models\ServiceRequest;
-use App\Models\ServiceRequestParameter;
 use App\Models\ServiceRequestResponseKey;
 use App\Models\ServiceResponseKey;
 use App\Library\Defaults\DefaultData;
@@ -17,20 +15,15 @@ use App\Repositories\ServiceResponseKeyRepository;
 use App\Services\BaseService;
 use App\Services\Tools\HttpRequestService;
 use App\Services\Tools\UtilsService;
-use Doctrine\ORM\EntityManagerInterface;
 use Illuminate\Database\Eloquent\Model;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
-use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 
 class ResponseKeysService extends BaseService
 {
-    private $entityManager;
-    private $httpRequestService;
-    private $serviceRepository;
-    private $serviceRequestRepository;
-    private $requestKeysRepo;
-    private $responseKeyRepository;
-    private $responseKeyRequestItemRepo;
+    private ServiceRepository $serviceRepository;
+    private ServiceRequestRepository $serviceRequestRepository;
+    private ServiceRequestResponseKeyRepository $requestKeysRepo;
+    private ServiceResponseKeyRepository $responseKeyRepository;
     private $defaultRequestResponseKeyData = [
         "response_key_value" => "",
         "show_in_response" => false,
@@ -42,9 +35,8 @@ class ResponseKeysService extends BaseService
         "is_service_request" => false,
         "has_array_value" => false,
     ];
-    public function __construct(HttpRequestService $httpRequestService)
+    public function __construct()
     {
-        $this->httpRequestService = $httpRequestService;
         $this->serviceRepository = new ServiceRepository();
         $this->serviceRequestRepository = new ServiceRequestRepository();
         $this->responseKeyRepository = new ServiceResponseKeyRepository();
@@ -86,16 +78,16 @@ class ResponseKeysService extends BaseService
         $responseKeys->setKeyValue(UtilsService::labelToName($data["key_name"]));
         return $responseKeys;
     }
-    private function getResponseKeyRequestItemObject(ResponseKeyRequestItem $responseKeyRequestItem,
-                                                     ServiceRequestResponseKey $requestResponseKey, $serviceRequestId)
-    {
-        $serviceRequest = $this->serviceRequestRepository->findById($serviceRequestId);
-        $responseKeyRequestItem->setServiceRequest(
-            $serviceRequest
-        );
-        $responseKeyRequestItem->setServiceRequestResponseKey($requestResponseKey);
-        return $responseKeyRequestItem;
-    }
+//    private function getResponseKeyRequestItemObject(ResponseKeyRequestItem $responseKeyRequestItem,
+//                                                     ServiceRequestResponseKey $requestResponseKey, $serviceRequestId)
+//    {
+//        $serviceRequest = $this->serviceRequestRepository->findById($serviceRequestId);
+//        $responseKeyRequestItem->setServiceRequest(
+//            $serviceRequest
+//        );
+//        $responseKeyRequestItem->setServiceRequestResponseKey($requestResponseKey);
+//        return $responseKeyRequestItem;
+//    }
 
     public function getResponseKeysByServiceId(int $serviceId) {
         $service = $this->serviceRepository->findById($serviceId);
@@ -205,21 +197,21 @@ class ResponseKeysService extends BaseService
         $requestResponseKey->setPrependExtraDataValue($responseKeyData['prepend_extra_data_value']);
 
         $requestResponseKey->setIsServiceRequest($responseKeyData['is_service_request']);
-        if ($responseKeyData['is_service_request']) {
-            $serviceRequestId = $this->getServiceRequestIdFromRequest($responseKeyData);
-            if ($serviceRequestId !== null) {
-                $getResponseKeyRequestItem = $requestResponseKey->getResponseKeyRequestItem();
-                if ($getResponseKeyRequestItem === null) {
-                    $getResponseKeyRequestItem = new ResponseKeyRequestItem();
-                }
-                $responseKeyRequestItem = $this->getResponseKeyRequestItemObject(
-                    $getResponseKeyRequestItem,
-                    $requestResponseKey,
-                    $serviceRequestId
-                );
-                $requestResponseKey->setResponseKeyRequestItem($responseKeyRequestItem);
-            }
-        }
+//        if ($responseKeyData['is_service_request']) {
+//            $serviceRequestId = $this->getServiceRequestIdFromRequest($responseKeyData);
+//            if ($serviceRequestId !== null) {
+//                $getResponseKeyRequestItem = $requestResponseKey->getResponseKeyRequestItem();
+//                if ($getResponseKeyRequestItem === null) {
+//                    $getResponseKeyRequestItem = new ResponseKeyRequestItem();
+//                }
+//                $responseKeyRequestItem = $this->getResponseKeyRequestItemObject(
+//                    $getResponseKeyRequestItem,
+//                    $requestResponseKey,
+//                    $serviceRequestId
+//                );
+//                $requestResponseKey->setResponseKeyRequestItem($responseKeyRequestItem);
+//            }
+//        }
 
         $requestResponseKey->setHasArrayValue($responseKeyData['has_array_value']);
         if((array_key_exists("array_keys", $responseKeyData) && is_array($responseKeyData['array_keys'])) ||
