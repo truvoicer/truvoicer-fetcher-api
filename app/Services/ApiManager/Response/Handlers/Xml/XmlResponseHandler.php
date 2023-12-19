@@ -33,7 +33,7 @@ class XmlResponseHandler extends ResponseHandler
                     }
                 }
             }
-            $itemList["provider"] = $this->provider->getProviderName();
+            $itemList["provider"] = $this->provider->name;
             return $itemList;
         }, $itemList);
     }

@@ -58,7 +58,7 @@ class ImportService
     {
         $requestData = $this->httpRequestService->getRequestData($request, true);
         $getFileData = $this->uploadsFileSystemService->fileSystemService->getFileById((int)$requestData["file_id"]);
-        $getFileContents = $this->getXmlData($getFileData->getPath());
+        $getFileContents = $this->getXmlData($getFileData->path);
 
         $runImportForType = $this->iExportTypeService->runImportForType(
             $requestData["import_type"],

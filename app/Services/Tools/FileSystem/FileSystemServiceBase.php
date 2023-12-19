@@ -27,7 +27,7 @@ class FileSystemServiceBase extends BaseService
 
     protected function buildDownloadUrl(FileDownload $fileDownload) {
         return env('SITE_BASE_URL') . sprintf(
-            self::FILE_DOWNLOAD_ROOT_PATH, $fileDownload->getDownloadKey()
+            self::FILE_DOWNLOAD_ROOT_PATH, $fileDownload->download_key
             );
     }
 

@@ -49,7 +49,7 @@ class ServiceRequestRepository extends BaseRepository
 //            $serviceRequestConfig = new ServiceRequestConfig();
 //            $serviceRequestConfig->setItemName($item->getItemName());
 //            $serviceRequestConfig->setItemValue($item->getItemValue());
-//            $serviceRequestConfig->setValueType($item->getValueType());
+//            $serviceRequestConfig->setValueType($item->value_type);
 //            $serviceRequestConfig->setServiceRequest($newServiceRequest);
 //            $newServiceRequest->addServiceRequestConfig($serviceRequestConfig);
 //            $this->getEntityManager()->persist($serviceRequestConfig);

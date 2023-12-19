@@ -105,7 +105,7 @@ class ResponseHandler extends ApiBase
                     }
                 }
             }
-            $itemList["provider"] = $this->provider->getProviderName();
+            $itemList["provider"] = $this->provider->name;
             return $itemList;
         }, $itemList);
     }
@@ -326,7 +326,7 @@ class ResponseHandler extends ApiBase
     {
         switch ($value) {
             case self::PARAM_FILTER_KEYS["API_BASE_URL"]['placeholder']:
-                return $this->provider->getProviderApiBaseUrl();
+                return $this->provider->api_base_url;
             default:
                 return $value;
         }

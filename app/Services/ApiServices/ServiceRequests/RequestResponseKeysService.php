@@ -98,7 +98,7 @@ class RequestResponseKeysService extends BaseService
     public function createDefaultServiceResponseKeys(Service $service) {
         foreach (DefaultData::getServiceResponseKeys() as $keyName => $keyValue) {
             $this->createServiceResponseKeys([
-               "service_id" => $service->getId(),
+               "service_id" => $service->id,
                "key_name" => $keyName,
                "key_value" => $keyValue
             ]);
@@ -223,8 +223,8 @@ class RequestResponseKeysService extends BaseService
     }
 
     public function updateRequestResponseKey(ServiceRequest $serviceRequest, ServiceResponseKey $serviceResponseKey, array $data) {
-        $this->requestKeysRepo->addWhere("service_request", $serviceRequest->getId());
-        $this->requestKeysRepo->addWhere("service_response_key", $serviceResponseKey->getId());
+        $this->requestKeysRepo->addWhere("service_request", $serviceRequest->id);
+        $this->requestKeysRepo->addWhere("service_response_key", $serviceResponseKey->id);
         $requestResponseKey = $this->requestKeysRepo->findOne();
 
         if ($requestResponseKey !== null) {
@@ -241,8 +241,8 @@ class RequestResponseKeysService extends BaseService
     }
 
     public function deleteRequestResponseKey(ServiceRequest $serviceRequest, ServiceResponseKey $serviceResponseKey) {
-        $this->requestKeysRepo->addWhere("service_request", $serviceRequest->getId());
-        $this->requestKeysRepo->addWhere("service_response_key", $serviceResponseKey->getId());
+        $this->requestKeysRepo->addWhere("service_request", $serviceRequest->id);
+        $this->requestKeysRepo->addWhere("service_response_key", $serviceResponseKey->id);
         $requestResponseKey = $this->requestKeysRepo->findOne();
         if ($requestResponseKey !== null) {
             return $this->requestKeysRepo->deleteRequestResponseKeys($requestResponseKey);

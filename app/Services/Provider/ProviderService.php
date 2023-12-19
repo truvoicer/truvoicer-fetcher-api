@@ -106,8 +106,8 @@ class ProviderService extends BaseService
 
     public function getUserProviderList(User $user, Provider $provider)
     {
-        $this->userProviderRepository->addWhere("user", $user->getId());
-        $this->userProviderRepository->addWhere("provider", $provider->getId());
+        $this->userProviderRepository->addWhere("user", $user->id);
+        $this->userProviderRepository->addWhere("provider", $provider->id);
         return $this->userProviderRepository->findOne();
     }
 
@@ -170,12 +170,12 @@ class ProviderService extends BaseService
     {
         $getProviderProperty = $this->providerRepository->getProviderProperty($provider, $property);
         $object = new \stdClass();
-        $object->property_id = $property->getId();
-        $object->property_name = $property->getPropertyName();
-        $object->property_label = $property->getPropertyLabel();
+        $object->property_id = $property->id;
+        $object->property_name = $property->name;
+        $object->property_label = $property->label;
         $object->property_value = "";
         if ($getProviderProperty !== null) {
-            $object->property_value = $getProviderProperty->getPropertyValue();
+            $object->property_value = $getProviderProperty->value;
         }
         return $object;
     }
@@ -191,15 +191,15 @@ class ProviderService extends BaseService
 
         return array_map(function ($property) use ($provider) {
             $repo = new ProviderPropertyRepository();
-            $repo->addWhere("provider", $provider->getId());
-            $repo->addWhere("property", $property->getId());
+            $repo->addWhere("provider", $provider->id);
+            $repo->addWhere("property", $property->id);
             $providerProperty = $repo->findOne();
             $providerPropertyObject = new \stdClass();
-            $providerPropertyObject->id = $property->getId();
-            $providerPropertyObject->property_name = $property->getPropertyName();
-            $providerPropertyObject->property_value = ($providerProperty !== null) ? $providerProperty->getPropertyValue() : "";
-            $providerPropertyObject->value_type = $property->getValueType();
-            $providerPropertyObject->value_choices = $property->getValueChoices();
+            $providerPropertyObject->id = $property->id;
+            $providerPropertyObject->property_name = $property->name;
+            $providerPropertyObject->property_value = ($providerProperty !== null) ? $providerProperty->value : "";
+            $providerPropertyObject->value_type = $property->value_type;
+            $providerPropertyObject->value_choices = $property->value_choices;
             return $providerPropertyObject;
         }, $propertyRepo->findMany());
     }
@@ -289,8 +289,8 @@ class ProviderService extends BaseService
     public function updateProviderProperty(Provider $provider, Property $property, array $data)
     {
         $providerPropertyRepo = new ProviderPropertyRepository();
-        $providerPropertyRepo->addWhere("provider", $provider->getId());
-        $providerPropertyRepo->addWhere("property", $property->getId());
+        $providerPropertyRepo->addWhere("provider", $provider->id);
+        $providerPropertyRepo->addWhere("property", $property->id);
         $providerProperty = $providerPropertyRepo->findOne();
         if ($providerProperty !== null) {
             $providerProperty->setPropertyValue($data['property_value']);
@@ -311,8 +311,8 @@ class ProviderService extends BaseService
 
     public function deleteProviderProperty(Provider $provider, Property $property)
     {
-        $this->providerPropertyRepository->addWhere("provider", $provider->getId());
-        $this->providerPropertyRepository->addWhere("property", $property->getId());
+        $this->providerPropertyRepository->addWhere("provider", $provider->id);
+        $this->providerPropertyRepository->addWhere("property", $property->id);
         $providerProperty = $this->providerPropertyRepository->findOne();
 
         if ($providerProperty !== null) {
@@ -320,7 +320,7 @@ class ProviderService extends BaseService
         }
         throw new BadRequestHttpException(
             sprintf("Error deleting property value. (Provider id:%s, Property id:%s)",
-                $provider->getId(), $property->getId()
+                $provider->id, $property->id
             ));
     }
 }

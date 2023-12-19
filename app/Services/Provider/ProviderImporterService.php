@@ -34,10 +34,10 @@ class ProviderImporterService extends ProviderService
 
     private function buildServiceRequests(Provider $provider, array $mappings)
     {
-        foreach ($provider->getServiceRequests() as $sourceServiceRequest) {
+        foreach ($provider->serviceRequest()->get() as $sourceServiceRequest) {
             $destService = $this->apiService->getServiceById(
                 IExportTypeService::getImportMappingValue(
-                    $provider->getProviderName(),
+                    $provider->name,
                     "service",
                     "service_request",
                     $sourceServiceRequest->getServiceRequestName(),
@@ -46,7 +46,7 @@ class ProviderImporterService extends ProviderService
             );
             $destServiceRequestCategory = $this->categoryService->getCategoryById(
                 IExportTypeService::getImportMappingValue(
-                    $provider->getProviderName(),
+                    $provider->name,
                     "category",
                     "service_request",
                     $sourceServiceRequest->getServiceRequestName(),
@@ -64,7 +64,7 @@ class ProviderImporterService extends ProviderService
 
     private function buildServiceRequestParameters(ServiceRequest $sourceServiceRequest)
     {
-        foreach ($sourceServiceRequest->getServiceRequestParameters() as $requestParameter) {
+        foreach ($sourceServiceRequest->serviceRequestParameter()->get() as $requestParameter) {
             if ($requestParameter->getParameterName() === null) {
                 $sourceServiceRequest->removeServiceRequestParameter($requestParameter);
             }
@@ -74,7 +74,7 @@ class ProviderImporterService extends ProviderService
 
     private function buildServiceRequestConfigs(ServiceRequest $sourceServiceRequest)
     {
-        foreach ($sourceServiceRequest->getServiceRequestConfigs() as $requestConfig) {
+        foreach ($sourceServiceRequest->serviceRequestConfig()->get() as $requestConfig) {
             if ($requestConfig->getItemName() === null) {
                 $sourceServiceRequest->removeServiceRequestConfig($requestConfig);
             }
@@ -84,7 +84,7 @@ class ProviderImporterService extends ProviderService
 
     private function buildServiceRequestResponseKeys(ServiceRequest $sourceServiceRequest, Service $destService)
     {
-        foreach ($sourceServiceRequest->getServiceRequestResponseKeys() as $responseKey) {
+        foreach ($sourceServiceRequest->serviceRequestResponseKey()->get() as $responseKey) {
             if ($responseKey->getServiceResponseKey() === null) {
                 $sourceServiceRequest->removeServiceRequestResponseKey($responseKey);
                 continue;
@@ -99,7 +99,7 @@ class ProviderImporterService extends ProviderService
             );
             if ($getResponseKeyByName === null) {
                 $createResponseKey = $this->responseKeysService->createServiceResponseKeys([
-                    "service_id" => $destService->getId(),
+                    "service_id" => $destService->id,
                     "key_name" => $responseKey->getServiceResponseKey()->getKeyName(),
                     "key_value" => $responseKey->getServiceResponseKey()->getKeyValue()
                 ]);
@@ -119,13 +119,13 @@ class ProviderImporterService extends ProviderService
 
     private function buildProviderProperties(Provider $provider, array $mappings)
     {
-        foreach ($provider->getProviderProperties() as $providerProperty) {
+        foreach ($provider->property()->get() as $providerProperty) {
             $property = $this->propertyService->getPropertyById(
                 IExportTypeService::getImportMappingValue(
-                    $provider->getProviderName(),
+                    $provider->name,
                     "property",
                     "provider_property",
-                    $providerProperty->getProperty()->getPropertyName(),
+                    $providerProperty->getProperty()->name,
                     $mappings
                 )
             );
@@ -138,10 +138,10 @@ class ProviderImporterService extends ProviderService
     {
         $destProviderCategory = $this->categoryService->getCategoryById(
             IExportTypeService::getImportMappingValue(
-                $provider->getProviderName(),
+                $provider->name,
                 "category",
                 "provider",
-                $provider->getProviderName(),
+                $provider->name,
                 $mappings
             )
         );
@@ -169,8 +169,8 @@ class ProviderImporterService extends ProviderService
         return array_map(function (Provider $provider) {
             $mappings = [
                 "import_entity" => [
-                    "name" => $provider->getProviderName(),
-                    "label" => $provider->getProviderLabel()
+                    "name" => $provider->name,
+                    "label" => $provider->label
                 ],
                 "data" => [
                     "service" => [
@@ -190,7 +190,7 @@ class ProviderImporterService extends ProviderService
             $mappings["data"]["service"]["available"] = $this->apiService->getAllServicesArray();
             $mappings["data"]["property"]["available"] = $this->propertyService->getAllPropertiesArray();
             $mappings["data"]["category"]["available"] = $this->categoryService->getAllCategoriesArray();
-            foreach ($provider->getServiceRequests() as $serviceRequest) {
+            foreach ($provider->serviceRequest()->get() as $serviceRequest) {
                 $mappings["data"]["service"]["sources"]["service_request"][] = [
                     "service_request_name" => $serviceRequest->getServiceRequestName(),
                     "service_request_label" => $serviceRequest->getServiceRequestLabel(),
@@ -200,15 +200,15 @@ class ProviderImporterService extends ProviderService
                     "service_request_label" => $serviceRequest->getServiceRequestLabel(),
                 ];
             }
-            foreach ($provider->getProviderProperties() as $providerProperty) {
+            foreach ($provider->property()->get() as $providerProperty) {
                 $mappings["data"]["property"]["sources"]["provider_property"][] = [
-                    "provider_property_value" => $providerProperty->getPropertyValue(),
-                    "property_name" => $providerProperty->getProperty()->getPropertyName(),
+                    "provider_property_value" => $providerProperty->value,
+                    "property_name" => $providerProperty->getProperty()->name,
                 ];
             }
             $mappings["data"]["category"]["sources"]["provider"][] = [
-                "provider_name" => $provider->getProviderName(),
-                "provider_label" => $provider->getProviderLabel(),
+                "provider_name" => $provider->name,
+                "provider_label" => $provider->label,
             ];
             return $mappings;
         }, $data);

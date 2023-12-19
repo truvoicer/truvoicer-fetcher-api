@@ -106,7 +106,7 @@ class ResponseManager extends BaseService
         $apiResponse->setRequestService($this->serviceRequest->getServiceRequestName());
         $apiResponse->setPaginationType($this->serviceRequest->getPaginationType());
         $apiResponse->setCategory($this->serviceRequest->getCategory()->getCategoryName());
-        $apiResponse->setProvider($this->provider->getProviderName());
+        $apiResponse->setProvider($this->provider->name);
         $apiResponse->setRequestData($requestData);
         $apiResponse->setApiRequest($apiRequest->toArray());
         return $apiResponse;
@@ -119,7 +119,7 @@ class ResponseManager extends BaseService
         $apiResponse->setRequestService($this->serviceRequest->getServiceRequestName());
         $apiResponse->setCategory($this->serviceRequest->getCategory()->getCategoryName());
         $apiResponse->setStatus("success");
-        $apiResponse->setProvider($this->provider->getProviderName());
+        $apiResponse->setProvider($this->provider->name);
         $apiResponse->setRequestData($requestData);
         $apiResponse->setExtraData($extraData);
         $apiResponse->setApiRequest($apiRequest->toArray());

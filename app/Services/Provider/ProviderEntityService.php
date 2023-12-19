@@ -36,15 +36,15 @@ class ProviderEntityService extends ProviderService
 
     public function getUserProviderByUser(User $user, int $providerId)
     {
-        $this->userProviderRepository->addWhere("user", $user->getId());
+        $this->userProviderRepository->addWhere("user", $user->id);
         $this->userProviderRepository->addWhere("provider", $this->getProviderById($providerId));
         return $this->userProviderRepository->findOne();
     }
 
     public function getUserProviderList(User $user, Provider $provider)
     {
-        $this->userProviderRepository->addWhere("user", $user->getId());
-        $this->userProviderRepository->addWhere("provider", $provider->getId());
+        $this->userProviderRepository->addWhere("user", $user->id);
+        $this->userProviderRepository->addWhere("provider", $provider->id);
         return $this->userProviderRepository->findOne();
     }
 

@@ -61,7 +61,7 @@ class UserAdminService extends BaseService
 
     public function apiTokenBelongsToUser(User $user, PersonalAccessToken $apiToken)
     {
-        return $apiToken->user()->getId() === $user->getId();
+        return $apiToken->user()->id === $user->id;
     }
 
     public function getApiTokenById(int $id)

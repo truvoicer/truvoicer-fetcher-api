@@ -123,9 +123,9 @@ class CategoryService extends BaseService
             if (!$checkPermission) {
                 continue;
             }
-            $providerArray[$i]['id'] = $provider->getId();
-            $providerArray[$i]['provider_name'] = $provider->getProviderName();
-            $providerArray[$i]['provider_label'] = $provider->getProviderLabel();
+            $providerArray[$i]['id'] = $provider->id;
+            $providerArray[$i]['provider_name'] = $provider->name;
+            $providerArray[$i]['provider_label'] = $provider->label;
             $i++;
         };
         return $providerArray;
@@ -135,7 +135,7 @@ class CategoryService extends BaseService
     {
         $providerArray = [];
         $i = 0;
-        foreach ($category->getProviders() as $provider) {
+        foreach ($category->provider()->get() as $provider) {
             $checkPermission = $this->accessControlService->checkPermissionsForEntity(
                 ProviderEntityService::ENTITY_NAME, $provider, $user,
                 [
@@ -147,9 +147,9 @@ class CategoryService extends BaseService
             if (!$checkPermission) {
                 continue;
             }
-            $providerArray[$i]['id'] = $provider->getId();
-            $providerArray[$i]['provider_name'] = $provider->getProviderName();
-            $providerArray[$i]['provider_label'] = $provider->getProviderLabel();
+            $providerArray[$i]['id'] = $provider->id;
+            $providerArray[$i]['provider_name'] = $provider->name;
+            $providerArray[$i]['provider_label'] = $provider->label;
             $i++;
         };
         return $providerArray;

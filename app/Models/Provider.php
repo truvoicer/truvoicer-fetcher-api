@@ -25,4 +25,8 @@ class Provider extends Model
     {
         return $this->hasMany(Property::class);
     }
+    public function oauthAccessToken()
+    {
+        return $this->hasMany(OauthAccessToken::class);
+    }
 }

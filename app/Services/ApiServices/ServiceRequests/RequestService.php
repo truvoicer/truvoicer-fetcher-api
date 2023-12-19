@@ -103,8 +103,8 @@ class RequestService extends BaseService
 
     public function getProviderServiceRequest(Service $service, Provider $provider)
     {
-        $this->serviceRequestRepository->addWhere("service", $service->getId());
-        $this->serviceRequestRepository->addWhere("provider", $provider->getId());
+        $this->serviceRequestRepository->addWhere("service", $service->id);
+        $this->serviceRequestRepository->addWhere("provider", $provider->id);
         return $this->serviceRequestRepository->findOne();
     }
 
@@ -203,7 +203,7 @@ class RequestService extends BaseService
         $requestResponseKeyRepo = new ServiceRequestResponseKeyRepository();
         $sourceServiceRequest = $this->getServiceRequestById($data["source_service_request_id"]);
         $destinationServiceRequest = $this->getServiceRequestById($data["destination_service_request_id"]);
-        if ($sourceServiceRequest->getService()->getId() !== $destinationServiceRequest->getService()->getId()) {
+        if ($sourceServiceRequest->getService()->id !== $destinationServiceRequest->getService()->id) {
             throw new BadRequestHttpException(
                 sprintf(
                     "Service mismatch: Error merging [Service Request: (%s), Service: (%s)] into [Service Request: (%s), Service: (%s)].",

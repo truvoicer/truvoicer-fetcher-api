@@ -50,7 +50,7 @@ class RequestConfigService extends BaseService
 
         $list = array_map(function ($item) use($provider, $serviceRequest) {
             $listObject = new \stdClass();
-            $listObject->key_name = $item->getId();
+            $listObject->key_name = $item->id;
             $listObject->key_name = $item->getKeyName();
             $listObject->key_value = $item->getKeyValue();
             $listObject->item_value = "";

@@ -1,9 +1,9 @@
 <?php
+
 namespace App\Services\ApiManager\Client\Oauth;
 
-use App\Models\OauthAccessTokens;
 use App\Models\Provider;
-use App\Repositories\OauthAccessTokensRepository;
+use App\Repositories\OauthAccessTokenRepository;
 use App\Services\ApiManager\Client\ApiClientHandler;
 use App\Services\ApiManager\Client\Entity\ApiRequest;
 use App\Services\Provider\ProviderService;
@@ -13,21 +13,23 @@ use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 
 class Oauth extends ApiClientHandler
 {
-    private $provider = null;
-    private $providerService;
-    private $serializerService;
-    private $oathTokenRepository;
+    private ?Provider $provider = null;
+    private ProviderService $providerService;
+    private SerializerService $serializerService;
+    private OauthAccessTokenRepository $oathTokenRepository;
 
-    public function __construct(OauthAccessTokensRepository $oathTokenRepository, SerializerService $serializerService,
-                                ProviderService $providerService)
-    {
-        parent::__construct();
+    public function __construct(
+        OauthAccessTokenRepository $oathTokenRepository,
+        SerializerService $serializerService,
+        ProviderService $providerService
+    ) {
         $this->oathTokenRepository = $oathTokenRepository;
         $this->serializerService = $serializerService;
         $this->providerService = $providerService;
     }
 
-    public function getAccessToken() {
+    public function getAccessToken()
+    {
         if ($this->provider === null) {
             return false;
         }
@@ -43,16 +45,17 @@ class Oauth extends ApiClientHandler
         );
     }
 
-    private function sendAccessTokenRequest() {
-
+    private function sendAccessTokenRequest()
+    {
         $response = $this->sendRequest($this->setRequestData());
-        if ($response->getStatusCode() !== 200) {
+        if ($response->status() !== 200) {
             throw new BadRequestHttpException("Error retrieving access token.");
         }
-        return $response->toArray(true);
+        return $response->json(true);
     }
 
-    private function setRequestData() {
+    private function setRequestData()
+    {
         $apiRequest = new ApiRequest();
 
         $grantTypeName = $this->getPropertyValue(self::OAUTH_GRANT_TYPE_FIELD_NAME);
@@ -67,12 +70,10 @@ class Oauth extends ApiClientHandler
         switch ($this->getPropertyValue(self::API_AUTH_TYPE)) {
             case "oauth":
             case "oauth_basic":
-                $apiRequest->setAuthentication([
-                    "auth_basic" => [
-                        $this->provider->getProviderAccessKey(),
-                        $this->provider->getProviderSecretKey()
-                    ]
-                ]);
+                $apiRequest->addBasicAuthentication(
+                    $this->provider->access_key,
+                    $this->provider->secret_key
+                );
                 $apiRequest->setBody([
                     $grantTypeName => $grantTypeValue,
                     $scopeName => $scopeValue
@@ -81,34 +82,39 @@ class Oauth extends ApiClientHandler
             case "oauth_body":
                 $apiRequest->setBody([
                     $grantTypeName => $grantTypeValue,
-                    "client_id" => $this->provider->getProviderAccessKey(),
-                    "client_secret" => $this->provider->getProviderSecretKey()
+                    "client_id" => $this->provider->access_key,
+                    "client_secret" => $this->provider->secret_key
                 ]);
                 break;
         }
         return $apiRequest;
     }
 
-    private function getPropertyValue(string $propertyName) {
+    private function getPropertyValue(string $propertyName)
+    {
         return $this->providerService->getProviderPropertyValue($this->provider, $propertyName);
     }
 
-    private function checkAccessToken() {
+    private function checkAccessToken()
+    {
         return $this->oathTokenRepository->getLatestAccessToken($this->provider);
     }
 
-    private function setAccessToken(string $access_token, DateTime $expiry) {
-        return $this->oathTokenRepository->saveOathToken(
-            $this->setOathTokenObject(new OauthAccessTokens(), $access_token, $expiry), $this->provider);
+    private function setAccessToken(string $access_token, DateTime $expiry)
+    {
+        $insert = $this->oathTokenRepository->insertOathToken(
+            $access_token,
+            $expiry,
+            $this->provider
+        );
+        if (!$insert) {
+            return false;
+        }
+        return $this->oathTokenRepository->getModel();
     }
 
-    private function setOathTokenObject(OauthAccessTokens $oathToken, string $access_token, \DateTime $expiry) {
-        $oathToken->setAccessToken($access_token);
-        $oathToken->setExpiry($expiry);
-        return $oathToken;
-    }
-
-    private function getExpiryDatetime(int $expirySeconds) {
+    private function getExpiryDatetime(int $expirySeconds)
+    {
         $expiryDate = new DateTime();
         return $expiryDate->setTimestamp(time() + $expirySeconds);
     }

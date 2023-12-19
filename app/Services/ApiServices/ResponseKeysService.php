@@ -112,7 +112,7 @@ class ResponseKeysService extends BaseService
         $errors = [];
         foreach (DefaultData::getServiceResponseKeys() as $keyName => $keyValue) {
             $create = $this->createServiceResponseKeys([
-               "service_id" => $service->getId(),
+               "service_id" => $service->id,
                "key_name" => $keyName,
                "key_value" => $keyValue
             ]);
