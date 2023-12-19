@@ -16,10 +16,9 @@ class UploadsFileSystemService extends FileSystemServiceBase
 
     public function getUploadedFilePath(UploadedFile $uploadedFile) {
 
-        $filesystem = new Filesystem();
         $copyToPath = $this->uploadTempDir . "/" . $uploadedFile->getFileName() . ".xml";
         try {
-            $filesystem->copy($uploadedFile->getRealPath(), $copyToPath);
+            $this->filesystem->copy($uploadedFile->getRealPath(), $copyToPath);
             return $uploadedFile->getFileName() . ".xml";
         } catch (\Exception $exception) {
             echo "An error occurred while creating your directory at ".$exception->getPath();
@@ -33,8 +32,8 @@ class UploadsFileSystemService extends FileSystemServiceBase
             "file_path" => $fileName,
             "file_type" => $fileType,
             "file_extension" => $ext,
-            "mime_type" => $this->uploadTempFilesystem->getMimetype( $fileName ),
-            "file_size" => $this->uploadTempFilesystem->getSize( $fileName ),
+//            "mime_type" => $this->filesystem->getMimetype( $fileName ),
+//            "file_size" => $this->filesystem->getSize( $fileName ),
             "file_system" => self::FILE_SYSTEM_NAME,
         ]);
         if (!$saveToDatabase || $saveToDatabase === null) {
@@ -44,11 +43,11 @@ class UploadsFileSystemService extends FileSystemServiceBase
     }
 
     public function readTempFile($filePath) {
-        return $this->uploadTempFilesystem->read($filePath);
+        return $this->filesystem->get($filePath);
     }
 
     public function readFileStream(string $path) {
-        $resource = $this->uploadTempFilesystem->readStream($path);
+        $resource = $this->filesystem->readStream($path);
         if ($resource === false) {
             throw new BadRequestHttpException(sprintf("Error opening file stream for path: (%s)", $path));
         }

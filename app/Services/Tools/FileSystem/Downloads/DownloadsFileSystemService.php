@@ -23,10 +23,10 @@ class DownloadsFileSystemService extends FileSystemServiceBase
      */
     public function storeNewDownloadsFile(string $dir, string $fileName, string $fileContents)
     {
-        if ($this->downloadsFilesystem->has($dir)) {
-            return $this->downloadsFilesystem->update($dir, $fileContents);
+        if ($this->filesystem->exists($dir)) {
+            return $this->filesystem->update($dir, $fileContents);
         } else {
-            return $this->downloadsFilesystem->write($dir, $fileContents);
+            return $this->filesystem->write($dir, $fileContents);
         }
     }
 
@@ -36,8 +36,8 @@ class DownloadsFileSystemService extends FileSystemServiceBase
             "file_path" => $dir,
             "file_type" => $fileType,
             "file_extension" => $ext,
-            "mime_type" => $this->downloadsFilesystem->getMimetype($dir),
-            "file_size" => $this->downloadsFilesystem->getSize($dir),
+//            "mime_type" => $this->filesystem->getMimetype($dir),
+//            "file_size" => $this->filesystem->getSize($dir),
             "file_system" => self::FILE_SYSTEM_NAME,
         ]);
         if (!$saveToDatabase || $saveToDatabase === null) {
@@ -47,7 +47,7 @@ class DownloadsFileSystemService extends FileSystemServiceBase
     }
 
     public function readFileStream(string $path) {
-        $resource = $this->downloadsFilesystem->readStream($path);
+        $resource = $this->filesystem->readStream($path);
         if ($resource === false) {
             throw new BadRequestHttpException(sprintf("Error opening file stream for path: (%s)", $path));
         }
