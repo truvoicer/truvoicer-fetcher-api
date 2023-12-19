@@ -20,7 +20,7 @@ use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 
 class CategoryService extends BaseService
 {
-    const SERVICE_ALIAS = "app.service.category.category_entity_service";
+    const SERVICE_ALIAS = CategoryEntityService::class;
 
     protected HttpRequestService $httpRequestService;
     protected PermissionRepository $permissionRepository;

@@ -9,7 +9,7 @@ use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 
 class PropertyService extends BaseService {
 
-    const SERVICE_ALIAS = "app.service.property.property_entity_service";
+    const SERVICE_ALIAS = PropertyEntityService::class;
 
     protected PropertyRepository $propertyRepository;
 

@@ -1,20 +1,15 @@
 <?php
+
 namespace App\Services\ApiManager\Client;
 
 use App\Services\ApiManager\ApiBase;
 use App\Services\ApiManager\Client\Entity\ApiRequest;
 use Exception;
+use Illuminate\Http\Client\PendingRequest;
 use Illuminate\Support\Facades\Http;
 
 class ApiClientHandler extends ApiBase
 {
-
-    private array $requestConfig;
-
-    public function __construct()
-    {
-        $this->requestConfig = [];
-    }
 
     /**
      * @throws Exception
@@ -22,66 +17,48 @@ class ApiClientHandler extends ApiBase
     public function sendRequest(ApiRequest $apiRequest)
     {
         try {
-            $this->setQueryParams($apiRequest->getQuery());
-            $this->setHeaders($apiRequest->getHeaders());
-            $this->setPostData($apiRequest->getBody());
-            $this->setRequestAuth($apiRequest->getAuthentication());
+            $client = $this->addAuthentication(
+                $apiRequest,
+                Http::withHeaders($apiRequest->getHeaders())
+            );
 
-
-//            return $client->request($apiRequest->getMethod(), $apiRequest->getUrl(), $this->requestConfig);
-            switch ($apiRequest->getMethod()) {
-                case 'GET':
-                    return Http::withHeaders($apiRequest->getHeaders())
-                        ->withQueryParameters($apiRequest->getQuery())
-                        ->get($apiRequest->getUrl());
-                case 'POST':
-                    return Http::withHeaders($apiRequest->getHeaders())
-                        ->withBody($apiRequest->getBody())
-                        ->post($apiRequest->getUrl());
-                case 'PUT':
-                    return Http::withHeaders($apiRequest->getHeaders())->put($apiRequest->getUrl(), $apiRequest->getBody());
-                case 'DELETE':
-                    return Http::withHeaders($apiRequest->getHeaders())->delete($apiRequest->getUrl());
-                case 'PATCH':
-                    return Http::withHeaders($apiRequest->getHeaders())->patch($apiRequest->getUrl(), $apiRequest->getBody());
-            }
-            return Http::withHeaders($apiRequest->getHeaders())->get($apiRequest->getUrl());
-
+            return match ($apiRequest->getMethod()) {
+                ApiRequest::METHOD_GET => $client
+                    ->withQueryParameters($apiRequest->getQuery())
+                    ->get($apiRequest->getUrl()),
+                ApiRequest::METHOD_POST => $client
+                    ->withBody($apiRequest->getBody())
+                    ->post($apiRequest->getUrl()),
+                default => throw new Exception('Invalid method'),
+            };
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
         }
     }
 
-    public function setRequestAuth(array $auth = [])
+    public function addAuthentication(ApiRequest $apiRequest, PendingRequest $client)
     {
-        if (count($auth) > 0) {
-            foreach ($auth as $key => $value) {
-                $this->requestConfig[$key] = $value;
-            }
+        $authentication = $apiRequest->getAuthentication();
+        if (!count($authentication)) {
+            return $client;
         }
-        return $this->requestConfig;
+        if (isset($authentication[ApiRequest::AUTH_DIGEST])) {
+            $client->withDigestAuth(
+                $authentication[ApiRequest::AUTH_DIGEST][ApiRequest::USERNAME],
+                $authentication[ApiRequest::AUTH_DIGEST][ApiRequest::PASSWORD]
+            );
+        } elseif (isset($authentication[ApiRequest::AUTH_BASIC])) {
+            $client->withBasicAuth(
+                $authentication[ApiRequest::AUTH_BASIC][ApiRequest::USERNAME],
+                $authentication[ApiRequest::AUTH_BASIC][ApiRequest::PASSWORD]
+            );
+        } elseif (isset($authentication[ApiRequest::AUTH_TOKEN])) {
+            $client->withToken(
+                $authentication[ApiRequest::AUTH_TOKEN][ApiRequest::TOKEN],
+                $authentication[ApiRequest::AUTH_DIGEST][ApiRequest::TOKEN_TYPE]
+            );
+        }
+        return $client;
     }
 
-    public function setQueryParams(array $params = [])
-    {
-        if (count($params) > 0) {
-            $this->requestConfig["query"] = $params;
-        }
-        return $this->requestConfig;
-    }
-
-    public function setHeaders(array $headers = [])
-    {
-        if (count($headers) > 0) {
-            $this->requestConfig['headers'] = $headers;
-        }
-        return $this->requestConfig;
-    }
-
-    public function setPostData($data = null) {
-        if ($data !== null) {
-            $this->requestConfig['body'] = $data;
-        }
-        return $this->requestConfig;
-    }
 }

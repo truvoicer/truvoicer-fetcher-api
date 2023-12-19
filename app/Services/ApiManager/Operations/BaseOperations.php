@@ -94,7 +94,7 @@ class BaseOperations extends ApiBase
             case parent::AUTH_BEARER:
                 $endpoint = $this->getEndpoint();
                 $this->apiRequest->setHeaders($this->getHeaders());
-                $this->apiRequest->setAuthentication($this->getAuthBearerAuthentication());
+                $this->getAuthBearerAuthentication();
                 $this->apiRequest->setMethod($this->getMethod());
                 $this->apiRequest->setUrl($this->provider->getProviderApiBaseUrl() . $endpoint);
                 $this->setRequestData();
@@ -102,7 +102,7 @@ class BaseOperations extends ApiBase
             case parent::AUTH_BASIC:
                 $endpoint = $this->getEndpoint();
                 $this->apiRequest->setHeaders($this->getHeaders());
-                $this->apiRequest->setAuthentication($this->getBasicAuthentication());
+                $this->getBasicAuthentication();
                 $this->apiRequest->setMethod($this->getMethod());
                 $this->apiRequest->setUrl($this->provider->getProviderApiBaseUrl() . $endpoint);
                 $this->setRequestData();
@@ -131,16 +131,23 @@ class BaseOperations extends ApiBase
             throw new BadRequestHttpException("Request config username and password are both not set.");
         }
         if ($password === null || $password === "") {
-            return ["auth_basic" => [$this->filterParameterValue($username->getItemValue()), ""]];
+            $this->apiRequest->addBasicAuthentication(
+                $this->filterParameterValue($username->getItemValue())
+            );
         }
-        return ["auth_basic" => [$this->filterParameterValue($username->getItemValue()), $password->getItemValue()]];
+        $this->apiRequest->addBasicAuthentication(
+            $this->filterParameterValue($username->getItemValue()),
+            $password->getItemValue()
+        );
     }
     private function getAuthBearerAuthentication() {
         $bearerToken = $this->getRequestConfig("bearer_token");
         if (!$bearerToken) {
             throw new BadRequestHttpException("Request config bearer token not set.");
         }
-        return ["auth_basic" => $this->filterParameterValue($bearerToken->getItemValue())];
+        $this->apiRequest->addTokenAuthentication(
+            $this->filterParameterValue($bearerToken->getItemValue())
+        );
     }
 
     private function setRequestData() {

@@ -3,12 +3,24 @@ namespace App\Services\ApiManager\Client\Entity;
 
 class ApiRequest
 {
-    private $method = "";
-    private $url = "";
-    private $headers = [];
-    private $query = [];
-    private $body = null;
-    private $authentication = [];
+    public const METHOD_POST = 'POST';
+    public const METHOD_GET = 'GET';
+    public const AUTH_TOKEN = 'auth_token';
+    public const AUTH_BASIC = 'auth_basic';
+    public const AUTH_DIGEST = 'auth_digest';
+    public const TOKEN = 'token';
+    public const TOKEN_TYPE = 'type';
+    public const TOKEN_TYPE_BEARER = 'Bearer';
+    public const USERNAME = 'username';
+    public const PASSWORD = 'password';
+
+
+    private string $method = "";
+    private string $url = "";
+    private array $headers = [];
+    private array $query = [];
+    private array $body = [];
+    private array $authentication = [];
 
     /**
      * @return mixed
@@ -88,6 +100,25 @@ class ApiRequest
     public function setAuthentication(array $authentication = []): void
     {
         $this->authentication = $authentication;
+    }
+
+    public function addBasicAuthentication(string $username, ?string $password = '') {
+        $this->authentication[self::AUTH_BASIC] = [
+          self::USERNAME => $username,
+          self::PASSWORD => $password
+        ];
+    }
+    public function addDigestAuthentication(string $username, ?string $password = '') {
+        $this->authentication[self::AUTH_DIGEST] = [
+          self::USERNAME => $username,
+          self::PASSWORD => $password
+        ];
+    }
+    public function addTokenAuthentication(string $token, ?string $tokenType = self::TOKEN_TYPE_BEARER) {
+        $this->authentication[self::AUTH_TOKEN] = [
+          self::TOKEN => $token,
+          self::TOKEN_TYPE => $tokenType
+        ];
     }
 
     /**

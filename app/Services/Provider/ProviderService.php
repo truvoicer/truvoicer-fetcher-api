@@ -26,7 +26,7 @@ use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 class ProviderService extends BaseService
 {
 
-    const SERVICE_ALIAS = "app.service.provider.provider_entity_service";
+    const SERVICE_ALIAS = ProviderEntityService::class;
 
     protected ProviderRepository $providerRepository;
     protected PermissionRepository $permissionRepository;

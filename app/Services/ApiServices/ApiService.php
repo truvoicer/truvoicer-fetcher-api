@@ -11,7 +11,7 @@ use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 
 class ApiService extends BaseService
 {
-    const SERVICE_ALIAS = "app.service.api_services.api_service_entity_service";
+    const SERVICE_ALIAS = ApiServiceEntityService::class;
 
     protected ServiceRepository $serviceRepository;
     protected ServiceRequestRepository $serviceRequestRepository;
