@@ -38,15 +38,16 @@ class FileSystemService
         return $file;
     }
 
-    private function getFileObject(File $file, array $data) {
-        $file->setFilename($data['file_name']);
-        $file->setPath($data['file_path']);
-        $file->setFileType($data['file_type']);
-        $file->setMimeType($data['mime_type']);
-        $file->setExtension($data['file_extension']);
-        $file->setFileSize($data['file_size']);
-        $file->setFileSystem($data['file_system']);
-        return $file;
+    private function getFileObject(array $data) {
+        $fileData = [];
+        $fileData['file_name'] = $data['filename'];
+        $fileData['file_path'] = $data['path'];
+        $fileData['file_type'] = $data['file_type'];
+        $fileData['mime_type'] = $data['mime_type'];
+        $fileData['file_extension'] = $data['extension'];
+        $fileData['file_size'] = $data['file_size'];
+        $fileData['file_system'] = $data['file_system'];
+        return $fileData;
     }
 
     private function generateRandomString($length = 10) {
@@ -59,32 +60,23 @@ class FileSystemService
         return $randomString;
     }
 
-    private function getFileDownloadObject(FileDownload $fileDownload, File $file) {
-        $fileDownload->setFile($file);
-        $fileDownload->setDownloadKey($this->generateRandomString(16));
-        return $fileDownload;
+    private function getFileDownloadObject(File $file) {
+        $data = [];
+        $data['file_id'] = $file->id;
+        $data['download_key'] = $this->generateRandomString(16);
+        return $data;
     }
 
     public function createFileDownload(File $file)
     {
-        $fileDownload = $this->getFileDownloadObject(new FileDownload(), $file);
-        if ($this->httpRequestService->validateData(
-            $fileDownload
-        )) {
-            return $this->fileDownloadRepository->saveFileDownload($fileDownload);
-        }
-        return false;
+        $fileDownload = $this->getFileDownloadObject($file);
+        return $this->fileDownloadRepository->saveFileDownload($fileDownload);
     }
 
     public function createFile(array $data)
     {
-        $file = $this->getFileObject(new File(), $data);
-        if ($this->httpRequestService->validateData(
-            $file
-        )) {
-            return $this->fileRepository->saveFile($file);
-        }
-        return false;
+        $file = $this->getFileObject($data);
+        return $this->fileRepository->saveFile($file);
     }
 
     public function updateFile(array $data)
@@ -93,12 +85,9 @@ class FileSystemService
         if ($file === null) {
             throw new BadRequestHttpException(sprintf("File id:%d not found in database.", $data["id"]));
         }
-        if ($this->httpRequestService->validateData(
-            $this->getFileObject($file, $data)
-        )) {
-            return $this->fileRepository->saveFile($file);
-        }
-        return false;
+        $fileData = $this->getFileObject($data);
+        $this->fileRepository->setModel($file);
+        return $this->fileRepository->save($fileData);
     }
 
     public function findByParams(string $sort, string  $order, int $count) {
@@ -132,6 +121,16 @@ class FileSystemService
             return false;
         }
         return $this->fileDownloadRepository->deleteFileDownload($fileDownload);
+    }
+
+    public function getFileRepository(): FileRepository
+    {
+        return $this->fileRepository;
+    }
+
+    public function getFileDownloadRepository(): FileDownloadRepository
+    {
+        return $this->fileDownloadRepository;
     }
 
 }

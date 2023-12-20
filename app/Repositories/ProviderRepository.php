@@ -2,6 +2,7 @@
 
 namespace App\Repositories;
 
+use App\Models\Property;
 use App\Models\Provider;
 use App\Models\User;
 use App\Models\UserProvider;

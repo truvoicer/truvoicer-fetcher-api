@@ -123,12 +123,6 @@ class RequestService extends BaseService
         return $this->responseKeysRepo->getResponseKeys($provider, $serviceRequest);
     }
 
-    public function getSingleResponseKeyByRequest(Provider $provider, ServiceRequest $serviceRequest)
-    {
-        return $this->responseKeysRepo->getResponseKey($provider, $serviceRequest);
-    }
-
-
     private function getServiceRequestObject(Provider $provider, Service $service, array $data)
     {
         $categoryRepo = new CategoryRepository();
@@ -207,8 +201,8 @@ class RequestService extends BaseService
             throw new BadRequestHttpException(
                 sprintf(
                     "Service mismatch: Error merging [Service Request: (%s), Service: (%s)] into [Service Request: (%s), Service: (%s)].",
-                    $sourceServiceRequest->getServiceRequestLabel(), $sourceServiceRequest->getService()->getServiceName(),
-                    $destinationServiceRequest->getServiceRequestLabel(), $destinationServiceRequest->getService()->getServiceName(),
+                    $sourceServiceRequest->label, $sourceServiceRequest->getService()->getServiceName(),
+                    $destinationServiceRequest->label, $destinationServiceRequest->getService()->getServiceName(),
                 )
             );
         }

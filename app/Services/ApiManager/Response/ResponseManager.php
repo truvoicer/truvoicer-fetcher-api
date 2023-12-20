@@ -103,9 +103,9 @@ class ResponseManager extends BaseService
     private function errorResponse($requestData, Response $response, ApiRequest $apiRequest) {
         $apiResponse = new ApiResponse();
         $apiResponse->setStatus("error");
-        $apiResponse->setRequestService($this->serviceRequest->getServiceRequestName());
-        $apiResponse->setPaginationType($this->serviceRequest->getPaginationType());
-        $apiResponse->setCategory($this->serviceRequest->getCategory()->getCategoryName());
+        $apiResponse->setRequestService($this->serviceRequest->name);
+        $apiResponse->setPaginationType($this->serviceRequest->pagination_type);
+        $apiResponse->setCategory($this->serviceRequest->category()->first()->getCategoryName());
         $apiResponse->setProvider($this->provider->name);
         $apiResponse->setRequestData($requestData);
         $apiResponse->setApiRequest($apiRequest->toArray());
@@ -115,9 +115,9 @@ class ResponseManager extends BaseService
     private function successResponse($contentType, $requestData, $extraData, Response $response, ApiRequest $apiRequest) {
         $apiResponse = new ApiResponse();
         $apiResponse->setContentType($contentType);
-        $apiResponse->setPaginationType($this->serviceRequest->getPaginationType());
-        $apiResponse->setRequestService($this->serviceRequest->getServiceRequestName());
-        $apiResponse->setCategory($this->serviceRequest->getCategory()->getCategoryName());
+        $apiResponse->setPaginationType($this->serviceRequest->pagination_type);
+        $apiResponse->setRequestService($this->serviceRequest->name);
+        $apiResponse->setCategory($this->serviceRequest->category()->getCategoryName());
         $apiResponse->setStatus("success");
         $apiResponse->setProvider($this->provider->name);
         $apiResponse->setRequestData($requestData);

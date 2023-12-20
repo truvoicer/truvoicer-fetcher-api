@@ -16,17 +16,15 @@ class UserProviderRepository extends BaseRepository
 
     public function findUserProviderByName(User $user, string $value)
     {
-        return $user->userProvider()
-            ->leftJoin('provider', 'provider.id', '=', 'user_provider.provider_id')
+        return $user->provider()
             ->where('name', $value)
             ->first();
     }
 
     public function findProvidersByUser(User $user, string $sort, string $order, ?int $count)
     {
-        $query = $user->userProvider()
-            ->leftJoin('provider', 'provider.id', '=', 'user_provider.provider_id')
-            ->orderBy("provider.$sort", $order);
+        $query = $user->provider()
+            ->orderBy("$sort", $order);
         if ($count !== null && $count > 0) {
             $query->limit($count);
         }

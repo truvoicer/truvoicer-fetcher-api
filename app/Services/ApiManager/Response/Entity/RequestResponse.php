@@ -5,15 +5,15 @@ class RequestResponse
 {
     private $status;
 
-    private $message;
+    private string $message;
 
     private $contentType;
 
-    private $provider;
+    private string $provider;
 
     private $requestService;
 
-    private $category;
+    private string $category;
 
     private $requestData;
 
@@ -37,19 +37,6 @@ class RequestResponse
     public function setApiRequest(array $apiRequest): void
     {
         $this->apiRequest = $apiRequest;
-    }
-
-
-    public function toArray(): array
-    {
-        return [
-            "url" => $this->getUrl(),
-            "headers" => $this->getHeaders(),
-            "body" => $this->getBody(),
-            "query" => $this->getQuery(),
-            "method" => $this->getMethod(),
-            "auth" => $this->getAuthentication(),
-        ];
     }
 
     /**

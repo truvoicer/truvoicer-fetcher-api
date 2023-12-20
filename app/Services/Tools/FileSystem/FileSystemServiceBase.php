@@ -6,6 +6,7 @@ use App\Models\FileDownload;
 use App\Services\BaseService;
 use Illuminate\Contracts\Filesystem\Filesystem;
 use Illuminate\Support\Facades\Storage;
+use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 
 class FileSystemServiceBase extends BaseService
 {
@@ -21,8 +22,12 @@ class FileSystemServiceBase extends BaseService
     }
 
     public function getFileDownloadUrl(File $file) {
-        $createFileDownload = $this->fileSystemService->createFileDownload($file);
-        return $this->buildDownloadUrl($createFileDownload);
+        if (!$this->fileSystemService->createFileDownload($file)) {
+            throw new BadRequestHttpException(
+                'Error creating file download'
+            );
+        }
+        return $this->buildDownloadUrl($this->fileSystemService->getFileDownloadRepository()->getModel());
     }
 
     protected function buildDownloadUrl(FileDownload $fileDownload) {

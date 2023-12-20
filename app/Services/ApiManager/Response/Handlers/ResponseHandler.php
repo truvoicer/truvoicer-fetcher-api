@@ -39,21 +39,21 @@ class ResponseHandler extends ApiBase
     protected function getItemList()
     {
         $itemsArrayString = $this->getRequestResponseKeyByName($this->responseKeysArray['ITEMS_ARRAY']);
-        if ($itemsArrayString === null || $itemsArrayString->getResponseKeyValue() === "") {
+        if ($itemsArrayString === null || $itemsArrayString->value === "") {
             throw new BadRequestHttpException(
               "Must specify (items_array) key. If no key exists, specify either: root_items or root_array"
             );
         }
-        elseif ($itemsArrayString->getResponseKeyValue() === "root_items") {
+        elseif ($itemsArrayString->value === "root_items") {
             return [$this->responseArray];
         }
-        elseif ($itemsArrayString->getResponseKeyValue() === "root_array") {
+        elseif ($itemsArrayString->value === "root_array") {
             return $this->responseArray;
         }
 
         $itemsArray = array_map(function ($item) {
             return $this->filterItemsArrayValue($item)["value"];
-        }, explode(".", $itemsArrayString->getResponseKeyValue()));
+        }, explode(".", $itemsArrayString->value));
         $getArrayItems = $this->getArrayItems($this->responseArray, $itemsArray);
         if ($getArrayItems === "") {
             throw new BadRequestHttpException("Items list is empty");
@@ -70,7 +70,7 @@ class ResponseHandler extends ApiBase
         $itemsArrayString = $this->getRequestResponseKeyByName($this->responseKeysArray['ITEMS_ARRAY']);
         if ($itemsArrayString !== null) {
             foreach ($this->responseArray as $key => $value) {
-                if ($key !== $itemsArrayString->getResponseKeyValue()) {
+                if ($key !== $itemsArrayString->value) {
                     $itemsArray = explode(".", $key);
                     $array[$key] = $this->getArrayItems($this->responseArray, $itemsArray);
                 }
@@ -111,9 +111,9 @@ class ResponseHandler extends ApiBase
     }
 
     protected function buildList($itemList, ServiceRequestResponseKey $requestResponseKey) {
-        $keyArray = explode(".", $requestResponseKey->getResponseKeyValue());
+        $keyArray = explode(".", $requestResponseKey->value);
         $getItemValue = $this->getArrayItems($itemList, $keyArray);
-        if ($requestResponseKey->getIsServiceRequest()) {
+        if ($requestResponseKey->is_service_request) {
             return $this->buildResponseKeyRequestItem($getItemValue, $requestResponseKey);
         }
         elseif ($requestResponseKey->getHasArrayValue()) {
@@ -145,7 +145,7 @@ class ResponseHandler extends ApiBase
             "data"      => $data,
             "request_item" => [
                 "request_name" => $serviceRequest->getServiceRequestLabel(),
-                "request_operation" => $serviceRequest->getServiceRequestName(),
+                "request_operation" => $serviceRequest->name,
                 "request_parameters" => $this->getServiceRequestParameters($serviceRequest->getServiceRequestParameters())
             ]
         ];

@@ -13,7 +13,6 @@ use App\Services\BaseService;
 use App\Services\Permission\AccessControlService;
 use App\Services\Permission\PermissionService;
 use App\Services\Provider\ProviderEntityService;
-use App\Services\Tools\HttpRequestService;
 use App\Services\Tools\UtilsService;
 use App\Services\User\UserAdminService;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
@@ -21,8 +20,6 @@ use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 class CategoryService extends BaseService
 {
     const SERVICE_ALIAS = CategoryEntityService::class;
-
-    protected HttpRequestService $httpRequestService;
     protected PermissionRepository $permissionRepository;
     protected ProviderRepository $providerRepository;
     protected CategoryRepository $categoryRepository;
@@ -166,11 +163,12 @@ class CategoryService extends BaseService
         return $category;
     }
 
-    private function getCategoryObject(Category $category, array $data)
+    private function getCategoryObject(array $data)
     {
-        $category->setCategoryName($data['category_name']);
-        $category->setCategoryLabel($data['category_label']);
-        return $category;
+        $categoryData = [];
+        $categoryData['name'] = $data['name'];
+        $categoryData['label'] = $data['label'];
+        return $categoryData;
     }
 
     public function createCategory(array $data)
@@ -184,32 +182,29 @@ class CategoryService extends BaseService
         if ($checkCategory !== null) {
             throw new BadRequestHttpException(sprintf("Category (%s) already exists.", $data['category_name']));
         }
-        $category = $this->getCategoryObject(new Category(), $data);
-        if ($this->httpRequestService->validateData(
-            $category
-        )) {
-            $this->permissionRepository->addWhere("name", PermissionService::PERMISSION_ADMIN);
-            $getAdminPermission = $this->permissionRepository->findOne();
-            if ($getAdminPermission === null) {
-                throw new BadRequestHttpException(
-                    "Admin permission does not exist."
-                );
-            }
-            $createCategory = $this->categoryRepository->setModel($category)->save();
-            $this->userCategoryRepository->createUserCategory($this->user, $createCategory, [$getAdminPermission]);
-            return $createCategory;
+        $categoryData = $this->getCategoryObject($data);
+        $this->permissionRepository->addWhere("name", PermissionService::PERMISSION_ADMIN);
+        $getAdminPermission = $this->permissionRepository->findOne();
+        if ($getAdminPermission === null) {
+            throw new BadRequestHttpException(
+                "Admin permission does not exist."
+            );
         }
-        return false;
+        $createCategory = $this->categoryRepository->save($categoryData);
+        if (!$createCategory) {
+            throw new BadRequestHttpException(
+                "Error creating category"
+            );
+        }
+        $category = $this->categoryRepository->getModel();
+        $this->userCategoryRepository->createUserCategory($this->user, $category, [$getAdminPermission]);
+        return $category;
     }
 
     public function updateCategory(Category $category, array $data)
     {
-        if ($this->httpRequestService->validateData(
-            $this->getCategoryObject($category, $data)
-        )) {
-            return $this->categoryRepository->setModel($category)->save();
-        }
-        return false;
+        $categoryData = $this->getCategoryObject($data);
+        return $this->categoryRepository->setModel($category)->save($categoryData);
     }
 
 

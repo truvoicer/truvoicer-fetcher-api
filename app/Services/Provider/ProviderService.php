@@ -210,23 +210,6 @@ class ProviderService extends BaseService
             $propertyName)->property_value;
     }
 
-    public function getServiceParameterByName(Provider $provider, string $serviceName = null, string $parameterName = null)
-    {
-        return $this->providerRepository->getServiceParameterByName($provider, $serviceName, $parameterName);
-    }
-
-    public function getProviderServiceParametersByName(Provider $provider, string $serviceName = null, array $reservedParams = [])
-    {
-        return $this->providerRepository->getProviderServiceParameters($provider, $serviceName, $reservedParams);
-    }
-
-    public function getProviderServiceParametersById(int $providerId, int $serviceId)
-    {
-        $service = $this->serviceRepository->findById($serviceId);
-        $provider = $this->providerRepository->findById($providerId);
-        return $this->providerRepository->getProviderServiceParameters($provider, $service);
-    }
-
     private function setProviderObject(array $providerData)
     {
         try {
@@ -293,8 +276,10 @@ class ProviderService extends BaseService
         $providerPropertyRepo->addWhere("property", $property->id);
         $providerProperty = $providerPropertyRepo->findOne();
         if ($providerProperty !== null) {
-            $providerProperty->setPropertyValue($data['property_value']);
-            return $providerPropertyRepo->saveProviderProperty($providerProperty);
+            $providerPropertyRepo->setModel($providerProperty);
+            return $providerPropertyRepo->save([
+                'value' => $data['value']
+            ]);
         }
         return $providerPropertyRepo->createProviderProperty($provider, $property, $data['property_value']);
     }

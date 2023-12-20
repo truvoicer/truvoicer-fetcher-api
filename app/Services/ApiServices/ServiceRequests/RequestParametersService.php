@@ -46,7 +46,7 @@ class RequestParametersService extends BaseService
     }
 
     public function deleteRequestParameterById(int $id) {
-        $requestParameter = $this->requestParametersRepo->find($id);
+        $requestParameter = $this->requestParametersRepo->findById($id);
         if ($requestParameter === null) {
             throw new BadRequestHttpException(sprintf("Service request parameter id: %s not found in database.", $id));
         }

@@ -34,7 +34,7 @@ class ServiceRequestResponseKeyRepository extends BaseRepository
 //            $responseKey = new ServiceRequestResponseKey();
 //            $responseKey->setServiceRequest($destinationServiceRequest);
 //            $responseKey->setServiceResponseKey($item->getServiceResponseKey());
-//            $responseKey->setResponseKeyValue($item->getResponseKeyValue());
+//            $responseKey->setResponseKeyValue($item->value);
 //            $responseKey->setShowInResponse($item->getShowInResponse());
 //            $responseKey->setHasArrayValue($item->getHasArrayValue());
 //            $responseKey->setArrayKeys($item->getArrayKeys());
@@ -44,7 +44,7 @@ class ServiceRequestResponseKeyRepository extends BaseRepository
 //            $responseKey->setAppendExtraDataValue($item->getAppendExtraDataValue());
 //            $responseKey->setPrependExtraData($item->getPrependExtraData());
 //            $responseKey->setPrependExtraDataValue($item->getPrependExtraDataValue());
-//            $responseKey->setIsServiceRequest($item->getIsServiceRequest());
+//            $responseKey->setIsServiceRequest($item->is_service_request);
 //            $destinationServiceRequest->addServiceRequestResponseKey($responseKey);
 //            $this->getEntityManager()->persist($responseKey);
 //        }

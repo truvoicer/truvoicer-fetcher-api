@@ -25,7 +25,7 @@ class XmlResponseHandler extends ResponseHandler
             foreach ($this->responseKeysArray as $keys) {
                 $getKey = $this->getRequestResponseKeyByName($keys);
                 if ($getKey !== null && $getKey->getListItem()) {
-                    $getAttribute = $this->getAttribute($getKey->getResponseKeyValue(), $item);
+                    $getAttribute = $this->getAttribute($getKey->value, $item);
                     if ($getAttribute && $getKey->getShowInResponse()) {
                         $itemList[$keys] = $getAttribute;
                     } elseif ($getKey->getShowInResponse()) {
@@ -63,7 +63,7 @@ class XmlResponseHandler extends ResponseHandler
         if ($this->xmlService->checkXmlErrors($responseContent)) {
             throw new BadRequestHttpException("item_request_error");
         }
-        $itemsArrayString = $this->getRequestResponseKeyByName($this->responseKeysArray['ITEMS_ARRAY'])->getResponseKeyValue();
+        $itemsArrayString = $this->getRequestResponseKeyByName($this->responseKeysArray['ITEMS_ARRAY'])->value;
         $this->responseArray = $this->xmlService->convertXmlToArray($responseContent,
             $this->filterItemsArrayValue($itemsArrayString)["value"],
             $this->filterItemsArrayValue($itemsArrayString)["brackets"]

@@ -188,6 +188,7 @@ class BaseRepository
             'compare' => $compare,
             'op' => $op
         ];
+        return $this;
     }
     public function getWhere(): array
     {

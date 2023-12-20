@@ -229,8 +229,8 @@ class RequestResponseKeysService extends BaseService
 
         if ($requestResponseKey !== null) {
             $setRequestResponseKey = $this->setRequestResponseKeyObject(
-                $requestResponseKey->getServiceRequest(),
-                $requestResponseKey->getServiceResponseKey(),
+                $requestResponseKey->serviceRequest()->first(),
+                $requestResponseKey->serviceResponseKey()->first(),
                 $data
             );
             $setRequestResponseKey['id'] = $requestResponseKey->id;

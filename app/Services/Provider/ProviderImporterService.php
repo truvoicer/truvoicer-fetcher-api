@@ -40,7 +40,7 @@ class ProviderImporterService extends ProviderService
                     $provider->name,
                     "service",
                     "service_request",
-                    $sourceServiceRequest->getServiceRequestName(),
+                    $sourceServiceRequest->name,
                     $mappings
                 )
             );
@@ -49,7 +49,7 @@ class ProviderImporterService extends ProviderService
                     $provider->name,
                     "category",
                     "service_request",
-                    $sourceServiceRequest->getServiceRequestName(),
+                    $sourceServiceRequest->name,
                     $mappings
                 )
             );
@@ -89,7 +89,7 @@ class ProviderImporterService extends ProviderService
                 $sourceServiceRequest->removeServiceRequestResponseKey($responseKey);
                 continue;
             }
-            if ($responseKey->getResponseKeyValue() === null) {
+            if ($responseKey->value === null) {
                 $sourceServiceRequest->removeServiceRequestResponseKey($responseKey);
                 continue;
             }
@@ -192,11 +192,11 @@ class ProviderImporterService extends ProviderService
             $mappings["data"]["category"]["available"] = $this->categoryService->getAllCategoriesArray();
             foreach ($provider->serviceRequest()->get() as $serviceRequest) {
                 $mappings["data"]["service"]["sources"]["service_request"][] = [
-                    "service_request_name" => $serviceRequest->getServiceRequestName(),
+                    "service_request_name" => $serviceRequest->name,
                     "service_request_label" => $serviceRequest->getServiceRequestLabel(),
                 ];
                 $mappings["data"]["category"]["sources"]["service_request"][] = [
-                    "service_request_name" => $serviceRequest->getServiceRequestName(),
+                    "service_request_name" => $serviceRequest->name,
                     "service_request_label" => $serviceRequest->getServiceRequestLabel(),
                 ];
             }

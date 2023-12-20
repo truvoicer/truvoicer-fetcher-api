@@ -55,7 +55,7 @@ class RequestOperation extends BaseOperations
         $getResponse = new RequestResponse();
         $getResponse->setStatus($apiResponse->getStatus());
         $getResponse->setMessage('Api request sent');
-        $getResponse->setPaginationType($apiResponse->getPaginationType());
+        $getResponse->setPaginationType($apiResponse->pagination_type);
         $getResponse->setContentType($apiResponse->getContentType());
         $getResponse->setRequestService($apiResponse->getRequestService());
         $getResponse->setCategory($apiResponse->getCategory());
