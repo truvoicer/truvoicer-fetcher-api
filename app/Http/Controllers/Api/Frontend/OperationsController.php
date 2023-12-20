@@ -16,11 +16,13 @@ use Illuminate\Http\Request;
 class OperationsController extends Controller
 {
 
-    public function __construct(HttpRequestService $httpRequestService,
-                                SerializerService $serializerService,
-                                AccessControlService $accessControlService)
-    {
-        parent::__construct($accessControlService, $httpRequestService, $serializerService);
+    public function __construct(
+        HttpRequestService $httpRequestService,
+        SerializerService $serializerService,
+        AccessControlService $accessControlService,
+        Request $request
+    ) {
+        parent::__construct($accessControlService, $httpRequestService, $serializerService, $request);
     }
 
     public function searchOperation(string $service_request_name, RequestOperation $requestOperation, Request $request)

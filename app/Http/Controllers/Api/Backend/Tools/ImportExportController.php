@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Http\Controllers\Api\Backend\Tools;
 
 use App\Http\Controllers\Controller;
@@ -33,12 +34,16 @@ class ImportExportController extends Controller
      * @param UserAdminService $userService
      * @param AccessControlService $accessControlService
      */
-    public function __construct(SerializerService $serializerService, HttpRequestService $httpRequestService,
-                                SecurityService $securityService, UserAdminService $userService,
-                                AccessControlService $accessControlService, ExportService $exportService)
-    {
-
-        parent::__construct($accessControlService, $httpRequestService, $serializerService);
+    public function __construct(
+        SerializerService $serializerService,
+        HttpRequestService $httpRequestService,
+        SecurityService $securityService,
+        UserAdminService $userService,
+        AccessControlService $accessControlService,
+        ExportService $exportService,
+        Request $request
+    ) {
+        parent::__construct($accessControlService, $httpRequestService, $serializerService, $request);
         $this->securityService = $securityService;
         $this->userService = $userService;
         $this->exportService = $exportService;
@@ -46,7 +51,8 @@ class ImportExportController extends Controller
 
     public function getExportList(Request $request)
     {
-        return $this->sendSuccessResponse("Export Response.",
+        return $this->sendSuccessResponse(
+            "Export Response.",
             $this->exportService->getExportEntityListData($request->user())
         );
     }
@@ -55,7 +61,10 @@ class ImportExportController extends Controller
     {
         $requestData = $this->httpRequestService->getRequestData($request, true);
         $xmlDataArray = $this->exportService->getExportXmlDataArray($requestData);
-        return $this->sendSuccessResponse("Export Response.", $this->exportService->storeXmlDataFromArray($xmlDataArray));
+        return $this->sendSuccessResponse(
+            "Export Response.",
+            $this->exportService->storeXmlDataFromArray($xmlDataArray)
+        );
     }
 
     public function runImport(Request $request, ImportService $importService)

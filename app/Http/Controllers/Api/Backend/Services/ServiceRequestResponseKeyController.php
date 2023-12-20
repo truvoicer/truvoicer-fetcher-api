@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Http\Controllers\Api\Backend\Services;
 
 use App\Http\Controllers\Controller;
@@ -41,13 +42,16 @@ class ServiceRequestResponseKeyController extends Controller
      * @param RequestResponseKeysService $requestResponseKeysService
      * @param AccessControlService $accessControlService
      */
-    public function __construct(ProviderService $providerService, HttpRequestService $httpRequestService,
-                                SerializerService $serializerService, ApiService $apiServicesService,
-                                RequestResponseKeysService $requestResponseKeysService,
-                                AccessControlService $accessControlService)
-    {
-
-        parent::__construct($accessControlService, $httpRequestService, $serializerService);
+    public function __construct(
+        ProviderService $providerService,
+        HttpRequestService $httpRequestService,
+        SerializerService $serializerService,
+        ApiService $apiServicesService,
+        RequestResponseKeysService $requestResponseKeysService,
+        AccessControlService $accessControlService,
+        Request $request
+    ) {
+        parent::__construct($accessControlService, $httpRequestService, $serializerService, $request);
         $this->providerService = $providerService;
         $this->apiServicesService = $apiServicesService;
         $this->requestResponseKeysService = $requestResponseKeysService;
@@ -62,7 +66,9 @@ class ServiceRequestResponseKeyController extends Controller
     {
         $requestResponseKeysArray = [];
         $isPermitted = $this->accessControlService->checkPermissionsForEntity(
-            self::DEFAULT_ENTITY, $provider, $request->user(),
+            self::DEFAULT_ENTITY,
+            $provider,
+            $request->user(),
             [
                 PermissionService::PERMISSION_ADMIN,
                 PermissionService::PERMISSION_READ,
@@ -77,7 +83,7 @@ class ServiceRequestResponseKeyController extends Controller
                 $serviceRequest,
                 $request->get('sort', "key_name"),
                 $request->get('order', "asc"),
-                (int) $request->get('count', null)
+                (int)$request->get('count', null)
             );
             $requestResponseKeysArray = $this->serializerService->entityArrayToArray($responseKeys, ["response_key"]);
         }
@@ -89,9 +95,14 @@ class ServiceRequestResponseKeyController extends Controller
      * Returns a single service request response key based on the id passed in the request url
      *
      */
-    public function getRequestResponseKey(Provider $provider, ServiceRequest $serviceRequest, ServiceResponseKey $serviceResponseKey, Request $request)
-    {
-        if (!$request->user()->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_SUPERUSER)) && !$request->user()->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_ADMIN))) {
+    public function getRequestResponseKey(
+        Provider $provider,
+        ServiceRequest $serviceRequest,
+        ServiceResponseKey $serviceResponseKey,
+        Request $request
+    ) {
+        if (!$request->user()->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_SUPERUSER)) && !$request->user(
+            )->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_ADMIN))) {
             $this->accessControlService->checkPermissionsForEntity(
                 self::DEFAULT_ENTITY, $provider, $request->user(),
                 [
@@ -100,8 +111,14 @@ class ServiceRequestResponseKeyController extends Controller
                 ]
             );
         }
-        $getRequestResponseKey = $this->requestResponseKeysService->getRequestResponseKeyObjectById($serviceRequest, $serviceResponseKey);
-        return $this->sendSuccessResponse("success", $this->serializerService->entityToArray($getRequestResponseKey, ["response_key"]));
+        $getRequestResponseKey = $this->requestResponseKeysService->getRequestResponseKeyObjectById(
+            $serviceRequest,
+            $serviceResponseKey
+        );
+        return $this->sendSuccessResponse(
+            "success",
+            $this->serializerService->entityToArray($getRequestResponseKey, ["response_key"])
+        );
     }
 
     /**
@@ -110,8 +127,14 @@ class ServiceRequestResponseKeyController extends Controller
      * Returns error response and message on fail
      *
      */
-    public function createRequestResponseKey(Provider $provider, ServiceRequest $serviceRequest, ServiceResponseKey $serviceResponseKey, Request $request) {
-        if (!$request->user()->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_SUPERUSER)) && !$request->user()->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_ADMIN))) {
+    public function createRequestResponseKey(
+        Provider $provider,
+        ServiceRequest $serviceRequest,
+        ServiceResponseKey $serviceResponseKey,
+        Request $request
+    ) {
+        if (!$request->user()->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_SUPERUSER)) && !$request->user(
+            )->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_ADMIN))) {
             $this->accessControlService->checkPermissionsForEntity(
                 self::DEFAULT_ENTITY, $provider, $request->user(),
                 [
@@ -122,12 +145,18 @@ class ServiceRequestResponseKeyController extends Controller
             );
         }
         $requestData = $this->httpRequestService->getRequestData($request);
-        $create = $this->requestResponseKeysService->createRequestResponseKey($serviceRequest, $serviceResponseKey, $requestData->data);
-        if(!$create) {
+        $create = $this->requestResponseKeysService->createRequestResponseKey(
+            $serviceRequest,
+            $serviceResponseKey,
+            $requestData->data
+        );
+        if (!$create) {
             return $this->sendErrorResponse("Error adding response key.");
         }
-        return $this->sendSuccessResponse("Successfully added response key.",
-            $this->serializerService->entityToArray($create, ["single"]));
+        return $this->sendSuccessResponse(
+            "Successfully added response key.",
+            $this->serializerService->entityToArray($create, ["single"])
+        );
     }
 
     /**
@@ -136,9 +165,14 @@ class ServiceRequestResponseKeyController extends Controller
      * Returns error response and message on fail
      *
      */
-    public function updateRequestResponseKey(Provider $provider, ServiceRequest $serviceRequest, ServiceResponseKey $serviceResponseKey, Request $request)
-    {
-        if (!$request->user()->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_SUPERUSER)) && !$request->user()->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_ADMIN))) {
+    public function updateRequestResponseKey(
+        Provider $provider,
+        ServiceRequest $serviceRequest,
+        ServiceResponseKey $serviceResponseKey,
+        Request $request
+    ) {
+        if (!$request->user()->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_SUPERUSER)) && !$request->user(
+            )->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_ADMIN))) {
             $this->accessControlService->checkPermissionsForEntity(
                 self::DEFAULT_ENTITY, $provider, $request->user(),
                 [
@@ -148,14 +182,18 @@ class ServiceRequestResponseKeyController extends Controller
             );
         }
         $update = $this->requestResponseKeysService->updateRequestResponseKey(
-            $serviceRequest, $serviceResponseKey,
-            $this->httpRequestService->getRequestData($request, true));
+            $serviceRequest,
+            $serviceResponseKey,
+            $this->httpRequestService->getRequestData($request, true)
+        );
 
-        if(!$update) {
+        if (!$update) {
             return $this->sendErrorResponse("Error updating service response key");
         }
-        return $this->sendSuccessResponse("Service response key updated",
-            $this->serializerService->entityToArray($update, ['single']));
+        return $this->sendSuccessResponse(
+            "Service response key updated",
+            $this->serializerService->entityToArray($update, ['single'])
+        );
     }
 
     /**
@@ -164,9 +202,14 @@ class ServiceRequestResponseKeyController extends Controller
      * Returns error response and message on fail
      *
      */
-    public function deleteRequestResponseKey(Provider $provider, ServiceRequest $serviceRequest, ServiceResponseKey $serviceResponseKey, Request $request)
-    {
-        if (!$request->user()->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_SUPERUSER)) && !$request->user()->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_ADMIN))) {
+    public function deleteRequestResponseKey(
+        Provider $provider,
+        ServiceRequest $serviceRequest,
+        ServiceResponseKey $serviceResponseKey,
+        Request $request
+    ) {
+        if (!$request->user()->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_SUPERUSER)) && !$request->user(
+            )->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_ADMIN))) {
             $this->accessControlService->checkPermissionsForEntity(
                 self::DEFAULT_ENTITY, $provider, $request->user(),
                 [
@@ -177,8 +220,14 @@ class ServiceRequestResponseKeyController extends Controller
         }
         $delete = $this->requestResponseKeysService->deleteRequestResponseKey($serviceRequest, $serviceResponseKey);
         if (!$delete) {
-            return $this->sendErrorResponse("Error deleting service response key", $this->serializerService->entityToArray($delete, ['single']));
+            return $this->sendErrorResponse(
+                "Error deleting service response key",
+                $this->serializerService->entityToArray($delete, ['single'])
+            );
         }
-        return $this->sendSuccessResponse("Response key service deleted.", $this->serializerService->entityToArray($delete, ['single']));
+        return $this->sendSuccessResponse(
+            "Response key service deleted.",
+            $this->serializerService->entityToArray($delete, ['single'])
+        );
     }
 }

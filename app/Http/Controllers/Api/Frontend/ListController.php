@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Http\Controllers\Api\Frontend;
 
 use App\Http\Controllers\Controller;
@@ -23,11 +24,15 @@ class ListController extends Controller
     private ProviderService $providerService;
     private CategoryService $categoryService;
 
-    public function __construct(ProviderService $providerService, HttpRequestService $httpRequestService,
-                                SerializerService $serializerService, CategoryService $categoryService,
-                                AccessControlService $accessControlService)
-    {
-        parent::__construct($accessControlService, $httpRequestService, $serializerService);
+    public function __construct(
+        ProviderService $providerService,
+        HttpRequestService $httpRequestService,
+        SerializerService $serializerService,
+        CategoryService $categoryService,
+        AccessControlService $accessControlService,
+        Request $request
+    ) {
+        parent::__construct($accessControlService, $httpRequestService, $serializerService, $request);
         $this->providerService = $providerService;
         $this->categoryService = $categoryService;
     }
@@ -41,11 +46,15 @@ class ListController extends Controller
             $request->query->get("filter") === null ||
             $request->query->get("filter") === ""
         ) {
-            return $this->sendSuccessResponse("success",
-                $this->categoryService->getCategoryProviderList($category, $request->user()));
+            return $this->sendSuccessResponse(
+                "success",
+                $this->categoryService->getCategoryProviderList($category, $request->user())
+            );
         }
-        return $this->sendSuccessResponse("success",
-            $this->categoryService->getCategorySelectedProvidersList($request->query->get("filter"), $request->user()));
+        return $this->sendSuccessResponse(
+            "success",
+            $this->categoryService->getCategorySelectedProvidersList($request->query->get("filter"), $request->user())
+        );
     }
 
     /**
@@ -61,9 +70,12 @@ class ListController extends Controller
         } elseif (isset($data["service_name"])) {
             $responseKeys = $responseKeysService->getResponseKeysByServiceName($data['service_name']);
         }
-        return $this->sendSuccessResponse("success",
-            $this->serializerService->entityArrayToArray($responseKeys, ["list"]));
+        return $this->sendSuccessResponse(
+            "success",
+            $this->serializerService->entityArrayToArray($responseKeys, ["list"])
+        );
     }
+
     /**
      * Get a list of response keys.
      * Returns a list of response keys based on the request query parameters
@@ -71,7 +83,9 @@ class ListController extends Controller
      */
     public function frontendServiceList(Request $request, ApiService $apiService)
     {
-        return $this->sendSuccessResponse("success",
-            $this->serializerService->entityArrayToArray($apiService->findByParams(), ["list"]));
+        return $this->sendSuccessResponse(
+            "success",
+            $this->serializerService->entityArrayToArray($apiService->findByParams(), ["list"])
+        );
     }
 }

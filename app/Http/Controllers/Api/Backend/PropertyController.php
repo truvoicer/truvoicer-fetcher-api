@@ -29,12 +29,15 @@ class PropertyController extends Controller
      * @param SerializerService $serializerService
      * @param AccessControlService $accessControlService
      */
-    public function __construct(PropertyRepository $propertyRepository, HttpRequestService $httpRequestService,
-                                PropertyService $propertyService, SerializerService $serializerService,
-                                AccessControlService $accessControlService)
-    {
-
-        parent::__construct($accessControlService, $httpRequestService, $serializerService);
+    public function __construct(
+        PropertyRepository $propertyRepository,
+        HttpRequestService $httpRequestService,
+        PropertyService $propertyService,
+        SerializerService $serializerService,
+        AccessControlService $accessControlService,
+        Request $request
+    ) {
+        parent::__construct($accessControlService, $httpRequestService, $serializerService, $request);
         $this->propertyRepository = $propertyRepository;
         $this->propertyService = $propertyService;
     }
@@ -42,7 +45,7 @@ class PropertyController extends Controller
     public function getPropertyList(Request $request)
     {
         $properties = [];
-        if($this->accessControlService->inAdminGroup()) {
+        if ($this->accessControlService->inAdminGroup()) {
             $properties = $this->serializerService->entityArrayToArray(
                 $this->propertyService->findPropertiesByParams(
                     $request->get('sort', "property_name"),
@@ -51,15 +54,18 @@ class PropertyController extends Controller
                 )
             );
         }
-        return $this->sendSuccessResponse("success",
+        return $this->sendSuccessResponse(
+            "success",
             $properties
         );
     }
 
     public function getProperty(Property $property)
     {
-        return $this->sendSuccessResponse("success",
-            $this->serializerService->entityToArray($property, ["main"]));
+        return $this->sendSuccessResponse(
+            "success",
+            $this->serializerService->entityToArray($property, ["main"])
+        );
     }
 
     public function updateProperty(Property $property, Request $request)
@@ -70,7 +76,10 @@ class PropertyController extends Controller
         if (!$updateProperty) {
             return $this->sendErrorResponse("Error updating property");
         }
-        return $this->sendSuccessResponse("Property updated", $this->serializerService->entityToArray($updateProperty, ['main']));
+        return $this->sendSuccessResponse(
+            "Property updated",
+            $this->serializerService->entityToArray($updateProperty, ['main'])
+        );
     }
 
     public function createProperty(Request $request)
@@ -81,15 +90,24 @@ class PropertyController extends Controller
         if (!$createProperty) {
             return $this->sendErrorResponse("Error creating property");
         }
-        return $this->sendSuccessResponse("Property created", $this->serializerService->entityToArray($createProperty, ['main']));
+        return $this->sendSuccessResponse(
+            "Property created",
+            $this->serializerService->entityToArray($createProperty, ['main'])
+        );
     }
 
     public function deleteProperty(Property $property, Request $request)
     {
         $delete = $this->propertyService->deleteProperty($property);
         if (!$delete) {
-            return $this->sendErrorResponse("Error deleting property", $this->serializerService->entityToArray($delete, ['main']));
+            return $this->sendErrorResponse(
+                "Error deleting property",
+                $this->serializerService->entityToArray($delete, ['main'])
+            );
         }
-        return $this->sendSuccessResponse("Property deleted.", $this->serializerService->entityToArray($delete, ['main']));
+        return $this->sendSuccessResponse(
+            "Property deleted.",
+            $this->serializerService->entityToArray($delete, ['main'])
+        );
     }
 }

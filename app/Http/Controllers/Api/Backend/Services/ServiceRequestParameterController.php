@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Http\Controllers\Api\Backend\Services;
 
 use App\Http\Controllers\Controller;
@@ -40,13 +41,16 @@ class ServiceRequestParameterController extends Controller
      * @param RequestParametersService $requestParametersService
      * @param AccessControlService $accessControlService
      */
-    public function __construct(ProviderService $providerService, HttpRequestService $httpRequestService,
-                                SerializerService $serializerService, ApiService $apiServicesService,
-                                RequestParametersService $requestParametersService,
-                                AccessControlService $accessControlService)
-    {
-
-        parent::__construct($accessControlService, $httpRequestService, $serializerService);
+    public function __construct(
+        ProviderService $providerService,
+        HttpRequestService $httpRequestService,
+        SerializerService $serializerService,
+        ApiService $apiServicesService,
+        RequestParametersService $requestParametersService,
+        AccessControlService $accessControlService,
+        Request $request
+    ) {
+        parent::__construct($accessControlService, $httpRequestService, $serializerService, $request);
         $this->providerService = $providerService;
         $this->apiServicesService = $apiServicesService;
         $this->requestParametersService = $requestParametersService;
@@ -61,7 +65,9 @@ class ServiceRequestParameterController extends Controller
     {
         $requestParametersArray = [];
         $isPermitted = $this->accessControlService->checkPermissionsForEntity(
-            self::DEFAULT_ENTITY, $provider, $request->user(),
+            self::DEFAULT_ENTITY,
+            $provider,
+            $request->user(),
             [
                 PermissionService::PERMISSION_ADMIN,
                 PermissionService::PERMISSION_READ,
@@ -76,7 +82,7 @@ class ServiceRequestParameterController extends Controller
                 $serviceRequest,
                 $request->get('sort', "parameter_name"),
                 $request->get('order', "asc"),
-                (int) $request->get('count', null)
+                (int)$request->get('count', null)
             );
             $requestParametersArray = $this->serializerService->entityArrayToArray($findRequestParameters, ["list"]);
         }
@@ -88,9 +94,13 @@ class ServiceRequestParameterController extends Controller
      * Returns a single service request parameter based on the id passed in the request url
      *
      */
-    public function getSingleServiceRequestParameters(Provider $provider, ServiceRequest $serviceRequest, Request $request)
-    {
-        if (!$request->user()->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_SUPERUSER)) && !$request->user()->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_ADMIN))) {
+    public function getSingleServiceRequestParameters(
+        Provider $provider,
+        ServiceRequest $serviceRequest,
+        Request $request
+    ) {
+        if (!$request->user()->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_SUPERUSER)) && !$request->user(
+            )->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_ADMIN))) {
             $this->accessControlService->checkPermissionsForEntity(
                 self::DEFAULT_ENTITY, $provider, $request->user(),
                 [
@@ -99,8 +109,10 @@ class ServiceRequestParameterController extends Controller
                 ]
             );
         }
-        return $this->sendSuccessResponse("success",
-            $this->serializerService->entityToArray($serviceRequest, ["parameters"]));
+        return $this->sendSuccessResponse(
+            "success",
+            $this->serializerService->entityToArray($serviceRequest, ["parameters"])
+        );
     }
 
     /**
@@ -108,9 +120,13 @@ class ServiceRequestParameterController extends Controller
      * Returns a single service request parameter based on the id passed in the request url
      *
      */
-    public function getServiceRequestParameter(Provider $provider, ServiceRequestParameter $serviceRequestParameter, Request $request)
-    {
-        if (!$request->user()->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_SUPERUSER)) && !$request->user()->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_ADMIN))) {
+    public function getServiceRequestParameter(
+        Provider $provider,
+        ServiceRequestParameter $serviceRequestParameter,
+        Request $request
+    ) {
+        if (!$request->user()->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_SUPERUSER)) && !$request->user(
+            )->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_ADMIN))) {
             $this->accessControlService->checkPermissionsForEntity(
                 self::DEFAULT_ENTITY, $provider, $request->user(),
                 [
@@ -119,7 +135,8 @@ class ServiceRequestParameterController extends Controller
                 ]
             );
         }
-        return $this->sendSuccessResponse("success",
+        return $this->sendSuccessResponse(
+            "success",
             $this->serializerService->entityToArray($serviceRequestParameter, ["single"])
         );
     }
@@ -130,9 +147,10 @@ class ServiceRequestParameterController extends Controller
      * Returns error response and message on fail
      *
      */
-    public function createServiceRequestParameter(Provider $provider, ServiceRequest $serviceRequest, Request $request) {
-
-        if (!$request->user()->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_SUPERUSER)) && !$request->user()->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_ADMIN))) {
+    public function createServiceRequestParameter(Provider $provider, ServiceRequest $serviceRequest, Request $request)
+    {
+        if (!$request->user()->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_SUPERUSER)) && !$request->user(
+            )->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_ADMIN))) {
             $this->accessControlService->checkPermissionsForEntity(
                 self::DEFAULT_ENTITY, $provider, $request->user(),
                 [
@@ -144,11 +162,13 @@ class ServiceRequestParameterController extends Controller
         }
         $data = $this->httpRequestService->getRequestData($request, true);
         $create = $this->requestParametersService->createRequestParameter($serviceRequest, $data);
-        if(!$create) {
+        if (!$create) {
             return $this->sendErrorResponse("Error inserting parameter");
         }
-        return $this->sendSuccessResponse("Parameter inserted",
-            $this->serializerService->entityToArray($create, ['single']));
+        return $this->sendSuccessResponse(
+            "Parameter inserted",
+            $this->serializerService->entityToArray($create, ['single'])
+        );
     }
 
     /**
@@ -157,9 +177,14 @@ class ServiceRequestParameterController extends Controller
      * Returns error response and message on fail
      *
      */
-    public function updateServiceRequestParameter(Provider $provider, ServiceRequest $serviceRequest, ServiceRequestParameter $serviceRequestParameter, Request $request)
-    {
-        if (!$request->user()->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_SUPERUSER)) && !$request->user()->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_ADMIN))) {
+    public function updateServiceRequestParameter(
+        Provider $provider,
+        ServiceRequest $serviceRequest,
+        ServiceRequestParameter $serviceRequestParameter,
+        Request $request
+    ) {
+        if (!$request->user()->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_SUPERUSER)) && !$request->user(
+            )->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_ADMIN))) {
             $this->accessControlService->checkPermissionsForEntity(
                 self::DEFAULT_ENTITY, $provider, $request->user(),
                 [
@@ -169,12 +194,18 @@ class ServiceRequestParameterController extends Controller
             );
         }
         $data = $this->httpRequestService->getRequestData($request, true);
-        $update = $this->requestParametersService->updateRequestParameter($serviceRequestParameter, $serviceRequest, $data);
-        if(!$update) {
+        $update = $this->requestParametersService->updateRequestParameter(
+            $serviceRequestParameter,
+            $serviceRequest,
+            $data
+        );
+        if (!$update) {
             return $this->sendErrorResponse("Error updating parameter");
         }
-        return $this->sendSuccessResponse("Parameter updated",
-            $this->serializerService->entityToArray($update, ['single']));
+        return $this->sendSuccessResponse(
+            "Parameter updated",
+            $this->serializerService->entityToArray($update, ['single'])
+        );
     }
 
     /**
@@ -183,9 +214,13 @@ class ServiceRequestParameterController extends Controller
      * Returns error response and message on fail
      *
      */
-    public function deleteServiceRequestParameter(Provider $provider, ServiceRequestParameter $serviceRequestParameter, Request $request)
-    {
-        if (!$request->user()->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_SUPERUSER)) && !$request->user()->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_ADMIN))) {
+    public function deleteServiceRequestParameter(
+        Provider $provider,
+        ServiceRequestParameter $serviceRequestParameter,
+        Request $request
+    ) {
+        if (!$request->user()->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_SUPERUSER)) && !$request->user(
+            )->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_ADMIN))) {
             $this->accessControlService->checkPermissionsForEntity(
                 self::DEFAULT_ENTITY, $provider, $request->user(),
                 [
@@ -196,8 +231,14 @@ class ServiceRequestParameterController extends Controller
         }
         $delete = $this->requestParametersService->deleteRequestParameter($serviceRequestParameter);
         if (!$delete) {
-            return $this->sendErrorResponse("Error deleting parameter", $this->serializerService->entityToArray($delete, ['single']));
+            return $this->sendErrorResponse(
+                "Error deleting parameter",
+                $this->serializerService->entityToArray($delete, ['single'])
+            );
         }
-        return $this->sendSuccessResponse("Parameter deleted.", $this->serializerService->entityToArray($delete, ['single']));
+        return $this->sendSuccessResponse(
+            "Parameter deleted.",
+            $this->serializerService->entityToArray($delete, ['single'])
+        );
     }
 }

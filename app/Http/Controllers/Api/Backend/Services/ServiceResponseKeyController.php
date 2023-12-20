@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Http\Controllers\Api\Backend\Services;
 
 use App\Http\Controllers\Controller;
@@ -35,13 +36,16 @@ class ServiceResponseKeyController extends Controller
      * @param ResponseKeysService $responseKeysService
      * @param AccessControlService $accessControlService
      */
-    public function __construct(ProviderService $providerService, HttpRequestService $httpRequestService,
-                                SerializerService $serializerService, ApiService $apiServicesService,
-                                ResponseKeysService $responseKeysService,
-                                AccessControlService $accessControlService)
-    {
-
-        parent::__construct($accessControlService, $httpRequestService, $serializerService);
+    public function __construct(
+        ProviderService $providerService,
+        HttpRequestService $httpRequestService,
+        SerializerService $serializerService,
+        ApiService $apiServicesService,
+        ResponseKeysService $responseKeysService,
+        AccessControlService $accessControlService,
+        Request $request
+    ) {
+        parent::__construct($accessControlService, $httpRequestService, $serializerService, $request);
         $this->providerService = $providerService;
         $this->apiServicesService = $apiServicesService;
         $this->responseKeysService = $responseKeysService;
@@ -62,7 +66,8 @@ class ServiceResponseKeyController extends Controller
         } else {
             return $this->sendErrorResponse("Error service id or name not in request",);
         }
-        return $this->sendSuccessResponse("success",
+        return $this->sendSuccessResponse(
+            "success",
             $this->serializerService->entityArrayToArray($responseKeys, ["list"])
         );
     }
@@ -74,8 +79,10 @@ class ServiceResponseKeyController extends Controller
      */
     public function getServiceResponseKey(ServiceResponseKey $serviceResponseKey)
     {
-        return $this->sendSuccessResponse("success",
-            $this->serializerService->entityToArray($serviceResponseKey, ["single"]));
+        return $this->sendSuccessResponse(
+            "success",
+            $this->serializerService->entityToArray($serviceResponseKey, ["single"])
+        );
     }
 
     /**
@@ -84,15 +91,19 @@ class ServiceResponseKeyController extends Controller
      * Returns error response and message on fail
      *
      */
-    public function createServiceResponseKey(Request $request) {
+    public function createServiceResponseKey(Request $request)
+    {
         $create = $this->responseKeysService->createServiceResponseKeys(
-            $this->httpRequestService->getRequestData($request, true));
+            $this->httpRequestService->getRequestData($request, true)
+        );
 
-        if(!$create) {
+        if (!$create) {
             return $this->sendErrorResponse("Error inserting service response key");
         }
-        return $this->sendSuccessResponse("Service response key inserted",
-            $this->serializerService->entityToArray($create, ['single']));
+        return $this->sendSuccessResponse(
+            "Service response key inserted",
+            $this->serializerService->entityToArray($create, ['single'])
+        );
     }
 
     /**
@@ -105,13 +116,16 @@ class ServiceResponseKeyController extends Controller
     {
         $update = $this->responseKeysService->updateServiceResponseKeys(
             $serviceResponseKey,
-            $this->httpRequestService->getRequestData($request, true));
+            $this->httpRequestService->getRequestData($request, true)
+        );
 
-        if(!$update) {
+        if (!$update) {
             return $this->sendErrorResponse("Error updating service response key");
         }
-        return $this->sendSuccessResponse("Service response key updated",
-            $this->serializerService->entityToArray($update, ['single']));
+        return $this->sendSuccessResponse(
+            "Service response key updated",
+            $this->serializerService->entityToArray($update, ['single'])
+        );
     }
 
     /**
@@ -124,8 +138,14 @@ class ServiceResponseKeyController extends Controller
     {
         $delete = $this->responseKeysService->deleteServiceResponseKey($serviceResponseKey);
         if (!$delete) {
-            return $this->sendErrorResponse("Error deleting service response key", $this->serializerService->entityToArray($delete, ['single']));
+            return $this->sendErrorResponse(
+                "Error deleting service response key",
+                $this->serializerService->entityToArray($delete, ['single'])
+            );
         }
-        return $this->sendSuccessResponse("Response key service deleted.", $this->serializerService->entityToArray($delete, ['single']));
+        return $this->sendSuccessResponse(
+            "Response key service deleted.",
+            $this->serializerService->entityToArray($delete, ['single'])
+        );
     }
 }

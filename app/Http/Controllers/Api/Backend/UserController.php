@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Http\Controllers\Api\Backend;
 
 use App\Http\Controllers\Controller;
@@ -33,12 +34,14 @@ class UserController extends Controller
      * @param HttpRequestService $httpRequestService
      * @param AccessControlService $accessControlService
      */
-    public function __construct(UserAdminService $userService, SerializerService $serializerService,
-                                HttpRequestService $httpRequestService,
-                                AccessControlService $accessControlService)
-    {
-
-        parent::__construct($accessControlService, $httpRequestService, $serializerService);
+    public function __construct(
+        UserAdminService $userService,
+        SerializerService $serializerService,
+        HttpRequestService $httpRequestService,
+        AccessControlService $accessControlService,
+        Request $request
+    ) {
+        parent::__construct($accessControlService, $httpRequestService, $serializerService, $request);
         $this->userService = $userService;
     }
 
@@ -63,7 +66,10 @@ class UserController extends Controller
         return $this->sendSuccessResponse(
             "Successfully fetched permission list",
             $this->serializerService->entityArrayToArray(
-                $this->accessControlService->getPermissionEntities()->getUserEntityPermissionList($entity, $request->user()),
+                $this->accessControlService->getPermissionEntities()->getUserEntityPermissionList(
+                    $entity,
+                    $request->user()
+                ),
                 ["list"]
             )
         );
@@ -74,7 +80,11 @@ class UserController extends Controller
         return $this->sendSuccessResponse(
             "Successfully fetched permissions",
             $this->serializerService->entityToArray(
-                $this->accessControlService->getPermissionEntities()->getUserEntityPermission($entity, $id, $request->user()),
+                $this->accessControlService->getPermissionEntities()->getUserEntityPermission(
+                    $entity,
+                    $id,
+                    $request->user()
+                ),
                 ["list"]
             )
         );
@@ -99,9 +109,10 @@ class UserController extends Controller
             $request->user(),
             $request->get('sort', "id"),
             $request->get('order', "asc"),
-            (int) $request->get('count', null)
+            (int)$request->get('count', null)
         );
-        return $this->sendSuccessResponse("success",
+        return $this->sendSuccessResponse(
+            "success",
             $this->serializerService->entityArrayToArray(
                 array_filter($getApiTokens, function ($token, $key) {
                     return $token->getType() === "user";
@@ -113,7 +124,8 @@ class UserController extends Controller
     public function generateSessionUserApiToken(Request $request)
     {
         $user = $request->user();
-        return $this->sendSuccessResponse("success",
+        return $this->sendSuccessResponse(
+            "success",
             $this->serializerService->entityToArray(
                 $this->userService->createUserToken(
                     $request->user(),
@@ -135,19 +147,29 @@ class UserController extends Controller
         }
         $delete = $this->userService->deleteApiToken($apiToken);
         if (!$delete) {
-            return $this->sendErrorResponse("Error deleting api token", $this->serializerService->entityToArray($delete, ['main']));
+            return $this->sendErrorResponse(
+                "Error deleting api token",
+                $this->serializerService->entityToArray($delete, ['main'])
+            );
         }
-        return $this->sendSuccessResponse("Api Token deleted.", $this->serializerService->entityToArray($delete, ['main']));
+        return $this->sendSuccessResponse(
+            "Api Token deleted.",
+            $this->serializerService->entityToArray($delete, ['main'])
+        );
     }
+
     public function updateSessionUser(Request $request)
     {
         $update = $this->userService->updateUser(
             $request->user(),
-            $this->httpRequestService->getRequestData($request, true));
-        if(!$update) {
+            $this->httpRequestService->getRequestData($request, true)
+        );
+        if (!$update) {
             return $this->sendErrorResponse("Error updating user");
         }
-        return $this->sendSuccessResponse("User updated",
-            $this->serializerService->entityToArray($update, ['main']));
+        return $this->sendSuccessResponse(
+            "User updated",
+            $this->serializerService->entityToArray($update, ['main'])
+        );
     }
 }

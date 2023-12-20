@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Http\Controllers\Api\Backend\Services;
 
 use App\Http\Controllers\Controller;
@@ -41,13 +42,16 @@ class ServiceRequestConfigController extends Controller
      * @param RequestConfigService $requestConfigService
      * @param AccessControlService $accessControlService
      */
-    public function __construct(ProviderService $providerService, HttpRequestService $httpRequestService,
-                                SerializerService $serializerService, ApiService $apiServicesService,
-                                RequestConfigService $requestConfigService,
-                                AccessControlService $accessControlService)
-    {
-
-        parent::__construct($accessControlService, $httpRequestService, $serializerService);
+    public function __construct(
+        ProviderService $providerService,
+        HttpRequestService $httpRequestService,
+        SerializerService $serializerService,
+        ApiService $apiServicesService,
+        RequestConfigService $requestConfigService,
+        AccessControlService $accessControlService,
+        Request $request
+    ) {
+        parent::__construct($accessControlService, $httpRequestService, $serializerService, $request);
         // Initialise services for this controller
         $this->providerService = $providerService;
         $this->apiServicesService = $apiServicesService;
@@ -63,7 +67,9 @@ class ServiceRequestConfigController extends Controller
     {
         $requestConfigArray = [];
         $isPermitted = $this->accessControlService->checkPermissionsForEntity(
-            self::DEFAULT_ENTITY, $provider, $request->user(),
+            self::DEFAULT_ENTITY,
+            $provider,
+            $request->user(),
             [
                 PermissionService::PERMISSION_ADMIN,
                 PermissionService::PERMISSION_READ,
@@ -78,7 +84,7 @@ class ServiceRequestConfigController extends Controller
                 $request->get('service_request_id'),
                 $request->get('sort', "item_name"),
                 $request->get('order', "asc"),
-                (int) $request->get('count', null)
+                (int)$request->get('count', null)
             );
             $requestConfigArray = $this->serializerService->entityArrayToArray($findRequestConfigs, ["list"]);
         }
@@ -90,9 +96,13 @@ class ServiceRequestConfigController extends Controller
      * Returns a single service request config based on the id passed in the request url
      *
      */
-    public function getServiceRequestConfig(Provider $provider, ServiceRequestConfig $serviceRequestConfig, Request $request): \Illuminate\Http\JsonResponse
-    {
-        if (!$request->user()->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_SUPERUSER)) && !$request->user()->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_ADMIN))) {
+    public function getServiceRequestConfig(
+        Provider $provider,
+        ServiceRequestConfig $serviceRequestConfig,
+        Request $request
+    ): \Illuminate\Http\JsonResponse {
+        if (!$request->user()->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_SUPERUSER)) && !$request->user(
+            )->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_ADMIN))) {
             $this->accessControlService->checkPermissionsForEntity(
                 self::DEFAULT_ENTITY, $provider, $request->user(),
                 [
@@ -101,8 +111,10 @@ class ServiceRequestConfigController extends Controller
                 ]
             );
         }
-        return $this->sendSuccessResponse("success",
-            $this->serializerService->entityToArray($serviceRequestConfig, ["single"]));
+        return $this->sendSuccessResponse(
+            "success",
+            $this->serializerService->entityToArray($serviceRequestConfig, ["single"])
+        );
     }
 
     /**
@@ -111,9 +123,13 @@ class ServiceRequestConfigController extends Controller
      * Returns error response and message on fail
      *
      */
-    public function createRequestConfig(Provider $provider, ServiceRequest $serviceRequest, Request $request): \Illuminate\Http\JsonResponse
-    {
-        if (!$request->user()->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_SUPERUSER)) && !$request->user()->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_ADMIN))) {
+    public function createRequestConfig(
+        Provider $provider,
+        ServiceRequest $serviceRequest,
+        Request $request
+    ): \Illuminate\Http\JsonResponse {
+        if (!$request->user()->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_SUPERUSER)) && !$request->user(
+            )->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_ADMIN))) {
             $this->accessControlService->checkPermissionsForEntity(
                 self::DEFAULT_ENTITY, $provider, $request->user(),
                 [
@@ -128,11 +144,13 @@ class ServiceRequestConfigController extends Controller
             $this->httpRequestService->getRequestData($request, true)
         );
 
-        if(!$create) {
+        if (!$create) {
             return $this->sendErrorResponse("Error inserting config item");
         }
-        return $this->sendSuccessResponse("Config item inserted",
-            $this->serializerService->entityToArray($create, ['single']));
+        return $this->sendSuccessResponse(
+            "Config item inserted",
+            $this->serializerService->entityToArray($create, ['single'])
+        );
     }
 
     /**
@@ -141,9 +159,14 @@ class ServiceRequestConfigController extends Controller
      *
      * Returns error response and message on fail
      */
-    public function updateRequestConfig(Provider $provider, ServiceRequest $serviceRequest, ServiceRequestConfig $serviceRequestConfig, Request $request): \Illuminate\Http\JsonResponse
-    {
-        if (!$request->user()->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_SUPERUSER)) && !$request->user()->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_ADMIN))) {
+    public function updateRequestConfig(
+        Provider $provider,
+        ServiceRequest $serviceRequest,
+        ServiceRequestConfig $serviceRequestConfig,
+        Request $request
+    ): \Illuminate\Http\JsonResponse {
+        if (!$request->user()->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_SUPERUSER)) && !$request->user(
+            )->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_ADMIN))) {
             $this->accessControlService->checkPermissionsForEntity(
                 self::DEFAULT_ENTITY, $provider, $request->user(),
                 [
@@ -153,14 +176,18 @@ class ServiceRequestConfigController extends Controller
             );
         }
         $update = $this->requestConfigService->updateRequestConfig(
-            $serviceRequest, $serviceRequestConfig,
-            $this->httpRequestService->getRequestData($request, true));
+            $serviceRequest,
+            $serviceRequestConfig,
+            $this->httpRequestService->getRequestData($request, true)
+        );
 
-        if(!$update) {
+        if (!$update) {
             return $this->sendErrorResponse("Error updating config item");
         }
-        return $this->sendSuccessResponse("Config item updated",
-            $this->serializerService->entityToArray($update, ['single']));
+        return $this->sendSuccessResponse(
+            "Config item updated",
+            $this->serializerService->entityToArray($update, ['single'])
+        );
     }
 
     /**
@@ -169,9 +196,13 @@ class ServiceRequestConfigController extends Controller
      *
      * Returns error response and message on fail
      */
-    public function deleteRequestConfig(Provider $provider, ServiceRequestConfig $serviceRequestConfig, Request $request): \Illuminate\Http\JsonResponse
-    {
-        if (!$request->user()->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_SUPERUSER)) && !$request->user()->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_ADMIN))) {
+    public function deleteRequestConfig(
+        Provider $provider,
+        ServiceRequestConfig $serviceRequestConfig,
+        Request $request
+    ): \Illuminate\Http\JsonResponse {
+        if (!$request->user()->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_SUPERUSER)) && !$request->user(
+            )->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_ADMIN))) {
             $this->accessControlService->checkPermissionsForEntity(
                 self::DEFAULT_ENTITY, $provider, $request->user(),
                 [
@@ -182,8 +213,14 @@ class ServiceRequestConfigController extends Controller
         }
         $delete = $this->requestConfigService->deleteRequestConfig($serviceRequestConfig);
         if (!$delete) {
-            return $this->sendErrorResponse("Error deleting config item", $this->serializerService->entityToArray($delete, ['single']));
+            return $this->sendErrorResponse(
+                "Error deleting config item",
+                $this->serializerService->entityToArray($delete, ['single'])
+            );
         }
-        return $this->sendSuccessResponse("Config item deleted.", $this->serializerService->entityToArray($delete, ['single']));
+        return $this->sendSuccessResponse(
+            "Config item deleted.",
+            $this->serializerService->entityToArray($delete, ['single'])
+        );
     }
 }

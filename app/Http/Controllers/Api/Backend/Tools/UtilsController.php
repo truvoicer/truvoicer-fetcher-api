@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Http\Controllers\Api\Backend\Tools;
 
 use App\Http\Controllers\Controller;
@@ -34,12 +35,15 @@ class UtilsController extends Controller
      * @param UserAdminService $userService
      * @param AccessControlService $accessControlService
      */
-    public function __construct(SerializerService $serializerService, HttpRequestService $httpRequestService,
-                                FileSystemService $fileSystemService, UserAdminService $userService,
-                                AccessControlService $accessControlService)
-    {
-
-        parent::__construct($accessControlService, $httpRequestService, $serializerService);
+    public function __construct(
+        SerializerService $serializerService,
+        HttpRequestService $httpRequestService,
+        FileSystemService $fileSystemService,
+        UserAdminService $userService,
+        AccessControlService $accessControlService,
+        Request $request
+    ) {
+        parent::__construct($accessControlService, $httpRequestService, $serializerService, $request);
         $this->fileSystemService = $fileSystemService;
         $this->userService = $userService;
     }
@@ -61,6 +65,7 @@ class UtilsController extends Controller
             $variablesService->getVariables($variableType)
         );
     }
+
     /**
      * Get list of service requests variables
      * Returns a list of service requests variables based on the request query parameters

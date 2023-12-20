@@ -34,14 +34,15 @@ class ProviderController extends Controller
      * @param HttpRequestService $httpRequestService
      * @param SerializerService $serializerService
      */
-    public function __construct(ProviderRepository $providerRepository,
-                                HttpRequestService $httpRequestService,
-                                SerializerService $serializerService,
-                                ProviderService $providerService,
-                                AccessControlService $accessControlService)
-    {
-
-        parent::__construct($accessControlService, $httpRequestService, $serializerService);
+    public function __construct(
+        ProviderRepository $providerRepository,
+        HttpRequestService $httpRequestService,
+        SerializerService $serializerService,
+        ProviderService $providerService,
+        AccessControlService $accessControlService,
+        Request $request
+    ) {
+        parent::__construct($accessControlService, $httpRequestService, $serializerService, $request);
         $this->providerRepo = $providerRepository;
         $this->providerService = $providerService;
     }
@@ -74,7 +75,9 @@ class ProviderController extends Controller
             "success",
             $this->serializerService->entityArrayToArray(
                 $providers,
-                ["list"]));
+                ["list"]
+            )
+        );
     }
 
     /**
@@ -83,17 +86,22 @@ class ProviderController extends Controller
      */
     public function getProvider(Provider $provider, Request $request): \Illuminate\Http\JsonResponse
     {
-        if (!$request->user()->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_SUPERUSER)) && !$request->user()->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_ADMIN))) {
+        if (!$request->user()->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_SUPERUSER)) && !$request->user(
+            )->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_ADMIN))) {
             $this->accessControlService->checkPermissionsForEntity(
-                self::DEFAULT_ENTITY, $provider, $request->user(),
+                self::DEFAULT_ENTITY,
+                $provider,
+                $request->user(),
                 [
                     PermissionService::PERMISSION_ADMIN,
                     PermissionService::PERMISSION_READ,
                 ],
             );
         }
-        return $this->sendSuccessResponse("success",
-            $this->serializerService->entityToArray($provider, ["single"]));
+        return $this->sendSuccessResponse(
+            "success",
+            $this->serializerService->entityToArray($provider, ["single"])
+        );
     }
 
     /**
@@ -103,13 +111,16 @@ class ProviderController extends Controller
     public function createProvider(Request $request): \Illuminate\Http\JsonResponse
     {
         $createProvider = $this->providerService->createProvider(
-            $this->httpRequestService->getRequestData($request, true));
+            $this->httpRequestService->getRequestData($request, true)
+        );
 
         if (!$createProvider) {
             return $this->sendErrorResponse("Error inserting provider");
         }
-        return $this->sendSuccessResponse("Provider added",
-            $this->serializerService->entityToArray($createProvider, ['main']));
+        return $this->sendSuccessResponse(
+            "Provider added",
+            $this->serializerService->entityToArray($createProvider, ['main'])
+        );
     }
 
 
@@ -119,9 +130,12 @@ class ProviderController extends Controller
      */
     public function updateProvider(Provider $provider, Request $request): \Illuminate\Http\JsonResponse
     {
-        if (!$request->user()->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_SUPERUSER)) && !$request->user()->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_ADMIN))) {
+        if (!$request->user()->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_SUPERUSER)) && !$request->user(
+            )->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_ADMIN))) {
             $this->accessControlService->checkPermissionsForEntity(
-                self::DEFAULT_ENTITY, $provider, $request->user(),
+                self::DEFAULT_ENTITY,
+                $provider,
+                $request->user(),
                 [
                     PermissionService::PERMISSION_ADMIN,
                     PermissionService::PERMISSION_UPDATE,
@@ -130,13 +144,16 @@ class ProviderController extends Controller
         }
         $updateProvider = $this->providerService->updateProvider(
             $provider,
-            $this->httpRequestService->getRequestData($request, true));
+            $this->httpRequestService->getRequestData($request, true)
+        );
 
         if (!$updateProvider) {
             return $this->sendErrorResponse("Error updating provider");
         }
-        return $this->sendSuccessResponse("Provider updated",
-            $this->serializerService->entityToArray($updateProvider, ['main']));
+        return $this->sendSuccessResponse(
+            "Provider updated",
+            $this->serializerService->entityToArray($updateProvider, ['main'])
+        );
     }
 
 
@@ -146,9 +163,12 @@ class ProviderController extends Controller
      */
     public function deleteProvider(Provider $provider, Request $request): \Illuminate\Http\JsonResponse
     {
-        if (!$request->user()->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_SUPERUSER)) && !$request->user()->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_ADMIN))) {
+        if (!$request->user()->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_SUPERUSER)) && !$request->user(
+            )->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_ADMIN))) {
             $this->accessControlService->checkPermissionsForEntity(
-                self::DEFAULT_ENTITY, $provider, $request->user(),
+                self::DEFAULT_ENTITY,
+                $provider,
+                $request->user(),
                 [
                     PermissionService::PERMISSION_ADMIN,
                     PermissionService::PERMISSION_DELETE,
@@ -157,8 +177,14 @@ class ProviderController extends Controller
         }
         $delete = $this->providerService->deleteProvider($provider);
         if (!$delete) {
-            return $this->sendErrorResponse("Error deleting provider", $this->serializerService->entityToArray($delete, ['main']));
+            return $this->sendErrorResponse(
+                "Error deleting provider",
+                $this->serializerService->entityToArray($delete, ['main'])
+            );
         }
-        return $this->sendSuccessResponse("Provider deleted.", $this->serializerService->entityToArray($delete, ['main']));
+        return $this->sendSuccessResponse(
+            "Provider deleted.",
+            $this->serializerService->entityToArray($delete, ['main'])
+        );
     }
 }

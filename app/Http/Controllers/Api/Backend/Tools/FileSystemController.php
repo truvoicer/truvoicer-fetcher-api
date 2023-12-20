@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Http\Controllers\Api\Backend\Tools;
 
 use App\Http\Controllers\Controller;
@@ -32,20 +33,24 @@ class FileSystemController extends Controller
      * @param UserAdminService $userService
      * @param AccessControlService $accessControlService
      */
-    public function __construct(SerializerService $serializerService, HttpRequestService $httpRequestService,
-                                FileSystemService $fileSystemService, UserAdminService $userService,
-                                AccessControlService $accessControlService)
-    {
-
-        parent::__construct($accessControlService, $httpRequestService, $serializerService);
+    public function __construct(
+        SerializerService $serializerService,
+        HttpRequestService $httpRequestService,
+        FileSystemService $fileSystemService,
+        UserAdminService $userService,
+        AccessControlService $accessControlService,
+        Request $request
+    ) {
+        parent::__construct($accessControlService, $httpRequestService, $serializerService, $request);
         $this->fileSystemService = $fileSystemService;
         $this->userService = $userService;
     }
 
-    public function downloadFile(File $file, DownloadsFileSystemService $fileSystemService) {
+    public function downloadFile(File $file, DownloadsFileSystemService $fileSystemService)
+    {
         $getFileDownloadLink = $fileSystemService->getFileDownloadUrl($file);
         if ($getFileDownloadLink === null) {
-            return $this->sendErrorResponse("Error downloading file.". []);
+            return $this->sendErrorResponse("Error downloading file." . []);
         }
         return $this->sendSuccessResponse("File download success", [
             "url" => $getFileDownloadLink
@@ -59,22 +64,32 @@ class FileSystemController extends Controller
             $request->get('order', "asc"),
             (int)$request->get('count', null)
         );
-        return $this->sendSuccessResponse("success",
-            $this->serializerService->entityArrayToArray($getServices, ["list"]));
+        return $this->sendSuccessResponse(
+            "success",
+            $this->serializerService->entityArrayToArray($getServices, ["list"])
+        );
     }
 
     public function getSingleFile(File $file)
     {
-        return $this->sendSuccessResponse("success",
-            $this->serializerService->entityToArray($file, ["single"]));
+        return $this->sendSuccessResponse(
+            "success",
+            $this->serializerService->entityToArray($file, ["single"])
+        );
     }
 
     public function deleteFile(File $file, Request $request)
     {
         $delete = $this->fileSystemService->deleteFile($file);
         if (!$delete) {
-            return $this->sendErrorResponse("Error deleting file", $this->serializerService->entityToArray($delete, ['single']));
+            return $this->sendErrorResponse(
+                "Error deleting file",
+                $this->serializerService->entityToArray($delete, ['single'])
+            );
         }
-        return $this->sendSuccessResponse("File deleted.", $this->serializerService->entityToArray($delete, ['single']));
+        return $this->sendSuccessResponse(
+            "File deleted.",
+            $this->serializerService->entityToArray($delete, ['single'])
+        );
     }
 }

@@ -32,12 +32,15 @@ class ServiceController extends Controller
      * @param ApiService $apiServicesService
      * @param AccessControlService $accessControlService
      */
-    public function __construct(ProviderService $providerService, HttpRequestService $httpRequestService,
-                                SerializerService $serializerService, ApiService $apiServicesService,
-                                AccessControlService $accessControlService)
-    {
-
-        parent::__construct($accessControlService, $httpRequestService, $serializerService);
+    public function __construct(
+        ProviderService $providerService,
+        HttpRequestService $httpRequestService,
+        SerializerService $serializerService,
+        ApiService $apiServicesService,
+        AccessControlService $accessControlService,
+        Request $request
+    ) {
+        parent::__construct($accessControlService, $httpRequestService, $serializerService, $request);
         $this->providerService = $providerService;   //Initialise provider service
         $this->apiServicesService = $apiServicesService;   //Initialise api services service
     }
@@ -54,8 +57,10 @@ class ServiceController extends Controller
             $request->get('order', "asc"),
             (int)$request->get('count', null)
         );
-        return $this->sendSuccessResponse("success",
-            $this->serializerService->entityArrayToArray($getServices, ["list"]));
+        return $this->sendSuccessResponse(
+            "success",
+            $this->serializerService->entityArrayToArray($getServices, ["list"])
+        );
     }
 
     /**
@@ -65,8 +70,10 @@ class ServiceController extends Controller
      */
     public function getService(Service $service): \Illuminate\Http\JsonResponse
     {
-        return $this->sendSuccessResponse("success",
-            $this->serializerService->entityToArray($service, ["single"]));
+        return $this->sendSuccessResponse(
+            "success",
+            $this->serializerService->entityToArray($service, ["single"])
+        );
     }
 
     /**
@@ -78,13 +85,16 @@ class ServiceController extends Controller
     public function createService(Request $request): \Illuminate\Http\JsonResponse
     {
         $create = $this->apiServicesService->createService(
-            $this->httpRequestService->getRequestData($request, true));
+            $this->httpRequestService->getRequestData($request, true)
+        );
 
         if (!$create) {
             return $this->sendErrorResponse("Error inserting service");
         }
-        return $this->sendSuccessResponse("Service inserted",
-            $this->serializerService->entityToArray($create, ['single']));
+        return $this->sendSuccessResponse(
+            "Service inserted",
+            $this->serializerService->entityToArray($create, ['single'])
+        );
     }
 
     /**
@@ -97,13 +107,16 @@ class ServiceController extends Controller
     {
         $update = $this->apiServicesService->updateService(
             $service,
-            $this->httpRequestService->getRequestData($request, true));
+            $this->httpRequestService->getRequestData($request, true)
+        );
 
         if (!$update) {
             return $this->sendErrorResponse("Error updating service");
         }
-        return $this->sendSuccessResponse("Service updated",
-            $this->serializerService->entityToArray($update, ['single']));
+        return $this->sendSuccessResponse(
+            "Service updated",
+            $this->serializerService->entityToArray($update, ['single'])
+        );
     }
 
     /**
@@ -116,8 +129,14 @@ class ServiceController extends Controller
     {
         $delete = $this->apiServicesService->deleteService($service);
         if (!$delete) {
-            return $this->sendErrorResponse("Error deleting service", $this->serializerService->entityToArray($delete, ['single']));
+            return $this->sendErrorResponse(
+                "Error deleting service",
+                $this->serializerService->entityToArray($delete, ['single'])
+            );
         }
-        return $this->sendSuccessResponse("Service deleted.", $this->serializerService->entityToArray($delete, ['single']));
+        return $this->sendSuccessResponse(
+            "Service deleted.",
+            $this->serializerService->entityToArray($delete, ['single'])
+        );
     }
 }

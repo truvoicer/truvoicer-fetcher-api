@@ -20,11 +20,12 @@ class AuthController extends Controller
         HttpRequestService $httpRequestService,
         SerializerService $serializerService,
         UserAdminService $userAdminService,
-        AccessControlService $accessControlService
+        AccessControlService $accessControlService,
+        Request $request
     )
     {
 
-        parent::__construct($accessControlService, $httpRequestService, $serializerService);
+        parent::__construct($accessControlService, $httpRequestService, $serializerService, $request);
         $this->userAdminService = $userAdminService;
     }
 

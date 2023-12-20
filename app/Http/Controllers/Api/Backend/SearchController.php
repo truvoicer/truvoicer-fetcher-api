@@ -6,6 +6,7 @@ use App\Services\SearchService;
 use App\Services\Permission\AccessControlService;
 use App\Services\Tools\HttpRequestService;
 use App\Services\Tools\SerializerService;
+use Illuminate\Http\Request;
 
 /**
  * Contains api endpoint functions for search related tasks
@@ -27,11 +28,13 @@ class SearchController extends Controller
      * @param AccessControlService $accessControlService
      */
     public function __construct(
-        SerializerService $serializerService, HttpRequestService $httpRequestService, SearchService $searchService,
-        AccessControlService $accessControlService)
-    {
-
-        parent::__construct($accessControlService, $httpRequestService, $serializerService);
+        SerializerService $serializerService,
+        HttpRequestService $httpRequestService,
+        SearchService $searchService,
+        AccessControlService $accessControlService,
+        Request $request
+    ) {
+        parent::__construct($accessControlService, $httpRequestService, $serializerService, $request);
         $this->searchService = $searchService;
     }
 
