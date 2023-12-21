@@ -26,6 +26,17 @@ class RoleService extends BaseService
         }
         return true;
     }
+    public function findRoleBy(array $conditions) {
+        foreach ($conditions as $condition) {
+            $this->roleRepository->addWhere(
+                $condition[0],
+                $condition[2],
+                $condition[1],
+            );
+        }
+        return $this->roleRepository->findOne();
+    }
+
     public function createRole(array $data) {
         return $this->roleRepository->insert($data);
     }

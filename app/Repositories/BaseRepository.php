@@ -9,13 +9,18 @@ class BaseRepository
 {
     use ErrorTrait;
 
+    const DEFAULT_WHERE = [];
+    const DEFAULT_SORT = 'asc';
+    const DEFAULT_ORDER_BY = 'id';
+    const DEFAULT_LIMIT = -1;
+    const DEFAULT_OFFSET = 0;
     protected string $modelClassName;
     protected Model $model;
-    private array $where = [];
-    private string $sort = 'asc';
-    private string $orderBy = 'id';
-    private int $limit = -1;
-    private int $offset = 0;
+    private array $where = self::DEFAULT_WHERE;
+    private string $sort = self::DEFAULT_SORT;
+    private string $orderBy = self::DEFAULT_ORDER_BY;
+    private int $limit = self::DEFAULT_LIMIT;
+    private int $offset = self::DEFAULT_OFFSET;
 
     /**
      * @throws \Exception
@@ -46,12 +51,16 @@ class BaseRepository
 
     public function findAll(): \Illuminate\Database\Eloquent\Collection
     {
-        return $this->modelClassName::all();
+        $find = $this->modelClassName::all();
+        $this->reset();
+        return $find;
     }
 
     public function findById(int $id): ?Model
     {
-        return $this->modelClassName::find($id);
+        $find = $this->modelClassName::find($id);
+        $this->reset();
+        return $find;
     }
 
     public function findByName(string $name = null)
@@ -86,13 +95,25 @@ class BaseRepository
         return $query;
     }
 
+    protected function reset() {
+        $this->where = self::DEFAULT_WHERE;
+        $this->sort = self::DEFAULT_SORT;
+        $this->orderBy = self::DEFAULT_ORDER_BY;
+        $this->limit = self::DEFAULT_LIMIT;
+        $this->offset = self::DEFAULT_OFFSET;
+    }
+
     public function findOne(): ?Model
     {
-        return $this->buildQuery()->first();
+        $find = $this->buildQuery()->first();
+        $this->reset();
+        return $find;
     }
     public function findMany(): ?Model
     {
-        return $this->buildQuery()->all();
+        $find = $this->buildQuery()->all();
+        $this->reset();
+        return $find;
     }
 
     public function findByLabelOrName($query)
@@ -109,21 +130,6 @@ class BaseRepository
         return $this->findMany();
     }
 
-    public function findByOrFail(string $field, string $value): Model
-    {
-        return $this->modelClassName::where($field, $value)->firstOrFail();
-    }
-
-    public function findByOrFailWith(string $field, string $value, array $with): Model
-    {
-        return $this->modelClassName::with($with)->where($field, $value)->firstOrFail();
-    }
-
-    public function findByWith(string $field, string $value, array $with): ?Model
-    {
-        return $this->modelClassName::with($with)->where($field, $value)->first();
-    }
-
     public function save(?array $data = []): bool
     {
         if (!$this->doesModelExist()) {
@@ -133,9 +139,7 @@ class BaseRepository
         }
     }
     public function insert(array $data) {
-        if (!$this->isModelSet()) {
-            $this->model = $this->getModelInstance($data);
-        }
+        $this->model = $this->getModelInstance($data);
         $createListing = $this->model->save();
         if (!$createListing) {
             $this->addError('Error creating listing for user', $data);

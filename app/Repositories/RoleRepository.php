@@ -9,7 +9,7 @@ class RoleRepository extends BaseRepository
 {
     public function __construct()
     {
-        parent::__construct(Category::class);
+        parent::__construct(Role::class);
     }
 
     public function saveRole(Role $role, array $data)
