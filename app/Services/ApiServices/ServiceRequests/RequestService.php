@@ -158,10 +158,10 @@ class RequestService extends BaseService
                 "Provider property (api_authentication_type) has to be set before creating a service request."
             );
         }
-        if (empty($data["service_request_label"])) {
+        if (empty($data["label"])) {
             throw new BadRequestHttpException("Service request label is not set.");
         }
-        $data['service_request_name'] = UtilsService::labelToName($data['service_request_label'], false, '-');
+        $data['name'] = UtilsService::labelToName($data['label'], false, '-');
         $service = $this->serviceRepository->findById($data["service_id"]);
         $saveServiceRequest = $this->serviceRequestRepository->save($this->getServiceRequestObject($provider, $service, $data));
         if ($saveServiceRequest) {

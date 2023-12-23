@@ -58,7 +58,7 @@ class ApiService extends BaseService
         if (empty($data['label'])) {
             throw new BadRequestHttpException("Label is required.");
         }
-        $data['service_name'] = UtilsService::labelToName($data['service_label'], false, '-');
+        $data['name'] = UtilsService::labelToName($data['label'], false, '-');
         $createService = $this->serviceRepository->insert($data);
         if (!$createService) {
             return false;

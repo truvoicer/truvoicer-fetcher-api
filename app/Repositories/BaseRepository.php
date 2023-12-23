@@ -3,6 +3,7 @@
 namespace App\Repositories;
 
 use App\Traits\Error\ErrorTrait;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 
 class BaseRepository
@@ -10,6 +11,7 @@ class BaseRepository
     use ErrorTrait;
 
     const DEFAULT_WHERE = [];
+    const AVAILABLE_ORDER_DIRECTIONS = ['asc', 'desc'];
     const DEFAULT_SORT = 'asc';
     const DEFAULT_ORDER_BY = 'id';
     const DEFAULT_LIMIT = -1;
@@ -29,6 +31,7 @@ class BaseRepository
     {
         if ($this->validateModel($modelClassName)) {
             $this->modelClassName = $modelClassName;
+            $this->model = $this->getModelInstance();
         }
     }
 
@@ -49,7 +52,7 @@ class BaseRepository
         return true;
     }
 
-    public function findAll(): \Illuminate\Database\Eloquent\Collection
+    public function findAll(): Collection
     {
         $find = $this->modelClassName::all();
         $this->reset();
@@ -85,6 +88,10 @@ class BaseRepository
                     break;
             }
         }
+        if (!in_array($this->sort, self::AVAILABLE_ORDER_DIRECTIONS)) {
+            $this->sort = self::DEFAULT_SORT;
+        }
+
         $query->orderBy($this->orderBy, $this->sort);
         if ($this->limit > 0) {
             $query->limit($this->limit);
@@ -109,9 +116,9 @@ class BaseRepository
         $this->reset();
         return $find;
     }
-    public function findMany(): ?Model
+    public function findMany(): Collection
     {
-        $find = $this->buildQuery()->all();
+        $find = $this->buildQuery()->get();
         $this->reset();
         return $find;
     }
@@ -127,6 +134,34 @@ class BaseRepository
         $this->setOrderBy($order);
         $this->setSort($sort);
         $this->setLimit($count);
+        return $this->findMany();
+    }
+
+
+    public function applyConditions(array $conditions) {
+        foreach ($conditions as $condition) {
+            if (count($condition) !== 3) {
+                return false;
+            }
+            list($column, $value, $comparison) = $condition;
+            $this->addWhere(
+                $column,
+                $value,
+                $comparison,
+            );
+        }
+        return true;
+    }
+    public function findOneBy(array $conditions) {
+        if (!$this->applyConditions($conditions)) {
+            return false;
+        }
+        return $this->findOne();
+    }
+    public function findManyBy(array $conditions) {
+        if (!$this->applyConditions($conditions)) {
+            return false;
+        }
         return $this->findMany();
     }
 

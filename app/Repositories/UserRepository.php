@@ -3,6 +3,7 @@
 namespace App\Repositories;
 
 use App\Models\User;
+use Illuminate\Database\Eloquent\Model;
 
 class UserRepository extends BaseRepository
 {
@@ -20,4 +21,6 @@ class UserRepository extends BaseRepository
         $this->addWhere('email', $email);
         return $this->findOne();
     }
+
+
 }

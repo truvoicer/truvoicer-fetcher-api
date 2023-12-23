@@ -49,7 +49,7 @@ class ProviderEntityService extends ProviderService
     }
 
     public function getUserProviderPermissionsListByUser(
-        string $sort = "provider_name",
+        string $sort = "name",
         string $order = "asc",
         ?int $count = null,
         $user = null

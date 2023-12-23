@@ -59,13 +59,13 @@ class ProviderController extends Controller
             $user->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_ADMIN))
         ) {
             $providers = $this->providerService->getProviderList(
-                $request->get('sort', "provider_name"),
+                $request->get('sort', "name"),
                 $request->get('order', "asc"),
                 (int)$request->get('count', null)
             );
         } else {
             $providers = $this->providerService->findUserPermittedProviders(
-                $request->get('sort', "provider_name"),
+                $request->get('sort', "name"),
                 $request->get('order', "asc"),
                 (int)$request->get('count', null),
                 $request->user()

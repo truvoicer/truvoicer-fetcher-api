@@ -53,7 +53,7 @@ class ServiceController extends Controller
     public function getServices(Request $request): \Illuminate\Http\JsonResponse
     {
         $getServices = $this->apiServicesService->findByParams(
-            $request->get('sort', "service_name"),
+            $request->get('sort', "name"),
             $request->get('order', "asc"),
             (int)$request->get('count', null)
         );

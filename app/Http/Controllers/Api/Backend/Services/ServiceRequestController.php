@@ -68,7 +68,7 @@ class ServiceRequestController extends Controller
     {
         $getServices = $this->requestService->getUserServiceRequestByProvider(
             $provider,
-            $request->get('sort', "service_request_name"),
+            $request->get('sort', "name"),
             $request->get('order', "asc"),
             (int)$request->get('count', null)
         );

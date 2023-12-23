@@ -19,15 +19,15 @@ class PermissionEntities
         [
             self::ENTITY_KEY => "provider",
             self::ENTITY_LABEL_KEY => "Providers",
-            self::ENTITY_LABEL_DATA_KEY => "provider_label",
-            self::ENTITY_SORT_KEY => "provider_name",
+            self::ENTITY_LABEL_DATA_KEY => "label",
+            self::ENTITY_SORT_KEY => "name",
             self::SERVICE_ID_KEY => ProviderService::SERVICE_ALIAS
         ],
         [
             self::ENTITY_KEY => "category",
             self::ENTITY_LABEL_KEY => "Categories",
-            self::ENTITY_LABEL_DATA_KEY => "category_label",
-            self::ENTITY_SORT_KEY => "category_name",
+            self::ENTITY_LABEL_DATA_KEY => "label",
+            self::ENTITY_SORT_KEY => "name",
             self::SERVICE_ID_KEY => CategoryService::SERVICE_ALIAS
         ]
     ];

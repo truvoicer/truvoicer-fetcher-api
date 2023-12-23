@@ -67,8 +67,8 @@ class ListController extends Controller
         $data = $request->query->all();
         if (isset($data["service_id"])) {
             $responseKeys = $responseKeysService->getResponseKeysByServiceId($data['service_id']);
-        } elseif (isset($data["service_name"])) {
-            $responseKeys = $responseKeysService->getResponseKeysByServiceName($data['service_name']);
+        } elseif (isset($data["name"])) {
+            $responseKeys = $responseKeysService->getResponseKeysByServiceName($data['name']);
         }
         return $this->sendSuccessResponse(
             "success",

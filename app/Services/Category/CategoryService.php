@@ -15,6 +15,7 @@ use App\Services\Permission\PermissionService;
 use App\Services\Provider\ProviderEntityService;
 use App\Services\Tools\UtilsService;
 use App\Services\User\UserAdminService;
+use Illuminate\Support\Facades\Request;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 
 class CategoryService extends BaseService
@@ -42,8 +43,8 @@ class CategoryService extends BaseService
 
     public function findByQuery(string $query)
     {
-        $this->categoryRepository->addWhere("category_label", "LIKE", "%" . $query . "%");
-        $this->categoryRepository->addWhere("category_name", "LIKE", "%" . $query . "%", "OR");
+        $this->categoryRepository->addWhere("label", "LIKE", "%" . $query . "%");
+        $this->categoryRepository->addWhere("name", "LIKE", "%" . $query . "%", "OR");
         return $this->categoryRepository->findMany();
     }
 
@@ -121,8 +122,8 @@ class CategoryService extends BaseService
                 continue;
             }
             $providerArray[$i]['id'] = $provider->id;
-            $providerArray[$i]['provider_name'] = $provider->name;
-            $providerArray[$i]['provider_label'] = $provider->label;
+            $providerArray[$i]['name'] = $provider->name;
+            $providerArray[$i]['label'] = $provider->label;
             $i++;
         };
         return $providerArray;
@@ -145,8 +146,8 @@ class CategoryService extends BaseService
                 continue;
             }
             $providerArray[$i]['id'] = $provider->id;
-            $providerArray[$i]['provider_name'] = $provider->name;
-            $providerArray[$i]['provider_label'] = $provider->label;
+            $providerArray[$i]['name'] = $provider->name;
+            $providerArray[$i]['label'] = $provider->label;
             $i++;
         };
         return $providerArray;
@@ -173,18 +174,22 @@ class CategoryService extends BaseService
 
     public function createCategory(array $data)
     {
-        if (empty($data['category_label'])) {
+        if (empty($data['label'])) {
             throw new BadRequestHttpException("Category label is not set.");
         }
-        $data['category_name'] = UtilsService::labelToName($data['category_label'], false, '-');
-        $this->permissionRepository->addWhere("category_name", $data['category_name']);
-        $checkCategory = $this->categoryRepository->findOne();
+        $data['name'] = UtilsService::labelToName($data['label'], false, '-');
+
+        $checkCategory = $this->categoryRepository->findOneBy(
+            [["name", '=', $data['name']]]
+        );
         if ($checkCategory !== null) {
-            throw new BadRequestHttpException(sprintf("Category (%s) already exists.", $data['category_name']));
+            throw new BadRequestHttpException(sprintf("Category (%s) already exists.", $data['name']));
         }
         $categoryData = $this->getCategoryObject($data);
-        $this->permissionRepository->addWhere("name", PermissionService::PERMISSION_ADMIN);
-        $getAdminPermission = $this->permissionRepository->findOne();
+
+        $getAdminPermission = $this->permissionRepository->findOneBy(
+            [["name", '=', PermissionService::PERMISSION_ADMIN]]
+        );
         if ($getAdminPermission === null) {
             throw new BadRequestHttpException(
                 "Admin permission does not exist."
@@ -196,8 +201,9 @@ class CategoryService extends BaseService
                 "Error creating category"
             );
         }
+
         $category = $this->categoryRepository->getModel();
-        $this->userCategoryRepository->createUserCategory($this->user, $category, [$getAdminPermission]);
+        $this->userCategoryRepository->createUserCategory(Request::user(), $category, [$getAdminPermission]);
         return $category;
     }
 

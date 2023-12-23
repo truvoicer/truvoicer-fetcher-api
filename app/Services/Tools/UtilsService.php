@@ -1,6 +1,8 @@
 <?php
 namespace App\Services\Tools;
 
+use Illuminate\Database\Eloquent\Collection;
+
 class UtilsService
 {
     public static function labelToName(string $string, ?bool $toUpper = false, ?string $spaceReplace = '_'): string
@@ -12,5 +14,19 @@ class UtilsService
         return strtolower($stringReplace);
     }
 
-
+    public static function findInArrayByKey(string $key, $value, array $data, ?bool $returnIndex = false)
+    {
+        $findIndex = array_search($value, array_column($data, $key));
+        if ($findIndex === false) {
+            return false;
+        }
+        if ($returnIndex) {
+            return $findIndex;
+        }
+        return $data[$findIndex];
+    }
+    public static function findInCollectionByKey(string $key, $value, Collection $data)
+    {
+        return $data->where($key, '=', $value);
+    }
 }

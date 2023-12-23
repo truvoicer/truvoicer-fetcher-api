@@ -15,6 +15,29 @@ class PermissionService extends BaseService
     const PERMISSION_WRITE = "write";
     const PERMISSION_UPDATE = "update";
     const PERMISSION_DELETE = "delete";
+
+    const DEFAULT_PERMISSIONS = [
+      [
+          'name' => self::PERMISSION_ADMIN,
+          'label' => 'Admin'
+      ],
+      [
+          'name' => self::PERMISSION_READ,
+          'label' => 'Read'
+      ],
+      [
+          'name' => self::PERMISSION_WRITE,
+          'label' => 'Write'
+      ],
+      [
+          'name' => self::PERMISSION_UPDATE,
+          'label' => 'Update'
+      ],
+      [
+          'name' => self::PERMISSION_DELETE,
+          'label' => 'Delete'
+      ],
+    ];
     protected PermissionRepository $permissionRepository;
 
     public function __construct()
@@ -40,16 +63,16 @@ class PermissionService extends BaseService
         return $permission;
     }
 
-    public function createPermission(string $name)
+    public function createPermission(string $name, string $label)
     {
-        return $this->permissionRepository->createPermission($name);
+        return $this->permissionRepository->createPermission($name, $label);
     }
 
-    public function updatePermission(Permission $permission, $name)
+    public function updatePermission(Permission $permission, array $data)
     {
         return $this->permissionRepository->savePermission(
             $permission,
-            $this->permissionRepository->buildPermissionData($name)
+            $data
         );
     }
 
@@ -63,5 +86,10 @@ class PermissionService extends BaseService
     {
         $permission = $this->permissionRepository->findById($permissionId);
         return $this->deletePermission($permission);
+    }
+
+    public function getPermissionRepository(): PermissionRepository
+    {
+        return $this->permissionRepository;
     }
 }

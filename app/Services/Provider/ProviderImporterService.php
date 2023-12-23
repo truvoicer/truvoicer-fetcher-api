@@ -192,12 +192,12 @@ class ProviderImporterService extends ProviderService
             $mappings["data"]["category"]["available"] = $this->categoryService->getAllCategoriesArray();
             foreach ($provider->serviceRequest()->get() as $serviceRequest) {
                 $mappings["data"]["service"]["sources"]["service_request"][] = [
-                    "service_request_name" => $serviceRequest->name,
-                    "service_request_label" => $serviceRequest->getServiceRequestLabel(),
+                    "name" => $serviceRequest->name,
+                    "label" => $serviceRequest->getServiceRequestLabel(),
                 ];
                 $mappings["data"]["category"]["sources"]["service_request"][] = [
-                    "service_request_name" => $serviceRequest->name,
-                    "service_request_label" => $serviceRequest->getServiceRequestLabel(),
+                    "name" => $serviceRequest->name,
+                    "label" => $serviceRequest->getServiceRequestLabel(),
                 ];
             }
             foreach ($provider->property()->get() as $providerProperty) {
@@ -207,8 +207,8 @@ class ProviderImporterService extends ProviderService
                 ];
             }
             $mappings["data"]["category"]["sources"]["provider"][] = [
-                "provider_name" => $provider->name,
-                "provider_label" => $provider->label,
+                "name" => $provider->name,
+                "label" => $provider->label,
             ];
             return $mappings;
         }, $data);

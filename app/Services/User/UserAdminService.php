@@ -4,6 +4,7 @@ namespace App\Services\User;
 
 use App\Models\Role;
 use App\Models\User;
+use App\Repositories\PersonalAccessTokenRepository;
 use App\Repositories\UserRepository;
 use App\Services\Auth\AuthService;
 use App\Services\BaseService;
@@ -13,10 +14,14 @@ use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 
 class UserAdminService extends BaseService
 {
+    const DEFAULT_TOKEN_EXPIRY = '+1 days';
+    const NO_TOKEN_EXPIRY = 'NO_TOKEN_EXPIRY';
     private UserRepository $userRepository;
+    private PersonalAccessTokenRepository $personalAccessTokenRepository;
     public function __construct()
     {
         $this->userRepository = new UserRepository();
+        $this->personalAccessTokenRepository = new PersonalAccessTokenRepository();
     }
 
     public static function userTokenHasAbility(User $user, string $ability) {
@@ -30,28 +35,31 @@ class UserAdminService extends BaseService
     public function createUser(array $userData)
     {
         $userData['password'] = Hash::make($userData['password']);
-        $user = User::create($userData);
-        $this->setUser($user);
-        return $user->save();
+        return $this->userRepository->insert($userData);
     }
 
-    public function createPublicUserToken()
-    {
-        $role = Role::where('name', AuthService::ABILITY_APP_USER)->first();
-        if (!$role instanceof Role) {
-            return false;
+    public function getUserToken(User $user) {
+        $token = $this->personalAccessTokenRepository->getLatestAccessToken($user);
+        if ($token instanceof PersonalAccessToken) {
+            return $token;
         }
-        $token = $this->getUser()->createToken($role->name, [$role->ability])->plainTextToken;
-        return $token;
+        return $this->createUserToken($user);
     }
-    public function createUserToken(User $user, int $roleId)
+
+    public function createUserToken(User $user, ?string $expiry = self::DEFAULT_TOKEN_EXPIRY)
     {
-        $role = Role::where('id', $roleId)->first();
+        $role = $user->role()->first();
         if (!$role instanceof Role) {
             return false;
         }
-        $token = $user->createToken($role->name, [$role->ability])->plainTextToken;
-        return $token;
+        switch ($expiry) {
+            case self::NO_TOKEN_EXPIRY:
+                $expiry = null;
+                break;
+        }
+
+        $user->tokens()->delete();
+        return $user->createToken($role->name, [$role->ability], new \DateTime($expiry));
     }
 
     public function getUserByEmail(string $email)

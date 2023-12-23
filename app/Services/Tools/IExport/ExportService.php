@@ -48,11 +48,11 @@ class ExportService
                         "id" => "id",
                         "name" => "categories",
                         "label" => "Categories",
-                        "nameField" => "category_name",
-                        "labelField" => "category_label",
+                        "nameField" => "name",
+                        "labelField" => "label",
                         "data" => $this->serializerService->entityArrayToArray(
                             $categoryService->findUserPermittedCategories(
-                                "category_name",
+                                "name",
                                 "asc",
                                 null,
                                 $user
@@ -68,11 +68,11 @@ class ExportService
                         "id" => "id",
                         "name" => "providers",
                         "label" => "Providers",
-                        "nameField" => "provider_name",
-                        "labelField" => "provider_label",
+                        "nameField" => "name",
+                        "labelField" => "label",
                         "data" => $this->serializerService->entityArrayToArray(
                             $providerService->findUserPermittedProviders(
-                                "provider_name",
+                                "name",
                                 "asc",
                                 null,
                                 $user
@@ -87,7 +87,7 @@ class ExportService
                     if ($this->accessControlService->inAdminGroup()) {
                         $data = $this->serializerService->entityArrayToArray(
                             $apiService->findByParams(
-                                "service_name",
+                                "name",
                                 "asc",
                                 null
                             ),
@@ -99,8 +99,8 @@ class ExportService
                         "id" => "id",
                         "name" => "services",
                         "label" => "Services",
-                        "nameField" => "service_name",
-                        "labelField" => "service_label",
+                        "nameField" => "name",
+                        "labelField" => "label",
                         "data" => $data
                     ]);
                     break;
@@ -123,7 +123,7 @@ class ExportService
                         "name" => "properties",
                         "label" => "Properties",
                         "nameField" => "property_name",
-                        "labelField" => "property_label",
+                        "labelField" => "label",
                         "data" => $data
                     ]);
                     break;

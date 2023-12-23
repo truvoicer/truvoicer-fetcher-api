@@ -48,4 +48,9 @@ class RoleService extends BaseService
         return $this->roleRepository->deleteRole($role);
     }
 
+    public function getRoleRepository(): RoleRepository
+    {
+        return $this->roleRepository;
+    }
+
 }

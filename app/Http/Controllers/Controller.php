@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\User;
 use App\Services\Permission\AccessControlService;
 use App\Services\Tools\HttpRequestService;
 use App\Services\Tools\SerializerService;
@@ -29,7 +30,10 @@ class Controller extends BaseController
         $this->serializerService = $serializerService;
         $this->httpRequestService = $httpRequestService;
         $this->accessControlService = $accessControlService;
-        $this->accessControlService->setUser($request->user());
+        $user = $request->user();
+        if ($user instanceof User) {
+            $this->accessControlService->setUser($user);
+        }
     }
     protected function sendErrorResponse(string $message, ?array $data = [], ?array $errors = [], ?int $statusCode = Response::HTTP_INTERNAL_SERVER_ERROR) {
         return response()->json([

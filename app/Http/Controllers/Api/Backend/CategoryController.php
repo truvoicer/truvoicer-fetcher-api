@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Api\Backend;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\CreateCategoryRequest;
+use App\Http\Resources\CategoryResource;
 use App\Models\Category;
 use App\Services\Auth\AuthService;
 use App\Services\Permission\AccessControlService;
@@ -53,20 +55,20 @@ class CategoryController extends Controller
     {
         if ($request->user()->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_SUPERUSER)) || $request->user()->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_ADMIN))) {
             $categories = $this->categoryService->getCategoryList(
-                $request->get('sort', "category_name"),
+                $request->get('sort', "name"),
                 $request->get('order', "asc"),
                 (int)$request->get('count', null)
             );
         } else {
             $categories = $this->categoryService->findUserPermittedCategories(
-                $request->get('sort', "category_name"),
+                $request->get('sort', "name"),
                 $request->get('order', "asc"),
                 (int)$request->get('count', null),
                 $request->user()
             );
         }
         return $this->sendSuccessResponse("success",
-            $this->serializerService->entityArrayToArray($categories)
+            CategoryResource::collection($categories)
         );
     }
 
@@ -89,10 +91,9 @@ class CategoryController extends Controller
             $this->serializerService->entityToArray($category));
     }
 
-    public function createCategory(Request $request)
+    public function createCategory(CreateCategoryRequest $request)
     {
-        $requestData = $this->httpRequestService->getRequestData($request, true);
-        $create = $this->categoryService->createCategory($requestData);
+        $create = $this->categoryService->createCategory($request->all());
         if (!$create) {
             return $this->sendErrorResponse("Error creating category.");
         }

@@ -22,14 +22,14 @@ class PermissionRepository extends BaseRepository
     }
 
 
-    public function buildPermissionData(?string $name) {
+    public function buildPermissionData(string $name, string $label) {
         return [
-            'name' => UtilsService::labelToName($name),
-            'label' => $name
+            'name' => $name,
+            'label' => $label
         ];
     }
 
-    public function createPermission(string $name) {
-        return $this->insert($this->buildPermissionData($name));
+    public function createPermission(string $name, string $label) {
+        return $this->insert($this->buildPermissionData($name, $label));
     }
 }

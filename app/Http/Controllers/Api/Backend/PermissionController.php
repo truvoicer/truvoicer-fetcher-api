@@ -48,7 +48,7 @@ class PermissionController extends Controller
         return $this->sendSuccessResponse("success",
             $this->serializerService->entityArrayToArray(
                 $providerService->getProviderList(
-                    $request->get('sort', "provider_name"),
+                    $request->get('sort', "name"),
                     $request->get('order', "asc"),
                     (int)$request->get('count', null)
                 ),
@@ -62,7 +62,7 @@ class PermissionController extends Controller
             "success",
             $this->serializerService->entityArrayToArray(
                 $categoryService->findByParams(
-                    $request->get('sort', "category_name"),
+                    $request->get('sort', "name"),
                     $request->get('order', "asc"),
                     (int)$request->get('count', null)
                 ),

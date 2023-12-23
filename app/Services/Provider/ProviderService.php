@@ -111,7 +111,7 @@ class ProviderService extends BaseService
         return $this->userProviderRepository->findOne();
     }
 
-    public function getProviderListByUser(string $sort = "provider_name", string $order = "asc", ?int $count = null, $user = null)
+    public function getProviderListByUser(string $sort = "name", string $order = "asc", ?int $count = null, $user = null)
     {
         $getProviders = $this->userProviderRepository->findProvidersByUser(
             ($user === null) ? $this->user : $user,
@@ -124,7 +124,7 @@ class ProviderService extends BaseService
         }, $getProviders);
     }
 
-    public function findUserPermittedProviders(string $sort = "provider_name", string $order = "asc", ?int $count = null, $user = null)
+    public function findUserPermittedProviders(string $sort = "name", string $order = "asc", ?int $count = null, $user = null)
     {
         $getProviders = $this->getProviderListByUser(
             $sort,
@@ -172,7 +172,7 @@ class ProviderService extends BaseService
         $object = new \stdClass();
         $object->property_id = $property->id;
         $object->property_name = $property->name;
-        $object->property_label = $property->label;
+        $object->label = $property->label;
         $object->property_value = "";
         if ($getProviderProperty !== null) {
             $object->property_value = $getProviderProperty->value;
@@ -234,14 +234,14 @@ class ProviderService extends BaseService
 
     public function createProvider(array $providerData)
     {
-        if (!isset($providerData['provider_label']) || empty($providerData['provider_label'])) {
+        if (!isset($providerData['label']) || empty($providerData['label'])) {
             throw new BadRequestHttpException("Provider label is required.");
         }
-        $providerData['provider_name'] = UtilsService::labelToName($providerData['provider_label'], false, '-');
-        $this->providerRepository->addWhere("provider_name", $providerData['provider_name']);
+        $providerData['name'] = UtilsService::labelToName($providerData['label'], false, '-');
+        $this->providerRepository->addWhere("name", $providerData['name']);
         $checkProvider = $this->providerRepository->findOne();
         if ($checkProvider !== null) {
-            throw new BadRequestHttpException(sprintf("Provider (%s) already exists.", $providerData['provider_name']));
+            throw new BadRequestHttpException(sprintf("Provider (%s) already exists.", $providerData['name']));
         }
         $provider = $this->setProviderObject($providerData);
         $this->permissionRepository->addWhere("name", PermissionService::PERMISSION_ADMIN);

@@ -61,8 +61,8 @@ class ServiceResponseKeyController extends Controller
         $data = $request->query->all();
         if (isset($data["service_id"])) {
             $responseKeys = $this->responseKeysService->getResponseKeysByServiceId($data['service_id']);
-        } elseif (isset($data["service_name"])) {
-            $responseKeys = $this->responseKeysService->getResponseKeysByServiceName($data['service_name']);
+        } elseif (isset($data["name"])) {
+            $responseKeys = $this->responseKeysService->getResponseKeysByServiceName($data['name']);
         } else {
             return $this->sendErrorResponse("Error service id or name not in request",);
         }

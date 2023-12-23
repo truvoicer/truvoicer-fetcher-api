@@ -25,23 +25,23 @@ class OperationsController extends Controller
         parent::__construct($accessControlService, $httpRequestService, $serializerService, $request);
     }
 
-    public function searchOperation(string $service_request_name, RequestOperation $requestOperation, Request $request)
+    public function searchOperation(string $name, RequestOperation $requestOperation, Request $request)
     {
         $data = $request->query->all();
 //        $appEnv = $this->getParameter("app.env");
 //        if ($appEnv === "prod") {
 //            $cacheKey = preg_replace('/[^a-zA-Z0-9\']/', '', $request->getRequestUri());
 //            $cache = new FilesystemAdapter();
-//            $operationData = $cache->get($cacheKey, function (ItemInterface $item) use ($requestOperation, $data, $service_request_name) {
+//            $operationData = $cache->get($cacheKey, function (ItemInterface $item) use ($requestOperation, $data, $name) {
 //                $item->expiresAfter(10800);
 //
 //                $requestOperation->setProviderName($data['provider']);
-//                $requestOperation->setApiRequestName($service_request_name);
+//                $requestOperation->setApiRequestName($name);
 //                return $requestOperation->runOperation($data);
 //            });
 //        } else {
 //            $requestOperation->setProviderName($data['provider']);
-//            $requestOperation->setApiRequestName($service_request_name);
+//            $requestOperation->setApiRequestName($name);
 //            $operationData = $requestOperation->runOperation($data);
 //        }
 //        return new JsonResponse(

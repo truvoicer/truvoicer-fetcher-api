@@ -12,7 +12,8 @@ class Category extends Model
     private string $name;
     private string $label;
     protected $fillable = [
-
+        'name',
+        'label'
     ];
     public function user()
     {

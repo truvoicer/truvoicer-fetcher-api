@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginRequest;
+use App\Http\Resources\AccessTokenResource;
 use App\Models\User;
 use App\Services\Permission\AccessControlService;
 use App\Services\Tools\HttpRequestService;
@@ -43,7 +44,8 @@ class AuthController extends Controller
             ], Response::HTTP_UNAUTHORIZED);
         }
 
-        $token = $user->createToken('admin', ['api:superuser'])->plainTextToken;
+        $token = $this->userAdminService->createUserToken($user);
+
         if (!$token) {
             return $this->sendErrorResponse(
                 'Error generating token',
@@ -54,9 +56,7 @@ class AuthController extends Controller
         }
         return $this->sendSuccessResponse(
             'Authenticated',
-            [
-                'token' => $token
-            ]
+            $token->toArray()
         );
     }
 
