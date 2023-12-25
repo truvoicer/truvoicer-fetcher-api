@@ -12,6 +12,11 @@ class ServiceRequestRepository extends BaseRepository
         parent::__construct(ServiceRequest::class);
     }
 
+    public function getModel(): ServiceRequest
+    {
+        return parent::getModel();
+    }
+
     public function findByQuery($query)
     {
         return $this->findByLabelOrName($query);

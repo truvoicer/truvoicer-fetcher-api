@@ -40,10 +40,9 @@ class ImportExportController extends Controller
         SecurityService $securityService,
         UserAdminService $userService,
         AccessControlService $accessControlService,
-        ExportService $exportService,
-        Request $request
+        ExportService $exportService
     ) {
-        parent::__construct($accessControlService, $httpRequestService, $serializerService, $request);
+        parent::__construct($accessControlService, $httpRequestService, $serializerService);
         $this->securityService = $securityService;
         $this->userService = $userService;
         $this->exportService = $exportService;

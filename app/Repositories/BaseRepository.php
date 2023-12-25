@@ -2,6 +2,7 @@
 
 namespace App\Repositories;
 
+use App\Helpers\Db\DbHelpers;
 use App\Traits\Error\ErrorTrait;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
@@ -16,8 +17,9 @@ class BaseRepository
     const DEFAULT_ORDER_BY = 'id';
     const DEFAULT_LIMIT = -1;
     const DEFAULT_OFFSET = 0;
+    protected DbHelpers $dbHelpers;
     protected string $modelClassName;
-    protected Model $model;
+    protected object $model;
     private array $where = self::DEFAULT_WHERE;
     private string $sort = self::DEFAULT_SORT;
     private string $orderBy = self::DEFAULT_ORDER_BY;
@@ -33,9 +35,10 @@ class BaseRepository
             $this->modelClassName = $modelClassName;
             $this->model = $this->getModelInstance();
         }
+        $this->dbHelpers = new DbHelpers();
     }
 
-    public function getModelInstance(?array $data = null): Model {
+    public function getModelInstance(?array $data = null): object {
         if (is_array($data)) {
             return new $this->modelClassName($data);
         }
@@ -201,7 +204,7 @@ class BaseRepository
         return true;
     }
 
-    public function setModel(Model $model): self
+    public function setModel(object $model): self
     {
         $this->model = $model;
         return $this;
@@ -284,7 +287,7 @@ class BaseRepository
         return $this;
     }
 
-    public function getModel(): Model
+    public function getModel(): object
     {
         return $this->model;
     }

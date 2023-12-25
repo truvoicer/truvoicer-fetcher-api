@@ -19,7 +19,7 @@ use App\Services\Permission\AccessControlService;
 use App\Services\Permission\PermissionService;
 use App\Services\Property\PropertyService;
 use App\Services\ApiServices\ResponseKeysService;
-use App\Services\Tools\UtilsService;
+use App\Helpers\Tools\UtilHelpers;
 use App\Services\User\UserAdminService;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 
@@ -138,9 +138,11 @@ class ProviderService extends BaseService
         ) {
             return $this->getProviderList($sort, $order, $count);
         }
+        $this->accessControlService->setUser($user);
         return array_filter($getProviders, function ($provider) use ($user) {
+            $this->accessControlService->setEntityName(ProviderEntityService::ENTITY_NAME);
             return $this->accessControlService->checkPermissionsForEntity(
-                ProviderEntityService::ENTITY_NAME, $provider, $user,
+                $provider,
                 [
                     PermissionService::PERMISSION_ADMIN,
                     PermissionService::PERMISSION_READ,
@@ -237,7 +239,7 @@ class ProviderService extends BaseService
         if (!isset($providerData['label']) || empty($providerData['label'])) {
             throw new BadRequestHttpException("Provider label is required.");
         }
-        $providerData['name'] = UtilsService::labelToName($providerData['label'], false, '-');
+        $providerData['name'] = UtilHelpers::labelToName($providerData['label'], false, '-');
         $this->providerRepository->addWhere("name", $providerData['name']);
         $checkProvider = $this->providerRepository->findOne();
         if ($checkProvider !== null) {

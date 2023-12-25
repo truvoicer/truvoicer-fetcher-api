@@ -12,6 +12,11 @@ class ProviderPropertyRepository extends BaseRepository
     {
         parent::__construct(ProviderProperty::class);
     }
+
+    public function getModel(): ProviderProperty
+    {
+        return parent::getModel();
+    }
     public function createProviderProperty(Provider $provider, Property $property, string $propertyValue) {
 //        $providerProperty = new ProviderProperty();
 //        $providerProperty->setProvider($provider);

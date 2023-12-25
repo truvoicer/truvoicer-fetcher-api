@@ -31,10 +31,9 @@ class SearchController extends Controller
         SerializerService $serializerService,
         HttpRequestService $httpRequestService,
         SearchService $searchService,
-        AccessControlService $accessControlService,
-        Request $request
+        AccessControlService $accessControlService
     ) {
-        parent::__construct($accessControlService, $httpRequestService, $serializerService, $request);
+        parent::__construct($accessControlService, $httpRequestService, $serializerService);
         $this->searchService = $searchService;
     }
 

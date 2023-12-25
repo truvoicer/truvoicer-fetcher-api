@@ -8,12 +8,25 @@ use Illuminate\Database\Eloquent\Model;
 class Permission extends Model
 {
     use HasFactory;
-    public function userCategory()
+    public const TABLE_NAME = 'permissions';
+
+    public function categoryUsers()
     {
-        return $this->belongsTo(UserCategory::class);
+        return $this->belongsToMany(
+            CategoryUser::class,
+            CategoryUserPermission::TABLE_NAME,
+            'permission_id',
+            'category_user_id'
+        );
     }
-    public function userProvider()
+
+    public function providerUsers()
     {
-        return $this->belongsTo(UserProvider::class);
+        return $this->belongsToMany(
+            ProviderUser::class,
+            ProviderUserPermission::TABLE_NAME,
+            'permission_id',
+            'provider_user_id',
+        );
     }
 }

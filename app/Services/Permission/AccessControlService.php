@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Services\Permission;
 
 use App\Models\User;
@@ -10,22 +11,28 @@ use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 class AccessControlService
 {
     use UserTrait;
+
     protected PermissionEntities $permissionEntities;
+    private string $entityName;
 
     public function __construct(PermissionEntities $permissionEntities)
     {
         $this->permissionEntities = $permissionEntities;
     }
 
-    public function checkPermissionsForEntity(string $entity, object $entityObject, ?User $user = null, array $allowedPermissions = [],
-                                              bool $showException = true) {
-        if ($user instanceof User) {
-            $this->setUser($user);
-        }
-        $serviceObject = $this->getPermissionEntities()->getServiceObjectByEntityName($entity);
-        $functionName = sprintf("getUser%sList", ucfirst($entity));
+    public function checkPermissionsForEntity(
+        object $entityObject,
+        array $allowedPermissions = [],
+        bool $showException = true
+    ) {
+
+//        if ($this->inAdminGroup()) {
+//            return true;
+//        }
+        $serviceObject = $this->getPermissionEntities()->getServiceObjectByEntityName($this->entityName);
+        $functionName = sprintf("getUser%sList", ucfirst($this->entityName));
         $this->getPermissionEntities()->validateServiceObjectFunction($serviceObject, $functionName);
-        $entityRelations = $serviceObject->$functionName($user, $entityObject);
+        $entityRelations = $serviceObject->$functionName($this->user, $entityObject);
         if ($entityRelations === null) {
             if ($showException) {
                 throw new BadRequestHttpException("Access control: operation not permitted");
@@ -49,10 +56,10 @@ class AccessControlService
     public function inAdminGroup(): bool
     {
         $user = $this->getUser();
-         return (
+        return (
             UserAdminService::userTokenHasAbility($user, AuthService::ABILITY_SUPERUSER) ||
             UserAdminService::userTokenHasAbility($user, AuthService::ABILITY_ADMIN)
-         );
+        );
     }
 
     /**
@@ -62,4 +69,10 @@ class AccessControlService
     {
         return $this->permissionEntities;
     }
+
+    public function setEntityName(string $entityName): void
+    {
+        $this->entityName = $entityName;
+    }
+
 }

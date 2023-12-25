@@ -13,6 +13,11 @@ class OauthAccessTokenRepository extends BaseRepository
         parent::__construct(OauthAccessToken::class);
     }
 
+    public function getModel(): OauthAccessToken
+    {
+        return parent::getModel();
+    }
+
     public function insertOathToken(string $token, DateTime $expiry, Provider $provider) {
         return $this->save([
             'access_token' => $token,

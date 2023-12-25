@@ -16,6 +16,11 @@ class PersonalAccessTokenRepository extends BaseRepository
         parent::__construct(PersonalAccessToken::class);
     }
 
+    public function getModel(): PersonalAccessToken
+    {
+        return parent::getModel();
+    }
+
     public function getLatestAccessToken(User $user) {
         $dateTime = new DateTime();
 

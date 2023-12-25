@@ -10,6 +10,11 @@ class FileRepository extends BaseRepository
     {
         parent::__construct(File::class);
     }
+
+    public function getModel(): File
+    {
+        return parent::getModel();
+    }
     public function findByParams(string $sort, string  $order, int $count)
     {
         return $this->findAllWithParams($sort, $order, $count);

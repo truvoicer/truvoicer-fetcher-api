@@ -13,6 +13,11 @@ class ServiceRequestConfigRepository extends BaseRepository
         parent::__construct(ServiceRequestConfig::class);
     }
 
+    public function getModel(): ServiceRequestConfig
+    {
+        return parent::getModel();
+    }
+
     public function findByParams(ServiceRequest $serviceRequest, string $sort, string $order, int $count)
     {
         $this->addWhere('service_request_id', $serviceRequest);

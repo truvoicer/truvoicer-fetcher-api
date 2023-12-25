@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 class Provider extends Model
 {
     use HasFactory;
+    public const TABLE_NAME = 'providers';
 
     public function user()
     {

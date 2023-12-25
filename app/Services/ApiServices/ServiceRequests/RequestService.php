@@ -16,7 +16,7 @@ use App\Services\ApiServices\ApiService;
 use App\Services\BaseService;
 use App\Services\Provider\ProviderService;
 use App\Services\Tools\HttpRequestService;
-use App\Services\Tools\UtilsService;
+use App\Helpers\Tools\UtilHelpers;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 
 class RequestService extends BaseService
@@ -161,7 +161,7 @@ class RequestService extends BaseService
         if (empty($data["label"])) {
             throw new BadRequestHttpException("Service request label is not set.");
         }
-        $data['name'] = UtilsService::labelToName($data['label'], false, '-');
+        $data['name'] = UtilHelpers::labelToName($data['label'], false, '-');
         $service = $this->serviceRepository->findById($data["service_id"]);
         $saveServiceRequest = $this->serviceRequestRepository->save($this->getServiceRequestObject($provider, $service, $data));
         if ($saveServiceRequest) {

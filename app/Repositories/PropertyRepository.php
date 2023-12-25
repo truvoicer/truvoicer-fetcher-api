@@ -10,6 +10,11 @@ class PropertyRepository extends BaseRepository
     {
         parent::__construct(Property::class);
     }
+
+    public function getModel(): Property
+    {
+        return parent::getModel();
+    }
     public function getAllPropertiesArray() {
         return $this->findAll();
     }

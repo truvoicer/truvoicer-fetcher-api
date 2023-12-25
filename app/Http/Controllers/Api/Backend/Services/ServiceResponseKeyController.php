@@ -42,10 +42,9 @@ class ServiceResponseKeyController extends Controller
         SerializerService $serializerService,
         ApiService $apiServicesService,
         ResponseKeysService $responseKeysService,
-        AccessControlService $accessControlService,
-        Request $request
+        AccessControlService $accessControlService
     ) {
-        parent::__construct($accessControlService, $httpRequestService, $serializerService, $request);
+        parent::__construct($accessControlService, $httpRequestService, $serializerService);
         $this->providerService = $providerService;
         $this->apiServicesService = $apiServicesService;
         $this->responseKeysService = $responseKeysService;

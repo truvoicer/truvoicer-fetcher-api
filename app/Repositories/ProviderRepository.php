@@ -14,6 +14,11 @@ class ProviderRepository extends BaseRepository
         parent::__construct(Provider::class);
     }
 
+    public function getModel(): Provider
+    {
+        return parent::getModel();
+    }
+
     public function getAllProvidersArray() {
         return $this->findAll();
     }

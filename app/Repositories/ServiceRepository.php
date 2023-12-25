@@ -12,6 +12,11 @@ class ServiceRepository extends BaseRepository
         parent::__construct(Service::class);
     }
 
+    public function getModel(): Service
+    {
+        return parent::getModel();
+    }
+
     public function getAllServicesArray() {
         return $this->findAll();
     }

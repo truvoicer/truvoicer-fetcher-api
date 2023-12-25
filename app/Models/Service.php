@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 class Service extends Model
 {
     use HasFactory;
+    public const TABLE_NAME = 'services';
     public function serviceRequest()
     {
         return $this->hasMany(ServiceRequest::class);

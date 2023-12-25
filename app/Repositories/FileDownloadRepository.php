@@ -10,6 +10,12 @@ class FileDownloadRepository extends BaseRepository
     {
         parent::__construct(FileDownload::class);
     }
+
+    public function getModel(): FileDownload
+    {
+        return parent::getModel();
+    }
+
     public function findByParams(string $sort, string  $order, int $count)
     {
         return $this->findAllWithParams($sort, $order, $count);

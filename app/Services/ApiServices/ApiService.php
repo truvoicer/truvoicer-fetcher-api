@@ -6,7 +6,7 @@ use App\Repositories\ServiceRepository;
 use App\Repositories\ServiceRequestParameterRepository;
 use App\Repositories\ServiceRequestRepository;
 use App\Services\BaseService;
-use App\Services\Tools\UtilsService;;
+use App\Helpers\Tools\UtilHelpers;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 
 class ApiService extends BaseService
@@ -58,7 +58,7 @@ class ApiService extends BaseService
         if (empty($data['label'])) {
             throw new BadRequestHttpException("Label is required.");
         }
-        $data['name'] = UtilsService::labelToName($data['label'], false, '-');
+        $data['name'] = UtilHelpers::labelToName($data['label'], false, '-');
         $createService = $this->serviceRepository->insert($data);
         if (!$createService) {
             return false;

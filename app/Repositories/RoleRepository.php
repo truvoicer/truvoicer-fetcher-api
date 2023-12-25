@@ -12,6 +12,11 @@ class RoleRepository extends BaseRepository
         parent::__construct(Role::class);
     }
 
+    public function getModel(): Role
+    {
+        return parent::getModel();
+    }
+
     public function saveRole(Role $role, array $data)
     {
         $this->setModel($role);

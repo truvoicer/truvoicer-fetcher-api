@@ -14,6 +14,11 @@ class UserProviderRepository extends BaseRepository
         parent::__construct(UserProvider::class);
     }
 
+    public function getModel(): UserProvider
+    {
+        return parent::getModel();
+    }
+
     public function findUserProviderByName(User $user, string $value)
     {
         return $user->provider()

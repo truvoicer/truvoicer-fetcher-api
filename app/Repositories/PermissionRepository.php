@@ -3,7 +3,7 @@
 namespace App\Repositories;
 
 use App\Models\Permission;
-use App\Services\Tools\UtilsService;
+use App\Helpers\Tools\UtilHelpers;
 
 class PermissionRepository extends BaseRepository
 {
@@ -11,6 +11,12 @@ class PermissionRepository extends BaseRepository
     {
         parent::__construct(Permission::class);
     }
+
+    public function getModel(): Permission
+    {
+        return parent::getModel();
+    }
+
     public function findByParams(string $sort, string  $order, int $count)
     {
         return $this->findAllWithParams($sort, $order, $count);

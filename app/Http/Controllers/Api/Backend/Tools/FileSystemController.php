@@ -38,10 +38,9 @@ class FileSystemController extends Controller
         HttpRequestService $httpRequestService,
         FileSystemService $fileSystemService,
         UserAdminService $userService,
-        AccessControlService $accessControlService,
-        Request $request
+        AccessControlService $accessControlService
     ) {
-        parent::__construct($accessControlService, $httpRequestService, $serializerService, $request);
+        parent::__construct($accessControlService, $httpRequestService, $serializerService);
         $this->fileSystemService = $fileSystemService;
         $this->userService = $userService;
     }

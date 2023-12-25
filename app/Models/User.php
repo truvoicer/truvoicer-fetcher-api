@@ -12,6 +12,8 @@ class User extends Authenticatable
 {
     use HasApiTokens, HasFactory, Notifiable;
 
+    public const TABLE_NAME = 'users';
+
     /**
      * The attributes that are mass assignable.
      *
@@ -43,14 +45,24 @@ class User extends Authenticatable
         'password' => 'hashed',
     ];
 
-    public function role()
+    public function roles()
     {
-        return $this->belongsTo(Role::class);
+        return $this->belongsToMany(
+            Role::class,
+            RoleUser::TABLE_NAME,
+            'user_id',
+            'role_id'
+        );
     }
 
-    public function category()
+    public function categories()
     {
-        return $this->hasMany(Category::class);
+        return $this->belongsToMany(
+            Category::class,
+            CategoryUser::TABLE_NAME,
+            'user_id',
+            'category_id'
+        );
     }
     public function provider()
     {

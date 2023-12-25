@@ -1,9 +1,9 @@
 <?php
-namespace App\Services\Tools;
+namespace App\Helpers\Tools;
 
 use Illuminate\Database\Eloquent\Collection;
 
-class UtilsService
+class UtilHelpers
 {
     public static function labelToName(string $string, ?bool $toUpper = false, ?string $spaceReplace = '_'): string
     {

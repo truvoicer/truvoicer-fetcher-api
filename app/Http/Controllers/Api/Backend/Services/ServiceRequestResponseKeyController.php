@@ -48,13 +48,13 @@ class ServiceRequestResponseKeyController extends Controller
         SerializerService $serializerService,
         ApiService $apiServicesService,
         RequestResponseKeysService $requestResponseKeysService,
-        AccessControlService $accessControlService,
-        Request $request
+        AccessControlService $accessControlService
     ) {
-        parent::__construct($accessControlService, $httpRequestService, $serializerService, $request);
+        parent::__construct($accessControlService, $httpRequestService, $serializerService);
         $this->providerService = $providerService;
         $this->apiServicesService = $apiServicesService;
         $this->requestResponseKeysService = $requestResponseKeysService;
+        $this->accessControlService->setEntityName(self::DEFAULT_ENTITY);
     }
 
     /**
@@ -64,11 +64,10 @@ class ServiceRequestResponseKeyController extends Controller
      */
     public function getRequestResponseKeyList(Provider $provider, ServiceRequest $serviceRequest, Request $request)
     {
+        $this->setAccessControlUser($request->user());
         $requestResponseKeysArray = [];
         $isPermitted = $this->accessControlService->checkPermissionsForEntity(
-            self::DEFAULT_ENTITY,
             $provider,
-            $request->user(),
             [
                 PermissionService::PERMISSION_ADMIN,
                 PermissionService::PERMISSION_READ,
@@ -98,13 +97,13 @@ class ServiceRequestResponseKeyController extends Controller
     public function getRequestResponseKey(
         Provider $provider,
         ServiceRequest $serviceRequest,
-        ServiceResponseKey $serviceResponseKey,
-        Request $request
+        ServiceResponseKey $serviceResponseKey
     ) {
+        $this->setAccessControlUser($request->user());
         if (!$request->user()->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_SUPERUSER)) && !$request->user(
             )->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_ADMIN))) {
             $this->accessControlService->checkPermissionsForEntity(
-                self::DEFAULT_ENTITY, $provider, $request->user(),
+                $provider,
                 [
                     PermissionService::PERMISSION_ADMIN,
                     PermissionService::PERMISSION_READ,
@@ -130,13 +129,13 @@ class ServiceRequestResponseKeyController extends Controller
     public function createRequestResponseKey(
         Provider $provider,
         ServiceRequest $serviceRequest,
-        ServiceResponseKey $serviceResponseKey,
-        Request $request
+        ServiceResponseKey $serviceResponseKey
     ) {
+        $this->setAccessControlUser($request->user());
         if (!$request->user()->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_SUPERUSER)) && !$request->user(
             )->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_ADMIN))) {
             $this->accessControlService->checkPermissionsForEntity(
-                self::DEFAULT_ENTITY, $provider, $request->user(),
+                $provider,
                 [
                     PermissionService::PERMISSION_ADMIN,
                     PermissionService::PERMISSION_WRITE,
@@ -168,13 +167,13 @@ class ServiceRequestResponseKeyController extends Controller
     public function updateRequestResponseKey(
         Provider $provider,
         ServiceRequest $serviceRequest,
-        ServiceResponseKey $serviceResponseKey,
-        Request $request
+        ServiceResponseKey $serviceResponseKey
     ) {
+        $this->setAccessControlUser($request->user());
         if (!$request->user()->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_SUPERUSER)) && !$request->user(
             )->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_ADMIN))) {
             $this->accessControlService->checkPermissionsForEntity(
-                self::DEFAULT_ENTITY, $provider, $request->user(),
+                $provider,
                 [
                     PermissionService::PERMISSION_ADMIN,
                     PermissionService::PERMISSION_UPDATE,
@@ -205,13 +204,13 @@ class ServiceRequestResponseKeyController extends Controller
     public function deleteRequestResponseKey(
         Provider $provider,
         ServiceRequest $serviceRequest,
-        ServiceResponseKey $serviceResponseKey,
-        Request $request
+        ServiceResponseKey $serviceResponseKey
     ) {
+        $this->setAccessControlUser($request->user());
         if (!$request->user()->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_SUPERUSER)) && !$request->user(
             )->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_ADMIN))) {
             $this->accessControlService->checkPermissionsForEntity(
-                self::DEFAULT_ENTITY, $provider, $request->user(),
+                $provider,
                 [
                     PermissionService::PERMISSION_ADMIN,
                     PermissionService::PERMISSION_DELETE,

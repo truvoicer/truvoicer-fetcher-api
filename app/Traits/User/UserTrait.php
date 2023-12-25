@@ -3,11 +3,13 @@
 namespace App\Traits\User;
 
 use App\Models\User;
+use App\Repositories\UserRepository;
 
 trait UserTrait
 {
 
     protected User $user;
+    protected UserRepository $userRepository;
 
     /**
      * @return User
@@ -24,4 +26,15 @@ trait UserTrait
     {
         $this->user = $user;
     }
+
+    public function getUserRepository(): UserRepository
+    {
+        return $this->userRepository;
+    }
+
+    public function setUserRepository(UserRepository $userRepository): void
+    {
+        $this->userRepository = $userRepository;
+    }
+
 }

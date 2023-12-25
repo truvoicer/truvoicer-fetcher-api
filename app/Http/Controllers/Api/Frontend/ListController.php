@@ -29,10 +29,9 @@ class ListController extends Controller
         HttpRequestService $httpRequestService,
         SerializerService $serializerService,
         CategoryService $categoryService,
-        AccessControlService $accessControlService,
-        Request $request
+        AccessControlService $accessControlService
     ) {
-        parent::__construct($accessControlService, $httpRequestService, $serializerService, $request);
+        parent::__construct($accessControlService, $httpRequestService, $serializerService);
         $this->providerService = $providerService;
         $this->categoryService = $categoryService;
     }

@@ -34,10 +34,9 @@ class PropertyController extends Controller
         HttpRequestService $httpRequestService,
         PropertyService $propertyService,
         SerializerService $serializerService,
-        AccessControlService $accessControlService,
-        Request $request
+        AccessControlService $accessControlService
     ) {
-        parent::__construct($accessControlService, $httpRequestService, $serializerService, $request);
+        parent::__construct($accessControlService, $httpRequestService, $serializerService);
         $this->propertyRepository = $propertyRepository;
         $this->propertyService = $propertyService;
     }

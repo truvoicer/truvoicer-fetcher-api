@@ -8,4 +8,5 @@ use Illuminate\Database\Eloquent\Model;
 class ProviderCategory extends Model
 {
     use HasFactory;
+    public const TABLE_NAME = 'provider_categories';
 }

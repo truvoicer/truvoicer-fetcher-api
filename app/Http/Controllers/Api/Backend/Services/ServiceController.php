@@ -37,10 +37,9 @@ class ServiceController extends Controller
         HttpRequestService $httpRequestService,
         SerializerService $serializerService,
         ApiService $apiServicesService,
-        AccessControlService $accessControlService,
-        Request $request
+        AccessControlService $accessControlService
     ) {
-        parent::__construct($accessControlService, $httpRequestService, $serializerService, $request);
+        parent::__construct($accessControlService, $httpRequestService, $serializerService);
         $this->providerService = $providerService;   //Initialise provider service
         $this->apiServicesService = $apiServicesService;   //Initialise api services service
     }

@@ -38,10 +38,9 @@ class AdminController extends Controller
         UserAdminService $userService,
         SerializerService $serializerService,
         HttpRequestService $httpRequestService,
-        AccessControlService $accessControlService,
-        Request $request
+        AccessControlService $accessControlService
     ) {
-        parent::__construct($accessControlService, $httpRequestService, $serializerService, $request);
+        parent::__construct($accessControlService, $httpRequestService, $serializerService);
         $this->userService = $userService;
     }
 

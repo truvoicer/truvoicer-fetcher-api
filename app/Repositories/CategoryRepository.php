@@ -11,6 +11,12 @@ class CategoryRepository extends BaseRepository
     {
         parent::__construct(Category::class);
     }
+
+    public function getModel(): Category
+    {
+        return parent::getModel();
+    }
+
     public function getAllCategoriesArray() {
         return $this->findAll();
     }

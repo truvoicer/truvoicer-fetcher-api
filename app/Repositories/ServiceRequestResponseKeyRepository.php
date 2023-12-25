@@ -13,6 +13,11 @@ class ServiceRequestResponseKeyRepository extends BaseRepository
         parent::__construct(ServiceRequestResponseKey::class);
     }
 
+    public function getModel(): ServiceRequestResponseKey
+    {
+        return parent::getModel();
+    }
+
     public function getRequestResponseKeyByName(Provider $provider, ServiceRequest $serviceRequest, string $keyName)
     {
         return $provider->serviceRequest()

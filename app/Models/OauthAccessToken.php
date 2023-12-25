@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 class OauthAccessToken extends Model
 {
     use HasFactory;
+    public const TABLE_NAME = 'oauth_access_tokens';
 
     protected $fillable = [
       'access_token',

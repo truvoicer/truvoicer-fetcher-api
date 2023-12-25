@@ -10,4 +10,5 @@ class BaseService
 {
     use UserTrait, ErrorTrait;
 
+
 }

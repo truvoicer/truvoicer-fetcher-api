@@ -7,13 +7,13 @@ use App\Models\User;
 use App\Repositories\CategoryRepository;
 use App\Repositories\PermissionRepository;
 use App\Repositories\ProviderRepository;
-use App\Repositories\UserCategoryRepository;
+use App\Repositories\CategoryUserRepository;
 use App\Services\Auth\AuthService;
 use App\Services\BaseService;
 use App\Services\Permission\AccessControlService;
 use App\Services\Permission\PermissionService;
 use App\Services\Provider\ProviderEntityService;
-use App\Services\Tools\UtilsService;
+use App\Helpers\Tools\UtilHelpers;
 use App\Services\User\UserAdminService;
 use Illuminate\Support\Facades\Request;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
@@ -24,12 +24,12 @@ class CategoryService extends BaseService
     protected PermissionRepository $permissionRepository;
     protected ProviderRepository $providerRepository;
     protected CategoryRepository $categoryRepository;
-    protected UserCategoryRepository $userCategoryRepository;
+    protected CategoryUserRepository $userCategoryRepository;
     protected AccessControlService $accessControlService;
 
     public function __construct(AccessControlService $accessControlService)
     {
-        $this->userCategoryRepository = new UserCategoryRepository();
+        $this->userCategoryRepository = new CategoryUserRepository();
         $this->permissionRepository = new PermissionRepository();
         $this->categoryRepository = new CategoryRepository();
         $this->providerRepository = new ProviderRepository();
@@ -91,8 +91,10 @@ class CategoryService extends BaseService
             return $this->getCategoryList($sort, $order, $count);
         }
         return array_filter($getCategories, function ($category) use($user) {
+            $this->accessControlService->setUser($user);
+            $this->accessControlService->setEntityName(CategoryEntityService::ENTITY_NAME);
             return $this->accessControlService->checkPermissionsForEntity(
-                CategoryEntityService::ENTITY_NAME, $category, $user,
+                $category,
                 [
                     PermissionService::PERMISSION_ADMIN,
                     PermissionService::PERMISSION_READ,
@@ -108,10 +110,12 @@ class CategoryService extends BaseService
         $selectedProvidersArray = explode(",", $selectedProviders);
         $providerArray = [];
         $i = 0;
+        $this->accessControlService->setUser($user);
         foreach ($selectedProvidersArray as $providerId) {
             $provider = $this->providerRepository->findById((int)$providerId);
+            $this->accessControlService->setEntityName(ProviderEntityService::ENTITY_NAME);
             $checkPermission = $this->accessControlService->checkPermissionsForEntity(
-                ProviderEntityService::ENTITY_NAME, $provider, $user,
+                $provider,
                 [
                     PermissionService::PERMISSION_ADMIN,
                     PermissionService::PERMISSION_READ,
@@ -133,9 +137,11 @@ class CategoryService extends BaseService
     {
         $providerArray = [];
         $i = 0;
+        $this->accessControlService->setUser($user);
         foreach ($category->provider()->get() as $provider) {
+            $this->accessControlService->setEntityName(ProviderEntityService::ENTITY_NAME);
             $checkPermission = $this->accessControlService->checkPermissionsForEntity(
-                ProviderEntityService::ENTITY_NAME, $provider, $user,
+                $provider,
                 [
                     PermissionService::PERMISSION_ADMIN,
                     PermissionService::PERMISSION_READ,
@@ -177,11 +183,11 @@ class CategoryService extends BaseService
         if (empty($data['label'])) {
             throw new BadRequestHttpException("Category label is not set.");
         }
-        $data['name'] = UtilsService::labelToName($data['label'], false, '-');
 
         $checkCategory = $this->categoryRepository->findOneBy(
             [["name", '=', $data['name']]]
         );
+
         if ($checkCategory !== null) {
             throw new BadRequestHttpException(sprintf("Category (%s) already exists.", $data['name']));
         }
@@ -196,6 +202,7 @@ class CategoryService extends BaseService
             );
         }
         $createCategory = $this->categoryRepository->save($categoryData);
+
         if (!$createCategory) {
             throw new BadRequestHttpException(
                 "Error creating category"
@@ -203,8 +210,7 @@ class CategoryService extends BaseService
         }
 
         $category = $this->categoryRepository->getModel();
-        $this->userCategoryRepository->createUserCategory(Request::user(), $category, [$getAdminPermission]);
-        return $category;
+        return $this->userCategoryRepository->createUserCategory(Request::user(), $category, [$getAdminPermission]);
     }
 
     public function updateCategory(Category $category, array $data)
@@ -228,5 +234,24 @@ class CategoryService extends BaseService
         return $this->categoryRepository->setModel($category)->delete();
     }
 
+    public function getPermissionRepository(): PermissionRepository
+    {
+        return $this->permissionRepository;
+    }
+
+    public function getProviderRepository(): ProviderRepository
+    {
+        return $this->providerRepository;
+    }
+
+    public function getCategoryRepository(): CategoryRepository
+    {
+        return $this->categoryRepository;
+    }
+
+    public function getUserCategoryRepository(): CategoryUserRepository
+    {
+        return $this->userCategoryRepository;
+    }
 
 }

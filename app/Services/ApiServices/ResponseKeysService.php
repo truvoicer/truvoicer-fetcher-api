@@ -14,7 +14,7 @@ use App\Repositories\ServiceRequestResponseKeyRepository;
 use App\Repositories\ServiceResponseKeyRepository;
 use App\Services\BaseService;
 use App\Services\Tools\HttpRequestService;
-use App\Services\Tools\UtilsService;
+use App\Helpers\Tools\UtilHelpers;
 use Illuminate\Database\Eloquent\Model;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 
@@ -74,8 +74,8 @@ class ResponseKeysService extends BaseService
     private function getServiceResponseKeysObject(ServiceResponseKey $responseKeys, Service $service, array $data)
     {
         $responseKeys->setService($service);
-        $responseKeys->setKeyName(UtilsService::labelToName($data["key_name"], true));
-        $responseKeys->setKeyValue(UtilsService::labelToName($data["key_name"]));
+        $responseKeys->setKeyName(UtilHelpers::labelToName($data["key_name"], true));
+        $responseKeys->setKeyValue(UtilHelpers::labelToName($data["key_name"]));
         return $responseKeys;
     }
 //    private function getResponseKeyRequestItemObject(ResponseKeyRequestItem $responseKeyRequestItem,

@@ -3,14 +3,15 @@
 namespace App\Http\Controllers\Api\Backend;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\CreateCategoryRequest;
+use App\Http\Requests\Category\CreateCategoryRequest;
+use App\Http\Requests\Category\UpdateCategoryRequest;
 use App\Http\Resources\CategoryResource;
 use App\Models\Category;
 use App\Services\Auth\AuthService;
+use App\Services\Category\CategoryService;
 use App\Services\Permission\AccessControlService;
 use App\Services\Permission\PermissionService;
 use App\Services\Tools\HttpRequestService;
-use App\Services\Category\CategoryService;
 use App\Services\Tools\SerializerService;
 use Illuminate\Http\Request;
 
@@ -39,11 +40,11 @@ class CategoryController extends Controller
         SerializerService $serializerService,
         CategoryService $categoryService,
         HttpRequestService $httpRequestService,
-        AccessControlService $accessControlService,
-        Request $request
+        AccessControlService $accessControlService
     ) {
-        parent::__construct($accessControlService, $httpRequestService, $serializerService, $request);
+        parent::__construct($accessControlService, $httpRequestService, $serializerService);
         $this->categoryService = $categoryService;
+        $this->accessControlService->setEntityName(self::DEFAULT_ENTITY);
     }
 
     /**
@@ -78,9 +79,10 @@ class CategoryController extends Controller
      */
     public function getSingleCategory(Category $category, Request $request)
     {
+        $this->setAccessControlUser($request->user());
         if (!$request->user()->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_SUPERUSER)) && !$request->user()->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_ADMIN))) {
             $this->accessControlService->checkPermissionsForEntity(
-                self::DEFAULT_ENTITY, $category, $request->user(),
+                $category,
                 [
                     PermissionService::PERMISSION_ADMIN,
                     PermissionService::PERMISSION_READ,
@@ -98,20 +100,41 @@ class CategoryController extends Controller
             return $this->sendErrorResponse("Error creating category.");
         }
         return $this->sendSuccessResponse("Successfully created category.",
-            $this->serializerService->entityToArray($create));
+            $this->serializerService->entityToArray(
+                $this->categoryService->getCategoryRepository()->getModel()
+            )
+        );
     }
 
-    public function updateCategory(Category $category, Request $request)
+    public function updateCategory(Category $category, UpdateCategoryRequest $request)
     {
-        if (!$request->user()->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_SUPERUSER)) && !$request->user()->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_ADMIN))) {
+        $this->setAccessControlUser($request->user());
+        dd(
             $this->accessControlService->checkPermissionsForEntity(
-                self::DEFAULT_ENTITY, $category, $request->user(),
+                $category,
                 [
                     PermissionService::PERMISSION_ADMIN,
                     PermissionService::PERMISSION_UPDATE,
                 ],
-            );
+            )
+        );
+        if (
+            $this->accessControlService->checkPermissionsForEntity(
+                $category,
+                [
+                    PermissionService::PERMISSION_ADMIN,
+                    PermissionService::PERMISSION_UPDATE,
+                ],
+            )
+        ) {
+
         }
+        dd(
+            $request->user()->tokenCan(
+                AuthService::getApiAbility(AuthService::ABILITY_SUPERUSER)
+            ),
+            $request->user()->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_ADMIN))
+        );
         $requestData = $this->httpRequestService->getRequestData($request, true);
         $create = $this->categoryService->updateCategory($category, $requestData);
         if (!$create) {
@@ -123,9 +146,10 @@ class CategoryController extends Controller
 
     public function deleteCategory(Category $category, Request $request)
     {
+        $this->setAccessControlUser($request->user());
         if (!$request->user()->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_SUPERUSER)) && !$request->user()->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_ADMIN))) {
             $this->accessControlService->checkPermissionsForEntity(
-                self::DEFAULT_ENTITY, $category, $request->user(),
+                $category,
                 [
                     PermissionService::PERMISSION_ADMIN,
                     PermissionService::PERMISSION_DELETE,

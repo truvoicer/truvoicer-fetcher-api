@@ -8,6 +8,8 @@ use Illuminate\Database\Eloquent\Model;
 class ServiceRequestResponseKey extends Model
 {
     use HasFactory;
+
+    public const TABLE_NAME = 'service_request_response_keys';
     public function serviceRequest()
     {
         return $this->belongsTo(ServiceRequest::class);

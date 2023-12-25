@@ -3,15 +3,16 @@
 namespace App\Repositories;
 
 use App\Models\Category;
+use App\Models\CategoryUser;
 use App\Models\Permission;
 use App\Models\User;
-use App\Models\UserCategory;
+use Illuminate\Database\Eloquent\Relations\Pivot;
 
-class UserCategoryRepository extends BaseRepository
+class CategoryUserRepository extends BaseRepository
 {
     public function __construct()
     {
-        parent::__construct(UserCategory::class);
+        parent::__construct(CategoryUser::class);
     }
 
     public function findCategoriesByUser(User $user, string $sort,  string $order, ?int $count)
@@ -21,13 +22,25 @@ class UserCategoryRepository extends BaseRepository
     }
 
     public function createUserCategory(User $user, Category $category, array $permissions = []) {
-        $saveUserCategory = $user->category()->save($category);
+        $syncCat = $user->categories()->toggle([$category->id]);
+        if (!$this->dbHelpers->validateToggle($syncCat, [$category->id])) {
+            return false;
+        }
+
+        $categoryUserRel = $this->findOneBy([
+            ['category_id', '=', $category->id],
+            ['user_id', '=', $user->id],
+        ]);
+        if (!$categoryUserRel) {
+            return false;
+        }
         foreach ($permissions as $permission) {
-            if ($permission instanceof Permission) {
-                $saveUserCategory->permission()->save($permission);
+            $savePermission = $categoryUserRel->permissions()->toggle([$permission->id]);
+            if (!$this->dbHelpers->validateToggle($savePermission, [$permission->id])) {
+                return false;
             }
         }
-        return $saveUserCategory;
+        return true;
     }
 
     public function deleteUserCategoriessRelationsByUser(User $user)

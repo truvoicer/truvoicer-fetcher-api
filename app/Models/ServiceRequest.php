@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 class ServiceRequest extends Model
 {
     use HasFactory;
+    public const TABLE_NAME = 'service_requests';
     public function service()
     {
         return $this->belongsTo(Service::class);

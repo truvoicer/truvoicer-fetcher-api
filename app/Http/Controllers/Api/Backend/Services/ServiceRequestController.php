@@ -50,13 +50,13 @@ class ServiceRequestController extends Controller
         SerializerService $serializerService,
         ApiService $apiServicesService,
         RequestService $requestService,
-        AccessControlService $accessControlService,
-        Request $request
+        AccessControlService $accessControlService
     ) {
-        parent::__construct($accessControlService, $httpRequestService, $serializerService, $request);
+        parent::__construct($accessControlService, $httpRequestService, $serializerService);
         $this->providerService = $providerService;
         $this->apiServicesService = $apiServicesService;
         $this->requestService = $requestService;
+        $this->accessControlService->setEntityName(self::DEFAULT_ENTITY);
     }
 
     /**
@@ -66,6 +66,7 @@ class ServiceRequestController extends Controller
      */
     public function getServiceRequestList(Provider $provider, Request $request): \Illuminate\Http\JsonResponse
     {
+        $this->setAccessControlUser($request->user());
         $getServices = $this->requestService->getUserServiceRequestByProvider(
             $provider,
             $request->get('sort', "name"),
@@ -81,7 +82,7 @@ class ServiceRequestController extends Controller
             );
         }
         $this->accessControlService->checkPermissionsForEntity(
-            self::DEFAULT_ENTITY, $provider, $request->user(),
+            $provider,
             [
                 PermissionService::PERMISSION_ADMIN,
                 PermissionService::PERMISSION_READ,
@@ -101,16 +102,15 @@ class ServiceRequestController extends Controller
      */
     public function getProviderServiceRequest(
         Provider $provider,
-        Service $service,
-        Request $request
-    ): \Illuminate\Http\JsonResponse {
+        Service $service
+    ): \Illuminate\Http\JsonResponse
+    {
+        $this->setAccessControlUser($request->user());
         $data = $request->query->all();
         if (!$request->user()->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_SUPERUSER)) && !$request->user(
             )->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_ADMIN))) {
             $this->accessControlService->checkPermissionsForEntity(
-                self::DEFAULT_ENTITY,
                 $provider,
-                $request->user(),
                 [
                     PermissionService::PERMISSION_ADMIN,
                     PermissionService::PERMISSION_READ,
@@ -136,13 +136,12 @@ class ServiceRequestController extends Controller
      */
     public function createServiceRequest(Provider $provider, Request $request): JsonResponse
     {
+        $this->setAccessControlUser($request->user());
         $data = $this->httpRequestService->getRequestData($request, true);
         if (!$request->user()->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_SUPERUSER)) && !$request->user(
             )->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_ADMIN))) {
             $this->accessControlService->checkPermissionsForEntity(
-                self::DEFAULT_ENTITY,
                 $provider,
-                $request->user(),
                 [
                     PermissionService::PERMISSION_ADMIN,
                     PermissionService::PERMISSION_WRITE,
@@ -167,16 +166,14 @@ class ServiceRequestController extends Controller
      */
     public function updateServiceRequest(
         Provider $provider,
-        ServiceRequest $serviceRequest,
-        Request $request
+        ServiceRequest $serviceRequest
     ): \Illuminate\Http\JsonResponse {
+        $this->setAccessControlUser($request->user());
         $data = $this->httpRequestService->getRequestData($request, true);
         if (!$request->user()->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_SUPERUSER)) && !$request->user(
             )->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_ADMIN))) {
             $this->accessControlService->checkPermissionsForEntity(
-                self::DEFAULT_ENTITY,
                 $provider,
-                $request->user(),
                 [
                     PermissionService::PERMISSION_ADMIN,
                     PermissionService::PERMISSION_UPDATE,
@@ -205,15 +202,13 @@ class ServiceRequestController extends Controller
      */
     public function runApiRequest(
         Provider $provider,
-        RequestOperation $requestOperation,
-        Request $request
+        RequestOperation $requestOperation
     ): JsonResponse|\Illuminate\Http\JsonResponse {
+        $this->setAccessControlUser($request->user());
         if (!$request->user()->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_SUPERUSER)) && !$request->user(
             )->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_ADMIN))) {
             $this->accessControlService->checkPermissionsForEntity(
-                self::DEFAULT_ENTITY,
                 $provider,
-                $request->user(),
                 [
                     PermissionService::PERMISSION_ADMIN,
                     PermissionService::PERMISSION_READ,
@@ -242,15 +237,14 @@ class ServiceRequestController extends Controller
      */
     public function duplicateServiceRequest(
         Provider $provider,
-        ServiceRequest $serviceRequest,
-        Request $request
-    ): \Illuminate\Http\JsonResponse {
+        ServiceRequest $serviceRequest
+    ): \Illuminate\Http\JsonResponse
+    {
+        $this->setAccessControlUser($request->user());
         if (!$request->user()->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_SUPERUSER)) && !$request->user(
             )->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_ADMIN))) {
             $this->accessControlService->checkPermissionsForEntity(
-                self::DEFAULT_ENTITY,
                 $provider,
-                $request->user(),
                 [
                     PermissionService::PERMISSION_ADMIN,
                     PermissionService::PERMISSION_WRITE,
@@ -278,12 +272,11 @@ class ServiceRequestController extends Controller
      */
     public function mergeServiceRequestResponseKeys(Provider $provider, Request $request): \Illuminate\Http\JsonResponse
     {
+        $this->setAccessControlUser($request->user());
         if (!$request->user()->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_SUPERUSER)) && !$request->user(
             )->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_ADMIN))) {
             $this->accessControlService->checkPermissionsForEntity(
-                self::DEFAULT_ENTITY,
                 $provider,
-                $request->user(),
                 [
                     PermissionService::PERMISSION_ADMIN,
                     PermissionService::PERMISSION_UPDATE,
@@ -308,15 +301,14 @@ class ServiceRequestController extends Controller
      */
     public function deleteServiceRequest(
         Provider $provider,
-        ServiceRequest $serviceRequest,
-        Request $request
-    ): \Illuminate\Http\JsonResponse {
+        ServiceRequest $serviceRequest
+    ): \Illuminate\Http\JsonResponse
+    {
+        $this->setAccessControlUser($request->user());
         if (!$request->user()->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_SUPERUSER)) && !$request->user(
             )->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_ADMIN))) {
             $this->accessControlService->checkPermissionsForEntity(
-                self::DEFAULT_ENTITY,
                 $provider,
-                $request->user(),
                 [
                     PermissionService::PERMISSION_ADMIN,
                     PermissionService::PERMISSION_DELETE,
@@ -343,15 +335,13 @@ class ServiceRequestController extends Controller
      */
     public function getServiceRequest(
         Provider $provider,
-        ServiceRequest $serviceRequest,
-        Request $request
+        ServiceRequest $serviceRequest
     ): \Illuminate\Http\JsonResponse {
+        $this->setAccessControlUser($request->user());
         if (!$request->user()->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_SUPERUSER)) && !$request->user(
             )->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_ADMIN))) {
             $this->accessControlService->checkPermissionsForEntity(
-                self::DEFAULT_ENTITY,
                 $provider,
-                $request->user(),
                 [
                     PermissionService::PERMISSION_ADMIN,
                     PermissionService::PERMISSION_READ,

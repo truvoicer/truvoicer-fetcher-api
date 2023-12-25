@@ -39,10 +39,9 @@ class ProviderController extends Controller
         HttpRequestService $httpRequestService,
         SerializerService $serializerService,
         ProviderService $providerService,
-        AccessControlService $accessControlService,
-        Request $request
+        AccessControlService $accessControlService
     ) {
-        parent::__construct($accessControlService, $httpRequestService, $serializerService, $request);
+        parent::__construct($accessControlService, $httpRequestService, $serializerService);
         $this->providerRepo = $providerRepository;
         $this->providerService = $providerService;
     }
@@ -86,12 +85,11 @@ class ProviderController extends Controller
      */
     public function getProvider(Provider $provider, Request $request): \Illuminate\Http\JsonResponse
     {
+        $this->setAccessControlUser($request->user());
         if (!$request->user()->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_SUPERUSER)) && !$request->user(
             )->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_ADMIN))) {
             $this->accessControlService->checkPermissionsForEntity(
-                self::DEFAULT_ENTITY,
                 $provider,
-                $request->user(),
                 [
                     PermissionService::PERMISSION_ADMIN,
                     PermissionService::PERMISSION_READ,
@@ -130,12 +128,11 @@ class ProviderController extends Controller
      */
     public function updateProvider(Provider $provider, Request $request): \Illuminate\Http\JsonResponse
     {
+        $this->setAccessControlUser($request->user());
         if (!$request->user()->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_SUPERUSER)) && !$request->user(
             )->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_ADMIN))) {
             $this->accessControlService->checkPermissionsForEntity(
-                self::DEFAULT_ENTITY,
                 $provider,
-                $request->user(),
                 [
                     PermissionService::PERMISSION_ADMIN,
                     PermissionService::PERMISSION_UPDATE,
@@ -163,12 +160,11 @@ class ProviderController extends Controller
      */
     public function deleteProvider(Provider $provider, Request $request): \Illuminate\Http\JsonResponse
     {
+        $this->setAccessControlUser($request->user());
         if (!$request->user()->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_SUPERUSER)) && !$request->user(
             )->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_ADMIN))) {
             $this->accessControlService->checkPermissionsForEntity(
-                self::DEFAULT_ENTITY,
                 $provider,
-                $request->user(),
                 [
                     PermissionService::PERMISSION_ADMIN,
                     PermissionService::PERMISSION_DELETE,

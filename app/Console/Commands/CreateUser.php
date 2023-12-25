@@ -3,7 +3,7 @@
 namespace App\Console\Commands;
 
 use App\Models\Role;
-use App\Services\Tools\UtilsService;
+use App\Helpers\Tools\UtilHelpers;
 use App\Services\User\RoleService;
 use App\Services\User\UserAdminService;
 use Illuminate\Console\Command;

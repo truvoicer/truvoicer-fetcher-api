@@ -9,18 +9,26 @@ class Category extends Model
 {
     use HasFactory;
 
+    public const TABLE_NAME = 'categories';
     private string $name;
     private string $label;
     protected $fillable = [
         'name',
         'label'
     ];
-    public function user()
+    public function users()
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsToMany(
+            User::class,
+            CategoryUser::TABLE_NAME,
+            'category_id',
+            'user_id'
+        );
     }
     public function provider()
     {
         return $this->belongsTo(Provider::class);
     }
+
+
 }

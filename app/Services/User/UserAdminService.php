@@ -16,11 +16,10 @@ class UserAdminService extends BaseService
 {
     const DEFAULT_TOKEN_EXPIRY = '+1 days';
     const NO_TOKEN_EXPIRY = 'NO_TOKEN_EXPIRY';
-    private UserRepository $userRepository;
     private PersonalAccessTokenRepository $personalAccessTokenRepository;
     public function __construct()
     {
-        $this->userRepository = new UserRepository();
+        $this->setUserRepository(new UserRepository());
         $this->personalAccessTokenRepository = new PersonalAccessTokenRepository();
     }
 
@@ -32,10 +31,11 @@ class UserAdminService extends BaseService
         return $this->userRepository->findAllWithParams($sort, $order, $count);
     }
 
-    public function createUser(array $userData)
+    public function createUser(array $userData, Role $role)
     {
-        $userData['password'] = Hash::make($userData['password']);
-        return $this->userRepository->insert($userData);
+        $user = $this->userRepository->getModel()->fill($userData);
+        $createUser = $role->users()->save($user);
+        return $createUser->exists;
     }
 
     public function getUserToken(User $user) {
@@ -48,7 +48,7 @@ class UserAdminService extends BaseService
 
     public function createUserToken(User $user, ?string $expiry = self::DEFAULT_TOKEN_EXPIRY)
     {
-        $role = $user->role()->first();
+        $role = $user->roles()->first();
         if (!$role instanceof Role) {
             return false;
         }

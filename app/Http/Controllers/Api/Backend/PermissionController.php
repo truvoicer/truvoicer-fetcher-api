@@ -36,10 +36,9 @@ class PermissionController extends Controller
         AccessControlService $accessControlService,
         SerializerService $serializerService,
         PermissionService $permissionService,
-        HttpRequestService $httpRequestService,
-        Request $request
+        HttpRequestService $httpRequestService
     ) {
-        parent::__construct($accessControlService, $httpRequestService, $serializerService, $request);
+        parent::__construct($accessControlService, $httpRequestService, $serializerService);
         $this->permissionService = $permissionService;
     }
 

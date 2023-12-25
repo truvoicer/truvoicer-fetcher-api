@@ -123,6 +123,7 @@ class IExportTypeService extends BaseService
 
     public function getExportTypeData($exportType, $data)
     {
+        $this->accessControlService->setUser($this->getUser());
         return array_map(function ($item) use ($exportType) {
             switch ($exportType) {
                 case self::EXPORT_TYPES["CATEGORIES"]:
@@ -130,8 +131,9 @@ class IExportTypeService extends BaseService
                     if ($this->accessControlService->inAdminGroup()) {
                         return $category;
                     }
+                    $this->accessControlService->setEntityName(CategoryEntityService::ENTITY_NAME);
                     $isPermitted = $this->accessControlService->checkPermissionsForEntity(
-                        CategoryEntityService::ENTITY_NAME, $category, $this->getUser(),
+                        $category,
                         [
                             PermissionService::PERMISSION_ADMIN,
                             PermissionService::PERMISSION_READ,
@@ -144,8 +146,9 @@ class IExportTypeService extends BaseService
                     if ($this->accessControlService->inAdminGroup()) {
                         return $provider;
                     }
+                    $this->accessControlService->setEntityName(ProviderEntityService::ENTITY_NAME);
                     $isPermitted = $this->accessControlService->checkPermissionsForEntity(
-                        ProviderEntityService::ENTITY_NAME, $provider, $this->getUser(),
+                        $provider,
                         [
                             PermissionService::PERMISSION_ADMIN,
                             PermissionService::PERMISSION_READ,

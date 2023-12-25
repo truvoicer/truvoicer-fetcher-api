@@ -47,13 +47,13 @@ class ServiceRequestParameterController extends Controller
         SerializerService $serializerService,
         ApiService $apiServicesService,
         RequestParametersService $requestParametersService,
-        AccessControlService $accessControlService,
-        Request $request
+        AccessControlService $accessControlService
     ) {
-        parent::__construct($accessControlService, $httpRequestService, $serializerService, $request);
+        parent::__construct($accessControlService, $httpRequestService, $serializerService);
         $this->providerService = $providerService;
         $this->apiServicesService = $apiServicesService;
         $this->requestParametersService = $requestParametersService;
+        $this->accessControlService->setEntityName(self::DEFAULT_ENTITY);
     }
 
     /**
@@ -63,11 +63,10 @@ class ServiceRequestParameterController extends Controller
      */
     public function getServiceRequestParameterList(Provider $provider, ServiceRequest $serviceRequest, Request $request)
     {
+        $this->setAccessControlUser($request->user());
         $requestParametersArray = [];
         $isPermitted = $this->accessControlService->checkPermissionsForEntity(
-            self::DEFAULT_ENTITY,
             $provider,
-            $request->user(),
             [
                 PermissionService::PERMISSION_ADMIN,
                 PermissionService::PERMISSION_READ,
@@ -96,13 +95,13 @@ class ServiceRequestParameterController extends Controller
      */
     public function getSingleServiceRequestParameters(
         Provider $provider,
-        ServiceRequest $serviceRequest,
-        Request $request
+        ServiceRequest $serviceRequest
     ) {
+        $this->setAccessControlUser($request->user());
         if (!$request->user()->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_SUPERUSER)) && !$request->user(
             )->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_ADMIN))) {
             $this->accessControlService->checkPermissionsForEntity(
-                self::DEFAULT_ENTITY, $provider, $request->user(),
+                $provider,
                 [
                     PermissionService::PERMISSION_ADMIN,
                     PermissionService::PERMISSION_READ,
@@ -122,13 +121,13 @@ class ServiceRequestParameterController extends Controller
      */
     public function getServiceRequestParameter(
         Provider $provider,
-        ServiceRequestParameter $serviceRequestParameter,
-        Request $request
+        ServiceRequestParameter $serviceRequestParameter
     ) {
+        $this->setAccessControlUser($request->user());
         if (!$request->user()->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_SUPERUSER)) && !$request->user(
             )->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_ADMIN))) {
             $this->accessControlService->checkPermissionsForEntity(
-                self::DEFAULT_ENTITY, $provider, $request->user(),
+                $provider,
                 [
                     PermissionService::PERMISSION_ADMIN,
                     PermissionService::PERMISSION_READ,
@@ -149,10 +148,11 @@ class ServiceRequestParameterController extends Controller
      */
     public function createServiceRequestParameter(Provider $provider, ServiceRequest $serviceRequest, Request $request)
     {
+        $this->setAccessControlUser($request->user());
         if (!$request->user()->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_SUPERUSER)) && !$request->user(
             )->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_ADMIN))) {
             $this->accessControlService->checkPermissionsForEntity(
-                self::DEFAULT_ENTITY, $provider, $request->user(),
+                $provider,
                 [
                     PermissionService::PERMISSION_ADMIN,
                     PermissionService::PERMISSION_WRITE,
@@ -180,13 +180,13 @@ class ServiceRequestParameterController extends Controller
     public function updateServiceRequestParameter(
         Provider $provider,
         ServiceRequest $serviceRequest,
-        ServiceRequestParameter $serviceRequestParameter,
-        Request $request
+        ServiceRequestParameter $serviceRequestParameter
     ) {
+        $this->setAccessControlUser($request->user());
         if (!$request->user()->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_SUPERUSER)) && !$request->user(
             )->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_ADMIN))) {
             $this->accessControlService->checkPermissionsForEntity(
-                self::DEFAULT_ENTITY, $provider, $request->user(),
+                $provider,
                 [
                     PermissionService::PERMISSION_ADMIN,
                     PermissionService::PERMISSION_UPDATE,
@@ -216,13 +216,13 @@ class ServiceRequestParameterController extends Controller
      */
     public function deleteServiceRequestParameter(
         Provider $provider,
-        ServiceRequestParameter $serviceRequestParameter,
-        Request $request
+        ServiceRequestParameter $serviceRequestParameter
     ) {
+        $this->setAccessControlUser($request->user());
         if (!$request->user()->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_SUPERUSER)) && !$request->user(
             )->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_ADMIN))) {
             $this->accessControlService->checkPermissionsForEntity(
-                self::DEFAULT_ENTITY, $provider, $request->user(),
+                $provider,
                 [
                     PermissionService::PERMISSION_ADMIN,
                     PermissionService::PERMISSION_DELETE,
