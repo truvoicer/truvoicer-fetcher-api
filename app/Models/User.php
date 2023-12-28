@@ -2,7 +2,7 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
+use App\Repositories\UserRepository;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -13,6 +13,7 @@ class User extends Authenticatable
     use HasApiTokens, HasFactory, Notifiable;
 
     public const TABLE_NAME = 'users';
+    public const REPOSITORY = UserRepository::class;
 
     /**
      * The attributes that are mass assignable.
@@ -67,5 +68,8 @@ class User extends Authenticatable
     public function provider()
     {
         return $this->hasMany(Provider::class);
+    }
+    public function categoryPermissions() {
+        return $this->hasManyThrough(CategoryUserPermission::class, CategoryUser::class);
     }
 }

@@ -42,7 +42,7 @@ class ExportService
         foreach (IExportTypeService::EXPORT_TYPES as $key => $type) {
             switch ($type) {
                 case IExportTypeService::EXPORT_TYPES["CATEGORIES"]:
-                    $categoryService = $this->serviceFactory->getService(CategoryService::SERVICE_ALIAS);
+//                    $categoryService = $this->serviceFactory->getService(CategoryService::SERVICE_ALIAS);
                     array_push($exportEntityData, [
                         "show" => false,
                         "id" => "id",
@@ -50,19 +50,19 @@ class ExportService
                         "label" => "Categories",
                         "nameField" => "name",
                         "labelField" => "label",
-                        "data" => $this->serializerService->entityArrayToArray(
-                            $categoryService->findUserPermittedCategories(
-                                "name",
-                                "asc",
-                                null,
-                                $user
-                            ),
-                            ["list"]
-                        )
+//                        "data" => $this->serializerService->entityArrayToArray(
+//                            $categoryService->findUserPermittedCategories(
+//                                "name",
+//                                "asc",
+//                                null,
+//                                $user
+//                            ),
+//                            ["list"]
+//                        )
                     ]);
                     break;
                 case IExportTypeService::EXPORT_TYPES["PROVIDERS"]:
-                    $providerService = $this->serviceFactory->getService(ProviderService::SERVICE_ALIAS);
+//                    $providerService = $this->serviceFactory->getService(ProviderService::SERVICE_ALIAS);
                     array_push($exportEntityData, [
                         "show" => false,
                         "id" => "id",
@@ -70,30 +70,30 @@ class ExportService
                         "label" => "Providers",
                         "nameField" => "name",
                         "labelField" => "label",
-                        "data" => $this->serializerService->entityArrayToArray(
-                            $providerService->findUserPermittedProviders(
-                                "name",
-                                "asc",
-                                null,
-                                $user
-                            ),
-                            ["list"]
-                        )
+//                        "data" => $this->serializerService->entityArrayToArray(
+//                            $providerService->findUserPermittedProviders(
+//                                "name",
+//                                "asc",
+//                                null,
+//                                $user
+//                            ),
+//                            ["list"]
+//                        )
                     ]);
                     break;
                 case IExportTypeService::EXPORT_TYPES["SERVICES"]:
-                    $apiService = $this->serviceFactory->getService(ApiService::SERVICE_ALIAS);
+//                    $apiService = $this->serviceFactory->getService(ApiService::SERVICE_ALIAS);
                     $data = [];
-                    if ($this->accessControlService->inAdminGroup()) {
-                        $data = $this->serializerService->entityArrayToArray(
-                            $apiService->findByParams(
-                                "name",
-                                "asc",
-                                null
-                            ),
-                            ["list"]
-                        );
-                    }
+//                    if ($this->accessControlService->inAdminGroup()) {
+//                        $data = $this->serializerService->entityArrayToArray(
+//                            $apiService->findByParams(
+//                                "name",
+//                                "asc",
+//                                null
+//                            ),
+//                            ["list"]
+//                        );
+//                    }
                     array_push($exportEntityData, [
                         "show" => false,
                         "id" => "id",
@@ -105,18 +105,18 @@ class ExportService
                     ]);
                     break;
                 case IExportTypeService::EXPORT_TYPES["PROPERTIES"]:
-                    $propertyService = $this->serviceFactory->getService(PropertyService::SERVICE_ALIAS);
+//                    $propertyService = $this->serviceFactory->getService(PropertyService::SERVICE_ALIAS);
                     $data = [];
-                    if ($this->accessControlService->inAdminGroup()) {
-                        $data = $this->serializerService->entityArrayToArray(
-                            $propertyService->findPropertiesByParams(
-                                "property_name",
-                                "asc",
-                                null
-                            ),
-                            ["list"]
-                        );
-                    }
+//                    if ($this->accessControlService->inAdminGroup()) {
+//                        $data = $this->serializerService->entityArrayToArray(
+//                            $propertyService->findPropertiesByParams(
+//                                "property_name",
+//                                "asc",
+//                                null
+//                            ),
+//                            ["list"]
+//                        );
+//                    }
                     array_push($exportEntityData, [
                         "show" => false,
                         "id" => "id",

@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Api\Backend\Provider;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Provider\CreateProviderRequest;
+use App\Http\Requests\Provider\UpdateProviderRequest;
 use App\Models\Provider;
 use App\Repositories\ProviderRepository;
 use App\Services\Auth\AuthService;
@@ -106,10 +108,10 @@ class ProviderController extends Controller
      * Creates a provider in the database based on the post request data
      *
      */
-    public function createProvider(Request $request): \Illuminate\Http\JsonResponse
+    public function createProvider(CreateProviderRequest $request): \Illuminate\Http\JsonResponse
     {
         $createProvider = $this->providerService->createProvider(
-            $this->httpRequestService->getRequestData($request, true)
+            $request->all()
         );
 
         if (!$createProvider) {
@@ -126,7 +128,7 @@ class ProviderController extends Controller
      * Updates a provider in the database based on the post request data
      *
      */
-    public function updateProvider(Provider $provider, Request $request): \Illuminate\Http\JsonResponse
+    public function updateProvider(Provider $provider, UpdateProviderRequest $request): \Illuminate\Http\JsonResponse
     {
         $this->setAccessControlUser($request->user());
         if (!$request->user()->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_SUPERUSER)) && !$request->user(

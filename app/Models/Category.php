@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Repositories\CategoryRepository;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -10,6 +11,7 @@ class Category extends Model
     use HasFactory;
 
     public const TABLE_NAME = 'categories';
+    public const REPOSITORY = CategoryRepository::class;
     private string $name;
     private string $label;
     protected $fillable = [
@@ -30,5 +32,14 @@ class Category extends Model
         return $this->belongsTo(Provider::class);
     }
 
+    public function permissions() {
+        return $this->hasManyThrough(CategoryUserPermission::class, CategoryUser::class);
+    }
+    public function categoryUser()
+    {
+        return $this->hasMany(
+            CategoryUser::class
+        );
+    }
 
 }

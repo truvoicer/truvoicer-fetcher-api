@@ -54,7 +54,6 @@ class ServiceRequestResponseKeyController extends Controller
         $this->providerService = $providerService;
         $this->apiServicesService = $apiServicesService;
         $this->requestResponseKeysService = $requestResponseKeysService;
-        $this->accessControlService->setEntityName(self::DEFAULT_ENTITY);
     }
 
     /**

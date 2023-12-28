@@ -42,8 +42,8 @@ class RequestResponseKeysService extends BaseService
     }
 
     public function findByParams(string $sort, string $order, int $count) {
-        $this->responseKeyRepository->setOrderBy($order);
-        $this->responseKeyRepository->setSort($sort);
+        $this->responseKeyRepository->setOrderDir($order);
+        $this->responseKeyRepository->setSortField($sort);
         $this->responseKeyRepository->setLimit($count);
         return $this->responseKeyRepository->findMany();
     }

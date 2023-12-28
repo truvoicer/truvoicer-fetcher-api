@@ -11,7 +11,6 @@ use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 
 class ApiService extends BaseService
 {
-    const SERVICE_ALIAS = ApiServiceEntityService::class;
 
     protected ServiceRepository $serviceRepository;
     protected ServiceRequestRepository $serviceRequestRepository;
@@ -35,8 +34,8 @@ class ApiService extends BaseService
         return $this->serviceRepository->findByQuery($query);
     }
     public function findByParams(string $sort = "name", ?string $order = "asc", ?int $count= null) {
-        $this->serviceRepository->setOrderBy($order);
-        $this->serviceRepository->setSort($sort);
+        $this->serviceRepository->setOrderDir($order);
+        $this->serviceRepository->setSortField($sort);
         $this->serviceRepository->setLimit($count);
         return $this->serviceRepository->findMany();
     }

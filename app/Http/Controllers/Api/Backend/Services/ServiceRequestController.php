@@ -56,7 +56,6 @@ class ServiceRequestController extends Controller
         $this->providerService = $providerService;
         $this->apiServicesService = $apiServicesService;
         $this->requestService = $requestService;
-        $this->accessControlService->setEntityName(self::DEFAULT_ENTITY);
     }
 
     /**

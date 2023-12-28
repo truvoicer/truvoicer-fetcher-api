@@ -6,6 +6,9 @@ use App\Models\Category;
 use App\Models\CategoryUser;
 use App\Models\Permission;
 use App\Models\User;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\Pivot;
 
 class CategoryUserRepository extends BaseRepository
@@ -15,13 +18,36 @@ class CategoryUserRepository extends BaseRepository
         parent::__construct(CategoryUser::class);
     }
 
-    public function findCategoriesByUser(User $user, string $sort,  string $order, ?int $count)
+    public function getCategoriesByUserQuery(User $user, ?bool $checkPermissions = true)
     {
-        $this->addWhere('user_id', $user->id);
-        return $this->findAllWithParams($sort, $order, $count);
+        $query = $user->categories();
+        $query->whereHas('categoryUser', function ($query) use ($checkPermissions) {
+            if ($checkPermissions) {
+                $query->whereHas('categoryUserPermission', function ($query) {
+                    $query->whereHas('permission', function ($query) {
+                        $query->whereIn('name', $this->permissions);
+                    });
+                });
+            }
+        });
+        $this->resetPermissions();
+        return $query;
     }
 
-    public function createUserCategory(User $user, Category $category, array $permissions = []) {
+    public function findCategoriesByUser(User $user, ?bool $checkPermissions = true)
+    {
+        return $this->getCategoriesByUserQuery($user, $checkPermissions)->get();
+    }
+
+    public function findUserCategoryBy(User $user, array $params, ?bool $checkPermissions = true)
+    {
+        $query = $this->getCategoriesByUserQuery($user, $checkPermissions);
+        $query = $this->applyConditionsToQuery($params, $query);
+        return $query->first();
+    }
+
+    public function createUserCategory(User $user, Category $category, array $permissions = [])
+    {
         $syncCat = $user->categories()->toggle([$category->id]);
         if (!$this->dbHelpers->validateToggle($syncCat, [$category->id])) {
             return false;

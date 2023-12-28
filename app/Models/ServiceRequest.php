@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Repositories\ServiceRequestRepository;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -9,6 +10,7 @@ class ServiceRequest extends Model
 {
     use HasFactory;
     public const TABLE_NAME = 'service_requests';
+    public const REPOSITORY = ServiceRequestRepository::class;
     public function service()
     {
         return $this->belongsTo(Service::class);

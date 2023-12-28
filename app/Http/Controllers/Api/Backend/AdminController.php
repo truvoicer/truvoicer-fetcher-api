@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api\Backend;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Admin\User\CreateUserRequest;
 use App\Models\User;
 use App\Services\ApiServices\ServiceRequests\RequestService;
 use App\Services\Category\CategoryService;
@@ -149,11 +150,14 @@ class AdminController extends Controller
      * Creates a user based on the request post data
      *
      */
-    public function createUser(Request $request)
+    public function createUser(CreateUserRequest $request)
     {
-        $create = $this->userService->createUser(
-            $this->httpRequestService->getRequestData($request, true)
-        );
+        $requestData = $request->all([
+            'email',
+            'password',
+        ]);
+
+        $create = $this->userService->createUserByRoleId($requestData, $request->get('role_id'));
 
         if (!$create) {
             return $this->sendErrorResponse("Error inserting user");

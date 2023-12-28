@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Repositories\ProviderUserRepository;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -10,6 +11,7 @@ class ProviderUser extends Model
     use HasFactory;
 
     public const TABLE_NAME = 'provider_users';
+    public const REPOSITORY = ProviderUserRepository::class;
 
     public function permissions()
     {

@@ -3,26 +3,28 @@
 namespace App\Repositories;
 
 use App\Helpers\Db\DbHelpers;
+use App\Traits\Database\PermissionsTrait;
 use App\Traits\Error\ErrorTrait;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Query\Builder;
 
 class BaseRepository
 {
-    use ErrorTrait;
+    use ErrorTrait, PermissionsTrait;
 
     const DEFAULT_WHERE = [];
     const AVAILABLE_ORDER_DIRECTIONS = ['asc', 'desc'];
-    const DEFAULT_SORT = 'asc';
-    const DEFAULT_ORDER_BY = 'id';
+    const DEFAULT_SORT_FIELD = 'id';
+    const DEFAULT_ORDER_DIR = 'asc';
     const DEFAULT_LIMIT = -1;
     const DEFAULT_OFFSET = 0;
     protected DbHelpers $dbHelpers;
     protected string $modelClassName;
     protected object $model;
     private array $where = self::DEFAULT_WHERE;
-    private string $sort = self::DEFAULT_SORT;
-    private string $orderBy = self::DEFAULT_ORDER_BY;
+    private string $sortField = self::DEFAULT_SORT_FIELD;
+    private string $orderDir = self::DEFAULT_ORDER_DIR;
     private int $limit = self::DEFAULT_LIMIT;
     private int $offset = self::DEFAULT_OFFSET;
 
@@ -91,11 +93,10 @@ class BaseRepository
                     break;
             }
         }
-        if (!in_array($this->sort, self::AVAILABLE_ORDER_DIRECTIONS)) {
-            $this->sort = self::DEFAULT_SORT;
+        if (!in_array($this->orderDir, self::AVAILABLE_ORDER_DIRECTIONS)) {
+            $this->orderDir = self::DEFAULT_ORDER_DIR;
         }
-
-        $query->orderBy($this->orderBy, $this->sort);
+        $query->orderBy($this->sortField, $this->orderDir);
         if ($this->limit > 0) {
             $query->limit($this->limit);
         }
@@ -107,8 +108,8 @@ class BaseRepository
 
     protected function reset() {
         $this->where = self::DEFAULT_WHERE;
-        $this->sort = self::DEFAULT_SORT;
-        $this->orderBy = self::DEFAULT_ORDER_BY;
+        $this->sortField = self::DEFAULT_SORT_FIELD;
+        $this->orderDir = self::DEFAULT_ORDER_DIR;
         $this->limit = self::DEFAULT_LIMIT;
         $this->offset = self::DEFAULT_OFFSET;
     }
@@ -134,12 +135,23 @@ class BaseRepository
     }
 
     public function findAllWithParams(string $sort = "name", ?string $order = "asc", ?int $count= null) {
-        $this->setOrderBy($order);
-        $this->setSort($sort);
+        $this->setOrderDir($order);
+        $this->setSortField($sort);
         $this->setLimit($count);
         return $this->findMany();
     }
 
+
+    public function applyConditionsToQuery(array $conditions, $query) {
+        foreach ($conditions as $condition) {
+            if (count($condition) !== 3) {
+                continue;
+            }
+            list($column, $value, $comparison) = $condition;
+            $query->where($column, $comparison, $value);
+        }
+        return $query;
+    }
 
     public function applyConditions(array $conditions) {
         foreach ($conditions as $condition) {
@@ -243,25 +255,25 @@ class BaseRepository
         return $this;
     }
 
-    public function getSort(): string
+    public function getSortField(): string
     {
-        return $this->sort;
+        return $this->sortField;
     }
 
-    public function setSort(string $sort): self
+    public function setSortField(string $sortField): self
     {
-        $this->sort = $sort;
+        $this->sortField = $sortField;
         return $this;
     }
 
-    public function getOrderBy(): string
+    public function getOrderDir(): string
     {
-        return $this->orderBy;
+        return $this->orderDir;
     }
 
-    public function setOrderBy(string $orderBy): self
+    public function setOrderDir(string $orderDir): self
     {
-        $this->orderBy = $orderBy;
+        $this->orderDir = $orderDir;
         return $this;
     }
 

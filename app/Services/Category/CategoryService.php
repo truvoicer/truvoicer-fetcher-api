@@ -12,7 +12,6 @@ use App\Services\Auth\AuthService;
 use App\Services\BaseService;
 use App\Services\Permission\AccessControlService;
 use App\Services\Permission\PermissionService;
-use App\Services\Provider\ProviderEntityService;
 use App\Helpers\Tools\UtilHelpers;
 use App\Services\User\UserAdminService;
 use Illuminate\Support\Facades\Request;
@@ -20,7 +19,6 @@ use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 
 class CategoryService extends BaseService
 {
-    const SERVICE_ALIAS = CategoryEntityService::class;
     protected PermissionRepository $permissionRepository;
     protected ProviderRepository $providerRepository;
     protected CategoryRepository $categoryRepository;
@@ -50,8 +48,8 @@ class CategoryService extends BaseService
 
     public function findByParams(string $sort, string $order, int $count)
     {
-        $this->categoryRepository->setOrderBy($order);
-        $this->categoryRepository->setSort($sort);
+        $this->categoryRepository->setOrderDir($order);
+        $this->categoryRepository->setSortField($sort);
         $this->categoryRepository->setLimit($count);
         return $this->categoryRepository->findMany();
     }
@@ -65,43 +63,17 @@ class CategoryService extends BaseService
         );
     }
 
-    public function findUserCategories(string $sort, string $order, ?int $count, $user = null)
-    {
-        $getCategories =  $this->userCategoryRepository->findCategoriesByUser(
-            ($user === null) ? $this->user : $user,
+    public function findUserCategories(User $user, string $sort, string $order, ?int $count) {
+        $this->userCategoryRepository->setPermissions([
+            PermissionService::PERMISSION_ADMIN,
+            PermissionService::PERMISSION_READ,
+        ]);
+        return $this->userCategoryRepository->findCategoriesByUser(
+            $user,
             $sort,
             $order,
             $count
         );
-        return array_map(function ($userCategory) {
-            return $userCategory->getCategory();
-        }, $getCategories);
-    }
-
-    public function findUserPermittedCategories(string $sort, string $order, ?int $count, ?User $user = null) {
-        $getCategories = $this->findUserCategories(
-            $sort,
-            $order,
-            $count
-        );
-        if (
-            UserAdminService::userTokenHasAbility($user, AuthService::ABILITY_SUPERUSER) ||
-            UserAdminService::userTokenHasAbility($user, AuthService::ABILITY_ADMIN)
-        ) {
-            return $this->getCategoryList($sort, $order, $count);
-        }
-        return array_filter($getCategories, function ($category) use($user) {
-            $this->accessControlService->setUser($user);
-            $this->accessControlService->setEntityName(CategoryEntityService::ENTITY_NAME);
-            return $this->accessControlService->checkPermissionsForEntity(
-                $category,
-                [
-                    PermissionService::PERMISSION_ADMIN,
-                    PermissionService::PERMISSION_READ,
-                ],
-                false
-            );
-        }, ARRAY_FILTER_USE_BOTH);
     }
 
 
@@ -113,7 +85,7 @@ class CategoryService extends BaseService
         $this->accessControlService->setUser($user);
         foreach ($selectedProvidersArray as $providerId) {
             $provider = $this->providerRepository->findById((int)$providerId);
-            $this->accessControlService->setEntityName(ProviderEntityService::ENTITY_NAME);
+
             $checkPermission = $this->accessControlService->checkPermissionsForEntity(
                 $provider,
                 [
@@ -139,7 +111,7 @@ class CategoryService extends BaseService
         $i = 0;
         $this->accessControlService->setUser($user);
         foreach ($category->provider()->get() as $provider) {
-            $this->accessControlService->setEntityName(ProviderEntityService::ENTITY_NAME);
+
             $checkPermission = $this->accessControlService->checkPermissionsForEntity(
                 $provider,
                 [
@@ -178,17 +150,20 @@ class CategoryService extends BaseService
         return $categoryData;
     }
 
-    public function createCategory(array $data)
+    public function createCategory(User $user, array $data)
     {
-        if (empty($data['label'])) {
-            throw new BadRequestHttpException("Category label is not set.");
+        if (empty($providerData['label'])) {
+            throw new BadRequestHttpException("Category label is required.");
+        }
+        if (empty($data['name'])) {
+            $data['name'] = UtilHelpers::labelToName($providerData['label'], false, '-');
         }
 
-        $checkCategory = $this->categoryRepository->findOneBy(
-            [["name", '=', $data['name']]]
-        );
+        $checkCategory = $this->userCategoryRepository->findUserCategoryBy($user, [
+            ['name', '=', $data['name']]
+        ], false);
 
-        if ($checkCategory !== null) {
+        if ($checkCategory instanceof Category) {
             throw new BadRequestHttpException(sprintf("Category (%s) already exists.", $data['name']));
         }
         $categoryData = $this->getCategoryObject($data);

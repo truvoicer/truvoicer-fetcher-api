@@ -3,6 +3,10 @@
 namespace App\Repositories;
 
 use App\Models\Category;
+use App\Models\CategoryUser;
+use App\Models\CategoryUserPermission;
+use App\Models\Permission;
+use App\Models\User;
 use Illuminate\Support\Facades\DB;
 
 class CategoryRepository extends BaseRepository
@@ -39,5 +43,51 @@ class CategoryRepository extends BaseRepository
     public function deleteCategory(Category $category) {
         $this->setModel($category);
         return $this->delete();
+    }
+
+
+    public function userHasEntityPermissions(User $user, Category $category, array $permissions)
+    {
+        $userCategoryRepository = new CategoryUserRepository();
+        $userCategoryRepository->setPermissions($permissions);
+        $checkCategory = $userCategoryRepository->findUserCategoryBy($user, [
+            ['categories.id', '=', $category->id]
+        ]);
+
+        return ($checkCategory instanceof Category);
+    }
+
+    public function getUserPermissions(User $user, Category $category)
+    {
+        $categoryUserId = $user->categories()
+            ->where('category_id', '=', $category->id)
+            ->withPivot('id')
+            ->first()
+            ->getOriginal('pivot_id');
+        if (!$categoryUserId) {
+            return null;
+        }
+
+        $catUserRepo = new CategoryUserRepository();
+        $catUser = $catUserRepo->findById($categoryUserId);
+        if (!$catUser) {
+            return null;
+        }
+        return $catUser->permissions()->get();
+    }
+
+    public function getPermissionsListByUser(User $user, string $sort, string $order, ?int $count) {
+
+        return null;
+    }
+
+    public function saveUserPermissions(User $user, int $categoryId, array $permissions)
+    {
+
+        return null;
+    }
+    public function deleteUserPermissions(User $user, Category $category)
+    {
+        return null;
     }
 }

@@ -8,12 +8,10 @@ use App\Models\Provider;
 use App\Models\Service;
 use App\Services\ApiServices\ApiServiceImporterService;
 use App\Services\BaseService;
-use App\Services\Category\CategoryEntityService;
 use App\Services\Category\CategoryImporterService;
 use App\Services\Permission\AccessControlService;
 use App\Services\Permission\PermissionService;
 use App\Services\Property\PropertyImporterService;
-use App\Services\Provider\ProviderEntityService;
 use App\Services\Provider\ProviderImporterService;
 use App\Services\Tools\SerializerService;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
@@ -131,7 +129,7 @@ class IExportTypeService extends BaseService
                     if ($this->accessControlService->inAdminGroup()) {
                         return $category;
                     }
-                    $this->accessControlService->setEntityName(CategoryEntityService::ENTITY_NAME);
+
                     $isPermitted = $this->accessControlService->checkPermissionsForEntity(
                         $category,
                         [
@@ -146,7 +144,7 @@ class IExportTypeService extends BaseService
                     if ($this->accessControlService->inAdminGroup()) {
                         return $provider;
                     }
-                    $this->accessControlService->setEntityName(ProviderEntityService::ENTITY_NAME);
+
                     $isPermitted = $this->accessControlService->checkPermissionsForEntity(
                         $provider,
                         [

@@ -23,7 +23,6 @@ use Illuminate\Http\Request;
  */
 class CategoryController extends Controller
 {
-    const DEFAULT_ENTITY = "category";
 
     private CategoryService $categoryService;
 
@@ -44,7 +43,6 @@ class CategoryController extends Controller
     ) {
         parent::__construct($accessControlService, $httpRequestService, $serializerService);
         $this->categoryService = $categoryService;
-        $this->accessControlService->setEntityName(self::DEFAULT_ENTITY);
     }
 
     /**
@@ -54,18 +52,21 @@ class CategoryController extends Controller
      */
     public function getCategories(Request $request)
     {
-        if ($request->user()->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_SUPERUSER)) || $request->user()->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_ADMIN))) {
+        if (
+            $request->user()->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_SUPERUSER)) ||
+            $request->user()->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_ADMIN))
+        ) {
             $categories = $this->categoryService->getCategoryList(
                 $request->get('sort', "name"),
                 $request->get('order', "asc"),
                 (int)$request->get('count', null)
             );
         } else {
-            $categories = $this->categoryService->findUserPermittedCategories(
+            $categories = $this->categoryService->findUserCategories(
+                $request->user(),
                 $request->get('sort', "name"),
                 $request->get('order', "asc"),
-                (int)$request->get('count', null),
-                $request->user()
+                (int)$request->get('count', null)
             );
         }
         return $this->sendSuccessResponse("success",
@@ -80,14 +81,16 @@ class CategoryController extends Controller
     public function getSingleCategory(Category $category, Request $request)
     {
         $this->setAccessControlUser($request->user());
-        if (!$request->user()->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_SUPERUSER)) && !$request->user()->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_ADMIN))) {
-            $this->accessControlService->checkPermissionsForEntity(
+        if (
+            !$this->accessControlService->checkPermissionsForEntity(
                 $category,
                 [
                     PermissionService::PERMISSION_ADMIN,
                     PermissionService::PERMISSION_READ,
                 ],
-            );
+            )
+        ) {
+            return $this->sendErrorResponse("Access control: operation not permitted");
         }
         return $this->sendSuccessResponse("success",
             $this->serializerService->entityToArray($category));
@@ -95,7 +98,7 @@ class CategoryController extends Controller
 
     public function createCategory(CreateCategoryRequest $request)
     {
-        $create = $this->categoryService->createCategory($request->all());
+        $create = $this->categoryService->createCategory($request->user(), $request->all());
         if (!$create) {
             return $this->sendErrorResponse("Error creating category.");
         }
@@ -109,17 +112,8 @@ class CategoryController extends Controller
     public function updateCategory(Category $category, UpdateCategoryRequest $request)
     {
         $this->setAccessControlUser($request->user());
-        dd(
-            $this->accessControlService->checkPermissionsForEntity(
-                $category,
-                [
-                    PermissionService::PERMISSION_ADMIN,
-                    PermissionService::PERMISSION_UPDATE,
-                ],
-            )
-        );
         if (
-            $this->accessControlService->checkPermissionsForEntity(
+            !$this->accessControlService->checkPermissionsForEntity(
                 $category,
                 [
                     PermissionService::PERMISSION_ADMIN,
@@ -127,34 +121,32 @@ class CategoryController extends Controller
                 ],
             )
         ) {
-
+            return $this->sendErrorResponse("Access control: operation not permitted");
         }
-        dd(
-            $request->user()->tokenCan(
-                AuthService::getApiAbility(AuthService::ABILITY_SUPERUSER)
-            ),
-            $request->user()->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_ADMIN))
-        );
-        $requestData = $this->httpRequestService->getRequestData($request, true);
-        $create = $this->categoryService->updateCategory($category, $requestData);
+
+        $create = $this->categoryService->updateCategory($category, $request->all());
         if (!$create) {
             return $this->sendErrorResponse("Error updating category.");
         }
         return $this->sendSuccessResponse("Successfully updated category.",
-            $this->serializerService->entityToArray($create));
+            $this->serializerService->entityToArray(
+                $this->categoryService->getCategoryRepository()->getModel()
+            ));
     }
 
     public function deleteCategory(Category $category, Request $request)
     {
         $this->setAccessControlUser($request->user());
-        if (!$request->user()->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_SUPERUSER)) && !$request->user()->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_ADMIN))) {
-            $this->accessControlService->checkPermissionsForEntity(
+        if (
+            !$this->accessControlService->checkPermissionsForEntity(
                 $category,
                 [
                     PermissionService::PERMISSION_ADMIN,
                     PermissionService::PERMISSION_DELETE,
                 ],
-            );
+            )
+        ) {
+            return $this->sendErrorResponse("Access control: operation not permitted");
         }
         $delete = $this->categoryService->deleteCategory($category);
         if (!$delete) {

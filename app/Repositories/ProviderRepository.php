@@ -5,7 +5,6 @@ namespace App\Repositories;
 use App\Models\Property;
 use App\Models\Provider;
 use App\Models\User;
-use App\Models\UserProvider;
 
 class ProviderRepository extends BaseRepository
 {
@@ -48,7 +47,7 @@ class ProviderRepository extends BaseRepository
         if (!$insert) {
             return false;
         }
-        $userProviderRepo = new UserProviderRepository();
+        $userProviderRepo = new ProviderUserRepository();
         return $userProviderRepo->createUserProvider($user, $this->model, $permissions);
     }
 
@@ -79,4 +78,37 @@ class ProviderRepository extends BaseRepository
         return $provider->property()->delete();
     }
 
+    public function getUserPermissions(User $user, Provider $provider)
+    {
+        $providerUserId = $user->categories()
+            ->where('category_id', '=', $provider->id)
+            ->withPivot('id')
+            ->first()
+            ->getOriginal('pivot_id');
+        if (!$providerUserId) {
+            return null;
+        }
+
+        $providerUserRepo = new ProviderUserRepository();
+        $providerUser = $providerUserRepo->findById($providerUserId);
+        if (!$providerUser) {
+            return null;
+        }
+        return $providerUser->permissions()->get();
+    }
+
+    public function getPermissionsListByUser(User $user, string $sort, string $order, ?int $count) {
+
+        return null;
+    }
+
+    public function saveUserPermissions(User $user, Provider $provider, array $permissions)
+    {
+
+        return null;
+    }
+    public function deleteUserPermissions(User $user, Provider $provider)
+    {
+        return null;
+    }
 }

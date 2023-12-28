@@ -1,14 +1,22 @@
 <?php
 namespace App\Services\Permission;
 
+use App\Helpers\Tools\ClassHelpers;
 use App\Models\User;
+use App\Repositories\BaseRepository;
 use App\Services\Category\CategoryService;
 use App\Services\Provider\ProviderService;
 use App\Services\ServiceFactory;
+use Illuminate\Database\Eloquent\Model;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 
 class PermissionEntities
 {
+    const FUNC_USER_HAS_ENTITY_PERMISSIONS = 'userHasEntityPermissions';
+    const FUNC_GET_USER_PERMISSIONS = 'getUserPermissions';
+    const FUNC_GET_USER_ENTITY_PERMISSIONS = 'getPermissionsListByUser';
+    const FUNC_SAVE_USER_PERMISSIONS = 'saveUserPermissions';
+    const FUNC_DELETE_USER_PERMISSIONS = 'deleteUserPermissions';
     const ENTITY_KEY = "entity";
     const ENTITY_LABEL_KEY = "entity_label";
     const ENTITY_LABEL_DATA_KEY = "entity_label_data_key";
@@ -21,88 +29,200 @@ class PermissionEntities
             self::ENTITY_LABEL_KEY => "Providers",
             self::ENTITY_LABEL_DATA_KEY => "label",
             self::ENTITY_SORT_KEY => "name",
-            self::SERVICE_ID_KEY => ProviderService::SERVICE_ALIAS
+//            self::SERVICE_ID_KEY => ProviderService::SERVICE_ALIAS
         ],
         [
             self::ENTITY_KEY => "category",
             self::ENTITY_LABEL_KEY => "Categories",
             self::ENTITY_LABEL_DATA_KEY => "label",
             self::ENTITY_SORT_KEY => "name",
-            self::SERVICE_ID_KEY => CategoryService::SERVICE_ALIAS
+//            self::SERVICE_ID_KEY => CategoryService::SERVICE_ALIAS
         ]
     ];
 
-    private ServiceFactory $serviceFactory;
     private array $entityConfig = [];
-    private object $serviceObject;
 
-    public function __construct(ServiceFactory $serviceFactory) {
-        $this->serviceFactory = $serviceFactory;
-    }
-
-    public function findEntityConfigByEntityName(string $entityName) {
-        $entityConfigKey = array_search($entityName, array_column(self::PROTECTED_ENTITIES, "entity"));
-        if ($entityConfigKey === false) {
-            throw new BadRequestHttpException(
-                sprintf("Error, Entity config not found for [%s]", $entityName)
-            );
-        }
-        $this->entityConfig = self::PROTECTED_ENTITIES[$entityConfigKey];
-        return $this->entityConfig;
-    }
-
-    public function getServiceObjectByEntityName(string $entityName): object
+    public function getEntityInstance(string $entity)
     {
-        $entityConfig = $this->findEntityConfigByEntityName($entityName);
-        $this->serviceObject = $this->serviceFactory->getService($entityConfig[self::SERVICE_ID_KEY]);
-        return $this->serviceObject;
+        $className = "App\Models\{$entity}";
+        if (!class_exists($className)) {
+            return false;
+        }
+        return new $className();
+    }
+    public function getModelRepositoryInstance(Model $model): BaseRepository|false
+    {
+        if (!ClassHelpers::classHasConstant($model::class, 'REPOSITORY')) {
+            return false;
+        }
+        $repoClass = $model::REPOSITORY;
+        return new $repoClass();
+    }
+
+    public function findEntityById(Model $model, int $id): Model|false|null
+    {
+        $repositoryInstance = $this->getModelRepositoryInstance($model);
+        if (!$repositoryInstance) {
+            return false;
+        }
+        $findEntityItem = $repositoryInstance->findById($id);
+        if (!$findEntityItem) {
+            return false;
+        }
+        return $repositoryInstance->getModel();
     }
 
     public function validateServiceObjectFunction(object $serviceObject, string $functionName) {
         if (!method_exists($serviceObject, $functionName)) {
+            return false;
+        }
+        return true;
+    }
+
+    public function userHasEntityPermissions(
+        User $user,
+        Model $entityObject,
+        array $permissions
+    ) {
+        $serviceObject = $this->getModelRepositoryInstance($entityObject);
+        if (!$serviceObject) {
+            throw new BadRequestHttpException(
+                sprintf("Entity repository not found for class: %s", $entityObject::class)
+            );
+        }
+
+        $functionName = self::FUNC_USER_HAS_ENTITY_PERMISSIONS;
+        if (!$this->validateServiceObjectFunction($serviceObject, $functionName)) {
             throw new BadRequestHttpException(
                 sprintf("Function [%s] does not exist in [%s]", $functionName, get_class($serviceObject))
             );
         }
+
+        return $serviceObject->$functionName($user, $entityObject, $permissions);
+    }
+
+    public function getEntityUserPermissions(
+        User $user,
+        Model $entityObject
+    ) {
+        $serviceObject = $this->getModelRepositoryInstance($entityObject);
+        if (!$serviceObject) {
+            throw new BadRequestHttpException(
+                sprintf("Entity repository not found for class: %s", $entityObject::class)
+            );
+        }
+
+        $functionName = self::FUNC_GET_USER_PERMISSIONS;
+        if (!$this->validateServiceObjectFunction($serviceObject, $functionName)) {
+            throw new BadRequestHttpException(
+                sprintf("Function [%s] does not exist in [%s]", $functionName, get_class($serviceObject))
+            );
+        }
+
+        return $serviceObject->$functionName($user, $entityObject);
     }
 
     public function getUserEntityPermissionList(string $entity, User $user) {
-        $serviceObject = $this->getServiceObjectByEntityName($entity);
-        $functionName = sprintf("getUser%sPermissionsListByUser", ucfirst($this->entityConfig[self::ENTITY_KEY]));
-        $this->validateServiceObjectFunction($serviceObject, $functionName);
+        $entityInstance = $this->getEntityInstance($entity);
+        if (!$entityInstance) {
+            throw new BadRequestHttpException(
+                sprintf(
+                    'Entity model [%s] does not exist',
+                    $entity,
+                )
+            );
+        }
+        $repositoryInstance = $this->getModelRepositoryInstance($entityInstance);
+        $functionName = self::FUNC_GET_USER_ENTITY_PERMISSIONS;
+        if (!$this->validateServiceObjectFunction($repositoryInstance, $functionName)) {
+            throw new BadRequestHttpException(
+                sprintf(
+                    "Function [%s] does not exist in [%s]",
+                    $functionName,
+                    get_class($repositoryInstance)
+                )
+            );
+        }
 
-        return $serviceObject->$functionName($this->entityConfig[self::ENTITY_SORT_KEY], "asc", null, $user);
+        return $repositoryInstance->$functionName($user, 'name', "asc", null);
     }
 
     public function getUserEntityPermission(string $entity, int $id, User $user)
     {
-        $serviceObject = $this->getServiceObjectByEntityName($entity);
-        $functionName = sprintf("getUser%sByUser", ucfirst($this->entityConfig[self::ENTITY_KEY]));
-        $this->validateServiceObjectFunction($serviceObject, $functionName);
-        return $serviceObject->$functionName($user, $id);
+        $entityInstance = $this->getEntityInstance($entity);
+        if (!$entityInstance) {
+            throw new BadRequestHttpException(
+                sprintf(
+                    'Entity model [%s] does not exist',
+                    $entity,
+                )
+            );
+        }
+
+        $entityItem = $this->findEntityById($entityInstance, $id);
+        if (!$entityItem) {
+            return null;
+        }
+        return $this->getEntityUserPermissions($user, $entityItem);
     }
 
     public function saveUserEntityPermissions(string $entity, User $user, int $id, array $permissions)
     {
-        $serviceObject = $this->getServiceObjectByEntityName($entity);
-        $saveFunctionName = sprintf("saveUser%sPermissions", ucfirst($this->entityConfig[self::ENTITY_KEY]));
-        $getObjectFunctionName = sprintf("getUser%sByUser", ucfirst($this->entityConfig[self::ENTITY_KEY]));
-        $this->validateServiceObjectFunction($serviceObject, $saveFunctionName);
-        $this->validateServiceObjectFunction($serviceObject, $getObjectFunctionName);
-        $serviceObject->$saveFunctionName($user, $id, $permissions);
-        return $serviceObject->$getObjectFunctionName($user, $id);
+        $entityInstance = $this->getEntityInstance($entity);
+        if (!$entityInstance) {
+            throw new BadRequestHttpException(
+                sprintf(
+                    'Entity model [%s] does not exist',
+                    $entity,
+                )
+            );
+        }
+        $repositoryInstance = $this->getModelRepositoryInstance($entityInstance);
+        $saveFunctionName = self::FUNC_SAVE_USER_PERMISSIONS;
+        if (!$this->validateServiceObjectFunction($repositoryInstance, $saveFunctionName)) {
+            throw new BadRequestHttpException(
+                sprintf("Function [%s] does not exist in [%s]", $saveFunctionName, get_class($repositoryInstance))
+            );
+        }
+
+        $entityItem = $this->findEntityById($entityInstance, $id);
+        if (!$entityItem) {
+            return null;
+        }
+
+        $repositoryInstance->$saveFunctionName($user, $entityItem, $permissions);
+        return $this->getEntityUserPermissions($user, $entityItem);
     }
 
     public function deleteUserEntityPermissions(string $entity, int $id, User $user)
     {
-        $serviceObject = $this->getServiceObjectByEntityName($entity);
-        $deleteFunctionName = sprintf("deleteUser%sPermissions", ucfirst($this->entityConfig[self::ENTITY_KEY]));
-        $getObjectFunctionName = sprintf("get%sById", ucfirst($this->entityConfig[self::ENTITY_KEY]));
-        $this->validateServiceObjectFunction($serviceObject, $deleteFunctionName);
-        $this->validateServiceObjectFunction($serviceObject, $getObjectFunctionName);
-        return $serviceObject->$deleteFunctionName(
+        $entityInstance = $this->getEntityInstance($entity);
+        if (!$entityInstance) {
+            throw new BadRequestHttpException(
+                sprintf(
+                    'Entity model [%s] does not exist',
+                    $entity,
+                )
+            );
+        }
+
+        $repositoryInstance = $this->getModelRepositoryInstance($entityInstance);
+        $deleteFunctionName = self::FUNC_DELETE_USER_PERMISSIONS;
+
+        if (!$this->validateServiceObjectFunction($repositoryInstance, $deleteFunctionName)) {
+            throw new BadRequestHttpException(
+                sprintf("Function [%s] does not exist in [%s]", $deleteFunctionName, get_class($repositoryInstance))
+            );
+        }
+
+        $entityItem = $this->findEntityById($entityInstance, $id);
+        if (!$entityItem) {
+            return null;
+        }
+
+        return $repositoryInstance->$deleteFunctionName(
             $user,
-            $serviceObject->$getObjectFunctionName($id)
+            $entityItem
         );
     }
 }

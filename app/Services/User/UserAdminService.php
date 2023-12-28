@@ -5,6 +5,7 @@ namespace App\Services\User;
 use App\Models\Role;
 use App\Models\User;
 use App\Repositories\PersonalAccessTokenRepository;
+use App\Repositories\RoleRepository;
 use App\Repositories\UserRepository;
 use App\Services\Auth\AuthService;
 use App\Services\BaseService;
@@ -17,10 +18,12 @@ class UserAdminService extends BaseService
     const DEFAULT_TOKEN_EXPIRY = '+1 days';
     const NO_TOKEN_EXPIRY = 'NO_TOKEN_EXPIRY';
     private PersonalAccessTokenRepository $personalAccessTokenRepository;
+    private RoleRepository $roleRepository;
     public function __construct()
     {
         $this->setUserRepository(new UserRepository());
         $this->personalAccessTokenRepository = new PersonalAccessTokenRepository();
+        $this->roleRepository = new RoleRepository();
     }
 
     public static function userTokenHasAbility(User $user, string $ability) {
@@ -31,6 +34,14 @@ class UserAdminService extends BaseService
         return $this->userRepository->findAllWithParams($sort, $order, $count);
     }
 
+    public function createUserByRoleId(array $userData, int $roleId)
+    {
+        $role = $this->roleRepository->findById($roleId);
+        if (!$role instanceof Role) {
+            return false;
+        }
+        return $this->createUser($userData, $role);
+    }
     public function createUser(array $userData, Role $role)
     {
         $user = $this->userRepository->getModel()->fill($userData);

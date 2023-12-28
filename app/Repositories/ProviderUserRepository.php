@@ -4,17 +4,17 @@ namespace App\Repositories;
 
 use App\Models\Permission;
 use App\Models\Provider;
+use App\Models\ProviderUser;
 use App\Models\User;
-use App\Models\UserProvider;
 
-class UserProviderRepository extends BaseRepository
+class ProviderUserRepository extends BaseRepository
 {
     public function __construct()
     {
-        parent::__construct(UserProvider::class);
+        parent::__construct(ProviderUser::class);
     }
 
-    public function getModel(): UserProvider
+    public function getModel(): ProviderUser
     {
         return parent::getModel();
     }

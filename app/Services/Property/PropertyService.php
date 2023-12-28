@@ -9,7 +9,6 @@ use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 
 class PropertyService extends BaseService {
 
-    const SERVICE_ALIAS = PropertyEntityService::class;
 
     protected PropertyRepository $propertyRepository;
 
@@ -19,8 +18,8 @@ class PropertyService extends BaseService {
     }
 
     public function findPropertiesByParams(string $sort = "name", ?string $order = "asc", ?int $count= null) {
-        $this->propertyRepository->setOrderBy($order);
-        $this->propertyRepository->setSort($sort);
+        $this->propertyRepository->setOrderDir($order);
+        $this->propertyRepository->setSortField($sort);
         $this->propertyRepository->setLimit($count);
         return $this->propertyRepository->findMany();
     }

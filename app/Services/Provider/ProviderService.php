@@ -10,7 +10,7 @@ use App\Repositories\PropertyRepository;
 use App\Repositories\ProviderPropertyRepository;
 use App\Repositories\ProviderRepository;
 use App\Repositories\ServiceRepository;
-use App\Repositories\UserProviderRepository;
+use App\Repositories\ProviderUserRepository;
 use App\Services\ApiServices\ApiService;
 use App\Services\Auth\AuthService;
 use App\Services\BaseService;
@@ -26,11 +26,10 @@ use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 class ProviderService extends BaseService
 {
 
-    const SERVICE_ALIAS = ProviderEntityService::class;
 
     protected ProviderRepository $providerRepository;
     protected PermissionRepository $permissionRepository;
-    protected UserProviderRepository $userProviderRepository;
+    protected ProviderUserRepository $userProviderRepository;
     protected ProviderPropertyRepository $providerPropertyRepository;
     protected PropertyService $propertyService;
     protected ServiceRepository $serviceRepository;
@@ -51,7 +50,7 @@ class ProviderService extends BaseService
         $this->responseKeysService = $responseKeysService;
         $this->permissionRepository = new PermissionRepository();
         $this->providerRepository = new ProviderRepository();
-        $this->userProviderRepository = new UserProviderRepository();
+        $this->userProviderRepository = new ProviderUserRepository();
         $this->providerPropertyRepository = new ProviderPropertyRepository();
         $this->propertyService = $propertyService;
         $this->categoryService = $categoryService;
@@ -98,8 +97,8 @@ class ProviderService extends BaseService
 
     public function getProviderList(string $sort = "name", string $order = "asc", int $count = null)
     {
-        $this->providerRepository->setOrderBy($order);
-        $this->providerRepository->setSort($sort);
+        $this->providerRepository->setOrderDir($order);
+        $this->providerRepository->setSortField($sort);
         $this->providerRepository->setLimit($count);
         return $this->providerRepository->findMany();
     }
@@ -140,7 +139,7 @@ class ProviderService extends BaseService
         }
         $this->accessControlService->setUser($user);
         return array_filter($getProviders, function ($provider) use ($user) {
-            $this->accessControlService->setEntityName(ProviderEntityService::ENTITY_NAME);
+
             return $this->accessControlService->checkPermissionsForEntity(
                 $provider,
                 [
@@ -187,8 +186,8 @@ class ProviderService extends BaseService
         $provider = $this->getProviderById($providerId);
 
         $propertyRepo = new PropertyRepository();
-        $propertyRepo->setOrderBy($order);
-        $propertyRepo->setSort($sort);
+        $propertyRepo->setOrderDir($order);
+        $propertyRepo->setSortField($sort);
         $propertyRepo->setLimit($count);
 
         return array_map(function ($property) use ($provider) {
@@ -236,10 +235,13 @@ class ProviderService extends BaseService
 
     public function createProvider(array $providerData)
     {
-        if (!isset($providerData['label']) || empty($providerData['label'])) {
+        if (empty($providerData['label'])) {
             throw new BadRequestHttpException("Provider label is required.");
         }
-        $providerData['name'] = UtilHelpers::labelToName($providerData['label'], false, '-');
+        if (empty($providerData['name'])) {
+            $providerData['name'] = UtilHelpers::labelToName($providerData['label'], false, '-');
+        }
+
         $this->providerRepository->addWhere("name", $providerData['name']);
         $checkProvider = $this->providerRepository->findOne();
         if ($checkProvider !== null) {
