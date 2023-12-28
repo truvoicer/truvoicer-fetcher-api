@@ -41,14 +41,9 @@ class ProviderRepository extends BaseRepository
         return $this->findAllWithParams($sort, $order, $count);
     }
 
-    public function createProvider(User $user, array $providerData, array $permissions = [])
+    public function createProvider(array $providerData)
     {
-        $insert = $this->insert($providerData);
-        if (!$insert) {
-            return false;
-        }
-        $userProviderRepo = new ProviderUserRepository();
-        return $userProviderRepo->createUserProvider($user, $this->model, $permissions);
+        return $this->insert($providerData);
     }
 
     public function updateProvider(Provider $provider, array $data)
@@ -78,10 +73,20 @@ class ProviderRepository extends BaseRepository
         return $provider->property()->delete();
     }
 
+    public function userHasEntityPermissions(User $user, Provider $category, array $permissions)
+    {
+        $this->setPermissions($permissions);
+        $checkCategory = $this->findUserModelBy(new Provider(), $user, [
+            ['providers.id', '=', $category->id]
+        ]);
+
+        return ($checkCategory instanceof Provider);
+    }
+
     public function getUserPermissions(User $user, Provider $provider)
     {
-        $providerUserId = $user->categories()
-            ->where('category_id', '=', $provider->id)
+        $providerUserId = $user->providers()
+            ->where('provider_id', '=', $provider->id)
             ->withPivot('id')
             ->first()
             ->getOriginal('pivot_id');
@@ -102,11 +107,6 @@ class ProviderRepository extends BaseRepository
         return null;
     }
 
-    public function saveUserPermissions(User $user, Provider $provider, array $permissions)
-    {
-
-        return null;
-    }
     public function deleteUserPermissions(User $user, Provider $provider)
     {
         return null;

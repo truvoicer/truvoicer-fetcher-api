@@ -22,4 +22,16 @@ class ProviderUser extends Model
             'permission_id'
         );
     }
+    public function provider()
+    {
+        return $this->belongsTo(
+            Provider::class
+        );
+    }
+    public function providerUserPermission()
+    {
+        return $this->hasMany(
+            ProviderUserPermission::class
+        );
+    }
 }

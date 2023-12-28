@@ -12,7 +12,36 @@ class Provider extends Model
     use HasFactory;
     public const TABLE_NAME = 'providers';
     public const REPOSITORY = ProviderRepository::class;
+    public const RELATED_USER_REPOSITORY = ProviderUserRepository::class;
 
+    protected $fillable = [
+        'name',
+        'label',
+        'api_base_url',
+        'access_key',
+        'secret_key',
+        'user_id',
+    ];
+
+    public function users()
+    {
+        return $this->belongsToMany(
+            User::class,
+            ProviderUser::TABLE_NAME,
+            'provider_id',
+            'user_id'
+        );
+    }
+    public function permissions() {
+        return $this->hasManyThrough(ProviderUserPermission::class, ProviderUser::class);
+    }
+
+    public function providerUser()
+    {
+        return $this->hasMany(
+            ProviderUser::class
+        );
+    }
     public function user()
     {
         return $this->belongsTo(User::class);

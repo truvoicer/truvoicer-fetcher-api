@@ -17,6 +17,7 @@ class FileSystemServiceBase extends BaseService
 
     public function __construct(FileSystemService $fileSystemService, string $fileSystemName)
     {
+        parent::__construct();
         $this->fileSystemService = $fileSystemService;
         $this->setFilesystem(Storage::disk($fileSystemName));
     }

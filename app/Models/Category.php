@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Repositories\CategoryRepository;
+use App\Repositories\CategoryUserRepository;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -12,6 +13,7 @@ class Category extends Model
 
     public const TABLE_NAME = 'categories';
     public const REPOSITORY = CategoryRepository::class;
+    public const RELATED_USER_REPOSITORY = CategoryUserRepository::class;
     private string $name;
     private string $label;
     protected $fillable = [

@@ -29,6 +29,7 @@ class ResponseManager extends BaseService
 
     public function __construct(JsonResponseHandler $jsonResponseHandler, XmlResponseHandler $xmlResponseHandler)
     {
+        parent::__construct();
         $this->jsonResponseHandler = $jsonResponseHandler;
         $this->xmlResponseHandler = $xmlResponseHandler;
     }

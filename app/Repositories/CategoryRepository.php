@@ -48,9 +48,8 @@ class CategoryRepository extends BaseRepository
 
     public function userHasEntityPermissions(User $user, Category $category, array $permissions)
     {
-        $userCategoryRepository = new CategoryUserRepository();
-        $userCategoryRepository->setPermissions($permissions);
-        $checkCategory = $userCategoryRepository->findUserCategoryBy($user, [
+        $this->setPermissions($permissions);
+        $checkCategory = $this->findUserModelBy(new Category(), $user, [
             ['categories.id', '=', $category->id]
         ]);
 
@@ -81,11 +80,6 @@ class CategoryRepository extends BaseRepository
         return null;
     }
 
-    public function saveUserPermissions(User $user, int $categoryId, array $permissions)
-    {
-
-        return null;
-    }
     public function deleteUserPermissions(User $user, Category $category)
     {
         return null;

@@ -21,6 +21,7 @@ class UserAdminService extends BaseService
     private RoleRepository $roleRepository;
     public function __construct()
     {
+        parent::__construct();
         $this->setUserRepository(new UserRepository());
         $this->personalAccessTokenRepository = new PersonalAccessTokenRepository();
         $this->roleRepository = new RoleRepository();

@@ -23,6 +23,7 @@ class ApiService extends BaseService
      */
     public function __construct(ResponseKeysService $responseKeysService)
     {
+        parent::__construct();
         $this->serviceRepository = new ServiceRepository();
         $this->serviceRequestRepository = new ServiceRequestRepository();
         $this->requestParametersRepo = new ServiceRequestParameterRepository();

@@ -18,7 +18,7 @@ class CategoryImporterService extends CategoryService
             if(isset($createCategory["status"]) && $createCategory["status"] === "error") {
                 throw new BadRequestHttpException($createCategory["message"]);
             }
-            $this->userCategoryRepository->createUserCategory($this->user, $createCategory);
+//            $this->userCategoryRepository->createUserCategory($this->user, $createCategory);
             return $createCategory;
         }, $data);
     }

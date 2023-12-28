@@ -42,6 +42,7 @@ class PermissionService extends BaseService
 
     public function __construct()
     {
+        parent::__construct();
         $this->permissionRepository = new PermissionRepository();
     }
 

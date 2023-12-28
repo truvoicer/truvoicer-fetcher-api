@@ -94,8 +94,8 @@ Route::middleware(['auth:sanctum', 'ability:api:admin,api:superuser,api:user'])-
         Route::post('/create', [ProviderController::class, 'createProvider'])->name('create');
         Route::get('/{provider}', [ProviderController::class, 'getProvider'])->name('detail');
         Route::prefix('{provider}')->name('single.')->group(function () {
-            Route::post('/update', [ProviderController::class, 'updateProvider'])->name('update');
-            Route::post('/delete', [ProviderController::class, 'deleteProvider'])->name('delete');
+            Route::patch('/update', [ProviderController::class, 'updateProvider'])->name('update');
+            Route::delete('/delete', [ProviderController::class, 'deleteProvider'])->name('delete');
             Route::prefix('property')->name('property.')->group(function () {
                 Route::get('/list', [ProviderPropertyController::class, 'getProviderPropertyList'])->name('list');
                 Route::post('/create', [ProviderPropertyController::class, 'createProviderProperty'])->name('create');

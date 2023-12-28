@@ -12,4 +12,14 @@ class ProviderUserPermission extends Model
 
     public const TABLE_NAME = 'provider_user_permissions';
     public const REPOSITORY = ProviderUserPermissionRepository::class;
+    public function providerUser()
+    {
+        return $this->belongsTo(ProviderUser::class);
+    }
+
+
+    public function permission()
+    {
+        return $this->belongsTo(Permission::class);
+    }
 }

@@ -37,6 +37,7 @@ class RequestService extends BaseService
                                 RequestParametersService $requestParametersService, ApiService $apiService
     )
     {
+        parent::__construct();
         $this->httpRequestService = $httpRequestService;
         $this->providerService = $providerService;
         $this->apiService = $apiService;

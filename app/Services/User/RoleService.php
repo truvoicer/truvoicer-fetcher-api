@@ -16,6 +16,7 @@ class RoleService extends BaseService
 
     public function __construct()
     {
+        parent::__construct();
         $this->roleRepository = new RoleRepository();
     }
 

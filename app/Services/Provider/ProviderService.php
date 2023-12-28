@@ -46,6 +46,7 @@ class ProviderService extends BaseService
         AccessControlService $accessControlService
     )
     {
+        parent::__construct();
         $this->apiService = $apiService;
         $this->responseKeysService = $responseKeysService;
         $this->permissionRepository = new PermissionRepository();
@@ -103,6 +104,16 @@ class ProviderService extends BaseService
         return $this->providerRepository->findMany();
     }
 
+    public function findUserProviders(User $user, string $sort, string $order, ?int $count) {
+        $this->providerRepository->setPermissions([
+            PermissionService::PERMISSION_ADMIN,
+            PermissionService::PERMISSION_READ,
+        ]);
+        return $this->providerRepository->findModelsByUser(
+            new Provider(),
+            $user
+        );
+    }
     public function getUserProviderList(User $user, Provider $provider)
     {
         $this->userProviderRepository->addWhere("user", $user->id);
@@ -213,14 +224,21 @@ class ProviderService extends BaseService
 
     private function setProviderObject(array $providerData)
     {
+        $fields = [
+            'name',
+            'label',
+            'api_base_url',
+            'access_key',
+            'secret_key',
+            'user_id'
+        ];
         try {
             $data = [];
-            $data['name'] = $providerData['name'];
-            $data['label'] = $providerData['label'];
-            $data['api_base_url'] = $providerData['api_base_url'];
-            $data['access_key'] = $providerData['access_key'];
-            $data['secret_key'] = $providerData['secret_key'];
-            $data['user_id'] = $providerData['user_id'];
+            foreach ($fields as $field) {
+                if (array_key_exists($field, $providerData)) {
+                    $data[$field] = $providerData[$field];
+                }
+            }
 //            if (isset($providerData['category']) && count($providerData['category']) > 0) {
 //                foreach ($providerData['category'] as $category) {
 //                    $category = $this->categoryService->getCategoryById($category['id']);
@@ -233,30 +251,32 @@ class ProviderService extends BaseService
         }
     }
 
-    public function createProvider(array $providerData)
+    public function createProvider(User $user, array $data)
     {
-        if (empty($providerData['label'])) {
+        if (empty($data['label'])) {
             throw new BadRequestHttpException("Provider label is required.");
         }
-        if (empty($providerData['name'])) {
-            $providerData['name'] = UtilHelpers::labelToName($providerData['label'], false, '-');
+        if (empty($data['name'])) {
+            $data['name'] = UtilHelpers::labelToName($data['label'], false, '-');
         }
 
-        $this->providerRepository->addWhere("name", $providerData['name']);
-        $checkProvider = $this->providerRepository->findOne();
-        if ($checkProvider !== null) {
-            throw new BadRequestHttpException(sprintf("Provider (%s) already exists.", $providerData['name']));
-        }
-        $provider = $this->setProviderObject($providerData);
-        $this->permissionRepository->addWhere("name", PermissionService::PERMISSION_ADMIN);
-        $getAdminPermission = $this->permissionRepository->findOne();
-        if ($getAdminPermission === null) {
-            throw new BadRequestHttpException(
-                "Admin permission does not exist."
-            );
-        }
-        return $this->providerRepository->createProvider($this->user, $provider, [$getAdminPermission]);
+        $checkProvider = $this->providerRepository->findUserModelBy(new Provider(), $user, [
+            ['name', '=', $data['name']]
+        ], false);
 
+        if ($checkProvider instanceof Provider) {
+            throw new BadRequestHttpException(sprintf("Provider (%s) already exists.", $data['name']));
+        }
+        $provider = $this->setProviderObject($data);
+        if (!$this->providerRepository->createProvider($provider)) {
+            throw new BadRequestHttpException(sprintf("Error creating provider: %s", $data['name']));
+        }
+
+        return $this->permissionEntities->saveUserEntityPermissions(
+            $user,
+            $this->providerRepository->getModel(),
+            ['name' => PermissionService::PERMISSION_ADMIN]
+        );
     }
 
 
@@ -311,5 +331,10 @@ class ProviderService extends BaseService
             sprintf("Error deleting property value. (Provider id:%s, Property id:%s)",
                 $provider->id, $property->id
             ));
+    }
+
+    public function getProviderRepository(): ProviderRepository
+    {
+        return $this->providerRepository;
     }
 }

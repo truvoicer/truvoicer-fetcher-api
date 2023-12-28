@@ -60,11 +60,21 @@ class User extends Authenticatable
     {
         return $this->belongsToMany(
             Category::class,
-            CategoryUser::TABLE_NAME,
+            CategoryUser::class,
             'user_id',
             'category_id'
         );
     }
+    public function providers()
+    {
+        return $this->belongsToMany(
+            Provider::class,
+            ProviderUser::class,
+            'user_id',
+            'provider_id'
+        );
+    }
+
     public function provider()
     {
         return $this->hasMany(Provider::class);

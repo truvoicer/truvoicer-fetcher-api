@@ -33,6 +33,7 @@ class RequestConfigService extends BaseService
 
     public function __construct(ProviderService $providerService)
     {
+        parent::__construct();
         $this->providerService = $providerService;
         $this->serviceRepository = new ServiceRepository();
         $this->serviceRequestRepository = new ServiceRequestRepository();

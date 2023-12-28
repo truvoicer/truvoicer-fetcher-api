@@ -38,4 +38,11 @@ class PermissionRepository extends BaseRepository
     public function createPermission(string $name, string $label) {
         return $this->insert($this->buildPermissionData($name, $label));
     }
+
+    public function findPermissionsByParams(array $permissions) {
+        foreach ($permissions as $column => $value) {
+            $this->addWhere($column, $value);
+        }
+        return $this->findMany();
+    }
 }

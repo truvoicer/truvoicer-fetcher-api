@@ -14,6 +14,7 @@ class PropertyService extends BaseService {
 
     public function __construct(AccessControlService $accessControlService)
     {
+        parent::__construct();
         $this->propertyRepository = new PropertyRepository();
     }
 

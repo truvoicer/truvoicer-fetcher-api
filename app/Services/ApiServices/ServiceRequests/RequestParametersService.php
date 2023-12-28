@@ -19,6 +19,7 @@ class RequestParametersService extends BaseService
 
     public function __construct()
     {
+        parent::__construct();
         $this->serviceRepository = new ServiceRepository();
         $this->serviceRequestRepository = new ServiceRequestRepository();
         $this->requestParametersRepo = new ServiceRequestParameterRepository();

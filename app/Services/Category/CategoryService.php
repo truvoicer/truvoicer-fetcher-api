@@ -3,6 +3,7 @@
 namespace App\Services\Category;
 
 use App\Models\Category;
+use App\Models\CategoryUser;
 use App\Models\User;
 use App\Repositories\CategoryRepository;
 use App\Repositories\PermissionRepository;
@@ -27,6 +28,7 @@ class CategoryService extends BaseService
 
     public function __construct(AccessControlService $accessControlService)
     {
+        parent::__construct();
         $this->userCategoryRepository = new CategoryUserRepository();
         $this->permissionRepository = new PermissionRepository();
         $this->categoryRepository = new CategoryRepository();
@@ -68,11 +70,9 @@ class CategoryService extends BaseService
             PermissionService::PERMISSION_ADMIN,
             PermissionService::PERMISSION_READ,
         ]);
-        return $this->userCategoryRepository->findCategoriesByUser(
-            $user,
-            $sort,
-            $order,
-            $count
+        return $this->userCategoryRepository->findModelsByUser(
+            New Category(),
+            $user
         );
     }
 
@@ -152,14 +152,14 @@ class CategoryService extends BaseService
 
     public function createCategory(User $user, array $data)
     {
-        if (empty($providerData['label'])) {
+        if (empty($data['label'])) {
             throw new BadRequestHttpException("Category label is required.");
         }
         if (empty($data['name'])) {
-            $data['name'] = UtilHelpers::labelToName($providerData['label'], false, '-');
+            $data['name'] = UtilHelpers::labelToName($data['label'], false, '-');
         }
 
-        $checkCategory = $this->userCategoryRepository->findUserCategoryBy($user, [
+        $checkCategory = $this->userCategoryRepository->findUserModelBy(new Category(), $user, [
             ['name', '=', $data['name']]
         ], false);
 
@@ -168,14 +168,6 @@ class CategoryService extends BaseService
         }
         $categoryData = $this->getCategoryObject($data);
 
-        $getAdminPermission = $this->permissionRepository->findOneBy(
-            [["name", '=', PermissionService::PERMISSION_ADMIN]]
-        );
-        if ($getAdminPermission === null) {
-            throw new BadRequestHttpException(
-                "Admin permission does not exist."
-            );
-        }
         $createCategory = $this->categoryRepository->save($categoryData);
 
         if (!$createCategory) {
@@ -184,8 +176,11 @@ class CategoryService extends BaseService
             );
         }
 
-        $category = $this->categoryRepository->getModel();
-        return $this->userCategoryRepository->createUserCategory(Request::user(), $category, [$getAdminPermission]);
+        return $this->permissionEntities->saveUserEntityPermissions(
+            $user,
+            $this->categoryRepository->getModel(),
+            ['name' => PermissionService::PERMISSION_ADMIN]
+        );
     }
 
     public function updateCategory(Category $category, array $data)

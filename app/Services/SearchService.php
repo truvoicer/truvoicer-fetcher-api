@@ -20,6 +20,7 @@ class SearchService extends BaseService
         CategoryService $categoryService,
         ApiService $apiService
     ) {
+        parent::__construct();
         $this->providerService = $providerService;
         $this->requestService = $requestService;
         $this->categoryService = $categoryService;

@@ -166,7 +166,7 @@ class PermissionEntities
         return $this->getEntityUserPermissions($user, $entityItem);
     }
 
-    public function saveUserEntityPermissions(string $entity, User $user, int $id, array $permissions)
+    public function saveUserEntityPermissionsByEntityId(string $entity, User $user, int $id, array $permissions)
     {
         $entityInstance = $this->getEntityInstance($entity);
         if (!$entityInstance) {
@@ -177,7 +177,18 @@ class PermissionEntities
                 )
             );
         }
-        $repositoryInstance = $this->getModelRepositoryInstance($entityInstance);
+
+        $entityItem = $this->findEntityById($entityInstance, $id);
+        if (!$entityItem) {
+            return null;
+        }
+
+        return $this->saveUserEntityPermissions($user, $entityItem, $permissions);
+    }
+
+    public function saveUserEntityPermissions(User $user, Model $entity, array $permissions)
+    {
+        $repositoryInstance = $this->getModelRepositoryInstance($entity);
         $saveFunctionName = self::FUNC_SAVE_USER_PERMISSIONS;
         if (!$this->validateServiceObjectFunction($repositoryInstance, $saveFunctionName)) {
             throw new BadRequestHttpException(
@@ -185,13 +196,8 @@ class PermissionEntities
             );
         }
 
-        $entityItem = $this->findEntityById($entityInstance, $id);
-        if (!$entityItem) {
-            return null;
-        }
 
-        $repositoryInstance->$saveFunctionName($user, $entityItem, $permissions);
-        return $this->getEntityUserPermissions($user, $entityItem);
+        return $repositoryInstance->$saveFunctionName($user, $entity, $permissions);
     }
 
     public function deleteUserEntityPermissions(string $entity, int $id, User $user)

@@ -93,7 +93,8 @@ class CategoryController extends Controller
             return $this->sendErrorResponse("Access control: operation not permitted");
         }
         return $this->sendSuccessResponse("success",
-            $this->serializerService->entityToArray($category));
+            new CategoryResource($category)
+        );
     }
 
     public function createCategory(CreateCategoryRequest $request)
@@ -103,9 +104,7 @@ class CategoryController extends Controller
             return $this->sendErrorResponse("Error creating category.");
         }
         return $this->sendSuccessResponse("Successfully created category.",
-            $this->serializerService->entityToArray(
-                $this->categoryService->getCategoryRepository()->getModel()
-            )
+            new CategoryResource($this->categoryService->getCategoryRepository()->getModel())
         );
     }
 

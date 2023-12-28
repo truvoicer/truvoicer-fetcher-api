@@ -51,6 +51,7 @@ class IExportTypeService extends BaseService
         AccessControlService      $accessControlService
     )
     {
+        parent::__construct();
         $this->categoryImporterService = $categoryMappingsService;
         $this->providerImporterService = $providerMappingsService;
         $this->apiServiceImporterService = $apiServiceMappingsService;

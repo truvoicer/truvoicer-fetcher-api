@@ -128,7 +128,7 @@ class PermissionController extends Controller
         return $this->sendSuccessResponse(
             "Entity permissions saved successfully",
             $this->serializerService->entityToArray(
-                $this->accessControlService->getPermissionEntities()->saveUserEntityPermissions(
+                $this->accessControlService->getPermissionEntities()->saveUserEntityPermissionsByEntityId(
                     $requestData["entity"], $user, $requestData["id"], $requestData["permissions"]
                 ),
                 ["list"]
