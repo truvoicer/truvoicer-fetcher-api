@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('provider_id')->constrained('providers')->onDelete('cascade');
             $table->foreignId('property_id')->constrained('properties')->onDelete('cascade');
-            $table->string('property_value');
+            $table->string('value');
             $table->timestamps();
         });
     }

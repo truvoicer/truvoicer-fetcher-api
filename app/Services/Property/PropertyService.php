@@ -82,4 +82,10 @@ class PropertyService extends BaseService {
     public function deleteProperty(Property $property) {
         return $this->propertyRepository->deleteProperty($property);
     }
+
+    public function getPropertyRepository(): PropertyRepository
+    {
+        return $this->propertyRepository;
+    }
+
 }

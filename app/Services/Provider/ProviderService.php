@@ -287,10 +287,9 @@ class ProviderService extends BaseService
         return $this->providerRepository->updateProvider($provider, $providerData);
     }
 
-    public function createProviderProperty(Provider $provider, array $providerPropData)
+    public function createProviderProperty(Provider $provider, Property $property, string $value)
     {
-        $property = $this->propertyService->getPropertyById($providerPropData['property_id']);
-        return $this->providerRepository->createProviderProperty($provider, $property, $providerPropData['property_value']);
+        return $this->providerRepository->createProviderProperty($provider, $property, $value);
     }
 
     public function updateProviderProperty(Provider $provider, Property $property, array $data)

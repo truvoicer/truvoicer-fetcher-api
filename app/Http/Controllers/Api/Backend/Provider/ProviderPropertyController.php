@@ -9,6 +9,7 @@ use App\Repositories\ProviderRepository;
 use App\Services\Auth\AuthService;
 use App\Services\Permission\AccessControlService;
 use App\Services\Permission\PermissionService;
+use App\Services\Property\PropertyService;
 use App\Services\Tools\HttpRequestService;
 use App\Services\Provider\ProviderService;
 use App\Services\Tools\SerializerService;
@@ -22,28 +23,27 @@ use Illuminate\Http\Request;
  */
 class ProviderPropertyController extends Controller
 {
-    const DEFAULT_ENTITY = "provider";
 
-    private ProviderRepository $providerRepo;
+    private PropertyService $propertyService;
     private ProviderService $providerService;
 
     /**
      * ProviderController constructor.
-     * @param ProviderRepository $providerRepository
-     * @param ProviderService $providerService
-     * @param AccessControlService $accessControlService
+     * @param PropertyService $propertyService
      * @param HttpRequestService $httpRequestService
      * @param SerializerService $serializerService
+     * @param ProviderService $providerService
+     * @param AccessControlService $accessControlService
      */
     public function __construct(
-        ProviderRepository $providerRepository,
+        PropertyService $propertyService,
         HttpRequestService $httpRequestService,
         SerializerService $serializerService,
         ProviderService $providerService,
         AccessControlService $accessControlService
     ) {
         parent::__construct($accessControlService, $httpRequestService, $serializerService);
-        $this->providerRepo = $providerRepository;
+        $this->propertyService = $propertyService;
         $this->providerService = $providerService;
     }
 
@@ -107,7 +107,7 @@ class ProviderPropertyController extends Controller
      * - provider_id
      * - property_id
      */
-    public function createProviderProperty(Provider $provider, Request $request): \Illuminate\Http\JsonResponse
+    public function createProviderProperty(Provider $provider, Property $property, Request $request): \Illuminate\Http\JsonResponse
     {
         $this->setAccessControlUser($request->user());
         if (!$request->user()->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_SUPERUSER)) && !$request->user(
@@ -121,8 +121,7 @@ class ProviderPropertyController extends Controller
                 ],
             );
         }
-        $requestData = $this->httpRequestService->getRequestData($request);
-        $create = $this->providerService->createProviderProperty($provider, $requestData->data);
+        $create = $this->providerService->createProviderProperty($provider, $property, $request->get('value'));
         if (!$create) {
             return $this->sendErrorResponse("Error adding provider property.");
         }

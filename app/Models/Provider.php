@@ -58,6 +58,15 @@ class Provider extends Model
     {
         return $this->hasMany(Property::class);
     }
+    public function properties()
+    {
+        return $this->belongsToMany(
+            Property::class,
+            ProviderProperty::TABLE_NAME,
+            'property_id',
+            'provider_id'
+        );
+    }
     public function oauthAccessToken()
     {
         return $this->hasMany(OauthAccessToken::class);

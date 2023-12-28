@@ -52,8 +52,8 @@ class ProviderRepository extends BaseRepository
         return $this->save($data);
     }
 
-    public function createProviderProperty(Provider $provider, Property $property, string $propertyValue) {
-        return $provider->property()->save($property);
+    public function createProviderProperty(Provider $provider, Property $property, string $value) {
+        return $provider->properties()->save($property, ['value' => $value]);
     }
 
     public function getProviderProperty(Provider $provider, Property $property) {

@@ -11,8 +11,20 @@ class Property extends Model
     use HasFactory;
     public const TABLE_NAME = 'properties';
     public const REPOSITORY = PropertyRepository::class;
+    protected $casts = [
+        'value_choices' => 'array',
+    ];
     public function provider()
     {
         return $this->belongsTo(Provider::class);
+    }
+    public function providers()
+    {
+        return $this->belongsToMany(
+            Provider::class,
+            ProviderProperty::TABLE_NAME,
+            'provider_id',
+            'property_id'
+        );
     }
 }
