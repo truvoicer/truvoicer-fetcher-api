@@ -4,6 +4,7 @@ namespace App\Repositories;
 
 use App\Models\Provider;
 use App\Models\Service;
+use App\Models\User;
 
 class ServiceRepository extends BaseRepository
 {
@@ -43,5 +44,45 @@ class ServiceRepository extends BaseRepository
     public function deleteService(Service $service) {
         $this->setModel($service);
         return $this->delete();
+    }
+
+
+    public function userHasEntityPermissions(User $user, Service $service, array $permissions)
+    {
+        $this->setPermissions($permissions);
+        $checkCategory = $this->findUserModelBy(new Service(), $user, [
+            ['services.id', '=', $service->id]
+        ]);
+
+        return ($checkCategory instanceof Service);
+    }
+
+    public function getUserPermissions(User $user, Service $service)
+    {
+        $providerUserId = $user->providers()
+            ->where('provider_id', '=', $service->id)
+            ->withPivot('id')
+            ->first()
+            ->getOriginal('pivot_id');
+        if (!$providerUserId) {
+            return null;
+        }
+
+        $providerUserRepo = new ProviderUserRepository();
+        $providerUser = $providerUserRepo->findById($providerUserId);
+        if (!$providerUser) {
+            return null;
+        }
+        return $providerUser->permissions()->get();
+    }
+
+    public function getPermissionsListByUser(User $user, string $sort, string $order, ?int $count) {
+
+        return null;
+    }
+
+    public function deleteUserPermissions(User $user, Provider $provider)
+    {
+        return null;
     }
 }

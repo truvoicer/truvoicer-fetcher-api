@@ -14,6 +14,12 @@ class Property extends Model
     protected $casts = [
         'value_choices' => 'array',
     ];
+    protected $fillable = [
+        'name',
+        'label',
+        'value_type',
+        'value_choices',
+    ];
     public function provider()
     {
         return $this->belongsTo(Provider::class);

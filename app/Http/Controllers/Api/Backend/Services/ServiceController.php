@@ -3,9 +3,13 @@
 namespace App\Http\Controllers\Api\Backend\Services;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Service\CreateServiceRequest;
+use App\Http\Requests\Service\UpdateServiceRequest;
+use App\Http\Resources\ServiceResource;
 use App\Models\Service;
 use App\Services\ApiServices\ApiService;
 use App\Services\Permission\AccessControlService;
+use App\Services\Permission\PermissionService;
 use App\Services\Tools\HttpRequestService;
 use App\Services\Provider\ProviderService;
 use App\Services\Tools\SerializerService;
@@ -19,28 +23,24 @@ use Illuminate\Http\Request;
  */
 class ServiceController extends Controller
 {
-    private ProviderService $providerService;   // Initialise provider service
     private ApiService $apiServicesService;     // Initialise api services service
 
     /**
      * ServiceController constructor.
      * Initialises services used in this controller
      *
-     * @param ProviderService $providerService
      * @param HttpRequestService $httpRequestService
      * @param SerializerService $serializerService
      * @param ApiService $apiServicesService
      * @param AccessControlService $accessControlService
      */
     public function __construct(
-        ProviderService $providerService,
         HttpRequestService $httpRequestService,
         SerializerService $serializerService,
         ApiService $apiServicesService,
         AccessControlService $accessControlService
     ) {
         parent::__construct($accessControlService, $httpRequestService, $serializerService);
-        $this->providerService = $providerService;   //Initialise provider service
         $this->apiServicesService = $apiServicesService;   //Initialise api services service
     }
 
@@ -51,14 +51,24 @@ class ServiceController extends Controller
      */
     public function getServices(Request $request): \Illuminate\Http\JsonResponse
     {
-        $getServices = $this->apiServicesService->findByParams(
-            $request->get('sort', "name"),
-            $request->get('order', "asc"),
-            (int)$request->get('count', null)
-        );
+        $this->setAccessControlUser($request->user());
+        if ($this->accessControlService->inAdminGroup()) {
+            $getServices = $this->apiServicesService->findByParams(
+                $request->get('sort', "name"),
+                $request->get('order', "asc"),
+                (int)$request->get('count', null)
+            );
+        } else {
+            $getServices = $this->apiServicesService->findUserServices(
+                $request->user(),
+                $request->get('sort', "name"),
+                $request->get('order', "asc"),
+                (int)$request->get('count', null),
+            );
+        }
         return $this->sendSuccessResponse(
             "success",
-            $this->serializerService->entityArrayToArray($getServices, ["list"])
+            ServiceResource::collection($getServices)
         );
     }
 
@@ -67,8 +77,22 @@ class ServiceController extends Controller
      * Returns a single api service based on the id passed in the request url
      *
      */
-    public function getService(Service $service): \Illuminate\Http\JsonResponse
+    public function getService(Service $service, Request $request): \Illuminate\Http\JsonResponse
     {
+        $this->setAccessControlUser($request->user());
+        if (
+            !$this->accessControlService->checkPermissionsForEntity(
+                $service,
+                [
+                    PermissionService::PERMISSION_ADMIN,
+                    PermissionService::PERMISSION_READ,
+                ]
+            )
+        ) {
+            return $this->sendErrorResponse(
+                "You do not have permission to view this service",
+            );
+        }
         return $this->sendSuccessResponse(
             "success",
             $this->serializerService->entityToArray($service, ["single"])
@@ -81,10 +105,11 @@ class ServiceController extends Controller
      * Returns error response and message on fail
      *
      */
-    public function createService(Request $request): \Illuminate\Http\JsonResponse
+    public function createService(CreateServiceRequest $request): \Illuminate\Http\JsonResponse
     {
         $create = $this->apiServicesService->createService(
-            $this->httpRequestService->getRequestData($request, true)
+            $request->user(),
+            $request->all()
         );
 
         if (!$create) {
@@ -92,7 +117,9 @@ class ServiceController extends Controller
         }
         return $this->sendSuccessResponse(
             "Service inserted",
-            $this->serializerService->entityToArray($create, ['single'])
+            new ServiceResource(
+                $this->apiServicesService->getServiceRepository()->getModel()
+            )
         );
     }
 
@@ -102,11 +129,25 @@ class ServiceController extends Controller
      * Returns error response and message on fail
      *
      */
-    public function updateService(Service $service, Request $request): \Illuminate\Http\JsonResponse
+    public function updateService(Service $service, UpdateServiceRequest $request): \Illuminate\Http\JsonResponse
     {
+        $this->setAccessControlUser($request->user());
+        if (
+            !$this->accessControlService->checkPermissionsForEntity(
+                $service,
+                [
+                    PermissionService::PERMISSION_ADMIN,
+                    PermissionService::PERMISSION_UPDATE,
+                ]
+            )
+        ) {
+            return $this->sendErrorResponse(
+                "You do not have permission to view this service",
+            );
+        }
         $update = $this->apiServicesService->updateService(
             $service,
-            $this->httpRequestService->getRequestData($request, true)
+            $request->all()
         );
 
         if (!$update) {
@@ -114,7 +155,9 @@ class ServiceController extends Controller
         }
         return $this->sendSuccessResponse(
             "Service updated",
-            $this->serializerService->entityToArray($update, ['single'])
+            new ServiceResource(
+                $this->apiServicesService->getServiceRepository()->getModel()
+            )
         );
     }
 
@@ -126,16 +169,28 @@ class ServiceController extends Controller
      */
     public function deleteService(Service $service, Request $request): \Illuminate\Http\JsonResponse
     {
+        $this->setAccessControlUser($request->user());
+        if (
+            !$this->accessControlService->checkPermissionsForEntity(
+                $service,
+                [
+                    PermissionService::PERMISSION_ADMIN,
+                    PermissionService::PERMISSION_DELETE,
+                ]
+            )
+        ) {
+            return $this->sendErrorResponse(
+                "You do not have permission to view this service",
+            );
+        }
         $delete = $this->apiServicesService->deleteService($service);
         if (!$delete) {
             return $this->sendErrorResponse(
-                "Error deleting service",
-                $this->serializerService->entityToArray($delete, ['single'])
+                "Error deleting service"
             );
         }
         return $this->sendSuccessResponse(
-            "Service deleted.",
-            $this->serializerService->entityToArray($delete, ['single'])
+            "Service deleted."
         );
     }
 }

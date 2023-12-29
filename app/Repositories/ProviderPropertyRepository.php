@@ -17,6 +17,11 @@ class ProviderPropertyRepository extends BaseRepository
     {
         return parent::getModel();
     }
+    public function findProviderProperties(Provider $provider) {
+        return $provider->properties()
+            ->with('providerProperty')
+            ->get();
+    }
     public function findProviderPropertyByProperty(Provider $provider, Property $property) {
         return $provider->properties()
             ->where('property_id', '=', $property->id)

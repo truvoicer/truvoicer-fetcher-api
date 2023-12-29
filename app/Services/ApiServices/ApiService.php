@@ -2,11 +2,13 @@
 namespace App\Services\ApiServices;
 
 use App\Models\Service;
+use App\Models\User;
 use App\Repositories\ServiceRepository;
 use App\Repositories\ServiceRequestParameterRepository;
 use App\Repositories\ServiceRequestRepository;
 use App\Services\BaseService;
 use App\Helpers\Tools\UtilHelpers;
+use App\Services\Permission\PermissionService;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 
 class ApiService extends BaseService
@@ -41,6 +43,16 @@ class ApiService extends BaseService
         return $this->serviceRepository->findMany();
     }
 
+    public function findUserServices(User $user, string $sort, string $order, ?int $count) {
+        $this->serviceRepository->setPermissions([
+            PermissionService::PERMISSION_ADMIN,
+            PermissionService::PERMISSION_READ,
+        ]);
+        return $this->serviceRepository->findModelsByUser(
+            new Service(),
+            $user
+        );
+    }
     public function getAllServicesArray() {
         return $this->serviceRepository->findAll()->toArray();
     }
@@ -53,17 +65,30 @@ class ApiService extends BaseService
         return $getService;
     }
 
-    public function createService(array $data)
+    public function createService(User $user, array $data)
     {
         if (empty($data['label'])) {
             throw new BadRequestHttpException("Label is required.");
         }
-        $data['name'] = UtilHelpers::labelToName($data['label'], false, '-');
+        if (empty($data['name'])) {
+            $data['name'] = UtilHelpers::labelToName($data['label'], false, '-');
+        }
+        $checkService = $this->serviceRepository->findUserModelBy(new Service(), $user, [
+            ['name', '=', $data['name']]
+        ], false);
+
+        if ($checkService instanceof Service) {
+            throw new BadRequestHttpException(sprintf("Service (%s) already exists.", $data['name']));
+        }
         $createService = $this->serviceRepository->insert($data);
         if (!$createService) {
             return false;
         }
-        return $this->responseKeysService->createDefaultServiceResponseKeys($this->serviceRepository->getModel());
+        return $this->permissionEntities->saveUserEntityPermissions(
+            $user,
+            $this->serviceRepository->getModel(),
+            ['name' => PermissionService::PERMISSION_ADMIN]
+        );
     }
 
     public function updateService(Service $service, array $data)
@@ -82,6 +107,12 @@ class ApiService extends BaseService
     }
 
     public function deleteService(Service $service) {
+        $this->serviceRepository->setModel($service);
         return $this->serviceRepository->delete();
+    }
+
+    public function getServiceRepository(): ServiceRepository
+    {
+        return $this->serviceRepository;
     }
 }

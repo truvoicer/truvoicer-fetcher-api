@@ -54,7 +54,7 @@ Route::middleware(['auth:sanctum', 'ability:api:admin,api:superuser,api:user'])-
         });
         Route::prefix('token')->name('token.')->group(function () {
             Route::get('/validate', [AuthController::class, 'validateToken'])->name('validate');
-            Route::post('/user', [AuthController::class, 'getSingleUserByApiToken'])->name('user');
+            Route::get('/user', [AuthController::class, 'getSingleUserByApiToken'])->name('user');
             Route::get('/login', [AuthController::class, 'accountTokenLogin'])->name('login');
         });
     });
@@ -144,8 +144,8 @@ Route::middleware(['auth:sanctum', 'ability:api:admin,api:superuser,api:user'])-
         Route::post('/create', [ServiceController::class, 'createService'])->name('create');
         Route::get('/{service}', [ServiceController::class, 'getService'])->name('detail');
         Route::prefix('{service}')->name('single.')->group(function () {
-            Route::post('/update', [ServiceController::class, 'updateService'])->name('update');
-            Route::post('/delete', [ServiceController::class, 'deleteService'])->name('delete');
+            Route::patch('/update', [ServiceController::class, 'updateService'])->name('update');
+            Route::delete('/delete', [ServiceController::class, 'deleteService'])->name('delete');
             Route::prefix('response-key')->name('response-key.')->group(function () {
                 Route::get('/list', [ServiceRequestResponseKeyController::class, 'getRequestResponseKeyList'])->name('list');
                 Route::post('/create', [ServiceRequestResponseKeyController::class, 'createRequestResponseKey'])->name('create');
@@ -221,7 +221,7 @@ Route::middleware(['auth:sanctum', 'ability:api:admin,api:superuser'])->group(fu
         Route::get('/list', [PropertyController::class, 'getPropertyList'])->name('list');
         Route::post('/create', [PropertyController::class, 'createProperty'])->name('create');
         Route::get('/{property}', [PropertyController::class, 'getProperty'])->name('detail');
-        Route::post('/{property}/update', [PropertyController::class, 'updateProperty'])->name('update');
-        Route::post('/{property}/delete', [PropertyController::class, 'deleteProperty'])->name('delete');
+        Route::patch('/{property}/update', [PropertyController::class, 'updateProperty'])->name('update');
+        Route::delete('/{property}/delete', [PropertyController::class, 'deleteProperty'])->name('delete');
     });
 });

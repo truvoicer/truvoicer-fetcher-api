@@ -3,9 +3,13 @@
 namespace App\Http\Controllers\Api\Backend;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Property\CreatePropertyRequest;
+use App\Http\Requests\Property\UpdatePropertyRequest;
+use App\Http\Resources\PropertyResource;
 use App\Models\Property;
 use App\Repositories\PropertyRepository;
 use App\Services\Permission\AccessControlService;
+use App\Services\Permission\PermissionService;
 use App\Services\Tools\HttpRequestService;
 use App\Services\Property\PropertyService;
 use App\Services\Tools\SerializerService;
@@ -43,70 +47,86 @@ class PropertyController extends Controller
 
     public function getPropertyList(Request $request)
     {
-        $properties = [];
-        if ($this->accessControlService->inAdminGroup()) {
-            $properties = $this->serializerService->entityArrayToArray(
-                $this->propertyService->findPropertiesByParams(
-                    $request->get('sort', "property_name"),
-                    $request->get('order', "asc"),
-                    (int)$request->get('count', null)
-                )
-            );
+        $this->setAccessControlUser($request->user());
+        if (!$this->accessControlService->inAdminGroup()) {
+            return $this->sendErrorResponse("Access control: operation not permitted");
+        }
+        $properties = $this->serializerService->entityArrayToArray(
+            $this->propertyService->findPropertiesByParams(
+                $request->get('sort', "name"),
+                $request->get('order', "asc"),
+                (int)$request->get('count', null)
+            )
+        );
+        return $this->sendSuccessResponse(
+            "success",
+            PropertyResource::collection($properties)
+        );
+    }
+
+    public function getProperty(Property $property, Request $request)
+    {
+        $this->setAccessControlUser($request->user());
+        if (!$this->accessControlService->inAdminGroup()) {
+            return $this->sendErrorResponse("Access control: operation not permitted");
         }
         return $this->sendSuccessResponse(
             "success",
-            $properties
+            new PropertyResource($property)
         );
     }
 
-    public function getProperty(Property $property)
+    public function updateProperty(Property $property, UpdatePropertyRequest $request)
     {
-        return $this->sendSuccessResponse(
-            "success",
-            $this->serializerService->entityToArray($property, ["main"])
-        );
-    }
-
-    public function updateProperty(Property $property, Request $request)
-    {
-        $requestData = $this->httpRequestService->getRequestData($request, true);
-        $updateProperty = $this->propertyService->updateProperty($property, $requestData);
+        $this->setAccessControlUser($request->user());
+        if (!$this->accessControlService->inAdminGroup()) {
+            return $this->sendErrorResponse("Access control: operation not permitted");
+        }
+        $updateProperty = $this->propertyService->updateProperty($property, $request->validated());
 
         if (!$updateProperty) {
             return $this->sendErrorResponse("Error updating property");
         }
         return $this->sendSuccessResponse(
             "Property updated",
-            $this->serializerService->entityToArray($updateProperty, ['main'])
+            new PropertyResource(
+                $this->propertyService->getPropertyRepository()->getModel()
+            )
         );
     }
 
-    public function createProperty(Request $request)
+    public function createProperty(CreatePropertyRequest $request)
     {
-        $requestData = $this->httpRequestService->getRequestData($request, true);
-
-        $createProperty = $this->propertyService->createProperty($requestData);
+        $this->setAccessControlUser($request->user());
+        if (!$this->accessControlService->inAdminGroup()) {
+            return $this->sendErrorResponse("Access control: operation not permitted");
+        }
+        $createProperty = $this->propertyService->createProperty($request->validated());
         if (!$createProperty) {
             return $this->sendErrorResponse("Error creating property");
         }
         return $this->sendSuccessResponse(
             "Property created",
-            $this->serializerService->entityToArray($createProperty, ['main'])
+            new PropertyResource(
+                $this->propertyService->getPropertyRepository()->getModel()
+            )
         );
     }
 
     public function deleteProperty(Property $property, Request $request)
     {
+        $this->setAccessControlUser($request->user());
+        if (!$this->accessControlService->inAdminGroup()) {
+            return $this->sendErrorResponse("Access control: operation not permitted");
+        }
         $delete = $this->propertyService->deleteProperty($property);
         if (!$delete) {
             return $this->sendErrorResponse(
-                "Error deleting property",
-                $this->serializerService->entityToArray($delete, ['main'])
+                "Error deleting property"
             );
         }
         return $this->sendSuccessResponse(
-            "Property deleted.",
-            $this->serializerService->entityToArray($delete, ['main'])
+            "Property deleted."
         );
     }
 }

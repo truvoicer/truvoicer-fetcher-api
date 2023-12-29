@@ -29,12 +29,15 @@ class PropertyService extends BaseService {
     }
 
     private function setPropertyObject(array $propertyData) {
+        $fields = ['name', 'label', 'value_type', 'value_choices'];
         $data = [];
-        $data['name'] = $propertyData['name'];
-        $data['label'] = $propertyData['label'];
-        $data['value_type'] = $propertyData['value_type'];
-        if (isset($propertyData['value_choices']) && is_array($propertyData['value_choices'])) {
-            $data['value_choices'] = $propertyData['value_choices'];
+        foreach ($fields as $field) {
+            if (isset($propertyData[$field])) {
+                $data[$field] = $propertyData[$field];
+            }
+        }
+        if (isset($data['value_choices']) && !is_array($data['value_choices'])) {
+            throw new BadRequestHttpException("Property value_choices must be an array.");
         }
         return $data;
     }
@@ -67,7 +70,6 @@ class PropertyService extends BaseService {
 
     public function updateProperty(Property $property,  $propertyData) {
         $getProperty = $this->setPropertyObject($propertyData);
-        $getProperty['id'] = $property->id;
         return $this->propertyRepository->updateProperty($property, $getProperty);
     }
 

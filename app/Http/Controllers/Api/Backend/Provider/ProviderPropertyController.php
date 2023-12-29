@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Api\Backend\Provider;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Provider\Property\SaveProviderPropertyRequest;
+use App\Http\Resources\PropertyResource;
 use App\Models\Property;
 use App\Models\Provider;
 use App\Repositories\ProviderRepository;
@@ -34,11 +36,12 @@ class ProviderPropertyController extends Controller
      * @param AccessControlService $accessControlService
      */
     public function __construct(
-        HttpRequestService $httpRequestService,
-        SerializerService $serializerService,
-        ProviderService $providerService,
+        HttpRequestService   $httpRequestService,
+        SerializerService    $serializerService,
+        ProviderService      $providerService,
         AccessControlService $accessControlService
-    ) {
+    )
+    {
         parent::__construct($accessControlService, $httpRequestService, $serializerService);
         $this->providerService = $providerService;
     }
@@ -63,12 +66,15 @@ class ProviderPropertyController extends Controller
             return $this->sendErrorResponse("Access control: operation not permitted");
         }
         $getProviderProps = $this->providerService->getProviderProperties(
-            $provider->id,
+            $provider,
             $request->get('sort', "name"),
             $request->get('order', "asc"),
             (int)$request->get('count', null)
         );
-        return $this->sendSuccessResponse("success", $getProviderProps);
+        return $this->sendSuccessResponse(
+            "success",
+            PropertyResource::collection($getProviderProps)
+        );
     }
 
     /**
@@ -79,7 +85,7 @@ class ProviderPropertyController extends Controller
     public function getProviderProperty(
         Provider $provider,
         Property $property,
-        Request $request
+        Request  $request
     ): \Illuminate\Http\JsonResponse
     {
         $this->setAccessControlUser($request->user());
@@ -96,7 +102,9 @@ class ProviderPropertyController extends Controller
         }
         return $this->sendSuccessResponse(
             "success",
-            $this->providerService->getProviderProperty($provider, $property)
+            new PropertyResource(
+                $this->providerService->getProviderProperty($provider, $property)
+            )
         );
     }
 
@@ -106,7 +114,7 @@ class ProviderPropertyController extends Controller
      * - provider_id
      * - property_id
      */
-    public function saveProviderProperty(Provider $provider, Property $property, Request $request): \Illuminate\Http\JsonResponse
+    public function saveProviderProperty(Provider $provider, Property $property, SaveProviderPropertyRequest $request): \Illuminate\Http\JsonResponse
     {
         $this->setAccessControlUser($request->user());
         if (
@@ -128,8 +136,8 @@ class ProviderPropertyController extends Controller
         }
         return $this->sendSuccessResponse(
             "Successfully added provider property.",
-            $this->serializerService->entityToArray(
-             $this->providerService->getProviderProperty($provider, $property)
+            new PropertyResource(
+                $this->providerService->getProviderProperty($provider, $property)
             )
         );
     }
@@ -144,7 +152,7 @@ class ProviderPropertyController extends Controller
     public function deleteProviderProperty(
         Provider $provider,
         Property $property,
-        Request $request
+        Request  $request
     ): \Illuminate\Http\JsonResponse
     {
         $this->setAccessControlUser($request->user());
@@ -163,13 +171,11 @@ class ProviderPropertyController extends Controller
         $delete = $this->providerService->deleteProviderProperty($provider, $property);
         if (!$delete) {
             return $this->sendErrorResponse(
-                "Error deleting provider property value",
-                $this->serializerService->entityToArray($delete, ['main'])
+                "Error deleting provider property value"
             );
         }
         return $this->sendSuccessResponse(
-            "Provider property value deleted.",
-            $this->serializerService->entityToArray($delete, ['main'])
+            "Provider property value deleted."
         );
     }
 }

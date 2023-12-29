@@ -134,39 +134,6 @@ class ProviderService extends BaseService
         }, $getProviders);
     }
 
-    public function findUserPermittedProviders(string $sort = "name", string $order = "asc", ?int $count = null, $user = null)
-    {
-        $getProviders = $this->getProviderListByUser(
-            $sort,
-            $order,
-            $count,
-            $user
-        );
-        if (
-            UserAdminService::userTokenHasAbility($user, AuthService::ABILITY_SUPERUSER) ||
-            UserAdminService::userTokenHasAbility($user, AuthService::ABILITY_ADMIN)
-        ) {
-            return $this->getProviderList($sort, $order, $count);
-        }
-        $this->accessControlService->setUser($user);
-        return array_filter($getProviders, function ($provider) use ($user) {
-
-            return $this->accessControlService->checkPermissionsForEntity(
-                $provider,
-                [
-                    PermissionService::PERMISSION_ADMIN,
-                    PermissionService::PERMISSION_READ,
-                ],
-                false
-            );
-        }, ARRAY_FILTER_USE_BOTH);
-    }
-
-    public function getProviderPropertyRelation(int $id)
-    {
-        return $this->getProviderPropertyRelationById($id);
-    }
-
     public function getProviderPropertyObjectByName(Provider $provider, string $propertyName)
     {
         $property = $this->propertyService->getPropertyByName($propertyName);
@@ -186,28 +153,12 @@ class ProviderService extends BaseService
         );
     }
 
-    public function getProviderProperties(int $providerId, string $sort = "property_name", string $order = "asc", int $count = null)
+    public function getProviderProperties(Provider $provider, string $sort = "name", string $order = "asc", int $count = null)
     {
-        $provider = $this->getProviderById($providerId);
-
-        $propertyRepo = new PropertyRepository();
-        $propertyRepo->setOrderDir($order);
-        $propertyRepo->setSortField($sort);
-        $propertyRepo->setLimit($count);
-
-        return array_map(function ($property) use ($provider) {
-            $repo = new ProviderPropertyRepository();
-            $repo->addWhere("provider", $provider->id);
-            $repo->addWhere("property", $property->id);
-            $providerProperty = $repo->findOne();
-            $providerPropertyObject = new \stdClass();
-            $providerPropertyObject->id = $property->id;
-            $providerPropertyObject->property_name = $property->name;
-            $providerPropertyObject->property_value = ($providerProperty !== null) ? $providerProperty->value : "";
-            $providerPropertyObject->value_type = $property->value_type;
-            $providerPropertyObject->value_choices = $property->value_choices;
-            return $providerPropertyObject;
-        }, $propertyRepo->findMany());
+        $this->providerPropertyRepository->setOrderDir($order);
+        $this->providerPropertyRepository->setSortField($sort);
+        $this->providerPropertyRepository->setLimit($count);
+        return $this->providerPropertyRepository->findProviderProperties($provider);
     }
 
     public function getProviderPropertyValue(Provider $provider, string $propertyName)

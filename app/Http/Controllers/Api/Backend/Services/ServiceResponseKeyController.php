@@ -7,6 +7,7 @@ use App\Models\Service;
 use App\Models\ServiceResponseKey;
 use App\Services\ApiServices\ApiService;
 use App\Services\Permission\AccessControlService;
+use App\Services\Permission\PermissionService;
 use App\Services\Tools\HttpRequestService;
 use App\Services\Provider\ProviderService;
 use App\Services\ApiServices\ResponseKeysService;
@@ -57,6 +58,20 @@ class ServiceResponseKeyController extends Controller
      */
     public function getServiceResponseKeyList(Service $service, Request $request)
     {
+        $this->setAccessControlUser($request->user());
+        if (
+            !$this->accessControlService->checkPermissionsForEntity(
+                $service,
+                [
+                    PermissionService::PERMISSION_ADMIN,
+                    PermissionService::PERMISSION_READ,
+                ]
+            )
+        ) {
+            return $this->sendErrorResponse(
+                "You do not have permission to view this service",
+            );
+        }
         $data = $request->query->all();
         if (isset($data["service_id"])) {
             $responseKeys = $this->responseKeysService->getResponseKeysByServiceId($data['service_id']);
