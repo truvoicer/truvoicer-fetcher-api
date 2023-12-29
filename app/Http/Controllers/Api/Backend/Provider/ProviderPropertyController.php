@@ -24,26 +24,22 @@ use Illuminate\Http\Request;
 class ProviderPropertyController extends Controller
 {
 
-    private PropertyService $propertyService;
     private ProviderService $providerService;
 
     /**
      * ProviderController constructor.
-     * @param PropertyService $propertyService
      * @param HttpRequestService $httpRequestService
      * @param SerializerService $serializerService
      * @param ProviderService $providerService
      * @param AccessControlService $accessControlService
      */
     public function __construct(
-        PropertyService $propertyService,
         HttpRequestService $httpRequestService,
         SerializerService $serializerService,
         ProviderService $providerService,
         AccessControlService $accessControlService
     ) {
         parent::__construct($accessControlService, $httpRequestService, $serializerService);
-        $this->propertyService = $propertyService;
         $this->providerService = $providerService;
     }
 
@@ -55,19 +51,20 @@ class ProviderPropertyController extends Controller
     public function getProviderPropertyList(Provider $provider, Request $request): \Illuminate\Http\JsonResponse
     {
         $this->setAccessControlUser($request->user());
-        if (!$request->user()->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_SUPERUSER)) && !$request->user(
-            )->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_ADMIN))) {
-            $this->accessControlService->checkPermissionsForEntity(
+        if (
+            !$this->accessControlService->checkPermissionsForEntity(
                 $provider,
                 [
                     PermissionService::PERMISSION_ADMIN,
                     PermissionService::PERMISSION_READ,
                 ],
-            );
+            )
+        ) {
+            return $this->sendErrorResponse("Access control: operation not permitted");
         }
         $getProviderProps = $this->providerService->getProviderProperties(
             $provider->id,
-            $request->get('sort', "property_name"),
+            $request->get('sort', "name"),
             $request->get('order', "asc"),
             (int)$request->get('count', null)
         );
@@ -81,23 +78,25 @@ class ProviderPropertyController extends Controller
      */
     public function getProviderProperty(
         Provider $provider,
-        Property $property
+        Property $property,
+        Request $request
     ): \Illuminate\Http\JsonResponse
     {
         $this->setAccessControlUser($request->user());
-        if (!$request->user()->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_SUPERUSER)) && !$request->user(
-            )->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_ADMIN))) {
-            $this->accessControlService->checkPermissionsForEntity(
+        if (
+            !$this->accessControlService->checkPermissionsForEntity(
                 $provider,
                 [
                     PermissionService::PERMISSION_ADMIN,
                     PermissionService::PERMISSION_READ,
                 ],
-            );
+            )
+        ) {
+            return $this->sendErrorResponse("Access control: operation not permitted");
         }
         return $this->sendSuccessResponse(
             "success",
-            $this->providerService->getProviderPropertyObjectById($provider, $property)
+            $this->providerService->getProviderProperty($provider, $property)
         );
     }
 
@@ -107,62 +106,31 @@ class ProviderPropertyController extends Controller
      * - provider_id
      * - property_id
      */
-    public function createProviderProperty(Provider $provider, Property $property, Request $request): \Illuminate\Http\JsonResponse
+    public function saveProviderProperty(Provider $provider, Property $property, Request $request): \Illuminate\Http\JsonResponse
     {
         $this->setAccessControlUser($request->user());
-        if (!$request->user()->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_SUPERUSER)) && !$request->user(
-            )->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_ADMIN))) {
-            $this->accessControlService->checkPermissionsForEntity(
+        if (
+            !$this->accessControlService->checkPermissionsForEntity(
                 $provider,
                 [
                     PermissionService::PERMISSION_ADMIN,
                     PermissionService::PERMISSION_WRITE,
                     PermissionService::PERMISSION_UPDATE,
                 ],
-            );
+            )
+        ) {
+            return $this->sendErrorResponse("Access control: operation not permitted");
         }
+
         $create = $this->providerService->createProviderProperty($provider, $property, $request->get('value'));
         if (!$create) {
             return $this->sendErrorResponse("Error adding provider property.");
         }
         return $this->sendSuccessResponse(
             "Successfully added provider property.",
-            $this->serializerService->entityToArray($create)
-        );
-    }
-
-    /**
-     * Updates a related provider property in the database based on the post request data
-     * Required data request data fields:
-     * - provider_id
-     * - property_id
-     *
-     */
-    public function updateProviderProperty(
-        Provider $provider,
-        Property $property
-    ): \Illuminate\Http\JsonResponse
-    {
-        $this->setAccessControlUser($request->user());
-        if (!$request->user()->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_SUPERUSER)) && !$request->user(
-            )->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_ADMIN))) {
-            $this->accessControlService->checkPermissionsForEntity(
-                $provider,
-                [
-                    PermissionService::PERMISSION_ADMIN,
-                    PermissionService::PERMISSION_UPDATE,
-                ],
-            );
-        }
-        $data = $this->httpRequestService->getRequestData($request, true);
-        $update = $this->providerService->updateProviderProperty($provider, $property, $data);
-
-        if (!$update) {
-            return $this->sendErrorResponse("Error updating provider property");
-        }
-        return $this->sendSuccessResponse(
-            "Provider property updated",
-            $this->serializerService->entityToArray($update)
+            $this->serializerService->entityToArray(
+             $this->providerService->getProviderProperty($provider, $property)
+            )
         );
     }
 
@@ -175,20 +143,23 @@ class ProviderPropertyController extends Controller
      */
     public function deleteProviderProperty(
         Provider $provider,
-        Property $property
+        Property $property,
+        Request $request
     ): \Illuminate\Http\JsonResponse
     {
         $this->setAccessControlUser($request->user());
-        if (!$request->user()->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_SUPERUSER)) && !$request->user(
-            )->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_ADMIN))) {
-            $this->accessControlService->checkPermissionsForEntity(
+        if (
+            !$this->accessControlService->checkPermissionsForEntity(
                 $provider,
                 [
                     PermissionService::PERMISSION_ADMIN,
                     PermissionService::PERMISSION_DELETE,
                 ],
-            );
+            )
+        ) {
+            return $this->sendErrorResponse("Access control: operation not permitted");
         }
+
         $delete = $this->providerService->deleteProviderProperty($provider, $property);
         if (!$delete) {
             return $this->sendErrorResponse(

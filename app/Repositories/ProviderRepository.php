@@ -2,6 +2,7 @@
 
 namespace App\Repositories;
 
+use App\Helpers\Db\DbHelpers;
 use App\Models\Property;
 use App\Models\Provider;
 use App\Models\User;
@@ -52,9 +53,6 @@ class ProviderRepository extends BaseRepository
         return $this->save($data);
     }
 
-    public function createProviderProperty(Provider $provider, Property $property, string $value) {
-        return $provider->properties()->save($property, ['value' => $value]);
-    }
 
     public function getProviderProperty(Provider $provider, Property $property) {
         return $provider->property()->where('property_id', $property->id)->first();

@@ -33,6 +33,17 @@ class DbHelpers
         }
         return (count($this->errorIds) === 0);
     }
+    public function validateDetach(array $results, array $ids)
+    {
+        $errorIds = [];
+        foreach ($ids as $id) {
+            if (in_array($id, $results['detached'])) {
+                continue;
+            }
+            $this->errorIds[] = $id;
+        }
+        return (count($this->errorIds) === 0);
+    }
 
     public function getErrorIds(): array
     {

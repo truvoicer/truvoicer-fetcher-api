@@ -99,9 +99,8 @@ Route::middleware(['auth:sanctum', 'ability:api:admin,api:superuser,api:user'])-
             Route::prefix('property')->name('property.')->group(function () {
                 Route::get('/list', [ProviderPropertyController::class, 'getProviderPropertyList'])->name('list');
                 Route::get('/{property}', [ProviderPropertyController::class, 'getProviderProperty'])->name('detail');
-                Route::post('/{property}/create', [ProviderPropertyController::class, 'createProviderProperty'])->name('create');
-                Route::post('/{property}/delete', [ProviderPropertyController::class, 'deleteProviderProperty'])->name('delete');
-                Route::post('/{property}/update', [ProviderPropertyController::class, 'updateProviderProperty'])->name('update');
+                Route::post('/{property}/save', [ProviderPropertyController::class, 'saveProviderProperty'])->name('save');
+                Route::delete('/{property}/delete', [ProviderPropertyController::class, 'deleteProviderProperty'])->name('delete');
             });
             Route::prefix('service-request')->name('service-request.')->group(function () {
                 Route::get('/list', [ServiceRequestController::class, 'getServiceRequestList'])->name('list');

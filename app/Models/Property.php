@@ -27,4 +27,11 @@ class Property extends Model
             'property_id'
         );
     }
+
+    public function providerProperty()
+    {
+        return $this->hasMany(
+            ProviderProperty::class
+        );
+    }
 }
