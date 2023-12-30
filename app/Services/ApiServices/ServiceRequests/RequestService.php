@@ -126,6 +126,10 @@ class RequestService extends BaseService
 
     private function getServiceRequestObject(Provider $provider, Service $service, array $data)
     {
+        $fields = [
+
+        ];
+        $serviceRequestData = [];
         $categoryRepo = new CategoryRepository();
         $data['service_id'] = $service->id;
         $data['provider_id'] = $provider->id;
@@ -148,44 +152,47 @@ class RequestService extends BaseService
 
     public function createServiceRequest(Provider $provider, array $data)
     {
-        $apiAuthTypeProviderProperty = $this->providerService->getProviderPropertyObjectByName(
-            $provider, "api_authentication_type"
-        );
-        if (
-            !property_exists($apiAuthTypeProviderProperty, "property_value") ||
-            empty($apiAuthTypeProviderProperty->property_value)
-        ) {
-            throw new BadRequestHttpException(
-                "Provider property (api_authentication_type) has to be set before creating a service request."
-            );
-        }
+//        $apiAuthTypeProviderProperty = $this->providerService->getProviderPropertyObjectByName(
+//            $provider, "api_authentication_type"
+//        );
+//        if (
+//            !property_exists($apiAuthTypeProviderProperty, "property_value") ||
+//            empty($apiAuthTypeProviderProperty->property_value)
+//        ) {
+//            throw new BadRequestHttpException(
+//                "Provider property (api_authentication_type) has to be set before creating a service request."
+//            );
+//        }
         if (empty($data["label"])) {
             throw new BadRequestHttpException("Service request label is not set.");
         }
-        $data['name'] = UtilHelpers::labelToName($data['label'], false, '-');
-        $service = $this->serviceRepository->findById($data["service_id"]);
-        $saveServiceRequest = $this->serviceRequestRepository->save($this->getServiceRequestObject($provider, $service, $data));
-        if ($saveServiceRequest) {
-            $this->requestConfigService->requestConfigValidator($this->serviceRequestRepository->getModel());
+        if (empty($data["name"])) {
+            $data['name'] = UtilHelpers::labelToName($data['label'], false, '-');
         }
+//        $service = $this->serviceRepository->findById($data["service_id"]);
+        $saveServiceRequest = $this->serviceRequestRepository->createServiceRequest($provider, $data);
+//        if ($saveServiceRequest) {
+//            $this->requestConfigService->requestConfigValidator($this->serviceRequestRepository->getModel());
+//        }
         return $saveServiceRequest;
 
     }
 
-    public function updateServiceRequest(Provider $provider, ServiceRequest $serviceRequest, array $data)
+    public function updateServiceRequest(ServiceRequest $serviceRequest, array $data)
     {
-        if (isset($data["service"]['id'])) {
-            $serviceId = $data["service"]['id'];
-        } elseif (isset($data["service_id"])) {
-            $serviceId = $data["service_id"];
-        } else {
-            throw new BadRequestHttpException("Service id is not set.");
-        }
-        $service = $this->serviceRepository->find($serviceId);
-        if ($service === null) {
-            throw new BadRequestHttpException("Invalid service in request");
-        }
-        return $this->serviceRequestRepository->save($this->getServiceRequestObject($provider, $service, $data));
+//        if (isset($data["service"]['id'])) {
+//            $serviceId = $data["service"]['id'];
+//        } elseif (isset($data["service_id"])) {
+//            $serviceId = $data["service_id"];
+//        } else {
+//            throw new BadRequestHttpException("Service id is not set.");
+//        }
+//        $service = $this->serviceRepository->find($serviceId);
+//        if ($service === null) {
+//            throw new BadRequestHttpException("Invalid service in request");
+//        }
+
+        return $this->serviceRequestRepository->saveServiceRequest($serviceRequest, $data);
     }
 
     public function duplicateServiceRequest(ServiceRequest $serviceRequest, array $data)
@@ -223,6 +230,11 @@ class RequestService extends BaseService
     {
         $this->serviceRequestRepository->setModel($serviceRequest);
         return $this->serviceRequestRepository->delete();
+    }
+
+    public function getServiceRequestRepository(): ServiceRequestRepository
+    {
+        return $this->serviceRequestRepository;
     }
 
 

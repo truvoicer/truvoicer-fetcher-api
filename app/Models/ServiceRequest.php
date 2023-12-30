@@ -11,6 +11,11 @@ class ServiceRequest extends Model
     use HasFactory;
     public const TABLE_NAME = 'service_requests';
     public const REPOSITORY = ServiceRequestRepository::class;
+    protected $fillable = [
+        'name',
+        'label',
+        'pagination_type',
+    ];
     public function service()
     {
         return $this->belongsTo(Service::class);

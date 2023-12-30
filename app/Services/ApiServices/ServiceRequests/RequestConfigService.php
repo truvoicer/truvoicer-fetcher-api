@@ -168,4 +168,9 @@ class RequestConfigService extends BaseService
         $this->requestConfigRepo->setModel($serviceRequestConfig);
         return $this->requestConfigRepo->delete($serviceRequestConfig);
     }
+
+    public function getRequestConfigRepo(): ServiceRequestConfigRepository
+    {
+        return $this->requestConfigRepo;
+    }
 }

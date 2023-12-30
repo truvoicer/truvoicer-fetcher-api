@@ -23,8 +23,8 @@ class ServiceRequestRepository extends BaseRepository
     }
 
     public function getServiceRequestByProvider(Provider $provider, string $sort, string $order, int $count) {
-        $this->addWhere('provider_id', $provider);
-        return $this->findAllWithParams($sort, $order, $count);
+        return $provider->serviceRequest()
+            ->orderBy($sort, $order)->get();
     }
 
     public function getRequestByName(Provider $provider, string $serviceRequestName) {
@@ -33,6 +33,18 @@ class ServiceRequestRepository extends BaseRepository
             ->first();
     }
 
+    public function createServiceRequest(Provider $provider, array $data) {
+        $create = $provider->serviceRequest()->create($data);
+        if (!$create->exists) {
+            return false;
+        }
+        $this->setModel($create);
+        return true;
+    }
+    public function saveServiceRequest(ServiceRequest $serviceRequest, array $data) {
+        $this->setModel($serviceRequest);
+        return $this->save($data);
+    }
     public function duplicateServiceRequest(ServiceRequest $serviceRequest, array $data)
     {
 //        $requestResponseKeysRepo = $this->getEntityManager()->getRepository(ServiceRequestResponseKey::class);

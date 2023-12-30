@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api\Backend\Services;
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\Service\ServiceRequest\ServiceRequestConfigResource;
 use App\Models\Provider;
 use App\Models\ServiceRequest;
 use App\Models\ServiceRequestConfig;
@@ -65,28 +66,28 @@ class ServiceRequestConfigController extends Controller
     public function getRequestConfigList(Provider $provider, Request $request): \Illuminate\Http\JsonResponse
     {
         $this->setAccessControlUser($request->user());
-        $requestConfigArray = [];
-        $isPermitted = $this->accessControlService->checkPermissionsForEntity(
-            $provider,
-            [
-                PermissionService::PERMISSION_ADMIN,
-                PermissionService::PERMISSION_READ,
-            ],
-            false
-        );
-        if ($request->user()->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_SUPERUSER)) ||
-            $request->user()->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_ADMIN)) ||
-            $isPermitted
+        if (
+            !$this->accessControlService->checkPermissionsForEntity(
+                $provider,
+                [
+                    PermissionService::PERMISSION_ADMIN,
+                    PermissionService::PERMISSION_READ,
+                ]
+            )
         ) {
-            $findRequestConfigs = $this->requestConfigService->findByParams(
-                $request->get('service_request_id'),
-                $request->get('sort', "item_name"),
-                $request->get('order', "asc"),
-                (int)$request->get('count', null)
-            );
-            $requestConfigArray = $this->serializerService->entityArrayToArray($findRequestConfigs, ["list"]);
+            return $this->sendErrorResponse("Access denied");
         }
-        return $this->sendSuccessResponse("success", $requestConfigArray);
+        $findRequestConfigs = $this->requestConfigService->findByParams(
+            $request->get('service_request_id'),
+            $request->get('sort', "item_name"),
+            $request->get('order', "asc"),
+            (int)$request->get('count', null)
+        );
+        return $this->sendSuccessResponse("success",
+            ServiceRequestConfigResource::collection(
+                $findRequestConfigs
+            )
+        );
     }
 
     /**
@@ -96,23 +97,25 @@ class ServiceRequestConfigController extends Controller
      */
     public function getServiceRequestConfig(
         Provider $provider,
-        ServiceRequestConfig $serviceRequestConfig
+        ServiceRequestConfig $serviceRequestConfig,
+        Request $request
     ): \Illuminate\Http\JsonResponse
     {
         $this->setAccessControlUser($request->user());
-        if (!$request->user()->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_SUPERUSER)) && !$request->user(
-            )->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_ADMIN))) {
-            $this->accessControlService->checkPermissionsForEntity(
+        if (
+            !$this->accessControlService->checkPermissionsForEntity(
                 $provider,
                 [
                     PermissionService::PERMISSION_ADMIN,
                     PermissionService::PERMISSION_READ,
                 ]
-            );
+            )
+        ) {
+            return $this->sendErrorResponse("Access denied");
         }
         return $this->sendSuccessResponse(
             "success",
-            $this->serializerService->entityToArray($serviceRequestConfig, ["single"])
+            new ServiceRequestConfigResource($serviceRequestConfig)
         );
     }
 
@@ -124,24 +127,26 @@ class ServiceRequestConfigController extends Controller
      */
     public function createRequestConfig(
         Provider $provider,
-        ServiceRequest $serviceRequest
+        ServiceRequest $serviceRequest,
+        Request $request
     ): \Illuminate\Http\JsonResponse
     {
         $this->setAccessControlUser($request->user());
-        if (!$request->user()->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_SUPERUSER)) && !$request->user(
-            )->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_ADMIN))) {
-            $this->accessControlService->checkPermissionsForEntity(
+        if (
+            !$this->accessControlService->checkPermissionsForEntity(
                 $provider,
                 [
                     PermissionService::PERMISSION_ADMIN,
                     PermissionService::PERMISSION_WRITE,
                     PermissionService::PERMISSION_UPDATE,
                 ]
-            );
+            )
+        ) {
+            return $this->sendErrorResponse("Access denied");
         }
         $create = $this->requestConfigService->createRequestConfig(
             $serviceRequest,
-            $this->httpRequestService->getRequestData($request, true)
+            $request->all()
         );
 
         if (!$create) {
@@ -149,7 +154,9 @@ class ServiceRequestConfigController extends Controller
         }
         return $this->sendSuccessResponse(
             "Config item inserted",
-            $this->serializerService->entityToArray($create, ['single'])
+            new ServiceRequestConfigResource(
+                $this->requestConfigService->getRequestConfigRepo()->getModel()
+            )
         );
     }
 
@@ -162,24 +169,26 @@ class ServiceRequestConfigController extends Controller
     public function updateRequestConfig(
         Provider $provider,
         ServiceRequest $serviceRequest,
-        ServiceRequestConfig $serviceRequestConfig
+        ServiceRequestConfig $serviceRequestConfig,
+        Request $request
     ): \Illuminate\Http\JsonResponse
     {
         $this->setAccessControlUser($request->user());
-        if (!$request->user()->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_SUPERUSER)) && !$request->user(
-            )->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_ADMIN))) {
-            $this->accessControlService->checkPermissionsForEntity(
+        if (
+            !$this->accessControlService->checkPermissionsForEntity(
                 $provider,
                 [
                     PermissionService::PERMISSION_ADMIN,
                     PermissionService::PERMISSION_UPDATE,
                 ]
-            );
+            )
+        ) {
+            return $this->sendErrorResponse("Access denied");
         }
         $update = $this->requestConfigService->updateRequestConfig(
             $serviceRequest,
             $serviceRequestConfig,
-            $this->httpRequestService->getRequestData($request, true)
+            $request->all()
         );
 
         if (!$update) {
@@ -187,7 +196,9 @@ class ServiceRequestConfigController extends Controller
         }
         return $this->sendSuccessResponse(
             "Config item updated",
-            $this->serializerService->entityToArray($update, ['single'])
+            new ServiceRequestConfigResource(
+                $this->requestConfigService->getRequestConfigRepo()->getModel()
+            )
         );
     }
 
@@ -199,30 +210,29 @@ class ServiceRequestConfigController extends Controller
      */
     public function deleteRequestConfig(
         Provider $provider,
-        ServiceRequestConfig $serviceRequestConfig
+        ServiceRequestConfig $serviceRequestConfig,
+        Request $request
     ): \Illuminate\Http\JsonResponse
     {
         $this->setAccessControlUser($request->user());
-        if (!$request->user()->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_SUPERUSER)) && !$request->user(
-            )->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_ADMIN))) {
-            $this->accessControlService->checkPermissionsForEntity(
+        if (
+            !$this->accessControlService->checkPermissionsForEntity(
                 $provider,
                 [
                     PermissionService::PERMISSION_ADMIN,
-                    PermissionService::PERMISSION_DELETE,
+                    PermissionService::PERMISSION_DELETE
                 ]
-            );
+            )
+        ) {
+            return $this->sendErrorResponse("Access denied");
         }
-        $delete = $this->requestConfigService->deleteRequestConfig($serviceRequestConfig);
-        if (!$delete) {
+        if (!$this->requestConfigService->deleteRequestConfig($serviceRequestConfig)) {
             return $this->sendErrorResponse(
-                "Error deleting config item",
-                $this->serializerService->entityToArray($delete, ['single'])
+                "Error deleting config item"
             );
         }
         return $this->sendSuccessResponse(
-            "Config item deleted.",
-            $this->serializerService->entityToArray($delete, ['single'])
+            "Config item deleted."
         );
     }
 }
