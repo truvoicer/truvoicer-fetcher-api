@@ -5,13 +5,12 @@ namespace App\Http\Controllers\Api\Backend\Services;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Service\CreateServiceRequest;
 use App\Http\Requests\Service\UpdateServiceRequest;
-use App\Http\Resources\ServiceResource;
+use App\Http\Resources\Service\ServiceResource;
 use App\Models\Service;
 use App\Services\ApiServices\ApiService;
 use App\Services\Permission\AccessControlService;
 use App\Services\Permission\PermissionService;
 use App\Services\Tools\HttpRequestService;
-use App\Services\Provider\ProviderService;
 use App\Services\Tools\SerializerService;
 use Illuminate\Http\Request;
 

@@ -20,24 +20,22 @@ class ServiceResponseKeyRepository extends BaseRepository
     }
 
 
-    public function getServiceResponseKeyByName(Service $service, string $responseKeyName)
+    public function getServiceResponseKeyByName(Service $service, string $name)
     {
-        return $service->serviceResponseKey()->where('name', $responseKeyName)->first();
+        return $service->serviceResponseKey()->where('name', $name)->first();
     }
 
-    public function getResponseKeys(Provider $provider, ServiceRequest $serviceRequest)
-    {
-        return $provider->serviceRequest()
-            ->where('id', $serviceRequest->id)
-            ->first()
-            ->serviceResponseKey()
-            ->get();
+    public function findServiceResponseKeys(Service $service) {
+        return $service->serviceResponseKey()->get();
     }
 
-    public function getRequestResponseKey(ServiceRequest $serviceRequest, ServiceResponseKey $responseKey) {
-        $serviceRequestResponseKeyRepo = new ServiceRequestResponseKeyRepository();
-        $serviceRequestResponseKeyRepo->addWhere('service_request_id', $serviceRequest->id);
-        $serviceRequestResponseKeyRepo->addWhere('service_response_key_id', $responseKey->id);
-        return $serviceRequestResponseKeyRepo->findOne();
+    public function createServiceResponseKey(Service $service, array $data) {
+        $create = $service->serviceResponseKey()->create($data);
+        $this->setModel($create);
+        return true;
+    }
+    public function saveServiceResponseKey(ServiceResponseKey $serviceResponseKey, array $data) {
+        $this->setModel($serviceResponseKey);
+        return $this->save($data);
     }
 }

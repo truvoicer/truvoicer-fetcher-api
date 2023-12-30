@@ -12,6 +12,9 @@ class ServiceResponseKey extends Model
 
     public const TABLE_NAME = 'service_response_keys';
     public const REPOSITORY = ServiceResponseKeyRepository::class;
+    protected $fillable = [
+        'name',
+    ];
     public function serviceRequestResponseKey()
     {
         return $this->belongsTo(ServiceRequestResponseKey::class);

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api\Backend\Services;
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\Service\ServiceRequest\ServiceRequestResource;
 use App\Models\Provider;
 use App\Models\Service;
 use App\Models\ServiceRequest;
@@ -27,7 +28,6 @@ use Symfony\Component\HttpFoundation\Response;
  */
 class ServiceRequestController extends Controller
 {
-    const DEFAULT_ENTITY = "provider";
 
     // Initialise services variables for this controller
     private ProviderService $providerService;
@@ -66,6 +66,18 @@ class ServiceRequestController extends Controller
     public function getServiceRequestList(Provider $provider, Request $request): \Illuminate\Http\JsonResponse
     {
         $this->setAccessControlUser($request->user());
+        if (
+            !$this->accessControlService->checkPermissionsForEntity(
+                $provider,
+                [
+                    PermissionService::PERMISSION_ADMIN,
+                    PermissionService::PERMISSION_READ,
+                ],
+            )
+        ) {
+            return $this->sendErrorResponse("Access denied");
+        }
+
         $getServices = $this->requestService->getUserServiceRequestByProvider(
             $provider,
             $request->get('sort', "name"),
@@ -73,23 +85,9 @@ class ServiceRequestController extends Controller
             (int)$request->get('count', null)
         );
 
-        if ($request->user()->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_SUPERUSER)) || $request->user(
-            )->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_ADMIN))) {
-            return $this->sendSuccessResponse(
-                "success",
-                $this->serializerService->entityArrayToArray($getServices, ["list"])
-            );
-        }
-        $this->accessControlService->checkPermissionsForEntity(
-            $provider,
-            [
-                PermissionService::PERMISSION_ADMIN,
-                PermissionService::PERMISSION_READ,
-            ]
-        );
         return $this->sendSuccessResponse(
             "success",
-            $this->serializerService->entityArrayToArray($getServices, ["list"])
+            ServiceRequestResource::collection($getServices)
         );
     }
 

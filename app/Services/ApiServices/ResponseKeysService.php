@@ -90,6 +90,9 @@ class ResponseKeysService extends BaseService
 //        return $responseKeyRequestItem;
 //    }
 
+    public function getResponseKeysByService(Service $service) {
+        return $this->responseKeyRepository->findServiceResponseKeys($service);
+    }
     public function getResponseKeysByServiceId(int $serviceId) {
         $service = $this->serviceRepository->findById($serviceId);
         if ($service === null) {
@@ -124,17 +127,14 @@ class ResponseKeysService extends BaseService
         return count($errors) === 0;
     }
 
-    public function createServiceResponseKeys(array $data)
+    public function createServiceResponseKeys(Service $service, array $data)
     {
-        $service = $this->serviceRepository->findById($data["service_id"]);
-        return $this->responseKeyRepository->insert($data);
+        return $this->responseKeyRepository->createServiceResponseKey($service, $data);
     }
 
     public function updateServiceResponseKeys(ServiceResponseKey $serviceResponseKey, array $data)
     {
-        $service = $this->serviceRepository->findById($data["service_id"]);
-        $this->responseKeyRepository->setModel($serviceResponseKey);
-        return $this->responseKeyRepository->save($data);
+        return $this->responseKeyRepository->saveServiceResponseKey($serviceResponseKey, $data);
     }
 
     public function deleteServiceResponseKeyById(int $id) {
@@ -227,5 +227,10 @@ class ResponseKeysService extends BaseService
             $requestResponseKey->setReturnDataType($responseKeyData['return_data_type']);
         }
         return $requestResponseKey;
+    }
+
+    public function getResponseKeyRepository(): ServiceResponseKeyRepository
+    {
+        return $this->responseKeyRepository;
     }
 }

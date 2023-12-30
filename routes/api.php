@@ -110,30 +110,30 @@ Route::middleware(['auth:sanctum', 'ability:api:admin,api:superuser,api:user'])-
                 Route::post('/create', [ServiceRequestController::class, 'createServiceRequest'])->name('create');
                 Route::get('/{serviceRequest}', [ServiceRequestController::class, 'getServiceRequest'])->name('detail');
                 Route::prefix('{serviceRequest}')->name('single.')->group(function () {
-                    Route::post('/delete', [ServiceRequestController::class, 'deleteServiceRequest'])->name('delete');
-                    Route::post('/update', [ServiceRequestController::class, 'updateServiceRequest'])->name('update');
+                    Route::delete('/delete', [ServiceRequestController::class, 'deleteServiceRequest'])->name('delete');
+                    Route::patch('/update', [ServiceRequestController::class, 'updateServiceRequest'])->name('update');
                     Route::post('/duplicate', [ServiceRequestController::class, 'duplicateServiceRequest'])->name('duplicate');
                     Route::prefix('config')->name('config.')->group(function () {
                         Route::get('/list', [ServiceRequestConfigController::class, 'getRequestConfigList'])->name('list');
                         Route::post('/create', [ServiceRequestConfigController::class, 'createRequestConfig'])->name('create');
                         Route::get('/{serviceRequestConfig}', [ServiceRequestConfigController::class, 'getServiceRequestConfig'])->name('detail');
-                        Route::post('/{serviceRequestConfig}/delete', [ServiceRequestConfigController::class, 'deleteRequestConfig'])->name('delete');
-                        Route::post('/{serviceRequestConfig}/update', [ServiceRequestConfigController::class, 'updateRequestConfig'])->name('update');
+                        Route::delete('/{serviceRequestConfig}/delete', [ServiceRequestConfigController::class, 'deleteRequestConfig'])->name('delete');
+                        Route::patch('/{serviceRequestConfig}/update', [ServiceRequestConfigController::class, 'updateRequestConfig'])->name('update');
                     });
                     Route::prefix('parameter')->name('parameter.')->group(function () {
                         Route::get('/list', [ServiceRequestParameterController::class, 'getServiceRequestParameterList'])->name('list');
                         Route::get('/list/single', [ServiceRequestParameterController::class, 'getSingleServiceRequestParameters'])->name('list.single');
                         Route::post('/create', [ServiceRequestParameterController::class, 'createServiceRequestParameter'])->name('create');
                         Route::get('/{serviceRequestParameter}', [ServiceRequestParameterController::class, 'getServiceRequestParameter'])->name('detail');
-                        Route::post('/{serviceRequestParameter}/delete', [ServiceRequestParameterController::class, 'deleteServiceRequestParameter'])->name('delete');
-                        Route::post('/{serviceRequestParameter}/update', [ServiceRequestParameterController::class, 'updateServiceRequestParameter'])->name('update');
+                        Route::delete('/{serviceRequestParameter}/delete', [ServiceRequestParameterController::class, 'deleteServiceRequestParameter'])->name('delete');
+                        Route::patch('/{serviceRequestParameter}/update', [ServiceRequestParameterController::class, 'updateServiceRequestParameter'])->name('update');
                     });
                     Route::prefix('response-key')->name('response-key.')->group(function () {
                         Route::get('/list', [ServiceResponseKeyController::class, 'getServiceResponseKeyList'])->name('list');
                         Route::post('/create', [ServiceResponseKeyController::class, 'createServiceResponseKey'])->name('create');
                         Route::get('/{serviceResponseKey}', [ServiceResponseKeyController::class, 'getServiceResponseKey'])->name('detail');
-                        Route::post('/{serviceResponseKey}/delete', [ServiceResponseKeyController::class, 'deleteServiceResponseKey'])->name('delete');
-                        Route::post('/{serviceResponseKey}/update', [ServiceResponseKeyController::class, 'updateServiceResponseKey'])->name('update');
+                        Route::delete('/{serviceResponseKey}/delete', [ServiceResponseKeyController::class, 'deleteServiceResponseKey'])->name('delete');
+                        Route::patch('/{serviceResponseKey}/update', [ServiceResponseKeyController::class, 'updateServiceResponseKey'])->name('update');
                     });
                 });
             });
@@ -147,11 +147,11 @@ Route::middleware(['auth:sanctum', 'ability:api:admin,api:superuser,api:user'])-
             Route::patch('/update', [ServiceController::class, 'updateService'])->name('update');
             Route::delete('/delete', [ServiceController::class, 'deleteService'])->name('delete');
             Route::prefix('response-key')->name('response-key.')->group(function () {
-                Route::get('/list', [ServiceRequestResponseKeyController::class, 'getRequestResponseKeyList'])->name('list');
-                Route::post('/create', [ServiceRequestResponseKeyController::class, 'createRequestResponseKey'])->name('create');
-                Route::get('/{serviceResponseKey}', [ServiceRequestResponseKeyController::class, 'getRequestResponseKey'])->name('detail');
-                Route::post('/{serviceResponseKey}/delete', [ServiceRequestResponseKeyController::class, 'deleteRequestResponseKey'])->name('delete');
-                Route::post('/{serviceResponseKey}/update', [ServiceRequestResponseKeyController::class, 'updateRequestResponseKey'])->name('update');
+                Route::get('/list', [ServiceResponseKeyController::class, 'getServiceResponseKeyList'])->name('list');
+                Route::post('/create', [ServiceResponseKeyController::class, 'createServiceResponseKey'])->name('create');
+                Route::get('/{serviceResponseKey}', [ServiceResponseKeyController::class, 'getServiceResponseKey'])->name('detail');
+                Route::delete('/{serviceResponseKey}/delete', [ServiceResponseKeyController::class, 'deleteServiceResponseKey'])->name('delete');
+                Route::patch('/{serviceResponseKey}/update', [ServiceResponseKeyController::class, 'updateServiceResponseKey'])->name('update');
             });
         });
     });

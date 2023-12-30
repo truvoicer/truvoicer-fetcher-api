@@ -146,7 +146,13 @@ class RequestResponseKeysService extends BaseService
     }
 
     public function getRequestResponseKeys(ServiceRequest $serviceRequest, string $sort = "key_name", string $order = "asc", int $count = null) {
-        $responseKeys = $serviceRequest->service()->first()->responseKey()->get()->toArray();
+        $service = $serviceRequest->service()->first();
+        if (!$service instanceof Service) {
+            throw new BadRequestHttpException(sprintf("Service request id:%s not found in database.",
+                $serviceRequest->id
+            ));
+        }
+        $responseKeys = $service->responseKey()->get()->toArray();
         return array_map(function ($responseKey) use($serviceRequest) {
             return $this->getRequestResponseKey($serviceRequest, $responseKey);
         }, $responseKeys);
