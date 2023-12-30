@@ -3,15 +3,16 @@
 namespace App\Http\Controllers\Api\Backend\Services;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Service\CreateServiceRequestParameterRequest;
+use App\Http\Requests\Service\UpdateServiceRequestParameterRequest;
+use App\Http\Resources\Service\ServiceRequest\ServiceRequestParameterResource;
+use App\Http\Resources\Service\ServiceRequest\ServiceRequestResource;
 use App\Models\Provider;
 use App\Models\ServiceRequest;
 use App\Models\ServiceRequestParameter;
-use App\Services\ApiServices\ApiService;
-use App\Services\Auth\AuthService;
 use App\Services\Permission\AccessControlService;
 use App\Services\Permission\PermissionService;
 use App\Services\Tools\HttpRequestService;
-use App\Services\Provider\ProviderService;
 use App\Services\ApiServices\ServiceRequests\RequestParametersService;
 use App\Services\Tools\SerializerService;
 use Illuminate\Http\Request;
@@ -24,34 +25,24 @@ use Illuminate\Http\Request;
  */
 class ServiceRequestParameterController extends Controller
 {
-    const DEFAULT_ENTITY = "provider";
-
-    private ProviderService $providerService;
-    private ApiService $apiServicesService;
     private RequestParametersService $requestParametersService;
 
     /**
      * ServiceRequestParameterController constructor.
      * Initialises services used in this controller
      *
-     * @param ProviderService $providerService
      * @param HttpRequestService $httpRequestService
      * @param SerializerService $serializerService
-     * @param ApiService $apiServicesService
      * @param RequestParametersService $requestParametersService
      * @param AccessControlService $accessControlService
      */
     public function __construct(
-        ProviderService $providerService,
         HttpRequestService $httpRequestService,
         SerializerService $serializerService,
-        ApiService $apiServicesService,
         RequestParametersService $requestParametersService,
         AccessControlService $accessControlService
     ) {
         parent::__construct($accessControlService, $httpRequestService, $serializerService);
-        $this->providerService = $providerService;
-        $this->apiServicesService = $apiServicesService;
         $this->requestParametersService = $requestParametersService;
     }
 
@@ -63,28 +54,30 @@ class ServiceRequestParameterController extends Controller
     public function getServiceRequestParameterList(Provider $provider, ServiceRequest $serviceRequest, Request $request)
     {
         $this->setAccessControlUser($request->user());
-        $requestParametersArray = [];
-        $isPermitted = $this->accessControlService->checkPermissionsForEntity(
-            $provider,
-            [
-                PermissionService::PERMISSION_ADMIN,
-                PermissionService::PERMISSION_READ,
-            ],
-            false
-        );
-        if ($request->user()->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_SUPERUSER)) ||
-            $request->user()->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_ADMIN)) ||
-            $isPermitted
+        if (
+            !$this->accessControlService->checkPermissionsForEntity(
+                $provider,
+                [
+                    PermissionService::PERMISSION_ADMIN,
+                    PermissionService::PERMISSION_READ,
+                ]
+            )
         ) {
-            $findRequestParameters = $this->requestParametersService->findByParams(
-                $serviceRequest,
-                $request->get('sort', "parameter_name"),
-                $request->get('order', "asc"),
-                (int)$request->get('count', null)
-            );
-            $requestParametersArray = $this->serializerService->entityArrayToArray($findRequestParameters, ["list"]);
+            return $this->sendErrorResponse("Access denied");
         }
-        return $this->sendSuccessResponse("success", $requestParametersArray);
+        $findRequestParameters = $this->requestParametersService->findByParams(
+            $serviceRequest,
+            $request->get('sort', "name"),
+            $request->get('order', "asc"),
+            (int)$request->get('count', null)
+        );
+
+        return $this->sendSuccessResponse(
+            "success",
+            ServiceRequestParameterResource::collection(
+                $findRequestParameters
+            )
+        );
     }
 
     /**
@@ -94,22 +87,24 @@ class ServiceRequestParameterController extends Controller
      */
     public function getSingleServiceRequestParameters(
         Provider $provider,
-        ServiceRequest $serviceRequest
+        ServiceRequest $serviceRequest,
+        Request $request
     ) {
         $this->setAccessControlUser($request->user());
-        if (!$request->user()->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_SUPERUSER)) && !$request->user(
-            )->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_ADMIN))) {
-            $this->accessControlService->checkPermissionsForEntity(
+        if (
+            !$this->accessControlService->checkPermissionsForEntity(
                 $provider,
                 [
                     PermissionService::PERMISSION_ADMIN,
                     PermissionService::PERMISSION_READ,
                 ]
-            );
+            )
+        ) {
+            return $this->sendErrorResponse("Access denied");
         }
         return $this->sendSuccessResponse(
             "success",
-            $this->serializerService->entityToArray($serviceRequest, ["parameters"])
+            new ServiceRequestResource($serviceRequest)
         );
     }
 
@@ -120,22 +115,25 @@ class ServiceRequestParameterController extends Controller
      */
     public function getServiceRequestParameter(
         Provider $provider,
-        ServiceRequestParameter $serviceRequestParameter
+        ServiceRequest $serviceRequest,
+        ServiceRequestParameter $serviceRequestParameter,
+        Request $request
     ) {
         $this->setAccessControlUser($request->user());
-        if (!$request->user()->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_SUPERUSER)) && !$request->user(
-            )->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_ADMIN))) {
-            $this->accessControlService->checkPermissionsForEntity(
+        if (
+            !$this->accessControlService->checkPermissionsForEntity(
                 $provider,
                 [
                     PermissionService::PERMISSION_ADMIN,
                     PermissionService::PERMISSION_READ,
                 ]
-            );
+            )
+        ) {
+            return $this->sendErrorResponse("Access denied");
         }
         return $this->sendSuccessResponse(
             "success",
-            $this->serializerService->entityToArray($serviceRequestParameter, ["single"])
+            new ServiceRequestParameterResource($serviceRequestParameter)
         );
     }
 
@@ -145,28 +143,29 @@ class ServiceRequestParameterController extends Controller
      * Returns error response and message on fail
      *
      */
-    public function createServiceRequestParameter(Provider $provider, ServiceRequest $serviceRequest, Request $request)
+    public function createServiceRequestParameter(Provider $provider, ServiceRequest $serviceRequest, CreateServiceRequestParameterRequest $request)
     {
         $this->setAccessControlUser($request->user());
-        if (!$request->user()->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_SUPERUSER)) && !$request->user(
-            )->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_ADMIN))) {
-            $this->accessControlService->checkPermissionsForEntity(
+        if (
+            !$this->accessControlService->checkPermissionsForEntity(
                 $provider,
                 [
                     PermissionService::PERMISSION_ADMIN,
                     PermissionService::PERMISSION_WRITE,
-                    PermissionService::PERMISSION_UPDATE,
                 ]
-            );
+            )
+        ) {
+            return $this->sendErrorResponse("Access denied");
         }
-        $data = $this->httpRequestService->getRequestData($request, true);
-        $create = $this->requestParametersService->createRequestParameter($serviceRequest, $data);
+        $create = $this->requestParametersService->createRequestParameter($serviceRequest, $request->all());
         if (!$create) {
             return $this->sendErrorResponse("Error inserting parameter");
         }
         return $this->sendSuccessResponse(
             "Parameter inserted",
-            $this->serializerService->entityToArray($create, ['single'])
+            new ServiceRequestParameterResource(
+                $this->requestParametersService->getRequestParametersRepo()->getModel()
+            )
         );
     }
 
@@ -179,31 +178,33 @@ class ServiceRequestParameterController extends Controller
     public function updateServiceRequestParameter(
         Provider $provider,
         ServiceRequest $serviceRequest,
-        ServiceRequestParameter $serviceRequestParameter
+        ServiceRequestParameter $serviceRequestParameter,
+        UpdateServiceRequestParameterRequest $request
     ) {
         $this->setAccessControlUser($request->user());
-        if (!$request->user()->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_SUPERUSER)) && !$request->user(
-            )->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_ADMIN))) {
-            $this->accessControlService->checkPermissionsForEntity(
+        if (
+            !$this->accessControlService->checkPermissionsForEntity(
                 $provider,
                 [
                     PermissionService::PERMISSION_ADMIN,
                     PermissionService::PERMISSION_UPDATE,
                 ]
-            );
+            )
+        ) {
+            return $this->sendErrorResponse("Access denied");
         }
-        $data = $this->httpRequestService->getRequestData($request, true);
         $update = $this->requestParametersService->updateRequestParameter(
             $serviceRequestParameter,
-            $serviceRequest,
-            $data
+            $request->all()
         );
         if (!$update) {
             return $this->sendErrorResponse("Error updating parameter");
         }
         return $this->sendSuccessResponse(
             "Parameter updated",
-            $this->serializerService->entityToArray($update, ['single'])
+            new ServiceRequestParameterResource(
+                $this->requestParametersService->getRequestParametersRepo()->getModel()
+            )
         );
     }
 
@@ -215,29 +216,29 @@ class ServiceRequestParameterController extends Controller
      */
     public function deleteServiceRequestParameter(
         Provider $provider,
-        ServiceRequestParameter $serviceRequestParameter
+        ServiceRequest $serviceRequest,
+        ServiceRequestParameter $serviceRequestParameter,
+        Request $request
     ) {
         $this->setAccessControlUser($request->user());
-        if (!$request->user()->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_SUPERUSER)) && !$request->user(
-            )->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_ADMIN))) {
-            $this->accessControlService->checkPermissionsForEntity(
+        if (
+            !$this->accessControlService->checkPermissionsForEntity(
                 $provider,
                 [
                     PermissionService::PERMISSION_ADMIN,
                     PermissionService::PERMISSION_DELETE,
                 ]
-            );
+            )
+        ) {
+            return $this->sendErrorResponse("Access denied");
         }
-        $delete = $this->requestParametersService->deleteRequestParameter($serviceRequestParameter);
-        if (!$delete) {
+        if (!$this->requestParametersService->deleteRequestParameter($serviceRequestParameter)) {
             return $this->sendErrorResponse(
-                "Error deleting parameter",
-                $this->serializerService->entityToArray($delete, ['single'])
+                "Error deleting parameter"
             );
         }
         return $this->sendSuccessResponse(
-            "Parameter deleted.",
-            $this->serializerService->entityToArray($delete, ['single'])
+            "Parameter deleted."
         );
     }
 }

@@ -12,6 +12,11 @@ class ServiceRequestParameter extends Model
 
     public const TABLE_NAME = 'service_request_parameters';
     public const REPOSITORY = ServiceRequestParameterRepository::class;
+
+    protected $fillable = [
+        'name',
+        'value',
+    ];
     public function serviceRequest()
     {
         return $this->belongsTo(ServiceRequest::class);

@@ -15,10 +15,9 @@ return new class extends Migration
             $table->id();
             $table->foreignId('service_request_id')->constrained('service_requests')->onDelete('cascade');
             $table->string('name');
-            $table->string('value');
+            $table->string('value')->nullable();
             $table->string('value_type');
-            $table->longText('array_value');
-            $table->longText('value_choices');
+            $table->longText('array_value')->nullable();
             $table->timestamps();
         });
     }

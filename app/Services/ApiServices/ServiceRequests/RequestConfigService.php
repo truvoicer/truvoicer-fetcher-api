@@ -66,14 +66,7 @@ class RequestConfigService extends BaseService
         }, $responseKeys);
     }
 
-    public function findByParams(int $serviceRequestId, string $sort, string $order, int $count) {
-        $serviceRequest = $this->serviceRequestRepository->findById($serviceRequestId);
-        if (!$serviceRequest) {
-            return false;
-        }
-        if (!$this->requestConfigValidator($serviceRequest)) {
-            return false;
-        }
+    public function findByParams(ServiceRequest $serviceRequest, string $sort, string $order, int $count) {
         return $this->requestConfigRepo->findByParams($serviceRequest, $sort, $order, $count);
     }
 
@@ -105,21 +98,38 @@ class RequestConfigService extends BaseService
         return true;
     }
 
-    private function getRequestConfigData(ServiceRequest $serviceRequest, array $data)
+    private function getRequestConfigData(array $data)
     {
-        if (!isset($data['item_array_value']) || !is_array($data['item_array_value'])) {
-            unset($data['item_array_value']);
+        $fields = [
+            'name',
+            'value',
+            'value_type',
+            'array_value',
+            'value_choices',
+        ];
+
+        $configData = [];
+        foreach ($fields as $field) {
+            if (isset($data[$field])) {
+                $configData[$field] = $data[$field];
+            }
         }
-        if (!isset($data['item_value_choices']) || !is_array($data['item_value_choices'])) {
-            unset($data['item_value_choices']);
+
+        if (isset($configData['array_value']) && !is_array($configData['array_value'])) {
+            throw new BadRequestHttpException("Array value is invalid");
         }
-        $data['service_request_id'] = $serviceRequest->id;
+        if (isset($configData['value_choices']) && !is_array($configData['value_choices'])) {
+            throw new BadRequestHttpException("Value choices is invalid.");
+        }
         return $data;
     }
 
     public function createRequestConfig(ServiceRequest $serviceRequest, array $data)
     {
-        return $this->requestConfigRepo->save($this->getRequestConfigData($serviceRequest, $data));
+        return $this->requestConfigRepo->createRequestConfig(
+            $serviceRequest,
+            $this->getRequestConfigData($data)
+        );
     }
 
     public function createDefaultRequestConfigs(ServiceRequest $serviceRequest, array $defaultConfig = []) {
@@ -151,22 +161,15 @@ class RequestConfigService extends BaseService
         }
     }
 
-    public function updateRequestConfig(ServiceRequest $serviceRequest, ServiceRequestConfig $serviceRequestConfig, array $data)
+    public function updateRequestConfig(ServiceRequestConfig $serviceRequestConfig, array $data)
     {
-        return $this->requestConfigRepo->save($this->getRequestConfigData($serviceRequest, $data));
-    }
-
-    public function deleteRequestConfigById(int $id) {
-        $requestConfig = $this->requestConfigRepo->find($id);
-        if ($requestConfig === null) {
-            throw new BadRequestHttpException(sprintf("Service request config item id: %s not found in database.", $id));
-        }
-        return $this->deleteRequestConfig($requestConfig);
+        $this->requestConfigRepo->setModel($serviceRequestConfig);
+        return $this->requestConfigRepo->save($this->getRequestConfigData($data));
     }
 
     public function deleteRequestConfig(ServiceRequestConfig $serviceRequestConfig) {
         $this->requestConfigRepo->setModel($serviceRequestConfig);
-        return $this->requestConfigRepo->delete($serviceRequestConfig);
+        return $this->requestConfigRepo->delete();
     }
 
     public function getRequestConfigRepo(): ServiceRequestConfigRepository

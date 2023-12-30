@@ -5,6 +5,7 @@ namespace App\Repositories;
 use App\Models\Provider;
 use App\Models\ServiceRequest;
 use App\Models\ServiceRequestResponseKey;
+use App\Models\ServiceResponseKey;
 
 class ServiceRequestResponseKeyRepository extends BaseRepository
 {
@@ -65,8 +66,38 @@ class ServiceRequestResponseKeyRepository extends BaseRepository
         return true;
     }
 
-    public function saveRequestResponseKey(array $data) {
+    public function saveRequestResponseKey(ServiceRequestResponseKey $serviceRequestResponseKey, array $data) {
+        $this->setModel($serviceRequestResponseKey);
         return $this->save($data);
+    }
+
+    public function findServiceRequestResponseKeys(ServiceRequest $serviceRequest) {
+        return $serviceRequest->serviceRequestResponseKeys()
+            ->with('serviceRequestServiceResponseKey')
+            ->get();
+    }
+    public function findServiceRequestResponseKeyByResponseKey(ServiceRequest $serviceRequest, ServiceResponseKey $serviceResponseKey) {
+        return $serviceRequest->serviceRequestResponseKeys()
+            ->where('service_response_key_id', '=', $serviceResponseKey->id)
+            ->with('serviceRequestServiceResponseKey')
+            ->first();
+    }
+    public function saveServiceRequestResponseKey(ServiceRequest $serviceRequest, ServiceResponseKey $serviceResponseKey, array $data) {
+        $find = $this->findServiceRequestResponseKeyByResponseKey($serviceRequest, $serviceResponseKey);
+
+        if (!$find instanceof ServiceResponseKey) {
+            return $this->dbHelpers->validateToggle(
+                $serviceRequest->serviceRequestResponseKeys()->toggle([$serviceResponseKey->id => $data]),
+                [$serviceResponseKey->id]
+            );
+        }
+
+        $update = $serviceRequest->serviceRequestResponseKeys()->updateExistingPivot($serviceResponseKey->id, $data);
+        return true;
+    }
+
+    public function deleteServiceRequestResponseKeyByResponseKey(ServiceRequest $serviceRequest, ServiceResponseKey $serviceResponseKey) {
+        return ($serviceRequest->serviceRequestResponseKeys()->detach($serviceResponseKey->id) > 0);
     }
 
     public function deleteRequestResponseKeys(ServiceRequestResponseKey $requestResponseKey) {

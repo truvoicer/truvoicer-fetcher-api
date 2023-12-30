@@ -20,8 +20,9 @@ class ServiceRequestConfigRepository extends BaseRepository
 
     public function findByParams(ServiceRequest $serviceRequest, string $sort, string $order, int $count)
     {
-        $this->addWhere('service_request_id', $serviceRequest);
-        return $this->findAllWithParams($sort, $order, $count);
+        return $serviceRequest->serviceRequestConfig()
+            ->orderBy($sort, $order)
+            ->get();
     }
 
     public function getRequestConfigByName(Provider $provider, ServiceRequest $serviceRequest, string $configItemName)
@@ -32,5 +33,15 @@ class ServiceRequestConfigRepository extends BaseRepository
             ->serviceRequestConfig()
             ->where('name', $configItemName)
             ->first();
+    }
+
+    public function createRequestConfig(ServiceRequest $serviceRequest, array $data)
+    {
+        $create = $serviceRequest->serviceRequestConfig()->create($data);
+        if (!$create->exists) {
+            return false;
+        }
+        $this->setModel($create);
+        return true;
     }
 }

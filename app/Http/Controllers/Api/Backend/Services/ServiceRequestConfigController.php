@@ -3,16 +3,15 @@
 namespace App\Http\Controllers\Api\Backend\Services;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Service\CreateServiceRequestConfigRequest;
+use App\Http\Requests\Service\UpdateServiceRequestConfigRequest;
 use App\Http\Resources\Service\ServiceRequest\ServiceRequestConfigResource;
 use App\Models\Provider;
 use App\Models\ServiceRequest;
 use App\Models\ServiceRequestConfig;
-use App\Services\ApiServices\ApiService;
-use App\Services\Auth\AuthService;
 use App\Services\Permission\AccessControlService;
 use App\Services\Permission\PermissionService;
 use App\Services\Tools\HttpRequestService;
-use App\Services\Provider\ProviderService;
 use App\Services\ApiServices\ServiceRequests\RequestConfigService;
 use App\Services\Tools\SerializerService;
 use Illuminate\Http\Request;
@@ -25,36 +24,27 @@ use Illuminate\Http\Request;
  */
 class ServiceRequestConfigController extends Controller
 {
-    const DEFAULT_ENTITY = "provider";
 
     // Initialise services for this controller
-    private ProviderService $providerService;
-    private ApiService $apiServicesService;
     private RequestConfigService $requestConfigService;
 
     /**
      * ServiceRequestConfigController constructor.
      * Initialise services for this controller
      *
-     * @param ProviderService $providerService
      * @param HttpRequestService $httpRequestService
      * @param SerializerService $serializerService
-     * @param ApiService $apiServicesService
      * @param RequestConfigService $requestConfigService
      * @param AccessControlService $accessControlService
      */
     public function __construct(
-        ProviderService $providerService,
         HttpRequestService $httpRequestService,
         SerializerService $serializerService,
-        ApiService $apiServicesService,
         RequestConfigService $requestConfigService,
         AccessControlService $accessControlService
     ) {
         parent::__construct($accessControlService, $httpRequestService, $serializerService);
         // Initialise services for this controller
-        $this->providerService = $providerService;
-        $this->apiServicesService = $apiServicesService;
         $this->requestConfigService = $requestConfigService;
     }
 
@@ -63,7 +53,7 @@ class ServiceRequestConfigController extends Controller
      * Returns a list of service request configs based on the request query parameters
      *
      */
-    public function getRequestConfigList(Provider $provider, Request $request): \Illuminate\Http\JsonResponse
+    public function getRequestConfigList(Provider $provider, ServiceRequest $serviceRequest, Request $request): \Illuminate\Http\JsonResponse
     {
         $this->setAccessControlUser($request->user());
         if (
@@ -78,8 +68,8 @@ class ServiceRequestConfigController extends Controller
             return $this->sendErrorResponse("Access denied");
         }
         $findRequestConfigs = $this->requestConfigService->findByParams(
-            $request->get('service_request_id'),
-            $request->get('sort', "item_name"),
+            $serviceRequest,
+            $request->get('sort', "name"),
             $request->get('order', "asc"),
             (int)$request->get('count', null)
         );
@@ -97,6 +87,7 @@ class ServiceRequestConfigController extends Controller
      */
     public function getServiceRequestConfig(
         Provider $provider,
+        ServiceRequest $serviceRequest,
         ServiceRequestConfig $serviceRequestConfig,
         Request $request
     ): \Illuminate\Http\JsonResponse
@@ -128,7 +119,7 @@ class ServiceRequestConfigController extends Controller
     public function createRequestConfig(
         Provider $provider,
         ServiceRequest $serviceRequest,
-        Request $request
+        CreateServiceRequestConfigRequest $request
     ): \Illuminate\Http\JsonResponse
     {
         $this->setAccessControlUser($request->user());
@@ -170,7 +161,7 @@ class ServiceRequestConfigController extends Controller
         Provider $provider,
         ServiceRequest $serviceRequest,
         ServiceRequestConfig $serviceRequestConfig,
-        Request $request
+        UpdateServiceRequestConfigRequest $request
     ): \Illuminate\Http\JsonResponse
     {
         $this->setAccessControlUser($request->user());
@@ -186,7 +177,6 @@ class ServiceRequestConfigController extends Controller
             return $this->sendErrorResponse("Access denied");
         }
         $update = $this->requestConfigService->updateRequestConfig(
-            $serviceRequest,
             $serviceRequestConfig,
             $request->all()
         );
@@ -210,6 +200,7 @@ class ServiceRequestConfigController extends Controller
      */
     public function deleteRequestConfig(
         Provider $provider,
+        ServiceRequest $serviceRequest,
         ServiceRequestConfig $serviceRequestConfig,
         Request $request
     ): \Illuminate\Http\JsonResponse

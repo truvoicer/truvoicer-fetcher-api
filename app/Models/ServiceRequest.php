@@ -32,6 +32,16 @@ class ServiceRequest extends Model
     {
         return $this->hasMany(ServiceRequestResponseKey::class);
     }
+    public function serviceRequestResponseKeys()
+    {
+        return $this->belongsToMany(
+            ServiceRequest::class,
+            ServiceRequestResponseKey::TABLE_NAME,
+            'service_response_key_id',
+            'service_request__id'
+        );
+    }
+
     public function provider()
     {
         return $this->belongsTo(Provider::class);

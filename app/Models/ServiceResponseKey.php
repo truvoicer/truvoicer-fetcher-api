@@ -19,6 +19,15 @@ class ServiceResponseKey extends Model
     {
         return $this->belongsTo(ServiceRequestResponseKey::class);
     }
+    public function serviceRequestResponseKeys()
+    {
+        return $this->belongsToMany(
+            ServiceResponseKey::class,
+            ServiceRequestResponseKey::TABLE_NAME,
+            'service_request__id',
+            'service_response_key_id'
+        );
+    }
     public function service()
     {
         return $this->belongsTo(Service::class);

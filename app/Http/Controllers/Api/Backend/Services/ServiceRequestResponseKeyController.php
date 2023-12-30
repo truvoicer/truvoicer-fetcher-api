@@ -3,17 +3,15 @@
 namespace App\Http\Controllers\Api\Backend\Services;
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\Service\ServiceRequest\ServiceRequestResponseKeyResource;
 use App\Models\Provider;
 use App\Models\ServiceRequest;
+use App\Models\ServiceRequestResponseKey;
 use App\Models\ServiceResponseKey;
-use App\Services\ApiServices\ApiService;
 use App\Services\ApiServices\ServiceRequests\RequestResponseKeysService;
-use App\Services\Auth\AuthService;
 use App\Services\Permission\AccessControlService;
 use App\Services\Permission\PermissionService;
 use App\Services\Tools\HttpRequestService;
-use App\Services\Provider\ProviderService;
-use App\Services\ApiServices\ResponseKeysService;
 use App\Services\Tools\SerializerService;
 use Illuminate\Http\Request;
 
@@ -25,34 +23,24 @@ use Illuminate\Http\Request;
  */
 class ServiceRequestResponseKeyController extends Controller
 {
-    const DEFAULT_ENTITY = "provider";
-
-    private ProviderService $providerService;
-    private ApiService $apiServicesService;
     private RequestResponseKeysService $requestResponseKeysService;
 
     /**
      * ServiceRequestResponseKeyController constructor.
      * Initialises services used in this controller
      *
-     * @param ProviderService $providerService
      * @param HttpRequestService $httpRequestService
      * @param SerializerService $serializerService
-     * @param ApiService $apiServicesService
      * @param RequestResponseKeysService $requestResponseKeysService
      * @param AccessControlService $accessControlService
      */
     public function __construct(
-        ProviderService $providerService,
         HttpRequestService $httpRequestService,
         SerializerService $serializerService,
-        ApiService $apiServicesService,
         RequestResponseKeysService $requestResponseKeysService,
         AccessControlService $accessControlService
     ) {
         parent::__construct($accessControlService, $httpRequestService, $serializerService);
-        $this->providerService = $providerService;
-        $this->apiServicesService = $apiServicesService;
         $this->requestResponseKeysService = $requestResponseKeysService;
     }
 
@@ -64,28 +52,28 @@ class ServiceRequestResponseKeyController extends Controller
     public function getRequestResponseKeyList(Provider $provider, ServiceRequest $serviceRequest, Request $request)
     {
         $this->setAccessControlUser($request->user());
-        $requestResponseKeysArray = [];
-        $isPermitted = $this->accessControlService->checkPermissionsForEntity(
-            $provider,
-            [
-                PermissionService::PERMISSION_ADMIN,
-                PermissionService::PERMISSION_READ,
-            ],
-            false
-        );
-        if ($request->user()->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_SUPERUSER)) ||
-            $request->user()->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_ADMIN)) ||
-            $isPermitted
+        if (
+            !$this->accessControlService->checkPermissionsForEntity(
+                $provider,
+                [
+                    PermissionService::PERMISSION_ADMIN,
+                    PermissionService::PERMISSION_READ,
+                ]
+            )
         ) {
+            return $this->sendErrorResponse("Access denied");
+        }
             $responseKeys = $this->requestResponseKeysService->getRequestResponseKeys(
                 $serviceRequest,
                 $request->get('sort', "key_name"),
                 $request->get('order', "asc"),
                 (int)$request->get('count', null)
             );
-            $requestResponseKeysArray = $this->serializerService->entityArrayToArray($responseKeys, ["response_key"]);
-        }
-        return $this->sendSuccessResponse("success", $requestResponseKeysArray);
+
+        return $this->sendSuccessResponse(
+            "success",
+            ServiceRequestResponseKeyResource::collection($responseKeys)
+        );
     }
 
     /**
@@ -96,18 +84,20 @@ class ServiceRequestResponseKeyController extends Controller
     public function getRequestResponseKey(
         Provider $provider,
         ServiceRequest $serviceRequest,
-        ServiceResponseKey $serviceResponseKey
+        ServiceResponseKey $serviceResponseKey,
+        Request $request
     ) {
         $this->setAccessControlUser($request->user());
-        if (!$request->user()->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_SUPERUSER)) && !$request->user(
-            )->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_ADMIN))) {
-            $this->accessControlService->checkPermissionsForEntity(
+        if (
+            !$this->accessControlService->checkPermissionsForEntity(
                 $provider,
                 [
                     PermissionService::PERMISSION_ADMIN,
                     PermissionService::PERMISSION_READ,
                 ]
-            );
+            )
+        ) {
+            return $this->sendErrorResponse("Access denied");
         }
         $getRequestResponseKey = $this->requestResponseKeysService->getRequestResponseKeyObjectById(
             $serviceRequest,
@@ -115,7 +105,7 @@ class ServiceRequestResponseKeyController extends Controller
         );
         return $this->sendSuccessResponse(
             "success",
-            $this->serializerService->entityToArray($getRequestResponseKey, ["response_key"])
+            new ServiceRequestResponseKeyResource($getRequestResponseKey)
         );
     }
 
@@ -128,32 +118,34 @@ class ServiceRequestResponseKeyController extends Controller
     public function createRequestResponseKey(
         Provider $provider,
         ServiceRequest $serviceRequest,
-        ServiceResponseKey $serviceResponseKey
+        ServiceResponseKey $serviceResponseKey,
+        Request $request
     ) {
         $this->setAccessControlUser($request->user());
-        if (!$request->user()->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_SUPERUSER)) && !$request->user(
-            )->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_ADMIN))) {
-            $this->accessControlService->checkPermissionsForEntity(
+        if (
+            !$this->accessControlService->checkPermissionsForEntity(
                 $provider,
                 [
                     PermissionService::PERMISSION_ADMIN,
                     PermissionService::PERMISSION_WRITE,
-                    PermissionService::PERMISSION_UPDATE,
                 ]
-            );
+            )
+        ) {
+            return $this->sendErrorResponse("Access denied");
         }
-        $requestData = $this->httpRequestService->getRequestData($request);
         $create = $this->requestResponseKeysService->createRequestResponseKey(
             $serviceRequest,
             $serviceResponseKey,
-            $requestData->data
+            $request->all()
         );
         if (!$create) {
             return $this->sendErrorResponse("Error adding response key.");
         }
         return $this->sendSuccessResponse(
             "Successfully added response key.",
-            $this->serializerService->entityToArray($create, ["single"])
+            new ServiceRequestResponseKeyResource(
+                $this->requestResponseKeysService->getRequestResponseKeyRepository()->getModel()
+            )
         );
     }
 
@@ -166,23 +158,24 @@ class ServiceRequestResponseKeyController extends Controller
     public function updateRequestResponseKey(
         Provider $provider,
         ServiceRequest $serviceRequest,
-        ServiceResponseKey $serviceResponseKey
+        ServiceRequestResponseKey $serviceResponseKey,
+        Request $request
     ) {
         $this->setAccessControlUser($request->user());
-        if (!$request->user()->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_SUPERUSER)) && !$request->user(
-            )->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_ADMIN))) {
-            $this->accessControlService->checkPermissionsForEntity(
+        if (
+            !$this->accessControlService->checkPermissionsForEntity(
                 $provider,
                 [
                     PermissionService::PERMISSION_ADMIN,
                     PermissionService::PERMISSION_UPDATE,
                 ]
-            );
+            )
+        ) {
+            return $this->sendErrorResponse("Access denied");
         }
         $update = $this->requestResponseKeysService->updateRequestResponseKey(
-            $serviceRequest,
             $serviceResponseKey,
-            $this->httpRequestService->getRequestData($request, true)
+            $request->all()
         );
 
         if (!$update) {
@@ -190,7 +183,9 @@ class ServiceRequestResponseKeyController extends Controller
         }
         return $this->sendSuccessResponse(
             "Service response key updated",
-            $this->serializerService->entityToArray($update, ['single'])
+            new ServiceRequestResponseKeyResource(
+                $this->requestResponseKeysService->getRequestResponseKeyRepository()->getModel()
+            )
         );
     }
 
@@ -203,29 +198,28 @@ class ServiceRequestResponseKeyController extends Controller
     public function deleteRequestResponseKey(
         Provider $provider,
         ServiceRequest $serviceRequest,
-        ServiceResponseKey $serviceResponseKey
+        ServiceRequestResponseKey $serviceResponseKey,
+        Request $request
     ) {
         $this->setAccessControlUser($request->user());
-        if (!$request->user()->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_SUPERUSER)) && !$request->user(
-            )->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_ADMIN))) {
-            $this->accessControlService->checkPermissionsForEntity(
+        if (
+            !$this->accessControlService->checkPermissionsForEntity(
                 $provider,
                 [
                     PermissionService::PERMISSION_ADMIN,
                     PermissionService::PERMISSION_DELETE,
                 ]
-            );
+            )
+        ) {
+            return $this->sendErrorResponse("Access denied");
         }
-        $delete = $this->requestResponseKeysService->deleteRequestResponseKey($serviceRequest, $serviceResponseKey);
-        if (!$delete) {
+        if (!$this->requestResponseKeysService->deleteRequestResponseKey($serviceResponseKey)) {
             return $this->sendErrorResponse(
-                "Error deleting service response key",
-                $this->serializerService->entityToArray($delete, ['single'])
+                "Error deleting service response key"
             );
         }
         return $this->sendSuccessResponse(
-            "Response key service deleted.",
-            $this->serializerService->entityToArray($delete, ['single'])
+            "Response key service deleted."
         );
     }
 }

@@ -20,8 +20,9 @@ class ServiceRequestParameterRepository extends BaseRepository
 
     public function findByParams(ServiceRequest $serviceRequest, string $sort, string $order, int $count)
     {
-        $this->addWhere('service_request_id', $serviceRequest);
-        return $this->findAllWithParams($sort, $order, $count);
+        return $serviceRequest->serviceRequestParameter()
+            ->orderBy($sort, $order)
+            ->paginate($count);
     }
 
     public function getRequestParametersByRequestName(Provider $provider, string $serviceRequestName = null)
@@ -31,5 +32,14 @@ class ServiceRequestParameterRepository extends BaseRepository
             ->first()
             ->serviceRequestParameter()
             ->get();
+    }
+    public function createRequestParameter(ServiceRequest $serviceRequest, array $data)
+    {
+        $create = $serviceRequest->serviceRequestParameter()->create($data);
+        if (!$create->exists) {
+            return false;
+        }
+        $this->setModel($create);
+        return true;
     }
 }
