@@ -25,9 +25,9 @@ class ServiceRequestResponseKey extends Model
     {
         return $this->belongsToMany(
             ServiceRequestResponseKey::class,
-            ServiceRequestResponseKeyServiceRequest::TABLE_NAME,
+            SrResponseKeyServiceRequest::TABLE_NAME,
             'service_request_id',
-            'service_request_response_key_id'
+            'sr_response_key_id'
         );
     }
 }

@@ -11,9 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('service_request_response_key_service_requests', function (Blueprint $table) {
+        Schema::create('sr_response_key_service_requests', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('service_request_response_key_id')->constrained('service_request_response_keys')->onDelete('cascade');
+            $table->foreignId('sr_response_key_id')->constrained('service_request_response_keys')->onDelete('cascade');
             $table->foreignId('service_request_id')->constrained('service_requests')->onDelete('cascade');
             $table->timestamps();
         });
@@ -24,6 +24,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('service_request_response_key_service_requests');
+        Schema::dropIfExists('sr_response_key_service_requests');
     }
 };
