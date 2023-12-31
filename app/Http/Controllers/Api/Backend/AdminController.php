@@ -4,13 +4,11 @@ namespace App\Http\Controllers\Api\Backend;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\User\CreateUserRequest;
+use App\Http\Resources\PersonalAccessTokenResource;
+use App\Http\Resources\UserResource;
 use App\Models\User;
-use App\Services\ApiServices\ServiceRequests\RequestService;
-use App\Services\Category\CategoryService;
 use App\Services\Permission\AccessControlService;
-use App\Services\Provider\ProviderService;
 use App\Services\Tools\HttpRequestService;
-use App\Services\SecurityService;
 use App\Services\Tools\SerializerService;
 use App\Services\User\UserAdminService;
 use Illuminate\Http\Request;
@@ -52,97 +50,34 @@ class AdminController extends Controller
      */
     public function getUsersList(Request $request)
     {
+        $this->accessControlService->setUser($request->user());
+        if (!$this->accessControlService->inAdminGroup()) {
+            return $this->sendErrorResponse("Access control: operation not permitted");
+        }
         $getUsers = $this->userService->findByParams(
             $request->get('sort', "id"),
             $request->get('order', "asc"),
             (int)$request->get('count', null)
         );
-        return $this->sendSuccessResponse("success", $this->serializerService->entityArrayToArray($getUsers));
+        return $this->sendSuccessResponse(
+            "success",
+            UserResource::collection($getUsers)
+        );
     }
 
     /**
      * Gets a single user based on the id in the request url
      *
      */
-    public function getSingleUser(User $user)
+    public function getSingleUser(User $user, Request $request)
     {
-        return $this->sendSuccessResponse("success", $this->serializerService->entityToArray($user));
-    }
-
-    /**
-     * Gets a single api token based on the api token id in the request url
-     *
-     */
-    public function getApiToken(PersonalAccessToken $apiToken)
-    {
-        return $this->sendSuccessResponse("success", $this->serializerService->entityToArray($apiToken));
-    }
-
-    /**
-     * Gets a list of usee api tokens based on the user id in the request url
-     *
-     */
-    public function getUserApiTokens(User $user, Request $request)
-    {
-        $getApiTokens = $this->userService->findApiTokensByParams(
-            $user,
-            $request->get('sort', "id"),
-            $request->get('order', "asc"),
-            (int)$request->get('count', null)
-        );
-        return $this->sendSuccessResponse(
-            "success",
-            $this->serializerService->entityArrayToArray($getApiTokens)
-        );
-    }
-
-    /**
-     * Generates a new api token for a single user
-     * User is based on the id in the request url
-     *
-     */
-    public function generateNewApiToken(User $user, Request $request)
-    {
-        return $this->sendSuccessResponse(
-            "success",
-            $this->serializerService->entityToArray(
-                $this->userService->createUserToken(
-                    $user,
-                    $request->query->get('role_id')
-                )
-            )
-        );
-    }
-
-    /**
-     * Updates a single token expiry date based on the request post data
-     *
-     */
-    public function updateApiTokenExpiry(User $user, PersonalAccessToken $apiToken, Request $request)
-    {
-        $requestData = $this->httpRequestService->getRequestData($request, true);
-        return $this->sendSuccessResponse(
-            "Successfully updated token.",
-            $this->serializerService->entityToArray($this->userService->updateApiTokenExpiry($apiToken, $requestData))
-        );
-    }
-
-    /**
-     * Delete a single api token based the request post data.
-     *
-     */
-    public function deleteApiToken(User $user, PersonalAccessToken $apiToken, Request $request)
-    {
-        $delete = $this->userService->deleteApiToken($apiToken);
-        if (!$delete) {
-            return $this->sendErrorResponse(
-                "Error deleting api token",
-                $this->serializerService->entityToArray($delete, ['main'])
-            );
+        $this->accessControlService->setUser($request->user());
+        if (!$this->accessControlService->inAdminGroup()) {
+            return $this->sendErrorResponse("Access control: operation not permitted");
         }
         return $this->sendSuccessResponse(
-            "Api Token deleted.",
-            $this->serializerService->entityToArray($delete, ['main'])
+            "success",
+            new UserResource($user)
         );
     }
 
@@ -152,6 +87,10 @@ class AdminController extends Controller
      */
     public function createUser(CreateUserRequest $request)
     {
+        $this->accessControlService->setUser($request->user());
+        if (!$this->accessControlService->inAdminGroup()) {
+            return $this->sendErrorResponse("Access control: operation not permitted");
+        }
         $requestData = $request->all([
             'email',
             'password',
@@ -164,7 +103,9 @@ class AdminController extends Controller
         }
         return $this->sendSuccessResponse(
             "User inserted",
-            $this->serializerService->entityToArray($create, ['main'])
+            new UserResource(
+                $this->userService->getUserRepository()->getModel()
+            )
         );
     }
 
@@ -174,16 +115,23 @@ class AdminController extends Controller
      */
     public function updateUser(User $user, Request $request)
     {
+        $this->accessControlService->setUser($request->user());
+        if (!$this->accessControlService->inAdminGroup()) {
+            return $this->sendErrorResponse("Access control: operation not permitted");
+        }
         $update = $this->userService->updateUser(
             $user,
-            $this->httpRequestService->getRequestData($request, true)
+            $request->all(),
+            $request->get('role_id')
         );
         if (!$update) {
             return $this->sendErrorResponse("Error updating user");
         }
         return $this->sendSuccessResponse(
             "User updated",
-            $this->serializerService->entityToArray($update, ['main'])
+            new UserResource(
+                $this->userService->getUserRepository()->getModel()
+            )
         );
     }
 
@@ -193,13 +141,119 @@ class AdminController extends Controller
      */
     public function deleteUser(User $user, Request $request)
     {
-        $delete = $this->userService->deleteUser($user);
-        if (!$delete) {
+        $this->accessControlService->setUser($request->user());
+        if (!$this->accessControlService->inAdminGroup()) {
+            return $this->sendErrorResponse("Access control: operation not permitted");
+        }
+        if (!$this->userService->deleteUser($user)) {
             return $this->sendErrorResponse(
                 "Error deleting user",
-                $this->serializerService->entityToArray($delete, ['main'])
             );
         }
-        return $this->sendSuccessResponse("User deleted.", $this->serializerService->entityToArray($delete, ['main']));
+        return $this->sendSuccessResponse("User deleted.");
     }
+
+    /**
+     * Gets a single api token based on the api token id in the request url
+     *
+     */
+    public function getApiToken(PersonalAccessToken $apiToken, Request $request)
+    {
+        $this->accessControlService->setUser($request->user());
+        if (!$this->accessControlService->inAdminGroup()) {
+            return $this->sendErrorResponse("Access control: operation not permitted");
+        }
+        return $this->sendSuccessResponse(
+            "success",
+            new PersonalAccessTokenResource($apiToken)
+        );
+    }
+
+    /**
+     * Gets a list of usee api tokens based on the user id in the request url
+     *
+     */
+    public function getUserApiTokens(User $user, Request $request)
+    {
+        $this->accessControlService->setUser($request->user());
+        if (!$this->accessControlService->inAdminGroup()) {
+            return $this->sendErrorResponse("Access control: operation not permitted");
+        }
+        $getApiTokens = $this->userService->findApiTokensByParams(
+            $user,
+            $request->get('sort', "id"),
+            $request->get('order', "asc"),
+            $request->get('count')
+        );
+        return $this->sendSuccessResponse(
+            "success",
+            PersonalAccessTokenResource::collection($getApiTokens)
+        );
+    }
+
+    /**
+     * Generates a new api token for a single user
+     * User is based on the id in the request url
+     *
+     */
+    public function generateNewApiToken(User $user, Request $request)
+    {
+        $this->accessControlService->setUser($request->user());
+        if (!$this->accessControlService->inAdminGroup()) {
+            return $this->sendErrorResponse("Access control: operation not permitted");
+        }
+        return $this->sendSuccessResponse(
+            "success",
+            new PersonalAccessTokenResource (
+                $this->userService->createUserToken(
+                    $user
+                )
+            )
+        );
+    }
+
+    /**
+     * Updates a single token expiry date based on the request post data
+     *
+     */
+    public function updateApiTokenExpiry(User $user, PersonalAccessToken $personalAccessToken, Request $request)
+    {
+        $this->accessControlService->setUser($request->user());
+        if (!$this->accessControlService->inAdminGroup()) {
+            return $this->sendErrorResponse("Access control: operation not permitted");
+        }
+        if (!$this->userService->updateApiTokenExpiry($personalAccessToken, $request->all())) {
+            return $this->sendErrorResponse(
+                "Error updating api token"
+            );
+        }
+        return $this->sendSuccessResponse(
+            "Successfully updated token.",
+            new PersonalAccessTokenResource(
+                $this->userService->getPersonalAccessTokenRepository()->getModel()
+            )
+        );
+    }
+
+    /**
+     * Delete a single api token based the request post data.
+     *
+     */
+    public function deleteApiToken(User $user, PersonalAccessToken $personalAccessToken, Request $request)
+    {
+        $this->accessControlService->setUser($request->user());
+        if (!$this->accessControlService->inAdminGroup()) {
+            return $this->sendErrorResponse("Access control: operation not permitted");
+        }
+        $delete = $this->userService->deleteApiToken($personalAccessToken);
+        if (!$delete) {
+            return $this->sendErrorResponse(
+                "Error deleting api token",
+            );
+        }
+        return $this->sendSuccessResponse(
+            "Api Token deleted.",
+        );
+    }
+
 }

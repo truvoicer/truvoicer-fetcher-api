@@ -3,7 +3,7 @@
 namespace App\Services\ApiManager\Operations;
 
 use App\Models\Provider;
-use App\Models\ServiceRequest;
+use App\Models\Sr;
 use App\Services\ApiManager\ApiBase;
 use App\Services\ApiManager\Client\ApiClientHandler;
 use App\Services\ApiManager\Client\Entity\ApiRequest;
@@ -27,7 +27,7 @@ class BaseOperations extends ApiBase
     private RequestService $requestService;
     protected Provider $provider;
     protected string $apiRequestName;
-    protected ServiceRequest $apiService;
+    protected Sr $apiService;
     protected CategoryService $categoryService;
     protected ResponseManager $responseManager;
     protected ApiClientHandler $apiClientHandler;

@@ -9,7 +9,7 @@ use App\Repositories\PermissionRepository;
 use App\Repositories\PropertyRepository;
 use App\Repositories\ProviderPropertyRepository;
 use App\Repositories\ProviderRepository;
-use App\Repositories\ServiceRepository;
+use App\Repositories\SRepository;
 use App\Repositories\ProviderUserRepository;
 use App\Services\ApiServices\ApiService;
 use App\Services\Auth\AuthService;
@@ -32,7 +32,7 @@ class ProviderService extends BaseService
     protected ProviderUserRepository $userProviderRepository;
     protected ProviderPropertyRepository $providerPropertyRepository;
     protected PropertyService $propertyService;
-    protected ServiceRepository $serviceRepository;
+    protected SRepository $serviceRepository;
     protected CategoryService $categoryService;
     protected ApiService $apiService;
     protected ResponseKeysService $responseKeysService;
@@ -55,7 +55,7 @@ class ProviderService extends BaseService
         $this->providerPropertyRepository = new ProviderPropertyRepository();
         $this->propertyService = $propertyService;
         $this->categoryService = $categoryService;
-        $this->serviceRepository = new ServiceRepository();
+        $this->serviceRepository = new SRepository();
         $this->accessControlService = $accessControlService;
     }
 

@@ -2,7 +2,7 @@
 namespace App\Services\ApiManager\Response;
 
 use App\Models\Provider;
-use App\Models\ServiceRequest;
+use App\Models\Sr;
 use App\Services\ApiManager\Client\Entity\ApiRequest;
 use App\Services\ApiManager\Response\Entity\ApiResponse;
 use App\Services\ApiManager\Response\Handlers\Json\JsonResponseHandler;
@@ -24,7 +24,7 @@ class ResponseManager extends BaseService
     private JsonResponseHandler $jsonResponseHandler;
     private XmlResponseHandler $xmlResponseHandler;
 
-    private ServiceRequest $serviceRequest;
+    private Sr $serviceRequest;
     private Provider $provider;
 
     public function __construct(JsonResponseHandler $jsonResponseHandler, XmlResponseHandler $xmlResponseHandler)
@@ -34,7 +34,7 @@ class ResponseManager extends BaseService
         $this->xmlResponseHandler = $xmlResponseHandler;
     }
 
-    public function getRequestContent(ServiceRequest $serviceRequest, Provider $provider, Response $response, ApiRequest $apiRequest)
+    public function getRequestContent(Sr $serviceRequest, Provider $provider, Response $response, ApiRequest $apiRequest)
     {
         $this->setProvider($provider);
         $this->setServiceRequest($serviceRequest);
@@ -63,7 +63,7 @@ class ResponseManager extends BaseService
         }
     }
 
-    public function  processResponse(ServiceRequest $serviceRequest, Provider $provider, Response $response, ApiRequest $apiRequest)
+    public function  processResponse(Sr $serviceRequest, Provider $provider, Response $response, ApiRequest $apiRequest)
     {
         $this->setProvider($provider);
         $this->setServiceRequest($serviceRequest);
@@ -147,17 +147,17 @@ class ResponseManager extends BaseService
     }
 
     /**
-     * @return ServiceRequest
+     * @return Sr
      */
-    public function getServiceRequest(): ServiceRequest
+    public function getServiceRequest(): Sr
     {
         return $this->serviceRequest;
     }
 
     /**
-     * @param ServiceRequest $serviceRequest
+     * @param Sr $serviceRequest
      */
-    public function setServiceRequest(ServiceRequest $serviceRequest): void
+    public function setServiceRequest(Sr $serviceRequest): void
     {
         $this->serviceRequest = $serviceRequest;
     }

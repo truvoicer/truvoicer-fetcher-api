@@ -6,7 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Service\CreateServiceRequest;
 use App\Http\Requests\Service\UpdateServiceRequest;
 use App\Http\Resources\Service\ServiceResource;
-use App\Models\Service;
+use App\Models\S;
 use App\Services\ApiServices\ApiService;
 use App\Services\Permission\AccessControlService;
 use App\Services\Permission\PermissionService;
@@ -76,7 +76,7 @@ class ServiceController extends Controller
      * Returns a single api service based on the id passed in the request url
      *
      */
-    public function getService(Service $service, Request $request): \Illuminate\Http\JsonResponse
+    public function getService(S $service, Request $request): \Illuminate\Http\JsonResponse
     {
         $this->setAccessControlUser($request->user());
         if (
@@ -128,7 +128,7 @@ class ServiceController extends Controller
      * Returns error response and message on fail
      *
      */
-    public function updateService(Service $service, UpdateServiceRequest $request): \Illuminate\Http\JsonResponse
+    public function updateService(S $service, UpdateServiceRequest $request): \Illuminate\Http\JsonResponse
     {
         $this->setAccessControlUser($request->user());
         if (
@@ -166,7 +166,7 @@ class ServiceController extends Controller
      * Returns error response and message on fail
      *
      */
-    public function deleteService(Service $service, Request $request): \Illuminate\Http\JsonResponse
+    public function deleteService(S $service, Request $request): \Illuminate\Http\JsonResponse
     {
         $this->setAccessControlUser($request->user());
         if (

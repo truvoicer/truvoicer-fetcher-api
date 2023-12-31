@@ -2,32 +2,32 @@
 namespace App\Services\ApiServices\ServiceRequests;
 
 //use App\Models\ResponseKeyRequestItem;
-use App\Models\Service;
+use App\Models\S;
 use App\Models\Provider;
-use App\Models\ServiceRequest;
-use App\Models\ServiceRequestResponseKey;
-use App\Models\ServiceResponseKey;
+use App\Models\Sr;
+use App\Models\SrResponseKey;
+use App\Models\SResponseKey;
 use App\Library\Defaults\DefaultData;
-use App\Repositories\ServiceRepository;
-use App\Repositories\ServiceRequestRepository;
-use App\Repositories\ServiceRequestResponseKeyRepository;
-use App\Repositories\ServiceResponseKeyRepository;
+use App\Repositories\SRepository;
+use App\Repositories\SrRepository;
+use App\Repositories\SrResponseKeyRepository;
+use App\Repositories\SResponseKeyRepository;
 use App\Services\BaseService;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 
 class RequestResponseKeysService extends BaseService
 {
-    private ServiceRepository $serviceRepository;
-    private ServiceRequestRepository $serviceRequestRepository;
-    private ServiceRequestResponseKeyRepository $requestResponseKeyRepository;
-    private ServiceResponseKeyRepository $responseKeyRepository;
+    private SRepository $serviceRepository;
+    private SrRepository $serviceRequestRepository;
+    private SrResponseKeyRepository $requestResponseKeyRepository;
+    private SResponseKeyRepository $responseKeyRepository;
     public function __construct()
     {
         parent::__construct();
-        $this->serviceRepository = new ServiceRepository();
-        $this->serviceRequestRepository = new ServiceRequestRepository();
-        $this->responseKeyRepository = new ServiceResponseKeyRepository();
-        $this->requestResponseKeyRepository = new ServiceRequestResponseKeyRepository();
+        $this->serviceRepository = new SRepository();
+        $this->serviceRequestRepository = new SrRepository();
+        $this->responseKeyRepository = new SResponseKeyRepository();
+        $this->requestResponseKeyRepository = new SrResponseKeyRepository();
 //        $this->responseKeyRequestItemRepo = $this->entityManager->getRepository(ResponseKeyRequestItem::class);
     }
 
@@ -58,7 +58,7 @@ class RequestResponseKeysService extends BaseService
         return $requestResponseKey;
     }
 
-    private function getServiceResponseKeysObject(Service $service, array $data)
+    private function getServiceResponseKeysObject(S $service, array $data)
     {
         $responseKeyData = [];
         $responseKeyData['service_id'] = $service->id;
@@ -85,7 +85,7 @@ class RequestResponseKeysService extends BaseService
         return $this->responseKeyRepository->findById($service->id);
     }
 
-    public function createDefaultServiceResponseKeys(Service $service) {
+    public function createDefaultServiceResponseKeys(S $service) {
         foreach (DefaultData::getServiceResponseKeys() as $keyName => $keyValue) {
             $this->createServiceResponseKeys([
                "service_id" => $service->id,
@@ -120,11 +120,11 @@ class RequestResponseKeysService extends BaseService
         return $this->responseKeyRepository->delete();
     }
 
-    public function getRequestResponseKeyObjectById(ServiceRequest $serviceRequest, ServiceResponseKey $serviceResponseKey) {
+    public function getRequestResponseKeyObjectById(Sr $serviceRequest, SResponseKey $serviceResponseKey) {
         return $this->getRequestResponseKey($serviceRequest, $serviceResponseKey);
     }
 
-    public function getRequestResponseKey(ServiceRequest $serviceRequest, ServiceResponseKey $responseKey) {
+    public function getRequestResponseKey(Sr $serviceRequest, SResponseKey $responseKey) {
         $getRequestResponseKey = $this->responseKeyRepository->getRequestResponseKey($serviceRequest, $responseKey);
         if ($getRequestResponseKey === null) {
             return [
@@ -134,16 +134,16 @@ class RequestResponseKeysService extends BaseService
         return $getRequestResponseKey;
     }
 
-    public function getRequestResponseKeys(ServiceRequest $serviceRequest, string $sort = "name", string $order = "asc", int $count = null) {
+    public function getRequestResponseKeys(Sr $serviceRequest, string $sort = "name", string $order = "asc", int $count = null) {
         return $this->requestResponseKeyRepository->findServiceRequestResponseKeys($serviceRequest, $sort, $order, $count);
     }
 
 
-    public function getServiceResponseKeyByName(Service $service, string $responseKeyName)
+    public function getServiceResponseKeyByName(S $service, string $responseKeyName)
     {
         return $this->responseKeyRepository->getServiceResponseKeyByName($service, $responseKeyName);
     }
-    public function getRequestResponseKeyByName(Provider $provider, ServiceRequest $serviceRequest, string $configItemName)
+    public function getRequestResponseKeyByName(Provider $provider, Sr $serviceRequest, string $configItemName)
     {
         return $this->requestResponseKeyRepository->getRequestResponseKeyByName($provider, $serviceRequest, $configItemName);
     }
@@ -204,7 +204,14 @@ class RequestResponseKeysService extends BaseService
         return $requestResponseKeyData;
     }
 
-    public function createRequestResponseKey(ServiceRequest $serviceRequest, ServiceResponseKey $serviceResponseKey, array $data) {
+    public function createSrResponseKeyBySResponseKeyId(Sr $serviceRequest, int $serviceResponseKeyId, array $data) {
+        return $this->createSrResponseKey(
+            $serviceRequest,
+            $this->getResponseKeyById($serviceResponseKeyId),
+            $data
+        );
+    }
+    public function createSrResponseKey(Sr $serviceRequest, SResponseKey $serviceResponseKey, array $data) {
         return $this->requestResponseKeyRepository->saveServiceRequestResponseKey(
             $serviceRequest,
             $serviceResponseKey,
@@ -212,19 +219,19 @@ class RequestResponseKeysService extends BaseService
         );
     }
 
-    public function updateRequestResponseKey(ServiceRequestResponseKey $serviceResponseKey, array $data) {
+    public function updateRequestResponseKey(SrResponseKey $serviceResponseKey, array $data) {
         return $this->requestResponseKeyRepository->saveRequestResponseKey(
             $serviceResponseKey,
             $this->setRequestResponseKeyObject($data)
         );
     }
 
-    public function deleteRequestResponseKey(ServiceRequestResponseKey $serviceRequestResponseKey) {
+    public function deleteRequestResponseKey(SrResponseKey $serviceRequestResponseKey) {
         $this->requestResponseKeyRepository->setModel($serviceRequestResponseKey);
         return $this->requestResponseKeyRepository->delete();
     }
 
-    public function deleteRequestResponseKeyByServiceResponseKey(ServiceRequest $serviceRequest, ServiceResponseKey $serviceResponseKey) {
+    public function deleteRequestResponseKeyByServiceResponseKey(Sr $serviceRequest, SResponseKey $serviceResponseKey) {
         $this->requestResponseKeyRepository->addWhere("service_request", $serviceRequest->id);
         $this->requestResponseKeyRepository->addWhere("service_response_key", $serviceResponseKey->id);
         $requestResponseKey = $this->requestResponseKeyRepository->findOne();
@@ -237,7 +244,7 @@ class RequestResponseKeysService extends BaseService
             ));
     }
 
-    public function getRequestResponseKeyRepository(): ServiceRequestResponseKeyRepository
+    public function getRequestResponseKeyRepository(): SrResponseKeyRepository
     {
         return $this->requestResponseKeyRepository;
     }

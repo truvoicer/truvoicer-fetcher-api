@@ -2,16 +2,16 @@
 
 namespace App\Services\ApiServices\ServiceRequests;
 
-use App\Models\Service;
+use App\Models\S;
 use App\Models\Provider;
-use App\Models\ServiceRequest;
+use App\Models\Sr;
 use App\Repositories\CategoryRepository;
-use App\Repositories\ServiceRepository;
-use App\Repositories\ServiceRequestConfigRepository;
-use App\Repositories\ServiceRequestParameterRepository;
-use App\Repositories\ServiceRequestRepository;
-use App\Repositories\ServiceRequestResponseKeyRepository;
-use App\Repositories\ServiceResponseKeyRepository;
+use App\Repositories\SRepository;
+use App\Repositories\SrConfigRepository;
+use App\Repositories\SrParameterRepository;
+use App\Repositories\SrRepository;
+use App\Repositories\SrResponseKeyRepository;
+use App\Repositories\SResponseKeyRepository;
 use App\Services\ApiServices\ApiService;
 use App\Services\BaseService;
 use App\Services\Provider\ProviderService;
@@ -23,11 +23,11 @@ class RequestService extends BaseService
 {
     private HttpRequestService $httpRequestService;
     private ProviderService $providerService;
-    private ServiceRepository $serviceRepository;
-    private ServiceRequestRepository $serviceRequestRepository;
-    private ServiceRequestParameterRepository $requestParametersRepo;
-    private ServiceRequestConfigRepository $requestConfigRepo;
-    private ServiceResponseKeyRepository $responseKeysRepo;
+    private SRepository $serviceRepository;
+    private SrRepository $serviceRequestRepository;
+    private SrParameterRepository $requestParametersRepo;
+    private SrConfigRepository $requestConfigRepo;
+    private SResponseKeyRepository $responseKeysRepo;
     private RequestConfigService $requestConfigService;
     private RequestParametersService $requestParametersService;
     private ApiService $apiService;
@@ -43,11 +43,11 @@ class RequestService extends BaseService
         $this->apiService = $apiService;
         $this->requestConfigService = $requestConfigService;
         $this->requestParametersService = $requestParametersService;
-        $this->serviceRepository = new ServiceRepository();
-        $this->serviceRequestRepository = new ServiceRequestRepository();
-        $this->requestParametersRepo = new ServiceRequestParameterRepository();
-        $this->responseKeysRepo = new ServiceResponseKeyRepository();
-        $this->requestConfigRepo = new ServiceRequestConfigRepository();
+        $this->serviceRepository = new SRepository();
+        $this->serviceRequestRepository = new SrRepository();
+        $this->requestParametersRepo = new SrParameterRepository();
+        $this->responseKeysRepo = new SResponseKeyRepository();
+        $this->requestConfigRepo = new SrConfigRepository();
     }
 
     public function findByQuery(string $query)
@@ -87,7 +87,7 @@ class RequestService extends BaseService
         return $this->castServiceRequest($getServiceRequest);
     }
 
-    public function castServiceRequest(ServiceRequest $serviceRequest)
+    public function castServiceRequest(Sr $serviceRequest)
     {
         return $serviceRequest;
     }
@@ -102,14 +102,14 @@ class RequestService extends BaseService
         );
     }
 
-    public function getProviderServiceRequest(Service $service, Provider $provider)
+    public function getProviderServiceRequest(S $service, Provider $provider)
     {
         $this->serviceRequestRepository->addWhere("service", $service->id);
         $this->serviceRequestRepository->addWhere("provider", $provider->id);
         return $this->serviceRequestRepository->findOne();
     }
 
-    public function getRequestConfigByName(Provider $provider, ServiceRequest $serviceRequest, string $configItemName)
+    public function getRequestConfigByName(Provider $provider, Sr $serviceRequest, string $configItemName)
     {
         return $this->requestConfigRepo->getRequestConfigByName($provider, $serviceRequest, $configItemName);
     }
@@ -119,12 +119,12 @@ class RequestService extends BaseService
         return $this->requestParametersRepo->getRequestParametersByRequestName($provider, $serviceRequestName);
     }
 
-    public function getResponseKeysByRequest(Provider $provider, ServiceRequest $serviceRequest)
+    public function getResponseKeysByRequest(Provider $provider, Sr $serviceRequest)
     {
         return $this->responseKeysRepo->getResponseKeys($provider, $serviceRequest);
     }
 
-    private function getServiceRequestObject(Provider $provider, Service $service, array $data)
+    private function getServiceRequestObject(Provider $provider, S $service, array $data)
     {
         $fields = [
 
@@ -178,7 +178,7 @@ class RequestService extends BaseService
 
     }
 
-    public function updateServiceRequest(ServiceRequest $serviceRequest, array $data)
+    public function updateServiceRequest(Sr $serviceRequest, array $data)
     {
 //        if (isset($data["service"]['id'])) {
 //            $serviceId = $data["service"]['id'];
@@ -195,14 +195,14 @@ class RequestService extends BaseService
         return $this->serviceRequestRepository->saveServiceRequest($serviceRequest, $data);
     }
 
-    public function duplicateServiceRequest(ServiceRequest $serviceRequest, array $data)
+    public function duplicateServiceRequest(Sr $serviceRequest, array $data)
     {
         return $this->serviceRequestRepository->duplicateServiceRequest($serviceRequest, $data);
     }
 
     public function mergeRequestResponseKeys(array $data)
     {
-        $requestResponseKeyRepo = new ServiceRequestResponseKeyRepository();
+        $requestResponseKeyRepo = new SrResponseKeyRepository();
         $sourceServiceRequest = $this->getServiceRequestById($data["source_service_request_id"]);
         $destinationServiceRequest = $this->getServiceRequestById($data["destination_service_request_id"]);
         if ($sourceServiceRequest->getService()->id !== $destinationServiceRequest->getService()->id) {
@@ -226,13 +226,13 @@ class RequestService extends BaseService
         return $this->deleteServiceRequest($serviceRequest);
     }
 
-    public function deleteServiceRequest(ServiceRequest $serviceRequest)
+    public function deleteServiceRequest(Sr $serviceRequest)
     {
         $this->serviceRequestRepository->setModel($serviceRequest);
         return $this->serviceRequestRepository->delete();
     }
 
-    public function getServiceRequestRepository(): ServiceRequestRepository
+    public function getServiceRequestRepository(): SrRepository
     {
         return $this->serviceRequestRepository;
     }

@@ -74,13 +74,13 @@ class User extends Authenticatable
             'provider_id'
         );
     }
-    public function services()
+    public function s()
     {
         return $this->belongsToMany(
-            Service::class,
-            ServiceUser::class,
+            S::class,
+            SUser::class,
             'user_id',
-            'service_id'
+            's_id'
         );
     }
 
@@ -94,7 +94,7 @@ class User extends Authenticatable
     public function providerPermissions() {
         return $this->hasManyThrough(ProviderUserPermission::class, ProviderUser::class);
     }
-    public function servicePermissions() {
-        return $this->hasManyThrough(ServiceUserPermission::class, ServiceUser::class);
+    public function sPermissions() {
+        return $this->hasManyThrough(SUserPermission::class, SUser::class);
     }
 }

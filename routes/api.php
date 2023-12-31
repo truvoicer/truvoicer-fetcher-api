@@ -200,20 +200,18 @@ Route::middleware(['auth:sanctum', 'ability:api:admin,api:superuser'])->group(fu
         Route::prefix('user')->name('user.')->group(function () {
             Route::get('/list', [AdminController::class, 'getUsersList'])->name('list');
             Route::post('/create', [AdminController::class, 'createUser'])->name('create');
-            Route::get('/{user}', [AdminController::class, 'getUsersList'])->name('detail');
+            Route::get('/{user}', [AdminController::class, 'getSingleUser'])->name('detail');
             Route::prefix('{user}')->name('single.')->group(function () {
-                Route::post('/update', [AdminController::class, 'updateUser'])->name('update');
-                Route::post('/delete', [AdminController::class, 'deleteUser'])->name('delete');
+                Route::patch('/update', [AdminController::class, 'updateUser'])->name('update');
+                Route::delete('/delete', [AdminController::class, 'deleteUser'])->name('delete');
                 Route::prefix('api-token')->name('api-token.')->group(function () {
-                    Route::post('/{personalAccessToken}/update', [AdminController::class, 'updateApiTokenExpiry'])->name('update');
-                    Route::post('/{personalAccessToken}/delete', [AdminController::class, 'deleteApiToken'])->name('delete');
                     Route::get('/list', [AdminController::class, 'getUserApiTokens'])->name('list');
                     Route::get('/generate', [AdminController::class, 'generateNewApiToken'])->name('generate');
                     Route::post('/delete', [AdminController::class, 'deleteSessionUserApiToken'])->name('delete');
+                    Route::get('/{personalAccessToken}', [AdminController::class, 'getApiToken'])->name('detail');
+                    Route::patch('/{personalAccessToken}/update', [AdminController::class, 'updateApiTokenExpiry'])->name('update');
+                    Route::delete('/{personalAccessToken}/delete', [AdminController::class, 'deleteApiToken'])->name('delete');
                 });
-            });
-            Route::prefix('api-token')->name('api-token.')->group(function () {
-                Route::get('/{personalAccessToken}', [AdminController::class, 'getApiToken'])->name('detail');
             });
         });
     });

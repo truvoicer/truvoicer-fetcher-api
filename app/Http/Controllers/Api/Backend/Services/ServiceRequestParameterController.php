@@ -8,8 +8,8 @@ use App\Http\Requests\Service\UpdateServiceRequestParameterRequest;
 use App\Http\Resources\Service\ServiceRequest\ServiceRequestParameterResource;
 use App\Http\Resources\Service\ServiceRequest\ServiceRequestResource;
 use App\Models\Provider;
-use App\Models\ServiceRequest;
-use App\Models\ServiceRequestParameter;
+use App\Models\Sr;
+use App\Models\SrParameter;
 use App\Services\Permission\AccessControlService;
 use App\Services\Permission\PermissionService;
 use App\Services\Tools\HttpRequestService;
@@ -51,7 +51,7 @@ class ServiceRequestParameterController extends Controller
      * Returns a list of service request parameters based on the request query parameters
      *
      */
-    public function getServiceRequestParameterList(Provider $provider, ServiceRequest $serviceRequest, Request $request)
+    public function getServiceRequestParameterList(Provider $provider, Sr $serviceRequest, Request $request)
     {
         $this->setAccessControlUser($request->user());
         if (
@@ -87,8 +87,8 @@ class ServiceRequestParameterController extends Controller
      */
     public function getSingleServiceRequestParameters(
         Provider $provider,
-        ServiceRequest $serviceRequest,
-        Request $request
+        Sr       $serviceRequest,
+        Request  $request
     ) {
         $this->setAccessControlUser($request->user());
         if (
@@ -114,10 +114,10 @@ class ServiceRequestParameterController extends Controller
      *
      */
     public function getServiceRequestParameter(
-        Provider $provider,
-        ServiceRequest $serviceRequest,
-        ServiceRequestParameter $serviceRequestParameter,
-        Request $request
+        Provider    $provider,
+        Sr          $serviceRequest,
+        SrParameter $serviceRequestParameter,
+        Request     $request
     ) {
         $this->setAccessControlUser($request->user());
         if (
@@ -143,7 +143,7 @@ class ServiceRequestParameterController extends Controller
      * Returns error response and message on fail
      *
      */
-    public function createServiceRequestParameter(Provider $provider, ServiceRequest $serviceRequest, CreateServiceRequestParameterRequest $request)
+    public function createServiceRequestParameter(Provider $provider, Sr $serviceRequest, CreateServiceRequestParameterRequest $request)
     {
         $this->setAccessControlUser($request->user());
         if (
@@ -176,9 +176,9 @@ class ServiceRequestParameterController extends Controller
      *
      */
     public function updateServiceRequestParameter(
-        Provider $provider,
-        ServiceRequest $serviceRequest,
-        ServiceRequestParameter $serviceRequestParameter,
+        Provider                             $provider,
+        Sr                                   $serviceRequest,
+        SrParameter                          $serviceRequestParameter,
         UpdateServiceRequestParameterRequest $request
     ) {
         $this->setAccessControlUser($request->user());
@@ -215,10 +215,10 @@ class ServiceRequestParameterController extends Controller
      *
      */
     public function deleteServiceRequestParameter(
-        Provider $provider,
-        ServiceRequest $serviceRequest,
-        ServiceRequestParameter $serviceRequestParameter,
-        Request $request
+        Provider    $provider,
+        Sr          $serviceRequest,
+        SrParameter $serviceRequestParameter,
+        Request     $request
     ) {
         $this->setAccessControlUser($request->user());
         if (

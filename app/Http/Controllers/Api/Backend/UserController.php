@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api\Backend;
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\UserResource;
 use App\Services\ApiServices\ServiceRequests\RequestService;
 use App\Services\Category\CategoryService;
 use App\Services\Permission\AccessControlService;
@@ -48,7 +49,7 @@ class UserController extends Controller
     {
         return $this->sendSuccessResponse(
             "success",
-            $this->serializerService->entityToArray($request->user())
+            new UserResource($request->user())
         );
     }
 
@@ -128,7 +129,6 @@ class UserController extends Controller
             $this->serializerService->entityToArray(
                 $this->userService->createUserToken(
                     $request->user(),
-                    $user->getRole()->id
                 )
             )
         );

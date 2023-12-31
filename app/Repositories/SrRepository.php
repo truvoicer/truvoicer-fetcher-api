@@ -3,16 +3,16 @@
 namespace App\Repositories;
 
 use App\Models\Provider;
-use App\Models\ServiceRequest;
+use App\Models\Sr;
 
-class ServiceRequestRepository extends BaseRepository
+class SrRepository extends BaseRepository
 {
     public function __construct()
     {
-        parent::__construct(ServiceRequest::class);
+        parent::__construct(Sr::class);
     }
 
-    public function getModel(): ServiceRequest
+    public function getModel(): Sr
     {
         return parent::getModel();
     }
@@ -41,11 +41,11 @@ class ServiceRequestRepository extends BaseRepository
         $this->setModel($create);
         return true;
     }
-    public function saveServiceRequest(ServiceRequest $serviceRequest, array $data) {
+    public function saveServiceRequest(Sr $serviceRequest, array $data) {
         $this->setModel($serviceRequest);
         return $this->save($data);
     }
-    public function duplicateServiceRequest(ServiceRequest $serviceRequest, array $data)
+    public function duplicateServiceRequest(Sr $serviceRequest, array $data)
     {
 //        $requestResponseKeysRepo = $this->getEntityManager()->getRepository(ServiceRequestResponseKey::class);
 //

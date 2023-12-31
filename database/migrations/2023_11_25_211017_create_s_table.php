@@ -11,14 +11,10 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('service_requests', function (Blueprint $table) {
+        Schema::create('s', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('service_id')->nullable(true)->constrained('services')->onDelete('cascade');
-            $table->foreignId('provider_id')->constrained('providers')->onDelete('cascade');
-            $table->foreignId('category_id')->nullable(true)->constrained('categories')->onDelete('cascade');
             $table->string('name');
             $table->string('label');
-            $table->string('pagination_type')->nullable(true);
             $table->timestamps();
         });
     }
@@ -28,6 +24,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('service_requests');
+        Schema::dropIfExists('s');
     }
 };

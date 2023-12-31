@@ -1,0 +1,47 @@
+<?php
+
+namespace App\Repositories;
+
+use App\Models\Provider;
+use App\Models\Sr;
+use App\Models\SrConfig;
+
+class SrConfigRepository extends BaseRepository
+{
+    public function __construct()
+    {
+        parent::__construct(SrConfig::class);
+    }
+
+    public function getModel(): SrConfig
+    {
+        return parent::getModel();
+    }
+
+    public function findByParams(Sr $serviceRequest, string $sort, string $order, int $count)
+    {
+        return $serviceRequest->srConfig()
+            ->orderBy($sort, $order)
+            ->get();
+    }
+
+    public function getRequestConfigByName(Provider $provider, Sr $serviceRequest, string $configItemName)
+    {
+        return $provider->serviceRequest()
+            ->where('id', $serviceRequest->id)
+            ->first()
+            ->srConfig()
+            ->where('name', $configItemName)
+            ->first();
+    }
+
+    public function createRequestConfig(Sr $serviceRequest, array $data)
+    {
+        $create = $serviceRequest->srConfig()->create($data);
+        if (!$create->exists) {
+            return false;
+        }
+        $this->setModel($create);
+        return true;
+    }
+}

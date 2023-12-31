@@ -1,11 +1,11 @@
 <?php
 namespace App\Services\ApiServices;
 
-use App\Models\Service;
+use App\Models\S;
 use App\Models\User;
-use App\Repositories\ServiceRepository;
-use App\Repositories\ServiceRequestParameterRepository;
-use App\Repositories\ServiceRequestRepository;
+use App\Repositories\SRepository;
+use App\Repositories\SrParameterRepository;
+use App\Repositories\SrRepository;
 use App\Services\BaseService;
 use App\Helpers\Tools\UtilHelpers;
 use App\Services\Permission\PermissionService;
@@ -14,9 +14,9 @@ use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 class ApiService extends BaseService
 {
 
-    protected ServiceRepository $serviceRepository;
-    protected ServiceRequestRepository $serviceRequestRepository;
-    protected ServiceRequestParameterRepository $requestParametersRepo;
+    protected SRepository $serviceRepository;
+    protected SrRepository $serviceRequestRepository;
+    protected SrParameterRepository $requestParametersRepo;
     protected ResponseKeysService $responseKeysService;
 
     /**
@@ -26,9 +26,9 @@ class ApiService extends BaseService
     public function __construct(ResponseKeysService $responseKeysService)
     {
         parent::__construct();
-        $this->serviceRepository = new ServiceRepository();
-        $this->serviceRequestRepository = new ServiceRequestRepository();
-        $this->requestParametersRepo = new ServiceRequestParameterRepository();
+        $this->serviceRepository = new SRepository();
+        $this->serviceRequestRepository = new SrRepository();
+        $this->requestParametersRepo = new SrParameterRepository();
         $this->responseKeysService = $responseKeysService;
     }
 
@@ -49,7 +49,7 @@ class ApiService extends BaseService
             PermissionService::PERMISSION_READ,
         ]);
         return $this->serviceRepository->findModelsByUser(
-            new Service(),
+            new S(),
             $user
         );
     }
@@ -73,11 +73,11 @@ class ApiService extends BaseService
         if (empty($data['name'])) {
             $data['name'] = UtilHelpers::labelToName($data['label'], false, '-');
         }
-        $checkService = $this->serviceRepository->findUserModelBy(new Service(), $user, [
+        $checkService = $this->serviceRepository->findUserModelBy(new S(), $user, [
             ['name', '=', $data['name']]
         ], false);
 
-        if ($checkService instanceof Service) {
+        if ($checkService instanceof S) {
             throw new BadRequestHttpException(sprintf("Service (%s) already exists.", $data['name']));
         }
         $createService = $this->serviceRepository->insert($data);
@@ -91,7 +91,7 @@ class ApiService extends BaseService
         );
     }
 
-    public function updateService(Service $service, array $data)
+    public function updateService(S $service, array $data)
     {
         $this->serviceRepository->setModel($service);
         return $this->serviceRepository->save($data);
@@ -106,12 +106,12 @@ class ApiService extends BaseService
         return $this->serviceRepository->delete();
     }
 
-    public function deleteService(Service $service) {
+    public function deleteService(S $service) {
         $this->serviceRepository->setModel($service);
         return $this->serviceRepository->delete();
     }
 
-    public function getServiceRepository(): ServiceRepository
+    public function getServiceRepository(): SRepository
     {
         return $this->serviceRepository;
     }

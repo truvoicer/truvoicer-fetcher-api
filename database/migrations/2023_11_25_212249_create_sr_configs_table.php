@@ -11,9 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('service_request_configs', function (Blueprint $table) {
+        Schema::create('sr_configs', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('service_request_id')->constrained('service_requests')->onDelete('cascade');
+            $table->foreignId('sr_id')->constrained('srs')->onDelete('cascade');
             $table->string('name');
             $table->string('value')->nullable();
             $table->string('value_type');
@@ -27,6 +27,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('service_request_configs');
+        Schema::dropIfExists('sr_configs');
     }
 };

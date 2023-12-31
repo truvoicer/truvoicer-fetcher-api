@@ -5,7 +5,7 @@ namespace App\Services\Tools\IExport;
 use App\Models\Category;
 use App\Models\Property;
 use App\Models\Provider;
-use App\Models\Service;
+use App\Models\S;
 use App\Services\ApiServices\ApiServiceImporterService;
 use App\Services\BaseService;
 use App\Services\Category\CategoryImporterService;
@@ -86,7 +86,7 @@ class IExportTypeService extends BaseService
                 $deserializeXmlContent = $this->serializerService->xmlArrayToEntities($fileContents, Provider::class);
                 return $this->providerImporterService->getImportMappings($deserializeXmlContent);
             case self::IMPORT_TYPES["SERVICES"]:
-                $deserializeXmlContent = $this->serializerService->xmlArrayToEntities($fileContents, Service::class);
+                $deserializeXmlContent = $this->serializerService->xmlArrayToEntities($fileContents, S::class);
                 return $this->apiServiceImporterService->getImportMappings($deserializeXmlContent);
             case self::IMPORT_TYPES["PROPERTIES"]:
                 $deserializeXmlContent = $this->serializerService->xmlArrayToEntities($fileContents, Property::class);
@@ -108,7 +108,7 @@ class IExportTypeService extends BaseService
                 $deserializeXmlContent = $this->serializerService->xmlArrayToEntities($fileContents, Provider::class);
                 return $this->providerImporterService->import($deserializeXmlContent, $mappings);
             case self::IMPORT_TYPES["SERVICES"]:
-                $deserializeXmlContent = $this->serializerService->xmlArrayToEntities($fileContents, Service::class);
+                $deserializeXmlContent = $this->serializerService->xmlArrayToEntities($fileContents, S::class);
                 return $this->apiServiceImporterService->import($deserializeXmlContent, $mappings);
             case self::IMPORT_TYPES["PROPERTIES"]:
                 $deserializeXmlContent = $this->serializerService->xmlArrayToEntities($fileContents, Property::class);

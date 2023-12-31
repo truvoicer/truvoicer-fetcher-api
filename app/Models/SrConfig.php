@@ -2,16 +2,16 @@
 
 namespace App\Models;
 
-use App\Repositories\ServiceRequestConfigRepository;
+use App\Repositories\SrConfigRepository;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class ServiceRequestConfig extends Model
+class SrConfig extends Model
 {
     use HasFactory;
 
-    public const TABLE_NAME = 'service_request_configs';
-    public const REPOSITORY = ServiceRequestConfigRepository::class;
+    public const TABLE_NAME = 'sr_configs';
+    public const REPOSITORY = SrConfigRepository::class;
 
     protected $casts = [
         'value_choices' => 'array',
@@ -23,8 +23,8 @@ class ServiceRequestConfig extends Model
         'value_type',
         'array_value',
     ];
-    public function serviceRequest()
+    public function sr()
     {
-        return $this->belongsTo(ServiceRequest::class);
+        return $this->belongsTo(Sr::class);
     }
 }

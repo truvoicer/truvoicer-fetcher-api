@@ -3,8 +3,8 @@ namespace App\Services\ApiManager\Response\Handlers;
 
 
 use App\Models\Provider;
-use App\Models\ServiceRequest;
-use App\Models\ServiceRequestResponseKey;
+use App\Models\Sr;
+use App\Models\SrResponseKey;
 use App\Services\ApiManager\ApiBase;
 use App\Services\Provider\ProviderService;
 use App\Services\ApiServices\ServiceRequests\RequestService;
@@ -110,7 +110,7 @@ class ResponseHandler extends ApiBase
         }, $itemList);
     }
 
-    protected function buildList($itemList, ServiceRequestResponseKey $requestResponseKey) {
+    protected function buildList($itemList, SrResponseKey $requestResponseKey) {
         $keyArray = explode(".", $requestResponseKey->value);
         $getItemValue = $this->getArrayItems($itemList, $keyArray);
         if ($requestResponseKey->is_service_request) {
@@ -127,7 +127,7 @@ class ResponseHandler extends ApiBase
         }
     }
 
-    protected function buildResponseKeyRequestItem($itemValue, ServiceRequestResponseKey $requestResponseKey) {
+    protected function buildResponseKeyRequestItem($itemValue, SrResponseKey $requestResponseKey) {
         if ($requestResponseKey->getResponseKeyRequestItem() === null) {
             return null;
         }
@@ -159,7 +159,7 @@ class ResponseHandler extends ApiBase
         return $array;
     }
 
-    protected function buildResponseKeyValue($keyValue, ServiceRequestResponseKey $requestResponseKey)
+    protected function buildResponseKeyValue($keyValue, SrResponseKey $requestResponseKey)
     {
         $responseKeyValue = $keyValue;
         if ($requestResponseKey->getPrependExtraData()) {
@@ -190,7 +190,7 @@ class ResponseHandler extends ApiBase
         return $arrayItems;
     }
 
-    protected function getRequestKeyArrayValue($itemArrayValue, ServiceRequestResponseKey $requestResponseKey = null)
+    protected function getRequestKeyArrayValue($itemArrayValue, SrResponseKey $requestResponseKey = null)
     {
         if ($requestResponseKey === null || !is_array($itemArrayValue)) {
             return null;
@@ -198,7 +198,7 @@ class ResponseHandler extends ApiBase
         return $this->getReturnDataType($requestResponseKey, $itemArrayValue);
     }
 
-    private function getReturnDataType(ServiceRequestResponseKey $requestResponseKey, $itemArrayValue)
+    private function getReturnDataType(SrResponseKey $requestResponseKey, $itemArrayValue)
     {
         switch ($requestResponseKey->getReturnDataType()) {
             case "object":
@@ -214,7 +214,7 @@ class ResponseHandler extends ApiBase
         }
     }
 
-    private function buildRequestKeyArrayValue(ServiceRequestResponseKey $requestResponseKey, $itemArrayValue)
+    private function buildRequestKeyArrayValue(SrResponseKey $requestResponseKey, $itemArrayValue)
     {
         if ($requestResponseKey->getArrayKeys() === null || count($requestResponseKey->getArrayKeys()) === 0) {
             return $itemArrayValue;
@@ -236,7 +236,7 @@ class ResponseHandler extends ApiBase
         return $buildArray;
     }
 
-    private function buildRequestKeyObjectValue(ServiceRequestResponseKey $requestResponseKey, $itemArrayValue)
+    private function buildRequestKeyObjectValue(SrResponseKey $requestResponseKey, $itemArrayValue)
     {
         $buildArray = [];
         foreach ($itemArrayValue as $item) {
@@ -249,7 +249,7 @@ class ResponseHandler extends ApiBase
         return $buildArray;
     }
 
-    private function buildRequestKeyTextValue(ServiceRequestResponseKey $requestResponseKey, $itemArrayValue)
+    private function buildRequestKeyTextValue(SrResponseKey $requestResponseKey, $itemArrayValue)
     {
         foreach ($itemArrayValue as $item) {
             foreach ($requestResponseKey->getArrayKeys() as $arrayKey) {
@@ -364,7 +364,7 @@ class ResponseHandler extends ApiBase
     /**
      * @param mixed $apiService
      */
-    public function setApiService(ServiceRequest $apiService): void
+    public function setApiService(Sr $apiService): void
     {
         $this->apiService = $apiService;
     }
@@ -396,7 +396,7 @@ class ResponseHandler extends ApiBase
 
     /**
      * @param Provider $provider
-     * @param ServiceRequest $serviceRequest
+     * @param Sr $serviceRequest
      */
     public function setResponseKeysArray(): void
     {

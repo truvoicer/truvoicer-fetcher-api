@@ -11,10 +11,10 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('services', function (Blueprint $table) {
+        Schema::create('sr_response_key_srs', function (Blueprint $table) {
             $table->id();
-            $table->string('name');
-            $table->string('label');
+            $table->foreignId('sr_response_key_id')->constrained('sr_response_keys')->onDelete('cascade');
+            $table->foreignId('sr_id')->constrained('srs')->onDelete('cascade');
             $table->timestamps();
         });
     }
@@ -24,6 +24,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('services');
+        Schema::dropIfExists('sr_response_key_srs');
     }
 };

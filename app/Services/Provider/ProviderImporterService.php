@@ -3,9 +3,9 @@
 namespace App\Services\Provider;
 
 use App\Models\Provider;
-use App\Models\Service;
-use App\Models\ServiceRequest;
-use App\Models\ServiceResponseKey;
+use App\Models\S;
+use App\Models\Sr;
+use App\Models\SResponseKey;
 use App\Services\ApiServices\ApiService;
 use App\Services\ApiServices\ResponseKeysService;
 use App\Services\Category\CategoryService;
@@ -62,9 +62,9 @@ class ProviderImporterService extends ProviderService
         return $provider;
     }
 
-    private function buildServiceRequestParameters(ServiceRequest $sourceServiceRequest)
+    private function buildServiceRequestParameters(Sr $sourceServiceRequest)
     {
-        foreach ($sourceServiceRequest->serviceRequestParameter()->get() as $requestParameter) {
+        foreach ($sourceServiceRequest->srParameter()->get() as $requestParameter) {
             if ($requestParameter->getParameterName() === null) {
                 $sourceServiceRequest->removeServiceRequestParameter($requestParameter);
             }
@@ -72,9 +72,9 @@ class ProviderImporterService extends ProviderService
         return $sourceServiceRequest;
     }
 
-    private function buildServiceRequestConfigs(ServiceRequest $sourceServiceRequest)
+    private function buildServiceRequestConfigs(Sr $sourceServiceRequest)
     {
-        foreach ($sourceServiceRequest->serviceRequestConfig()->get() as $requestConfig) {
+        foreach ($sourceServiceRequest->srConfig()->get() as $requestConfig) {
             if ($requestConfig->getItemName() === null) {
                 $sourceServiceRequest->removeServiceRequestConfig($requestConfig);
             }
@@ -82,9 +82,9 @@ class ProviderImporterService extends ProviderService
         return $sourceServiceRequest;
     }
 
-    private function buildServiceRequestResponseKeys(ServiceRequest $sourceServiceRequest, Service $destService)
+    private function buildServiceRequestResponseKeys(Sr $sourceServiceRequest, S $destService)
     {
-        foreach ($sourceServiceRequest->serviceRequestResponseKey()->get() as $responseKey) {
+        foreach ($sourceServiceRequest->srResponseKey()->get() as $responseKey) {
             if ($responseKey->getServiceResponseKey() === null) {
                 $sourceServiceRequest->removeServiceRequestResponseKey($responseKey);
                 continue;
@@ -103,7 +103,7 @@ class ProviderImporterService extends ProviderService
                     "key_name" => $responseKey->getServiceResponseKey()->getKeyName(),
                     "key_value" => $responseKey->getServiceResponseKey()->getKeyValue()
                 ]);
-                if ($createResponseKey instanceof ServiceResponseKey) {
+                if ($createResponseKey instanceof SResponseKey) {
                     $responseKey->setServiceResponseKey($createResponseKey);
                 } else {
                     $responseKey->setServiceResponseKey(null);

@@ -11,11 +11,10 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('service_request_parameters', function (Blueprint $table) {
+        Schema::create('s_response_keys', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('service_request_id')->constrained('service_requests')->onDelete('cascade');
+            $table->foreignId('s_id')->constrained('s')->onDelete('cascade');
             $table->string('name');
-            $table->string('value');
             $table->timestamps();
         });
     }
@@ -25,6 +24,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('service_request_parameters');
+        Schema::dropIfExists('s_response_keys');
     }
 };

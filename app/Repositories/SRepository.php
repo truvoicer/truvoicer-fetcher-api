@@ -3,17 +3,17 @@
 namespace App\Repositories;
 
 use App\Models\Provider;
-use App\Models\Service;
+use App\Models\S;
 use App\Models\User;
 
-class ServiceRepository extends BaseRepository
+class SRepository extends BaseRepository
 {
     public function __construct()
     {
-        parent::__construct(Service::class);
+        parent::__construct(S::class);
     }
 
-    public function getModel(): Service
+    public function getModel(): S
     {
         return parent::getModel();
     }
@@ -41,23 +41,23 @@ class ServiceRepository extends BaseRepository
         return $this->findAllWithParams($sort, $order, $count);
     }
 
-    public function deleteService(Service $service) {
+    public function deleteService(S $service) {
         $this->setModel($service);
         return $this->delete();
     }
 
 
-    public function userHasEntityPermissions(User $user, Service $service, array $permissions)
+    public function userHasEntityPermissions(User $user, S $service, array $permissions)
     {
         $this->setPermissions($permissions);
-        $checkCategory = $this->findUserModelBy(new Service(), $user, [
-            ['services.id', '=', $service->id]
+        $checkCategory = $this->findUserModelBy(new S(), $user, [
+            ['s.id', '=', $service->id]
         ]);
 
-        return ($checkCategory instanceof Service);
+        return ($checkCategory instanceof S);
     }
 
-    public function getUserPermissions(User $user, Service $service)
+    public function getUserPermissions(User $user, S $service)
     {
         $providerUserId = $user->providers()
             ->where('provider_id', '=', $service->id)

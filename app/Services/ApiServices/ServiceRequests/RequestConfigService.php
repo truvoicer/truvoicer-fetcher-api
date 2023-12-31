@@ -1,14 +1,14 @@
 <?php
 namespace App\Services\ApiServices\ServiceRequests;
 
-use App\Models\ServiceRequest;
-use App\Models\ServiceRequestConfig;
+use App\Models\Sr;
+use App\Models\SrConfig;
 use App\Library\Defaults\DefaultData;
-use App\Repositories\ServiceRepository;
-use App\Repositories\ServiceRequestConfigRepository;
-use App\Repositories\ServiceRequestParameterRepository;
-use App\Repositories\ServiceRequestRepository;
-use App\Repositories\ServiceResponseKeyRepository;
+use App\Repositories\SRepository;
+use App\Repositories\SrConfigRepository;
+use App\Repositories\SrParameterRepository;
+use App\Repositories\SrRepository;
+use App\Repositories\SResponseKeyRepository;
 use App\Services\ApiManager\ApiBase;
 use App\Services\BaseService;
 use App\Services\Provider\ProviderService;
@@ -35,19 +35,19 @@ class RequestConfigService extends BaseService
     {
         parent::__construct();
         $this->providerService = $providerService;
-        $this->serviceRepository = new ServiceRepository();
-        $this->serviceRequestRepository = new ServiceRequestRepository();
-        $this->requestParametersRepo = new ServiceRequestParameterRepository();
-        $this->requestConfigRepo = new ServiceRequestConfigRepository();
-        $this->responseKeysRepo = new ServiceResponseKeyRepository();
+        $this->serviceRepository = new SRepository();
+        $this->serviceRequestRepository = new SrRepository();
+        $this->requestParametersRepo = new SrParameterRepository();
+        $this->requestConfigRepo = new SrConfigRepository();
+        $this->responseKeysRepo = new SResponseKeyRepository();
     }
 
     public function getResponseKeysRequestsConfigList(int $serviceRequestId, int $providerId, string $sort, string $order, int $count) {
         $serviceRequest = $this->serviceRequestRepository->findById($serviceRequestId);
         $provider = $this->providerService->getProviderById($providerId);
 
-        $this->responseKeysRepo->addWhere("service", $serviceRequest->service()->id);
-        $responseKeys = $serviceRequest->service()->get()->responseKey()->get()->toArray();
+        $this->responseKeysRepo->addWhere("service", $serviceRequest->s()->id);
+        $responseKeys = $serviceRequest->s()->get()->responseKey()->get()->toArray();
 
         $list = array_map(function ($item) use($provider, $serviceRequest) {
             $listObject = new \stdClass();
@@ -66,7 +66,7 @@ class RequestConfigService extends BaseService
         }, $responseKeys);
     }
 
-    public function findByParams(ServiceRequest $serviceRequest, string $sort, string $order, int $count) {
+    public function findByParams(Sr $serviceRequest, string $sort, string $order, int $count) {
         return $this->requestConfigRepo->findByParams($serviceRequest, $sort, $order, $count);
     }
 
@@ -124,7 +124,7 @@ class RequestConfigService extends BaseService
         return $data;
     }
 
-    public function createRequestConfig(ServiceRequest $serviceRequest, array $data)
+    public function createRequestConfig(Sr $serviceRequest, array $data)
     {
         return $this->requestConfigRepo->createRequestConfig(
             $serviceRequest,
@@ -132,14 +132,14 @@ class RequestConfigService extends BaseService
         );
     }
 
-    public function createDefaultRequestConfigs(ServiceRequest $serviceRequest, array $defaultConfig = []) {
+    public function createDefaultRequestConfigs(Sr $serviceRequest, array $defaultConfig = []) {
     $provider = $serviceRequest->getProvider();
         foreach ($defaultConfig as $item) {
             $findConfig = $this->requestConfigRepo->getRequestConfigByName(
                 $provider, $serviceRequest,
                 $item[self::REQUEST_CONFIG_ITEM_NAME]
             );
-            if ($findConfig instanceof ServiceRequestConfig) {
+            if ($findConfig instanceof SrConfig) {
                 continue;
             }
             $insertData = [
@@ -161,18 +161,18 @@ class RequestConfigService extends BaseService
         }
     }
 
-    public function updateRequestConfig(ServiceRequestConfig $serviceRequestConfig, array $data)
+    public function updateRequestConfig(SrConfig $serviceRequestConfig, array $data)
     {
         $this->requestConfigRepo->setModel($serviceRequestConfig);
         return $this->requestConfigRepo->save($this->getRequestConfigData($data));
     }
 
-    public function deleteRequestConfig(ServiceRequestConfig $serviceRequestConfig) {
+    public function deleteRequestConfig(SrConfig $serviceRequestConfig) {
         $this->requestConfigRepo->setModel($serviceRequestConfig);
         return $this->requestConfigRepo->delete();
     }
 
-    public function getRequestConfigRepo(): ServiceRequestConfigRepository
+    public function getRequestConfigRepo(): SrConfigRepository
     {
         return $this->requestConfigRepo;
     }

@@ -5,9 +5,9 @@ namespace App\Http\Controllers\Api\Backend\Services;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\Service\ServiceRequest\ServiceRequestResponseKeyResource;
 use App\Models\Provider;
-use App\Models\ServiceRequest;
-use App\Models\ServiceRequestResponseKey;
-use App\Models\ServiceResponseKey;
+use App\Models\Sr;
+use App\Models\SrResponseKey;
+use App\Models\SResponseKey;
 use App\Services\ApiServices\ServiceRequests\RequestResponseKeysService;
 use App\Services\Permission\AccessControlService;
 use App\Services\Permission\PermissionService;
@@ -49,7 +49,7 @@ class ServiceRequestResponseKeyController extends Controller
      * Returns a list of service request response keys based on the request query parameters
      *
      */
-    public function getRequestResponseKeyList(Provider $provider, ServiceRequest $serviceRequest, Request $request)
+    public function getRequestResponseKeyList(Provider $provider, Sr $serviceRequest, Request $request)
     {
         $this->setAccessControlUser($request->user());
         if (
@@ -82,10 +82,10 @@ class ServiceRequestResponseKeyController extends Controller
      *
      */
     public function getRequestResponseKey(
-        Provider $provider,
-        ServiceRequest $serviceRequest,
-        ServiceResponseKey $serviceResponseKey,
-        Request $request
+        Provider     $provider,
+        Sr           $serviceRequest,
+        SrResponseKey $serviceResponseKey,
+        Request      $request
     ) {
         $this->setAccessControlUser($request->user());
         if (
@@ -99,13 +99,9 @@ class ServiceRequestResponseKeyController extends Controller
         ) {
             return $this->sendErrorResponse("Access denied");
         }
-        $getRequestResponseKey = $this->requestResponseKeysService->getRequestResponseKeyObjectById(
-            $serviceRequest,
-            $serviceResponseKey
-        );
         return $this->sendSuccessResponse(
             "success",
-            new ServiceRequestResponseKeyResource($getRequestResponseKey)
+            new ServiceRequestResponseKeyResource($serviceResponseKey)
         );
     }
 
@@ -116,10 +112,9 @@ class ServiceRequestResponseKeyController extends Controller
      *
      */
     public function createRequestResponseKey(
-        Provider $provider,
-        ServiceRequest $serviceRequest,
-        ServiceResponseKey $serviceResponseKey,
-        Request $request
+        Provider     $provider,
+        Sr           $serviceRequest,
+        Request      $request
     ) {
         $this->setAccessControlUser($request->user());
         if (
@@ -133,9 +128,9 @@ class ServiceRequestResponseKeyController extends Controller
         ) {
             return $this->sendErrorResponse("Access denied");
         }
-        $create = $this->requestResponseKeysService->createRequestResponseKey(
+        $create = $this->requestResponseKeysService->createSrResponseKeyBySResponseKeyId(
             $serviceRequest,
-            $serviceResponseKey,
+            $request->get('s_response_key_id'),
             $request->all()
         );
         if (!$create) {
@@ -156,10 +151,10 @@ class ServiceRequestResponseKeyController extends Controller
      *
      */
     public function updateRequestResponseKey(
-        Provider $provider,
-        ServiceRequest $serviceRequest,
-        ServiceRequestResponseKey $serviceResponseKey,
-        Request $request
+        Provider      $provider,
+        Sr            $serviceRequest,
+        SrResponseKey $serviceResponseKey,
+        Request       $request
     ) {
         $this->setAccessControlUser($request->user());
         if (
@@ -196,10 +191,10 @@ class ServiceRequestResponseKeyController extends Controller
      *
      */
     public function deleteRequestResponseKey(
-        Provider $provider,
-        ServiceRequest $serviceRequest,
-        ServiceRequestResponseKey $serviceResponseKey,
-        Request $request
+        Provider      $provider,
+        Sr            $serviceRequest,
+        SrResponseKey $serviceResponseKey,
+        Request       $request
     ) {
         $this->setAccessControlUser($request->user());
         if (

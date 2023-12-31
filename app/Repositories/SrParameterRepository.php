@@ -3,24 +3,24 @@
 namespace App\Repositories;
 
 use App\Models\Provider;
-use App\Models\ServiceRequest;
-use App\Models\ServiceRequestParameter;
+use App\Models\Sr;
+use App\Models\SrParameter;
 
-class ServiceRequestParameterRepository extends BaseRepository
+class SrParameterRepository extends BaseRepository
 {
     public function __construct()
     {
-        parent::__construct(ServiceRequestParameter::class);
+        parent::__construct(SrParameter::class);
     }
 
-    public function getModel(): ServiceRequestParameter
+    public function getModel(): SrParameter
     {
         return parent::getModel();
     }
 
-    public function findByParams(ServiceRequest $serviceRequest, string $sort, string $order, int $count)
+    public function findByParams(Sr $serviceRequest, string $sort, string $order, int $count)
     {
-        return $serviceRequest->serviceRequestParameter()
+        return $serviceRequest->srParameter()
             ->orderBy($sort, $order)
             ->paginate($count);
     }
@@ -30,12 +30,12 @@ class ServiceRequestParameterRepository extends BaseRepository
         return $provider->serviceRequest()
             ->where('name', $serviceRequestName)
             ->first()
-            ->serviceRequestParameter()
+            ->srParameter()
             ->get();
     }
-    public function createRequestParameter(ServiceRequest $serviceRequest, array $data)
+    public function createRequestParameter(Sr $serviceRequest, array $data)
     {
-        $create = $serviceRequest->serviceRequestParameter()->create($data);
+        $create = $serviceRequest->srParameter()->create($data);
         if (!$create->exists) {
             return false;
         }

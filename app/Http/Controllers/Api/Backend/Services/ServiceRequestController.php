@@ -5,8 +5,8 @@ namespace App\Http\Controllers\Api\Backend\Services;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\Service\ServiceRequest\ServiceRequestResource;
 use App\Models\Provider;
-use App\Models\Service;
-use App\Models\ServiceRequest;
+use App\Models\S;
+use App\Models\Sr;
 use App\Services\ApiManager\Operations\RequestOperation;
 use App\Services\ApiServices\ApiService;
 use App\Services\Auth\AuthService;
@@ -99,8 +99,8 @@ class ServiceRequestController extends Controller
      */
     public function getProviderServiceRequest(
         Provider $provider,
-        Service $service,
-        Request $request
+        S        $service,
+        Request  $request
     ): \Illuminate\Http\JsonResponse
     {
         $this->setAccessControlUser($request->user());
@@ -166,8 +166,8 @@ class ServiceRequestController extends Controller
      */
     public function updateServiceRequest(
         Provider $provider,
-        ServiceRequest $serviceRequest,
-        Request $request
+        Sr       $serviceRequest,
+        Request  $request
     ): \Illuminate\Http\JsonResponse {
         $this->setAccessControlUser($request->user());
         if (
@@ -242,8 +242,8 @@ class ServiceRequestController extends Controller
      */
     public function duplicateServiceRequest(
         Provider $provider,
-        ServiceRequest $serviceRequest,
-        Request $request
+        Sr       $serviceRequest,
+        Request  $request
     ): \Illuminate\Http\JsonResponse
     {
         $this->setAccessControlUser($request->user());
@@ -309,8 +309,8 @@ class ServiceRequestController extends Controller
      */
     public function deleteServiceRequest(
         Provider $provider,
-        ServiceRequest $serviceRequest,
-        Request $request
+        Sr       $serviceRequest,
+        Request  $request
     ): \Illuminate\Http\JsonResponse
     {
         $this->setAccessControlUser($request->user());
@@ -342,8 +342,8 @@ class ServiceRequestController extends Controller
      */
     public function getServiceRequest(
         Provider $provider,
-        ServiceRequest $serviceRequest,
-        Request $request
+        Sr       $serviceRequest,
+        Request  $request
     ): \Illuminate\Http\JsonResponse {
         $this->setAccessControlUser($request->user());
         if (

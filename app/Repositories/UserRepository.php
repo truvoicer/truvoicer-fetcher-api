@@ -2,6 +2,7 @@
 
 namespace App\Repositories;
 
+use App\Models\Role;
 use App\Models\User;
 
 class UserRepository extends BaseRepository
@@ -26,5 +27,26 @@ class UserRepository extends BaseRepository
         return parent::getModel();
     }
 
+    public function createUser(array $userData, Role $role) {
+        $user = $this->getModel()->fill($userData);
+        $createUser = $role->users()->save($user);
+        if (!$createUser->exists) {
+            return false;
+        }
+        $this->setModel($createUser);
+        return true;
+    }
+    public function updateUser(User $user, array $userData, ?Role $role = null) {
+        if ($role instanceof Role) {
+            unset($userData['role_id']);
+            $user->roles()->sync([$role->id]);
+        }
+        $this->setModel($user);
+        $createUser = $this->save($userData);
+        if (!$createUser) {
+            return false;
+        }
+        return true;
+    }
 
 }

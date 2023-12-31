@@ -2,35 +2,35 @@
 
 namespace App\Models;
 
-use App\Repositories\ServiceUserRepository;
+use App\Repositories\SUserRepository;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class ServiceUser extends Model
+class SUser extends Model
 {
     use HasFactory;
-    public const TABLE_NAME = 'service_users';
-    public const REPOSITORY = ServiceUserRepository::class;
+    public const TABLE_NAME = 's_users';
+    public const REPOSITORY = SUserRepository::class;
 
     public function permissions()
     {
         return $this->belongsToMany(
             Permission::class,
-            ServiceUserPermission::TABLE_NAME,
-            'service_user_id',
+            SUserPermission::TABLE_NAME,
+            's_user_id',
             'permission_id'
         );
     }
     public function service()
     {
         return $this->belongsTo(
-            Service::class
+            S::class
         );
     }
-    public function serviceUserPermission()
+    public function sUserPermission()
     {
         return $this->hasMany(
-            ServiceUserPermission::class
+            SUserPermission::class
         );
     }
 }

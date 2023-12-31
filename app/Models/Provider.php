@@ -52,7 +52,7 @@ class Provider extends Model
     }
     public function serviceRequest()
     {
-        return $this->hasMany(ServiceRequest::class);
+        return $this->hasMany(Sr::class);
     }
     public function property()
     {

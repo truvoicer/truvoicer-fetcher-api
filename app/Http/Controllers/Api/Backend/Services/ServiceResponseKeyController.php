@@ -6,8 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Service\CreateServiceResponseKeyRequest;
 use App\Http\Requests\Service\UpdateServiceResponseKeyRequest;
 use App\Http\Resources\Service\ServiceResponseKeyResource;
-use App\Models\Service;
-use App\Models\ServiceResponseKey;
+use App\Models\S;
+use App\Models\SResponseKey;
 use App\Services\ApiServices\ApiService;
 use App\Services\ApiServices\ResponseKeysService;
 use App\Services\Permission\AccessControlService;
@@ -59,7 +59,7 @@ class ServiceResponseKeyController extends Controller
      * Returns a list of response keys based on the request query parameters
      *
      */
-    public function getServiceResponseKeyList(Service $service, Request $request)
+    public function getServiceResponseKeyList(S $service, Request $request)
     {
         $this->setAccessControlUser($request->user());
         if (
@@ -88,7 +88,7 @@ class ServiceResponseKeyController extends Controller
      * Returns a single service response key based on the id passed in the request url
      *
      */
-    public function getServiceResponseKey(Service $service, ServiceResponseKey $serviceResponseKey, Request $request)
+    public function getServiceResponseKey(S $service, SResponseKey $serviceResponseKey, Request $request)
     {
         $this->setAccessControlUser($request->user());
         if (
@@ -116,7 +116,7 @@ class ServiceResponseKeyController extends Controller
      * Returns error response and message on fail
      *
      */
-    public function createServiceResponseKey(Service $service, CreateServiceResponseKeyRequest $request)
+    public function createServiceResponseKey(S $service, CreateServiceResponseKeyRequest $request)
     {
         $this->setAccessControlUser($request->user());
         if (
@@ -154,7 +154,7 @@ class ServiceResponseKeyController extends Controller
      * Returns error response and message on fail
      *
      */
-    public function updateServiceResponseKey(Service $service, ServiceResponseKey $serviceResponseKey, UpdateServiceResponseKeyRequest $request)
+    public function updateServiceResponseKey(S $service, SResponseKey $serviceResponseKey, UpdateServiceResponseKeyRequest $request)
     {
         $this->setAccessControlUser($request->user());
         if (
@@ -192,7 +192,7 @@ class ServiceResponseKeyController extends Controller
      * Returns error response and message on fail
      *
      */
-    public function deleteServiceResponseKey(Service $service, ServiceResponseKey $serviceResponseKey, Request $request)
+    public function deleteServiceResponseKey(S $service, SResponseKey $serviceResponseKey, Request $request)
     {
         $this->setAccessControlUser($request->user());
         if (

@@ -9,6 +9,7 @@ use App\Repositories\RoleRepository;
 use App\Repositories\UserRepository;
 use App\Services\Auth\AuthService;
 use App\Services\BaseService;
+use \DateTime;
 use Illuminate\Support\Facades\Hash;
 use Laravel\Sanctum\PersonalAccessToken;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
@@ -45,9 +46,7 @@ class UserAdminService extends BaseService
     }
     public function createUser(array $userData, Role $role)
     {
-        $user = $this->userRepository->getModel()->fill($userData);
-        $createUser = $role->users()->save($user);
-        return $createUser->exists;
+        return $this->userRepository->createUser($userData, $role);
     }
 
     public function getUserToken(User $user) {
@@ -91,11 +90,13 @@ class UserAdminService extends BaseService
 
     public function updateApiTokenExpiry(PersonalAccessToken $apiToken, array $data)
     {
-        return true;
-//        return $this->apiTokenRepository->updateTokenExpiry($apiToken, new \DateTime($data["expires_at"]), "user");
+        return $this->personalAccessTokenRepository->updateTokenExpiry(
+            $apiToken,
+            $data
+        );
     }
 
-    public function findApiTokensByParams(User $user, string $sort, string $order, int $count)
+    public function findApiTokensByParams(User $user, string $sort, string $order, ?int $count = null)
     {
         return $user->tokens()->orderBy($sort, $order)->limit($count)->get();
     }
@@ -118,10 +119,16 @@ class UserAdminService extends BaseService
         return false;
     }
 
-    public function updateUser(User $user, array $data)
+    public function updateUser(User $user, array $data, ?int $roleId = null)
     {
-        $this->userRepository->setModel($user);
-        return $this->userRepository->save($data);
+        $role = null;
+        if (!empty($roleId)) {
+            $role = $this->roleRepository->findById($roleId);
+            if (!$role instanceof Role) {
+                throw new BadRequestHttpException(sprintf("Role id: %s not found in database.", $roleId));
+            }
+        }
+        return $this->userRepository->updateUser($user, $data, $role);
     }
 
     public function deleteUserById(int $userId)
@@ -157,4 +164,10 @@ class UserAdminService extends BaseService
     {
         return $apiToken->delete();
     }
+
+    public function getPersonalAccessTokenRepository(): PersonalAccessTokenRepository
+    {
+        return $this->personalAccessTokenRepository;
+    }
+
 }

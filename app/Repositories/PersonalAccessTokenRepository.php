@@ -21,6 +21,17 @@ class PersonalAccessTokenRepository extends BaseRepository
         return parent::getModel();
     }
 
+    public function updateTokenExpiry(PersonalAccessToken $personalAccessToken, array $data) {
+        $this->setModel($personalAccessToken);
+
+        if (!empty($data['expires_at'])) {
+            $data['expires_at'] = new DateTime($data['expires_at']);
+        }
+        if (!$this->update($data)) {
+            return false;
+        }
+        return true;
+    }
     public function getLatestAccessToken(User $user) {
         $dateTime = new DateTime();
 

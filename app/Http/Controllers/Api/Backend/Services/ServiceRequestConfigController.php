@@ -7,8 +7,8 @@ use App\Http\Requests\Service\CreateServiceRequestConfigRequest;
 use App\Http\Requests\Service\UpdateServiceRequestConfigRequest;
 use App\Http\Resources\Service\ServiceRequest\ServiceRequestConfigResource;
 use App\Models\Provider;
-use App\Models\ServiceRequest;
-use App\Models\ServiceRequestConfig;
+use App\Models\Sr;
+use App\Models\SrConfig;
 use App\Services\Permission\AccessControlService;
 use App\Services\Permission\PermissionService;
 use App\Services\Tools\HttpRequestService;
@@ -53,7 +53,7 @@ class ServiceRequestConfigController extends Controller
      * Returns a list of service request configs based on the request query parameters
      *
      */
-    public function getRequestConfigList(Provider $provider, ServiceRequest $serviceRequest, Request $request): \Illuminate\Http\JsonResponse
+    public function getRequestConfigList(Provider $provider, Sr $serviceRequest, Request $request): \Illuminate\Http\JsonResponse
     {
         $this->setAccessControlUser($request->user());
         if (
@@ -87,9 +87,9 @@ class ServiceRequestConfigController extends Controller
      */
     public function getServiceRequestConfig(
         Provider $provider,
-        ServiceRequest $serviceRequest,
-        ServiceRequestConfig $serviceRequestConfig,
-        Request $request
+        Sr       $serviceRequest,
+        SrConfig $serviceRequestConfig,
+        Request  $request
     ): \Illuminate\Http\JsonResponse
     {
         $this->setAccessControlUser($request->user());
@@ -117,8 +117,8 @@ class ServiceRequestConfigController extends Controller
      *
      */
     public function createRequestConfig(
-        Provider $provider,
-        ServiceRequest $serviceRequest,
+        Provider                          $provider,
+        Sr                                $serviceRequest,
         CreateServiceRequestConfigRequest $request
     ): \Illuminate\Http\JsonResponse
     {
@@ -158,9 +158,9 @@ class ServiceRequestConfigController extends Controller
      * Returns error response and message on fail
      */
     public function updateRequestConfig(
-        Provider $provider,
-        ServiceRequest $serviceRequest,
-        ServiceRequestConfig $serviceRequestConfig,
+        Provider                          $provider,
+        Sr                                $serviceRequest,
+        SrConfig                          $serviceRequestConfig,
         UpdateServiceRequestConfigRequest $request
     ): \Illuminate\Http\JsonResponse
     {
@@ -200,9 +200,9 @@ class ServiceRequestConfigController extends Controller
      */
     public function deleteRequestConfig(
         Provider $provider,
-        ServiceRequest $serviceRequest,
-        ServiceRequestConfig $serviceRequestConfig,
-        Request $request
+        Sr       $serviceRequest,
+        SrConfig $serviceRequestConfig,
+        Request  $request
     ): \Illuminate\Http\JsonResponse
     {
         $this->setAccessControlUser($request->user());
