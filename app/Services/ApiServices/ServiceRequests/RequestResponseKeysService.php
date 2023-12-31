@@ -21,17 +21,6 @@ class RequestResponseKeysService extends BaseService
     private ServiceRequestRepository $serviceRequestRepository;
     private ServiceRequestResponseKeyRepository $requestResponseKeyRepository;
     private ServiceResponseKeyRepository $responseKeyRepository;
-    private $defaultRequestResponseKeyData = [
-        "response_key_value" => "",
-        "show_in_response" => false,
-        "list_item" => false,
-        "append_extra_data" => false,
-        "append_extra_data_value" => "",
-        "prepend_extra_data" => false,
-        "prepend_extra_data_value" => "",
-        "is_service_request" => false,
-        "has_array_value" => false,
-    ];
     public function __construct()
     {
         parent::__construct();
@@ -145,17 +134,8 @@ class RequestResponseKeysService extends BaseService
         return $getRequestResponseKey;
     }
 
-    public function getRequestResponseKeys(ServiceRequest $serviceRequest, string $sort = "key_name", string $order = "asc", int $count = null) {
-        $service = $serviceRequest->service()->first();
-        if (!$service instanceof Service) {
-            throw new BadRequestHttpException(sprintf("Service request id:%s not found in database.",
-                $serviceRequest->id
-            ));
-        }
-        $responseKeys = $service->responseKey()->get()->toArray();
-        return array_map(function ($responseKey) use($serviceRequest) {
-            return $this->getRequestResponseKey($serviceRequest, $responseKey);
-        }, $responseKeys);
+    public function getRequestResponseKeys(ServiceRequest $serviceRequest, string $sort = "name", string $order = "asc", int $count = null) {
+        return $this->requestResponseKeyRepository->findServiceRequestResponseKeys($serviceRequest, $sort, $order, $count);
     }
 
 
@@ -181,17 +161,25 @@ class RequestResponseKeysService extends BaseService
     }
 
     public function setRequestResponseKeyObject(array $data) {
-        $responseKeyData = array_merge($this->defaultRequestResponseKeyData, $data);
+        $fields = [
+            "value",
+            "show_in_response",
+            "list_item",
+            "append_extra_data",
+            "append_extra_data_value",
+            "prepend_extra_data",
+            "prepend_extra_data_value",
+            "is_service_request",
+            "has_array_value",
+            "array_keys",
+            "return_data_type"
+        ];
         $requestResponseKeyData = [];
-        $requestResponseKeyData['response_key_value'] = $responseKeyData['response_key_value'];
-        $requestResponseKeyData['show_in_response'] = $responseKeyData['show_in_response'];
-        $requestResponseKeyData['list_item'] = $responseKeyData['list_item'];
-        $requestResponseKeyData['append_extra_data'] = $responseKeyData['append_extra_data'];
-        $requestResponseKeyData['append_extra_data_value'] = $responseKeyData['append_extra_data_value'];
-        $requestResponseKeyData['prepend_extra_data'] = $responseKeyData['prepend_extra_data'];
-        $requestResponseKeyData['prepend_extra_data_value'] = $responseKeyData['prepend_extra_data_value'];
-        $requestResponseKeyData['is_service_request'] = $responseKeyData['is_service_request'];
-        $requestResponseKeyData['has_array_value'] = $responseKeyData['has_array_value'];
+        foreach ($fields as $field) {
+            if (array_key_exists($field, $data)) {
+                $requestResponseKeyData[$field] = $data[$field];
+            }
+        }
 
 //        if ($responseKeyData['is_service_request']) {
 //            $serviceRequestId = $this->getServiceRequestIdFromRequest($responseKeyData);
@@ -210,11 +198,8 @@ class RequestResponseKeysService extends BaseService
 //        }
 
         $requestResponseKeyData['array_keys'] = null;
-        if(!empty($responseKeyData['array_keys']) && is_array($responseKeyData['array_keys'])) {
-            $requestResponseKeyData['array_keys'] = $responseKeyData['array_keys'];
-        }
-        if(!empty($responseKeyData['return_data_type'])) {
-            $requestResponseKeyData['return_data_type'] = $responseKeyData['return_data_type'];
+        if(!empty($responseKeyData['array_keys']) && !is_array($responseKeyData['array_keys'])) {
+            throw new BadRequestHttpException("array_keys must be an array");
         }
         return $requestResponseKeyData;
     }

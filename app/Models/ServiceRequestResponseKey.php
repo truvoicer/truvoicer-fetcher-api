@@ -20,4 +20,14 @@ class ServiceRequestResponseKey extends Model
     {
         return $this->hasMany(ServiceResponseKey::class);
     }
+
+    public function serviceRequestResponseKeyServiceRequests()
+    {
+        return $this->belongsToMany(
+            ServiceRequestResponseKey::class,
+            ServiceRequestResponseKeyServiceRequest::TABLE_NAME,
+            'service_request_id',
+            'service_request_response_key_id'
+        );
+    }
 }

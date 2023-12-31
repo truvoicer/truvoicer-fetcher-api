@@ -65,7 +65,7 @@ class ServiceRequestResponseKeyController extends Controller
         }
             $responseKeys = $this->requestResponseKeysService->getRequestResponseKeys(
                 $serviceRequest,
-                $request->get('sort', "key_name"),
+                $request->get('sort', "name"),
                 $request->get('order', "asc"),
                 (int)$request->get('count', null)
             );

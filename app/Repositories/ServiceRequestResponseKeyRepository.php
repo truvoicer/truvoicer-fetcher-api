@@ -71,10 +71,11 @@ class ServiceRequestResponseKeyRepository extends BaseRepository
         return $this->save($data);
     }
 
-    public function findServiceRequestResponseKeys(ServiceRequest $serviceRequest) {
+    public function findServiceRequestResponseKeys(ServiceRequest $serviceRequest, string $sort = "name", string $order = "asc", int $count = null) {
         return $serviceRequest->serviceRequestResponseKeys()
-            ->with('serviceRequestServiceResponseKey')
-            ->get();
+            ->with('serviceRequestResponseKey')
+            ->orderBy($sort, $order)
+            ->paginate();
     }
     public function findServiceRequestResponseKeyByResponseKey(ServiceRequest $serviceRequest, ServiceResponseKey $serviceResponseKey) {
         return $serviceRequest->serviceRequestResponseKeys()

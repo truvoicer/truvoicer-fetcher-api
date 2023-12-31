@@ -17,7 +17,7 @@ class ServiceResponseKey extends Model
     ];
     public function serviceRequestResponseKey()
     {
-        return $this->belongsTo(ServiceRequestResponseKey::class);
+        return $this->hasMany(ServiceRequestResponseKey::class);
     }
     public function serviceRequestResponseKeys()
     {
