@@ -68,18 +68,21 @@ Route::middleware(['auth:sanctum', 'ability:api:admin,api:superuser,api:user'])-
             Route::get('/{query}', [SearchController::class, 'search'])->name('query');
         });
     });
-    Route::prefix('user')->name('user.')->group(function () {
-        Route::get('/detail', [UserController::class, 'getSessionUserDetail'])->name('detail');
-        Route::post('/update', [UserController::class, 'updateSessionUser'])->name('update');
-        Route::prefix('permission')->name('permission.')->group(function () {
-            Route::get('/entity/list', [UserController::class, 'getProtectedEntitiesList'])->name('entity.list');
-            Route::get('/entity/{entity}/{id}', [UserController::class, 'getUserEntityPermissionList'])->name('entity');
-        });
-        Route::prefix('api-token')->name('api-token.')->group(function () {
-            Route::get('/{personalAccessToken}', [UserController::class, 'getSessionUserApiToken'])->name('detail');
-            Route::get('/list', [UserController::class, 'getSessionUserApiTokenList'])->name('list');
-            Route::get('/generate', [UserController::class, 'generateSessionUserApiToken'])->name('generate');
-            Route::post('/delete', [UserController::class, 'deleteSessionUserApiToken'])->name('delete');
+    Route::get('/permission/entity/list', [UserController::class, 'getProtectedEntitiesList'])->name('entity.list');
+
+    Route::prefix('session')->name('session.')->group(function () {
+        Route::prefix('user')->name('user.')->group(function () {
+            Route::get('/detail', [UserController::class, 'getSessionUserDetail'])->name('detail');
+            Route::patch('/update', [UserController::class, 'updateSessionUser'])->name('update');
+            Route::prefix('permission')->name('permission.')->group(function () {
+                Route::get('/entity/{entity}/{id}', [UserController::class, 'getUserEntityPermissionList'])->name('entity');
+            });
+            Route::get('/api-token', [UserController::class, 'getSessionUserApiToken'])->name('detail');
+            Route::prefix('api-token')->name('api-token.')->group(function () {
+                Route::get('/list', [UserController::class, 'getSessionUserApiTokenList'])->name('list');
+                Route::get('/generate', [UserController::class, 'generateSessionUserApiToken'])->name('generate');
+                Route::delete('/delete', [UserController::class, 'deleteSessionUserApiToken'])->name('delete');
+            });
         });
     });
     Route::prefix('category')->name('category.')->group(function () {

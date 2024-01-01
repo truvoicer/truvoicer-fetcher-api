@@ -40,13 +40,15 @@ class PermissionEntities
         ]
     ];
 
-    private array $entityConfig = [];
 
     public function getEntityInstance(string $entity)
     {
-        $className = "App\Models\{$entity}";
+        $className = "App\\Models\\{$entity}";
         if (!class_exists($className)) {
-            return false;
+            $className = sprintf("App\\Models\\%s", ucfirst($entity));
+            if (!class_exists($className)) {
+                return false;
+            }
         }
         return new $className();
     }
@@ -122,7 +124,7 @@ class PermissionEntities
         return $serviceObject->$functionName($user, $entityObject);
     }
 
-    public function getUserEntityPermissionList(string $entity, User $user) {
+    public function getUserEntityPermissionList(string $entity, int $id, User $user) {
         $entityInstance = $this->getEntityInstance($entity);
         if (!$entityInstance) {
             throw new BadRequestHttpException(
@@ -144,7 +146,7 @@ class PermissionEntities
             );
         }
 
-        return $repositoryInstance->$functionName($user, 'name', "asc", null);
+        return $repositoryInstance->$functionName($user, $id, 'name', "asc", null);
     }
 
     public function getUserEntityPermission(string $entity, int $id, User $user)

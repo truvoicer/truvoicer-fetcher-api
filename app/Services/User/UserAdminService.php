@@ -9,8 +9,6 @@ use App\Repositories\RoleRepository;
 use App\Repositories\UserRepository;
 use App\Services\Auth\AuthService;
 use App\Services\BaseService;
-use \DateTime;
-use Illuminate\Support\Facades\Hash;
 use Laravel\Sanctum\PersonalAccessToken;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 
@@ -101,24 +99,6 @@ class UserAdminService extends BaseService
         return $user->tokens()->orderBy($sort, $order)->limit($count)->get();
     }
 
-    public function generateUserPassword(array $data, $type)
-    {
-        if ((array_key_exists("change_password", $data) && $data["change_password"]) || $type === "insert") {
-            if (!array_key_exists("confirm_password", $data) || !array_key_exists("new_password", $data)) {
-                throw new BadRequestHttpException("confirm_password or new_password is not in request.");
-            }
-            if ($data["confirm_password"] === "" || $data["confirm_password"] === null ||
-                $data["new_password"] === "" || $data["new_password"] === null) {
-                throw new BadRequestHttpException("Confirm or New Password fields have empty values.");
-            }
-            if ($data["confirm_password"] !== $data["new_password"]) {
-                throw new BadRequestHttpException("Confirm and New Password fields don't match.");
-            }
-            return Hash::make($data['new_password']);
-        }
-        return false;
-    }
-
     public function updateUser(User $user, array $data, ?int $roleId = null)
     {
         $role = null;
@@ -129,15 +109,6 @@ class UserAdminService extends BaseService
             }
         }
         return $this->userRepository->updateUser($user, $data, $role);
-    }
-
-    public function deleteUserById(int $userId)
-    {
-        $user = $this->userRepository->findById($userId);
-        if (!$user instanceof User) {
-            throw new BadRequestHttpException(sprintf("User id: %s not found in database.", $userId));
-        }
-        return $this->deleteUser($user);
     }
 
     public function deleteUser(User $user)

@@ -3,6 +3,9 @@
 namespace App\Http\Controllers\Api\Backend;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Admin\User\CreateUserRequest;
+use App\Http\Requests\Admin\User\UpdateUserRequest;
+use App\Http\Resources\PersonalAccessTokenResource;
 use App\Http\Resources\UserResource;
 use App\Services\ApiServices\ServiceRequests\RequestService;
 use App\Services\Category\CategoryService;
@@ -61,13 +64,14 @@ class UserController extends Controller
         );
     }
 
-    public function getUserEntityPermissionList(string $entity, Request $request)
+    public function getUserEntityPermissionList(string $entity, int $id, Request $request)
     {
         return $this->sendSuccessResponse(
             "Successfully fetched permission list",
             $this->serializerService->entityArrayToArray(
                 $this->accessControlService->getPermissionEntities()->getUserEntityPermissionList(
                     $entity,
+                    $id,
                     $request->user()
                 ),
                 ["list"]
@@ -90,16 +94,11 @@ class UserController extends Controller
         );
     }
 
-    public function getSessionUserApiToken(PersonalAccessToken $personalAccessToken, Request $request)
+    public function getSessionUserApiToken(Request $request)
     {
-        if (!$this->userService->apiTokenBelongsToUser($request->user(), $personalAccessToken)) {
-            return $this->sendErrorResponse(
-                "Operation not permitted"
-            );
-        }
         return $this->sendSuccessResponse(
             "success",
-            $this->serializerService->entityToArray($personalAccessToken)
+            new PersonalAccessTokenResource($request->user()->currentAccessToken())
         );
     }
 
@@ -109,24 +108,19 @@ class UserController extends Controller
             $request->user(),
             $request->get('sort', "id"),
             $request->get('order', "asc"),
-            (int)$request->get('count', null)
+            $request->get('count')
         );
         return $this->sendSuccessResponse(
             "success",
-            $this->serializerService->entityArrayToArray(
-                array_filter($getApiTokens, function ($token, $key) {
-                    return $token->getType() === "user";
-                }, ARRAY_FILTER_USE_BOTH)
-            )
+            PersonalAccessTokenResource::collection($getApiTokens)
         );
     }
 
     public function generateSessionUserApiToken(Request $request)
     {
-        $user = $request->user();
         return $this->sendSuccessResponse(
             "success",
-            $this->serializerService->entityToArray(
+            new PersonalAccessTokenResource(
                 $this->userService->createUserToken(
                     $request->user(),
                 )
@@ -134,41 +128,42 @@ class UserController extends Controller
         );
     }
 
-    public function deleteSessionUserApiToken(Request $request)
+    public function deleteSessionUserApiToken(PersonalAccessToken $personalAccessToken, Request $request)
     {
-        $requestData = $this->httpRequestService->getRequestData($request, true);
-        $apiToken = $this->userService->getApiTokenById($requestData['item_id']);
-
-        if (!$this->userService->apiTokenBelongsToUser($request->user(), $apiToken)) {
-            return $this->sendErrorResponse(
-                "Operation not permitted"
-            );
-        }
-        $delete = $this->userService->deleteApiToken($apiToken);
+        $delete = $this->userService->deleteApiToken($personalAccessToken);
         if (!$delete) {
             return $this->sendErrorResponse(
                 "Error deleting api token",
-                $this->serializerService->entityToArray($delete, ['main'])
             );
         }
         return $this->sendSuccessResponse(
             "Api Token deleted.",
-            $this->serializerService->entityToArray($delete, ['main'])
         );
     }
 
-    public function updateSessionUser(Request $request)
+    public function updateSessionUser(UpdateUserRequest $request)
     {
+        $this->accessControlService->setUser($request->user());
+        $roleId = null;
+        if (
+            $this->accessControlService->inAdminGroup() &&
+            $request->has('role_id')
+        ) {
+            $roleId = $request->get('role_id');
+        }
         $update = $this->userService->updateUser(
             $request->user(),
-            $this->httpRequestService->getRequestData($request, true)
+            $request->all(),
+            $roleId
         );
         if (!$update) {
             return $this->sendErrorResponse("Error updating user");
         }
         return $this->sendSuccessResponse(
             "User updated",
-            $this->serializerService->entityToArray($update, ['main'])
+            new UserResource(
+                $this->userService->getUserRepository()->getModel()
+            )
         );
     }
 }

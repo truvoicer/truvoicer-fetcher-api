@@ -100,9 +100,14 @@ class ProviderRepository extends BaseRepository
         return $providerUser->permissions()->get();
     }
 
-    public function getPermissionsListByUser(User $user, string $sort, string $order, ?int $count) {
-
-        return null;
+    public function getPermissionsListByUser(User $user, int $id, string $sort, string $order, ?int $count) {
+        return $user
+            ->providerPermissions()
+            ->whereHas('providerUser', function ($query) use ($id) {
+                $query->where('provider_id', $id);
+            })
+            ->with('permission')
+            ->get();
     }
 
     public function deleteUserPermissions(User $user, Provider $provider)
