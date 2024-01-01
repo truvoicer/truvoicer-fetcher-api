@@ -15,7 +15,9 @@ class AccessTokenResource extends JsonResource
     public function toArray(Request $request): array
     {
         $data = parent::toArray($request);
-        $data['token'] = $request->token;
+        if(!empty($data['accessToken']['expires_at'])) {
+            $data['accessToken']['expires_at_timestamp'] = strtotime($data['accessToken']['expires_at']);
+        }
         return $data;
     }
 }

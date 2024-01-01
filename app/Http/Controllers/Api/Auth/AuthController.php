@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\Auth;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginRequest;
 use App\Http\Resources\AccessTokenResource;
+use App\Http\Resources\UserResource;
 use App\Models\User;
 use App\Services\Permission\AccessControlService;
 use App\Services\Tools\HttpRequestService;
@@ -55,7 +56,7 @@ class AuthController extends Controller
         }
         return $this->sendSuccessResponse(
             'Authenticated',
-            $token->toArray()
+            new AccessTokenResource($token)
         );
     }
 
@@ -68,7 +69,10 @@ class AuthController extends Controller
 
     public function getSingleUserByApiToken(Request $request): \Illuminate\Http\JsonResponse
     {
-        return $this->sendSuccessResponse("success", $request->user());
+        return $this->sendSuccessResponse(
+            "success",
+            new UserResource($request->user()->load('roles'))
+        );
     }
 
     public function accountTokenLogin(Request $request): Response

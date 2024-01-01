@@ -55,7 +55,6 @@ Route::middleware(['auth:sanctum', 'ability:api:admin,api:superuser,api:user'])-
         Route::prefix('token')->name('token.')->group(function () {
             Route::get('/validate', [AuthController::class, 'validateToken'])->name('validate');
             Route::get('/user', [AuthController::class, 'getSingleUserByApiToken'])->name('user');
-            Route::get('/login', [AuthController::class, 'accountTokenLogin'])->name('login');
         });
     });
     Route::prefix('front')->name('front.')->group(function () {
