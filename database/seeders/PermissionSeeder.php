@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\Permission;
 use App\Models\Role;
 use App\Services\Permission\PermissionService;
 use Illuminate\Database\Seeder;
@@ -18,7 +19,7 @@ class PermissionSeeder extends Seeder
             $findPermission = $permissionService->getPermissionRepository()->findOneBy(
                 [['name', '=', $permission['name']]]
             );
-            if ($findPermission instanceof Role && $findPermission->exists) {
+            if ($findPermission instanceof Permission) {
                 continue;
             }
             $createPermission = $permissionService->createPermission(
