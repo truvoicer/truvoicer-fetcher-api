@@ -46,9 +46,14 @@ class Provider extends Model
     {
         return $this->belongsTo(User::class);
     }
-    public function category()
+    public function categories()
     {
-        return $this->hasMany(Category::class);
+        return $this->belongsToMany(
+            Category::class,
+            ProviderCategory::TABLE_NAME,
+            'provider_id',
+            'category_id'
+        );
     }
     public function serviceRequest()
     {

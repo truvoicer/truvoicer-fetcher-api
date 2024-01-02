@@ -101,7 +101,7 @@ class ProviderService extends BaseService
         $this->providerRepository->setOrderDir($order);
         $this->providerRepository->setSortField($sort);
         $this->providerRepository->setLimit($count);
-        return $this->providerRepository->findMany();
+        return $this->providerRepository->getQuery()->with('categories')->get();
     }
 
     public function findUserProviders(User $user, string $sort, string $order, ?int $count) {
@@ -109,10 +109,11 @@ class ProviderService extends BaseService
             PermissionService::PERMISSION_ADMIN,
             PermissionService::PERMISSION_READ,
         ]);
-        return $this->providerRepository->findModelsByUser(
+        return $this->providerRepository->getModelByUserQuery(
             new Provider(),
             $user
-        );
+        )
+            ->with('categories')->get();
     }
     public function getUserProviderList(User $user, Provider $provider)
     {

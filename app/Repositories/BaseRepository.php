@@ -114,15 +114,22 @@ class BaseRepository
         $this->offset = self::DEFAULT_OFFSET;
     }
 
+    public function getQuery()
+    {
+        $query = $this->buildQuery();
+        $this->reset();
+        return $query;
+    }
+
     public function findOne(): ?Model
     {
-        $find = $this->buildQuery()->first();
+        $find = $this->getQuery()->first();
         $this->reset();
         return $find;
     }
     public function findMany(): Collection
     {
-        $find = $this->buildQuery()->get();
+        $find = $this->getQuery()->get();
         $this->reset();
         return $find;
     }
