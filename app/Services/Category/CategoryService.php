@@ -144,9 +144,16 @@ class CategoryService extends BaseService
 
     private function getCategoryObject(array $data)
     {
+        $fields = [
+            'name',
+            'label',
+        ];
         $categoryData = [];
-        $categoryData['name'] = $data['name'];
-        $categoryData['label'] = $data['label'];
+        foreach ($fields as $field) {
+            if (isset($data[$field])) {
+                $categoryData[$field] = trim($data[$field]);
+            }
+        }
         return $categoryData;
     }
 
