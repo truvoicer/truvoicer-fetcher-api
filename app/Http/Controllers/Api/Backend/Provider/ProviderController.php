@@ -7,7 +7,6 @@ use App\Http\Requests\Provider\CreateProviderRequest;
 use App\Http\Requests\Provider\UpdateProviderRequest;
 use App\Http\Resources\ProviderResource;
 use App\Models\Provider;
-use App\Repositories\ProviderRepository;
 use App\Services\Auth\AuthService;
 use App\Services\Permission\AccessControlService;
 use App\Services\Permission\PermissionService;
@@ -24,28 +23,22 @@ use Illuminate\Http\Request;
  */
 class ProviderController extends Controller
 {
-    const DEFAULT_ENTITY = "provider";
-
-    private ProviderRepository $providerRepo;
     private ProviderService $providerService;
 
     /**
      * ProviderController constructor.
-     * @param ProviderRepository $providerRepository
      * @param ProviderService $providerService
      * @param AccessControlService $accessControlService
      * @param HttpRequestService $httpRequestService
      * @param SerializerService $serializerService
      */
     public function __construct(
-        ProviderRepository $providerRepository,
         HttpRequestService $httpRequestService,
         SerializerService $serializerService,
         ProviderService $providerService,
         AccessControlService $accessControlService
     ) {
         parent::__construct($accessControlService, $httpRequestService, $serializerService);
-        $this->providerRepo = $providerRepository;
         $this->providerService = $providerService;
     }
 
@@ -144,7 +137,7 @@ class ProviderController extends Controller
         }
         $updateProvider = $this->providerService->updateProvider(
             $provider,
-            $this->httpRequestService->getRequestData($request, true)
+            $request->validated()
         );
 
         if (!$updateProvider) {
@@ -152,7 +145,7 @@ class ProviderController extends Controller
         }
         return $this->sendSuccessResponse(
             "Provider updated",
-            $this->serializerService->entityToArray($updateProvider, ['main'])
+            new ProviderResource($this->providerService->getProviderRepository()->getModel())
         );
     }
 

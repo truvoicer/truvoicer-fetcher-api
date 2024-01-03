@@ -1,6 +1,7 @@
 <?php
 namespace App\Services\Permission;
 
+use App\Helpers\Db\DbHelpers;
 use App\Helpers\Tools\ClassHelpers;
 use App\Models\User;
 use App\Repositories\BaseRepository;
@@ -197,9 +198,23 @@ class PermissionEntities
                 sprintf("Function [%s] does not exist in [%s]", $saveFunctionName, get_class($repositoryInstance))
             );
         }
-
-
         return $repositoryInstance->$saveFunctionName($user, $entity, $permissions);
+    }
+
+    public function saveRelatedEntity(Model $entity, string $relatedEntityClass, array $data)
+    {
+        $repositoryInstance = $this->getModelRepositoryInstance($entity);
+        $saveFunctionName = sprintf(
+            "save%s%sEntities",
+            ucfirst(DbHelpers::getModelClassName($entity::class)),
+            ucfirst(DbHelpers::getModelClassName($relatedEntityClass))
+        );
+        if (!$this->validateServiceObjectFunction($repositoryInstance, $saveFunctionName)) {
+            throw new BadRequestHttpException(
+                sprintf("Function [%s] does not exist in [%s]", $saveFunctionName, get_class($repositoryInstance))
+            );
+        }
+        return $repositoryInstance->$saveFunctionName($entity, $relatedEntityClass, $data);
     }
 
     public function deleteUserEntityPermissions(string $entity, int $id, User $user)

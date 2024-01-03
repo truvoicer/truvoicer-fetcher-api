@@ -2,6 +2,7 @@
 
 namespace App\Services\Provider;
 
+use App\Models\Category;
 use App\Models\Property;
 use App\Models\Provider;
 use App\Models\User;
@@ -176,7 +177,7 @@ class ProviderService extends BaseService
             'api_base_url',
             'access_key',
             'secret_key',
-            'user_id'
+            'user_id',
         ];
         try {
             $data = [];
@@ -185,12 +186,17 @@ class ProviderService extends BaseService
                     $data[$field] = $providerData[$field];
                 }
             }
-//            if (isset($providerData['category']) && count($providerData['category']) > 0) {
-//                foreach ($providerData['category'] as $category) {
-//                    $category = $this->categoryService->getCategoryById($category['id']);
-//                    $provider->addCategory($category);
-//                }
-//            }
+            if (
+                !empty($providerData['categories']) &&
+                is_array($providerData['categories']) &&
+                count($providerData['categories'])
+            ) {
+                $data['categories'] = array_map(function ($category) {
+                    return array_filter($category, function ($key) {
+                        return $key == 'id';
+                    }, ARRAY_FILTER_USE_KEY);
+                }, $providerData['categories']);
+            }
             return $data;
         } catch (\Exception $exception) {
             throw new BadRequestHttpException($exception->getMessage());
@@ -229,8 +235,15 @@ class ProviderService extends BaseService
     public function updateProvider(Provider $provider, array $providerData)
     {
         $providerData = $this->setProviderObject($providerData);
-        $providerData['id'] = $provider->id;
-        return $this->providerRepository->updateProvider($provider, $providerData);
+        $update = $this->providerRepository->updateProvider($provider, $providerData);
+        if (!$update) {
+            throw new BadRequestHttpException(sprintf("Error updating provider: %s", $providerData['name']));
+        }
+        return $this->permissionEntities->saveRelatedEntity(
+            $provider,
+            Category::class,
+            $providerData['categories'],
+        );
     }
 
     public function createProviderProperty(Provider $provider, Property $property, string $value)

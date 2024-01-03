@@ -5,6 +5,10 @@ namespace App\Helpers\Db;
 class DbHelpers
 {
     private array $errorIds = [];
+    public static function getModelClassName(string $modelClass): string
+    {
+        return str_replace('App\\Models\\', '', $modelClass);
+    }
     public function validateToggle(array $results, array $ids)
     {
         $errorIds = [];
@@ -21,12 +25,15 @@ class DbHelpers
     }
     public function validateSync(array $results, array $ids)
     {
-        $errorIds = [];
         foreach ($ids as $id) {
+
             if (in_array($id, $results['attached'])) {
                 continue;
             }
             if (in_array($id, $results['detached'])) {
+                continue;
+            }
+            if (in_array($id, $results['updated'])) {
                 continue;
             }
             $this->errorIds[] = $id;

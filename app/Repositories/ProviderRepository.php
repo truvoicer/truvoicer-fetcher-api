@@ -3,6 +3,7 @@
 namespace App\Repositories;
 
 use App\Helpers\Db\DbHelpers;
+use App\Models\Category;
 use App\Models\Property;
 use App\Models\Provider;
 use App\Models\User;
@@ -113,5 +114,17 @@ class ProviderRepository extends BaseRepository
     public function deleteUserPermissions(User $user, Provider $provider)
     {
         return null;
+    }
+
+    public function saveProviderCategoryEntities(Provider $provider, string $relatedEntityClass, array $categories)
+    {
+        if (!$provider->exists) {
+            return false;
+        }
+        $ids = array_map(function ($category) {
+            return $category['id'];
+        }, $categories);
+        $provider->categories()->sync($ids);
+        return true;
     }
 }

@@ -28,6 +28,7 @@ class UpdateProviderRequest extends FormRequest
             'access_key' => 'string',
             'secret_key' => 'string',
             'user_id' => 'string',
+            'categories' => 'array',
         ];
     }
 }

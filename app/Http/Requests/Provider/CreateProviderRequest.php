@@ -28,6 +28,7 @@ class CreateProviderRequest extends FormRequest
             'access_key' => 'required|string',
             'secret_key' => 'required|string',
             'user_id' => 'required|string',
+            'categories' => 'array',
         ];
     }
 }
