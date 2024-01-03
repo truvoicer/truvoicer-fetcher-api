@@ -102,7 +102,7 @@ class ProviderService extends BaseService
         $this->providerRepository->setOrderDir($order);
         $this->providerRepository->setSortField($sort);
         $this->providerRepository->setLimit($count);
-        return $this->providerRepository->getQuery()->with('categories')->get();
+        return $this->providerRepository->getQuery()->get();
     }
 
     public function findUserProviders(User $user, string $sort, string $order, ?int $count) {
@@ -113,8 +113,7 @@ class ProviderService extends BaseService
         return $this->providerRepository->getModelByUserQuery(
             new Provider(),
             $user
-        )
-            ->with('categories')->get();
+        )->get();
     }
     public function getUserProviderList(User $user, Provider $provider)
     {
