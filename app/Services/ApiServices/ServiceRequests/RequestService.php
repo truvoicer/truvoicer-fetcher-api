@@ -55,7 +55,7 @@ class RequestService extends BaseService
         return $this->serviceRequestRepository->findByQuery($query);
     }
 
-    public function findByParams(string $sort, string $order, int $count)
+    public function findByParams(string $sort, string $order, ?int $count = null)
     {
         $this->serviceRequestRepository->setOrderDir($order);
         $this->serviceRequestRepository->setSortField($sort);
@@ -92,7 +92,7 @@ class RequestService extends BaseService
         return $serviceRequest;
     }
 
-    public function getUserServiceRequestByProvider(Provider $provider, string $sort, string $order, int $count)
+    public function getUserServiceRequestByProvider(Provider $provider, string $sort, string $order, ?int $count = null)
     {
         return $this->serviceRequestRepository->getServiceRequestByProvider(
             $provider,

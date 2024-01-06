@@ -18,7 +18,7 @@ class SrConfigRepository extends BaseRepository
         return parent::getModel();
     }
 
-    public function findByParams(Sr $serviceRequest, string $sort, string $order, int $count)
+    public function findByParams(Sr $serviceRequest, string $sort, string $order, ?int $count = null)
     {
         return $serviceRequest->srConfig()
             ->orderBy($sort, $order)

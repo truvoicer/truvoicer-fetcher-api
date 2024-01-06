@@ -56,14 +56,14 @@ class ProviderController extends Controller
             $providers = $this->providerService->getProviderList(
                 $request->get('sort', "name"),
                 $request->get('order', "asc"),
-                (int)$request->get('count', null)
+                $request->get('count', null)
             );
         } else {
             $providers = $this->providerService->findUserProviders(
                 $user,
                 $request->get('sort', "name"),
                 $request->get('order', "asc"),
-                (int)$request->get('count', null)
+                $request->get('count', null)
             );
         }
         return $this->sendSuccessResponse(

@@ -97,7 +97,7 @@ class ProviderService extends BaseService
         return $providerProperty;
     }
 
-    public function getProviderList(string $sort = "name", string $order = "asc", int $count = null)
+    public function getProviderList(string $sort = "name", string $order = "asc", ?int $count = null)
     {
         $this->providerRepository->setOrderDir($order);
         $this->providerRepository->setSortField($sort);
@@ -154,7 +154,7 @@ class ProviderService extends BaseService
         );
     }
 
-    public function getProviderProperties(Provider $provider, string $sort = "name", string $order = "asc", int $count = null)
+    public function getProviderProperties(Provider $provider, string $sort = "name", string $order = "asc", ?int $count = null)
     {
         $this->providerPropertyRepository->setOrderDir($order);
         $this->providerPropertyRepository->setSortField($sort);

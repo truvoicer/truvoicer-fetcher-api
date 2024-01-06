@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\Backend;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\User\CreateUserRequest;
 use App\Http\Resources\PersonalAccessTokenResource;
+use App\Http\Resources\RoleResource;
 use App\Http\Resources\UserResource;
 use App\Models\User;
 use App\Services\Permission\AccessControlService;
@@ -12,6 +13,7 @@ use App\Services\Tools\HttpRequestService;
 use App\Services\Tools\SerializerService;
 use App\Services\User\UserAdminService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Route;
 use Laravel\Sanctum\PersonalAccessToken;
 
 /**
@@ -57,11 +59,28 @@ class AdminController extends Controller
         $getUsers = $this->userService->findByParams(
             $request->get('sort', "id"),
             $request->get('order', "asc"),
-            (int)$request->get('count', null)
+            $request->get('count', null)
         );
         return $this->sendSuccessResponse(
             "success",
             UserResource::collection($getUsers)
+        );
+    }
+    public function getUserRoleList(Request $request)
+    {
+        $this->accessControlService->setUser($request->user());
+        if (!$this->accessControlService->inAdminGroup()) {
+            return $this->sendErrorResponse("Access control: operation not permitted");
+        }
+        return $this->sendSuccessResponse(
+            "success",
+            RoleResource::collection(
+                $this->userService->findUserRoles(
+                    $request->get('sort', "id"),
+                    $request->get('order', "asc"),
+                    $request->get('count', null)
+                )
+            )
         );
     }
 
@@ -96,7 +115,7 @@ class AdminController extends Controller
             'password',
         ]);
 
-        $create = $this->userService->createUserByRoleId($requestData, $request->get('role_id'));
+        $create = $this->userService->createUserByRoleId($requestData, $request->get('roles'));
 
         if (!$create) {
             return $this->sendErrorResponse("Error inserting user");
@@ -122,7 +141,7 @@ class AdminController extends Controller
         $update = $this->userService->updateUser(
             $user,
             $request->all(),
-            $request->get('role_id')
+            $request->get('roles', [])
         );
         if (!$update) {
             return $this->sendErrorResponse("Error updating user");

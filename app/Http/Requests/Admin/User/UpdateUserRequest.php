@@ -27,11 +27,13 @@ class UpdateUserRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'email' => 'email',
+            'email' => 'email|unique:users,email',
             'password' => ['confirmed', Password::min(8)],
-            'role_id' => [
-                Rule::exists(Role::TABLE_NAME, 'id')
-            ]
+            'roles.*' => Rule::forEach(function ($value, string $attribute) {
+                return [
+                    Rule::exists(Role::class, 'id'),
+                ];
+            })
         ];
     }
 }

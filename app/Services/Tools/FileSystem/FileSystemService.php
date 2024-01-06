@@ -90,7 +90,7 @@ class FileSystemService
         return $this->fileRepository->save($fileData);
     }
 
-    public function findByParams(string $sort, string  $order, int $count) {
+    public function findByParams(string $sort, string  $order, ?int $count = null) {
         $this->fileRepository->setOrderDir($order);
         $this->fileRepository->setSortField($sort);
         $this->fileRepository->setLimit($count);

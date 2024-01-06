@@ -22,7 +22,7 @@ class SrRepository extends BaseRepository
         return $this->findByLabelOrName($query);
     }
 
-    public function getServiceRequestByProvider(Provider $provider, string $sort, string $order, int $count) {
+    public function getServiceRequestByProvider(Provider $provider, string $sort, string $order, ?int $count = null) {
         return $provider->serviceRequest()
             ->orderBy($sort, $order)->get();
     }

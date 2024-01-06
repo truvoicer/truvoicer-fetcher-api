@@ -59,14 +59,14 @@ class CategoryController extends Controller
             $categories = $this->categoryService->getCategoryList(
                 $request->get('sort', "name"),
                 $request->get('order', "asc"),
-                (int)$request->get('count', null)
+                $request->get('count', null)
             );
         } else {
             $categories = $this->categoryService->findUserCategories(
                 $request->user(),
                 $request->get('sort', "name"),
                 $request->get('order', "asc"),
-                (int)$request->get('count', null)
+                $request->get('count', null)
             );
         }
         return $this->sendSuccessResponse("success",

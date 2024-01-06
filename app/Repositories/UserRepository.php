@@ -12,7 +12,7 @@ class UserRepository extends BaseRepository
         parent::__construct(User::class);
     }
 
-    public function findByParams(string $sort,  string $order, int $count)
+    public function findByParams(string $sort,  string $order, ?int $count = null)
     {
         return $this->findAllWithParams($sort, $order, $count);
     }
@@ -27,24 +27,23 @@ class UserRepository extends BaseRepository
         return parent::getModel();
     }
 
-    public function createUser(array $userData, Role $role) {
+    public function createUser(array $userData, array $roles) {
         $user = $this->getModel()->fill($userData);
-        $createUser = $role->users()->save($user);
-        if (!$createUser->exists) {
+        $createUser = $user->save();
+        if (!$createUser) {
             return false;
         }
-        $this->setModel($createUser);
+        $this->getModel()->roles()->sync($roles);
         return true;
     }
-    public function updateUser(User $user, array $userData, ?Role $role = null) {
-        if ($role instanceof Role) {
-            unset($userData['role_id']);
-            $user->roles()->sync([$role->id]);
-        }
+    public function updateUser(User $user, array $userData, ?array $roles = []) {
         $this->setModel($user);
         $createUser = $this->save($userData);
         if (!$createUser) {
             return false;
+        }
+        if (count($roles) > 0) {
+            $user->roles()->sync($roles);
         }
         return true;
     }

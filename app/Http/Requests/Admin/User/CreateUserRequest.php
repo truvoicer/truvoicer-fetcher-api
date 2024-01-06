@@ -27,12 +27,14 @@ class CreateUserRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'email' => 'required|email',
+            'email' => 'required|email|unique:users,email',
             'password' => ['required', 'confirmed', Password::min(8)],
-            'role_id' => [
-                'required',
-                Rule::exists(Role::TABLE_NAME, 'id')
-            ]
+            'roles.*' => Rule::forEach(function ($value, string $attribute) {
+                return [
+                    Rule::exists(Role::class, 'id'),
+                ];
+            })
+
         ];
     }
 }

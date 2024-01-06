@@ -16,7 +16,7 @@ class RequestParametersService extends BaseService
         $this->requestParametersRepo = new SrParameterRepository();
     }
 
-    public function findByParams(Sr $serviceRequest, string $sort, string $order, int $count) {
+    public function findByParams(Sr $serviceRequest, string $sort, string $order, ?int $count = null) {
         return $this->requestParametersRepo->findByParams($serviceRequest, $sort, $order, $count);
     }
 

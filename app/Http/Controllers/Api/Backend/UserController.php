@@ -144,17 +144,17 @@ class UserController extends Controller
     public function updateSessionUser(UpdateUserRequest $request)
     {
         $this->accessControlService->setUser($request->user());
-        $roleId = null;
+        $roles = [];
         if (
             $this->accessControlService->inAdminGroup() &&
             $request->has('role_id')
         ) {
-            $roleId = $request->get('role_id');
+            $roles = $request->get('roles');
         }
         $update = $this->userService->updateUser(
             $request->user(),
             $request->all(),
-            $roleId
+            $roles
         );
         if (!$update) {
             return $this->sendErrorResponse("Error updating user");

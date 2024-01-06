@@ -46,7 +46,7 @@ class PermissionService extends BaseService
         $this->permissionRepository = new PermissionRepository();
     }
 
-    public function findByParams(string $sort, string  $order, int $count) {
+    public function findByParams(string $sort, string  $order, ?int $count = null) {
         $this->permissionRepository->setOrderDir($order);
         $this->permissionRepository->setSortField($sort);
         $this->permissionRepository->setLimit($count);

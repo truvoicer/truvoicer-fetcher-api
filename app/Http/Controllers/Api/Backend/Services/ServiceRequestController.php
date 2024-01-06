@@ -82,7 +82,7 @@ class ServiceRequestController extends Controller
             $provider,
             $request->get('sort', "name"),
             $request->get('order', "asc"),
-            (int)$request->get('count', null)
+            $request->get('count', null)
         );
 
         return $this->sendSuccessResponse(

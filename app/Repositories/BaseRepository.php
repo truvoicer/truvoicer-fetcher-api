@@ -144,7 +144,9 @@ class BaseRepository
     public function findAllWithParams(string $sort = "name", ?string $order = "asc", ?int $count= null) {
         $this->setOrderDir($order);
         $this->setSortField($sort);
-        $this->setLimit($count);
+        if ($count !== null) {
+            $this->setLimit($count);
+        }
         return $this->findMany();
     }
 

@@ -29,22 +29,24 @@ class UserAdminService extends BaseService
     public static function userTokenHasAbility(User $user, string $ability) {
         return $user->tokenCan(AuthService::getApiAbility($ability));
     }
+    public static function findUserRoleByName(User $user, string $name) {
+        return $user->roles()->where('name', $name)->first();
+    }
 
-    public function findByParams(string $sort, string $order, int $count) {
+    public function findByParams(string $sort, string $order, ?int $count = null) {
         return $this->userRepository->findAllWithParams($sort, $order, $count);
     }
-
-    public function createUserByRoleId(array $userData, int $roleId)
-    {
-        $role = $this->roleRepository->findById($roleId);
-        if (!$role instanceof Role) {
-            return false;
-        }
-        return $this->createUser($userData, $role);
+    public function findUserRoles(string $sort, string $order, ?int $count = null) {
+        return $this->roleRepository->findAllWithParams($sort, $order, $count);
     }
-    public function createUser(array $userData, Role $role)
+
+    public function createUserByRoleId(array $userData, array $roles)
     {
-        return $this->userRepository->createUser($userData, $role);
+        return $this->createUser($userData, $roles);
+    }
+    public function createUser(array $userData, array $roles)
+    {
+        return $this->userRepository->createUser($userData, $roles);
     }
 
     public function getUserToken(User $user) {
@@ -53,6 +55,22 @@ class UserAdminService extends BaseService
             return $token;
         }
         return $this->createUserToken($user);
+    }
+
+    public function createUserPublicToken(User $user, ?string $expiry = self::DEFAULT_TOKEN_EXPIRY)
+    {
+        $role = $user->roles()->first();
+        if (!$role instanceof Role) {
+            return false;
+        }
+        switch ($expiry) {
+            case self::NO_TOKEN_EXPIRY:
+                $expiry = null;
+                break;
+        }
+
+        $user->tokens()->delete();
+        return $user->createToken($role->name, [$role->ability], new \DateTime($expiry));
     }
 
     public function createUserToken(User $user, ?string $expiry = self::DEFAULT_TOKEN_EXPIRY)
@@ -99,16 +117,9 @@ class UserAdminService extends BaseService
         return $user->tokens()->orderBy($sort, $order)->limit($count)->get();
     }
 
-    public function updateUser(User $user, array $data, ?int $roleId = null)
+    public function updateUser(User $user, array $data, ?array $roles = [])
     {
-        $role = null;
-        if (!empty($roleId)) {
-            $role = $this->roleRepository->findById($roleId);
-            if (!$role instanceof Role) {
-                throw new BadRequestHttpException(sprintf("Role id: %s not found in database.", $roleId));
-            }
-        }
-        return $this->userRepository->updateUser($user, $data, $role);
+        return $this->userRepository->updateUser($user, $data, $roles);
     }
 
     public function deleteUser(User $user)

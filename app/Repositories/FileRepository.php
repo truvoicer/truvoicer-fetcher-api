@@ -15,7 +15,7 @@ class FileRepository extends BaseRepository
     {
         return parent::getModel();
     }
-    public function findByParams(string $sort, string  $order, int $count)
+    public function findByParams(string $sort, string  $order, ?int $count = null)
     {
         return $this->findAllWithParams($sort, $order, $count);
     }

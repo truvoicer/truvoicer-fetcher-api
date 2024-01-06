@@ -42,7 +42,7 @@ class RequestConfigService extends BaseService
         $this->responseKeysRepo = new SResponseKeyRepository();
     }
 
-    public function getResponseKeysRequestsConfigList(int $serviceRequestId, int $providerId, string $sort, string $order, int $count) {
+    public function getResponseKeysRequestsConfigList(int $serviceRequestId, int $providerId, string $sort, string $order, ?int $count = null) {
         $serviceRequest = $this->serviceRequestRepository->findById($serviceRequestId);
         $provider = $this->providerService->getProviderById($providerId);
 
@@ -66,7 +66,7 @@ class RequestConfigService extends BaseService
         }, $responseKeys);
     }
 
-    public function findByParams(Sr $serviceRequest, string $sort, string $order, int $count) {
+    public function findByParams(Sr $serviceRequest, string $sort, string $order, ?int $count = null) {
         return $this->requestConfigRepo->findByParams($serviceRequest, $sort, $order, $count);
     }
 
