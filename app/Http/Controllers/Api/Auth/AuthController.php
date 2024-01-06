@@ -71,7 +71,7 @@ class AuthController extends Controller
     {
         return $this->sendSuccessResponse(
             "success",
-            new UserResource($request->user()->load('roles'))
+            new UserResource($request->user())
         );
     }
 

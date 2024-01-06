@@ -15,6 +15,7 @@ class User extends Authenticatable
     public const TABLE_NAME = 'users';
     public const REPOSITORY = UserRepository::class;
 
+    protected $with = ['roles'];
     /**
      * The attributes that are mass assignable.
      *

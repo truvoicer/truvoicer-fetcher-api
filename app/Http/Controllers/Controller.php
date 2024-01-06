@@ -38,6 +38,7 @@ class Controller extends BaseController
 
     protected function sendErrorResponse(string $message, ?array $data = [], ?array $errors = [], ?int $statusCode = Response::HTTP_INTERNAL_SERVER_ERROR) {
         return response()->json([
+            'status' => 'error',
             'message' => $message,
             'data' => $data,
             'errors' => $errors,
@@ -45,6 +46,7 @@ class Controller extends BaseController
     }
     protected function sendSuccessResponse(string $message, $data = [], ?array $errors = [], ?int $statusCode = Response::HTTP_OK) {
         return response()->json([
+            'status' => 'success',
             'message' => $message,
             'data' => $data,
             'errors' => $errors,
