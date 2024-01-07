@@ -222,7 +222,7 @@ Route::middleware(['auth:sanctum', 'ability:api:admin,api:superuser'])->group(fu
                     Route::delete('/delete', [AdminController::class, 'deleteUser'])->name('delete');
                     Route::prefix('api-token')->name('api-token.')->group(function () {
                         Route::get('/list', [AdminController::class, 'getUserApiTokens'])->name('list');
-                        Route::get('/generate', [AdminController::class, 'generateNewApiToken'])->name('generate');
+                        Route::post('/generate', [AdminController::class, 'generateNewApiToken'])->name('generate');
                         Route::post('/delete', [AdminController::class, 'deleteSessionUserApiToken'])->name('delete');
                         Route::get('/{personalAccessToken}', [AdminController::class, 'getApiToken'])->name('detail');
                         Route::patch('/{personalAccessToken}/update', [AdminController::class, 'updateApiTokenExpiry'])->name('update');

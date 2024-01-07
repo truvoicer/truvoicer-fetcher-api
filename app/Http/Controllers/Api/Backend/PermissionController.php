@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api\Backend;
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\PermissionResource;
 use App\Models\Permission;
 use App\Models\User;
 use App\Services\Category\CategoryService;
@@ -78,7 +79,8 @@ class PermissionController extends Controller
             $request->get('count', null)
         );
         return $this->sendSuccessResponse("success",
-            $this->serializerService->entityArrayToArray($getPermissions));
+            PermissionResource::collection($getPermissions)
+        );
     }
 
     public function getSinglePermission(Permission $permission)

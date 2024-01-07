@@ -29,9 +29,6 @@ class UserAdminService extends BaseService
     public static function userTokenHasAbility(User $user, string $ability) {
         return $user->tokenCan(AuthService::getApiAbility($ability));
     }
-    public static function findUserRoleByName(User $user, string $name) {
-        return $user->roles()->where('name', $name)->first();
-    }
 
     public function findByParams(string $sort, string $order, ?int $count = null) {
         return $this->userRepository->findAllWithParams($sort, $order, $count);
@@ -57,22 +54,20 @@ class UserAdminService extends BaseService
         return $this->createUserToken($user);
     }
 
-    public function createUserPublicToken(User $user, ?string $expiry = self::DEFAULT_TOKEN_EXPIRY)
+    /**
+     * @throws \Exception
+     */
+    public function createUserTokenByRoleId(User $user, int $roleId, ?string $expiry = null)
     {
-        $role = $user->roles()->first();
+        $role = $this->roleRepository::findUserRoleBy($user, ['role_id' => $roleId]);
         if (!$role instanceof Role) {
             return false;
         }
-        switch ($expiry) {
-            case self::NO_TOKEN_EXPIRY:
-                $expiry = null;
-                break;
+        if (empty($expiry)) {
+            $expiry = self::DEFAULT_TOKEN_EXPIRY;
         }
-
-        $user->tokens()->delete();
-        return $user->createToken($role->name, [$role->ability], new \DateTime($expiry));
+        return $this->createUserTokenByRole($user, $role, new \DateTime($expiry));
     }
-
     public function createUserToken(User $user, ?string $expiry = self::DEFAULT_TOKEN_EXPIRY)
     {
         $role = $user->roles()->first();
@@ -86,7 +81,11 @@ class UserAdminService extends BaseService
         }
 
         $user->tokens()->delete();
-        return $user->createToken($role->name, [$role->ability], new \DateTime($expiry));
+        return $this->createUserTokenByRole($user, $role, new \DateTime($expiry));
+    }
+    public function createUserTokenByRole(User $user, Role $role, \DateTime $expiry)
+    {
+        return $user->createToken($role->name, [$role->ability], $expiry);
     }
 
     public function getUserByEmail(string $email)

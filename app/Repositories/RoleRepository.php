@@ -4,6 +4,7 @@ namespace App\Repositories;
 
 use App\Models\Category;
 use App\Models\Role;
+use App\Models\User;
 
 class RoleRepository extends BaseRepository
 {
@@ -15,6 +16,14 @@ class RoleRepository extends BaseRepository
     public function getModel(): Role
     {
         return parent::getModel();
+    }
+
+    public static function findUserRoleBy(User $user, array $conditions = []) {
+        $query = $user->roles();
+        foreach ($conditions as $key => $value) {
+            $query->where($key, $value);
+        }
+        return $query->first();
     }
 
     public function saveRole(Role $role, array $data)

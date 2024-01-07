@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\Backend;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\User\CreateUserRequest;
+use App\Http\Requests\Auth\GenerateApiTokenRequest;
 use App\Http\Resources\PersonalAccessTokenResource;
 use App\Http\Resources\RoleResource;
 use App\Http\Resources\UserResource;
@@ -215,7 +216,7 @@ class AdminController extends Controller
      * User is based on the id in the request url
      *
      */
-    public function generateNewApiToken(User $user, Request $request)
+    public function generateNewApiToken(User $user, GenerateApiTokenRequest $request)
     {
         $this->accessControlService->setUser($request->user());
         if (!$this->accessControlService->inAdminGroup()) {
@@ -224,8 +225,10 @@ class AdminController extends Controller
         return $this->sendSuccessResponse(
             "success",
             new PersonalAccessTokenResource (
-                $this->userService->createUserToken(
-                    $user
+                $this->userService->createUserTokenByRoleId(
+                    $user,
+                    $request->get('role_id'),
+                    $request->get('expires_at', null),
                 )
             )
         );
