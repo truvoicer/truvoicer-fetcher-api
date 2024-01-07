@@ -29,14 +29,14 @@ class Property extends Model
         return $this->belongsToMany(
             Provider::class,
             ProviderProperty::TABLE_NAME,
+            'property_id',
             'provider_id',
-            'property_id'
         );
     }
 
     public function providerProperty()
     {
-        return $this->hasOne(
+        return $this->hasMany(
             ProviderProperty::class,
             'property_id',
             'id'

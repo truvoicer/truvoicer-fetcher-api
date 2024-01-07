@@ -69,8 +69,8 @@ class Provider extends Model
         return $this->belongsToMany(
             Property::class,
             ProviderProperty::TABLE_NAME,
-            'property_id',
-            'provider_id'
+            'provider_id',
+            'property_id'
         );
     }
     public function oauthAccessToken()
