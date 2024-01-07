@@ -61,7 +61,7 @@ class FileSystemController extends Controller
         $getServices = $this->fileSystemService->findByParams(
             $request->get('sort', "filename"),
             $request->get('order', "asc"),
-            $request->get('count', null)
+            $request->get('count', -1)
         );
         return $this->sendSuccessResponse(
             "success",

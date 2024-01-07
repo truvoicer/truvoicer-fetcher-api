@@ -55,7 +55,7 @@ class RequestService extends BaseService
         return $this->serviceRequestRepository->findByQuery($query);
     }
 
-    public function findByParams(string $sort, string $order, ?int $count = null)
+    public function findByParams(string $sort, string $order, int $count = -1)
     {
         $this->serviceRequestRepository->setOrderDir($order);
         $this->serviceRequestRepository->setSortField($sort);

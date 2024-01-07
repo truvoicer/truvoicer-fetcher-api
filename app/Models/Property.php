@@ -36,8 +36,10 @@ class Property extends Model
 
     public function providerProperty()
     {
-        return $this->hasMany(
-            ProviderProperty::class
+        return $this->hasOne(
+            ProviderProperty::class,
+            'property_id',
+            'id'
         );
     }
 }

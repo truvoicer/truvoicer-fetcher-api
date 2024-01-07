@@ -50,7 +50,7 @@ class PermissionController extends Controller
                 $providerService->getProviderList(
                     $request->get('sort', "name"),
                     $request->get('order', "asc"),
-                    $request->get('count', null)
+                    $request->get('count', -1)
                 ),
                 ["list"])
         );
@@ -64,7 +64,7 @@ class PermissionController extends Controller
                 $categoryService->findByParams(
                     $request->get('sort', "name"),
                     $request->get('order', "asc"),
-                    $request->get('count', null)
+                    $request->get('count', -1)
                 ),
                 ["list"]
             )
@@ -76,7 +76,7 @@ class PermissionController extends Controller
         $getPermissions = $this->permissionService->findByParams(
             $request->get('sort', "name"),
             $request->get('order', "asc"),
-            $request->get('count', null)
+            $request->get('count', -1)
         );
         return $this->sendSuccessResponse("success",
             PermissionResource::collection($getPermissions)

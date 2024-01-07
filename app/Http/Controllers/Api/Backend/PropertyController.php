@@ -55,7 +55,7 @@ class PropertyController extends Controller
             $this->propertyService->findPropertiesByParams(
                 $request->get('sort', "name"),
                 $request->get('order', "asc"),
-                $request->get('count', null)
+                $request->get('count', -1)
             )
         );
         return $this->sendSuccessResponse(

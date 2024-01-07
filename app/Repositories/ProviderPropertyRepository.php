@@ -5,6 +5,8 @@ namespace App\Repositories;
 use App\Models\Property;
 use App\Models\Provider;
 use App\Models\ProviderProperty;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class ProviderPropertyRepository extends BaseRepository
 {
@@ -17,19 +19,26 @@ class ProviderPropertyRepository extends BaseRepository
     {
         return parent::getModel();
     }
-    public function findProviderProperties(Provider $provider) {
-        return $provider->properties()
-            ->with('providerProperty')
+
+    public function findProviderProperties(Provider $provider)
+    {
+        $property = new Property();
+        return $property->with(['providerProperty' => function (HasOne $query) use ($provider) {
+            $query->where('provider_id', '=', $provider->id)->first();
+        }])
             ->get();
     }
-    public function findProviderPropertyByProperty(Provider $provider, Property $property) {
+
+    public function findProviderPropertyByProperty(Provider $provider, Property $property)
+    {
         return $provider->properties()
             ->where('property_id', '=', $property->id)
             ->with('providerProperty')
             ->first();
     }
 
-    public function saveProviderProperty(Provider $provider, Property $property, string $value) {
+    public function saveProviderProperty(Provider $provider, Property $property, string $value)
+    {
         $findProviderProperty = $this->findProviderPropertyByProperty($provider, $property);
 
         if (!$findProviderProperty instanceof Property) {
@@ -43,7 +52,8 @@ class ProviderPropertyRepository extends BaseRepository
         return true;
     }
 
-    public function deleteProviderProperty(Provider $provider, Property $property) {
+    public function deleteProviderProperty(Provider $provider, Property $property)
+    {
         return ($provider->properties()->detach($property->id) > 0);
     }
 

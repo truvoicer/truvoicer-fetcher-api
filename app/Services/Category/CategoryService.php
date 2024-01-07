@@ -48,7 +48,7 @@ class CategoryService extends BaseService
         return $this->categoryRepository->findMany();
     }
 
-    public function findByParams(string $sort, string $order, ?int $count = null)
+    public function findByParams(string $sort, string $order, int $count = -1)
     {
         $this->categoryRepository->setOrderDir($order);
         $this->categoryRepository->setSortField($sort);

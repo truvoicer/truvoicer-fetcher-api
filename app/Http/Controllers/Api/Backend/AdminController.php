@@ -60,7 +60,7 @@ class AdminController extends Controller
         $getUsers = $this->userService->findByParams(
             $request->get('sort', "id"),
             $request->get('order', "asc"),
-            $request->get('count', null)
+            $request->get('count', -1)
         );
         return $this->sendSuccessResponse(
             "success",
@@ -79,7 +79,7 @@ class AdminController extends Controller
                 $this->userService->findUserRoles(
                     $request->get('sort', "id"),
                     $request->get('order', "asc"),
-                    $request->get('count', null)
+                    $request->get('count', -1)
                 )
             )
         );

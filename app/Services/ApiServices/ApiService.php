@@ -36,7 +36,7 @@ class ApiService extends BaseService
     {
         return $this->serviceRepository->findByQuery($query);
     }
-    public function findByParams(string $sort = "name", ?string $order = "asc", ?int $count= null) {
+    public function findByParams(string $sort = "name", ?string $order = "asc", int $count= -1) {
         $this->serviceRepository->setOrderDir($order);
         $this->serviceRepository->setSortField($sort);
         $this->serviceRepository->setLimit($count);

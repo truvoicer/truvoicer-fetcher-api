@@ -69,7 +69,7 @@ class ServiceRequestParameterController extends Controller
             $serviceRequest,
             $request->get('sort', "name"),
             $request->get('order', "asc"),
-            $request->get('count', null)
+            $request->get('count', -1)
         );
 
         return $this->sendSuccessResponse(

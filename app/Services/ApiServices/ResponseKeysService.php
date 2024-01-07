@@ -45,7 +45,7 @@ class ResponseKeysService extends BaseService
 //        $this->responseKeyRequestItemRepo = $this->entityManager->getRepository(ResponseKeyRequestItem::class);
     }
 
-    public function findByParams(string $sort, string $order, ?int $count = null) {
+    public function findByParams(string $sort, string $order, int $count = -1) {
         $this->responseKeyRepository->setOrderDir($order);
         $this->responseKeyRepository->setSortField($sort);
         $this->responseKeyRepository->setLimit($count);
