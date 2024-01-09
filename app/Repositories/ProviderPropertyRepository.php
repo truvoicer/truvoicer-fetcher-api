@@ -24,7 +24,7 @@ class ProviderPropertyRepository extends BaseRepository
     {
         $property = new Property();
         return $property->with(['providerProperty' => function (HasMany $query) use ($provider) {
-            $query->where('provider_id', '=', $provider->id)->first();
+            $query->where('provider_id', '=', $provider->id);
         }])
             ->get();
     }
