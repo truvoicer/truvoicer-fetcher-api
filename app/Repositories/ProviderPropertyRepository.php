@@ -23,7 +23,7 @@ class ProviderPropertyRepository extends BaseRepository
     public function findProviderProperties(Provider $provider)
     {
         $property = new Property();
-        return $property->with(['providerProperty' => function (HasMany $query) use ($provider) {
+        return $property->with(['providerProperty' => function (HasOne $query) use ($provider) {
             $query->where('provider_id', '=', $provider->id);
         }])
             ->get();
