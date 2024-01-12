@@ -22,7 +22,7 @@ class CreateProviderRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => 'required|string',
+            'name' => 'string|nullable',
             'label' => 'required|string',
             'api_base_url' => 'required|string',
             'access_key' => 'required|string',

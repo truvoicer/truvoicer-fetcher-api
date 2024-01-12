@@ -148,7 +148,7 @@ class ProviderService extends BaseService
 
     public function getProviderProperty(Provider $provider, Property $property)
     {
-        return $this->providerPropertyRepository->findProviderPropertyByProperty(
+        return $this->providerPropertyRepository->findProviderPropertyWithRelation(
             $provider,
             $property
         );
@@ -190,11 +190,18 @@ class ProviderService extends BaseService
                 is_array($providerData['categories']) &&
                 count($providerData['categories'])
             ) {
-                $data['categories'] = array_map(function ($category) {
-                    return array_filter($category, function ($key) {
-                        return $key == 'id';
-                    }, ARRAY_FILTER_USE_KEY);
+                $categories = array_map(function ($category) {
+                    if (!empty($category['id']) && is_numeric($category['id'])) {
+                        return $category['id'];
+                    }
+                    if (!empty($category['value']) && is_numeric($category['value'])) {
+                        return $category['value'];
+                    }
+                    return false;
                 }, $providerData['categories']);
+                $data['categories'] = array_filter($categories, function ($category) {
+                    return $category !== false;
+                });
             }
             return $data;
         } catch (\Exception $exception) {

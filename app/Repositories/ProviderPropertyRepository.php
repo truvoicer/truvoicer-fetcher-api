@@ -29,19 +29,26 @@ class ProviderPropertyRepository extends BaseRepository
             ->get();
     }
 
-    public function findProviderPropertyByProperty(Provider $provider, Property $property)
+    public function findProviderPropertyWithRelation(Provider $provider, Property $property)
     {
-        $property = new Property();
-        return $property->with(['providerProperty' => function (HasOne $query) use ($provider, $property) {
+        return Property::with(['providerProperty' => function (HasOne $query) use ($provider, $property) {
             $query->where('provider_id', '=', $provider->id)
                 ->where('property_id', '=', $property->id);
         }])
+            ->where('id', '=', $property->id)
+            ->first();
+    }
+    public function findProviderProperty(Provider $provider, Property $property)
+    {
+        return $provider->properties()
+            ->where('property_id', '=', $property->id)
+            ->with('providerProperty')
             ->first();
     }
 
     public function saveProviderProperty(Provider $provider, Property $property, string $value)
     {
-        $findProviderProperty = $this->findProviderPropertyByProperty($provider, $property);
+        $findProviderProperty = $this->findProviderProperty($provider, $property);
         if (!$findProviderProperty instanceof Property) {
             return $this->dbHelpers->validateToggle(
                 $provider->properties()->toggle([$property->id => ['value' => $value]]),

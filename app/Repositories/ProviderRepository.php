@@ -116,15 +116,12 @@ class ProviderRepository extends BaseRepository
         return null;
     }
 
-    public function saveProviderCategoryEntities(Provider $provider, string $relatedEntityClass, array $categories)
+    public function saveProviderCategoryEntities(Provider $provider, string $relatedEntityClass, array $categoryIds)
     {
         if (!$provider->exists) {
             return false;
         }
-        $ids = array_map(function ($category) {
-            return $category['id'];
-        }, $categories);
-        $provider->categories()->sync($ids);
+        $provider->categories()->sync($categoryIds);
         return true;
     }
 }
