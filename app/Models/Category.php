@@ -44,4 +44,13 @@ class Category extends Model
         );
     }
 
+    public function sr()
+    {
+        return $this->hasMany(
+            Sr::class,
+            'category_id',
+            'id'
+        );
+    }
+
 }

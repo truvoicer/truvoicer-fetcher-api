@@ -2,8 +2,10 @@
 
 namespace App\Repositories;
 
+use App\Helpers\Tools\UtilHelpers;
 use App\Models\Provider;
 use App\Models\Sr;
+use App\Services\Category\CategoryService;
 
 class SrRepository extends BaseRepository
 {
@@ -33,8 +35,25 @@ class SrRepository extends BaseRepository
             ->first();
     }
 
+    private function buildSaveData(array $data)
+    {
+        $fields = [
+            'name',
+            'label',
+            'pagination_type',
+            'service_id',
+            'category_id',
+        ];
+        $saveData = [];
+        foreach ($fields as $field) {
+            if (array_key_exists($field, $data)) {
+                $saveData[$field] = $data[$field];
+            }
+        }
+        return $saveData;
+    }
     public function createServiceRequest(Provider $provider, array $data) {
-        $create = $provider->serviceRequest()->create($data);
+        $create = $provider->serviceRequest()->create($this->buildSaveData($data));
         if (!$create->exists) {
             return false;
         }
@@ -43,7 +62,7 @@ class SrRepository extends BaseRepository
     }
     public function saveServiceRequest(Sr $serviceRequest, array $data) {
         $this->setModel($serviceRequest);
-        return $this->save($data);
+        return $this->save($this->buildSaveData($data));
     }
     public function duplicateServiceRequest(Sr $serviceRequest, array $data)
     {

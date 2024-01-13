@@ -65,13 +65,14 @@ class CategoryService extends BaseService
         );
     }
 
-    public function findUserCategories(User $user, string $sort, string $order, ?int $count) {
+    public function findUserCategories(User $user, string $sort, string $order, ?int $count)
+    {
         $this->userCategoryRepository->setPermissions([
             PermissionService::PERMISSION_ADMIN,
             PermissionService::PERMISSION_READ,
         ]);
         return $this->userCategoryRepository->findModelsByUser(
-            New Category(),
+            new Category(),
             $user
         );
     }

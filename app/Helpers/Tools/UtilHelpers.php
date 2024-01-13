@@ -29,4 +29,21 @@ class UtilHelpers
     {
         return $data->where($key, '=', $value);
     }
+
+
+    public static function buildSelectSaveArray(array $data)
+    {
+        $data = array_map(function ($item) {
+            if (!empty($item['id']) && is_numeric($item['id'])) {
+                return $item['id'];
+            }
+            if (!empty($item['value']) && is_numeric($item['value'])) {
+                return $item['value'];
+            }
+            return false;
+        }, $data);
+        return array_filter($data, function ($item) {
+            return $item !== false;
+        });
+    }
 }

@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Api\Backend\Services;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Service\CreateServiceRequest;
+use App\Http\Requests\Service\UpdateServiceRequest;
 use App\Http\Resources\Service\ServiceRequest\ServiceRequestResource;
 use App\Models\Provider;
 use App\Models\S;
@@ -132,7 +134,7 @@ class ServiceRequestController extends Controller
      * @param Request $request
      * @return JsonResponse
      */
-    public function createServiceRequest(Provider $provider, Request $request): JsonResponse
+    public function createServiceRequest(Provider $provider, CreateServiceRequest $request): JsonResponse
     {
         $this->setAccessControlUser($request->user());
         if (
@@ -167,7 +169,7 @@ class ServiceRequestController extends Controller
     public function updateServiceRequest(
         Provider $provider,
         Sr       $serviceRequest,
-        Request  $request
+        UpdateServiceRequest  $request
     ): \Illuminate\Http\JsonResponse {
         $this->setAccessControlUser($request->user());
         if (

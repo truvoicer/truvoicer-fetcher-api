@@ -11,6 +11,7 @@ class Sr extends Model
     use HasFactory;
     public const TABLE_NAME = 'srs';
     public const REPOSITORY = SrRepository::class;
+    protected $with = ['category', 's'];
     protected $fillable = [
         'name',
         'label',
@@ -54,5 +55,9 @@ class Sr extends Model
     public function provider()
     {
         return $this->belongsTo(Provider::class);
+    }
+    public function category()
+    {
+        return $this->belongsTo(Category::class, 'category_id', 'id');
     }
 }
