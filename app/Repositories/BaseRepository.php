@@ -64,6 +64,10 @@ class BaseRepository
         return $find;
     }
 
+    public function findByModel(Model $model): ?object
+    {
+        return $this->findById($model->id);
+    }
     public function findById(int $id): ?object
     {
         $find = $this->modelClassName::find($id);

@@ -24,6 +24,8 @@ class CreateServiceRequest extends FormRequest
         return [
             'name' => 'string|nullable',
             'label' => 'required|string',
+            'service' => 'required|integer',
+            'category' => 'integer|nullable',
         ];
     }
 }

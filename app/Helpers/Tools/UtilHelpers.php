@@ -46,4 +46,9 @@ class UtilHelpers
             return $item !== false;
         });
     }
+
+    public static function isArrayItemNumeric(string $key, array $data): bool
+    {
+        return (!empty($data[$key]) && is_numeric($data[$key]));
+    }
 }

@@ -3,9 +3,12 @@
 namespace App\Repositories;
 
 use App\Helpers\Tools\UtilHelpers;
+use App\Models\Category;
 use App\Models\Provider;
+use App\Models\S;
 use App\Models\Sr;
 use App\Services\Category\CategoryService;
+use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 
 class SrRepository extends BaseRepository
 {
@@ -40,9 +43,7 @@ class SrRepository extends BaseRepository
         $fields = [
             'name',
             'label',
-            'pagination_type',
-            'service_id',
-            'category_id',
+            'pagination_type'
         ];
         $saveData = [];
         foreach ($fields as $field) {
@@ -53,16 +54,53 @@ class SrRepository extends BaseRepository
         return $saveData;
     }
     public function createServiceRequest(Provider $provider, array $data) {
+        if (!UtilHelpers::isArrayItemNumeric('service', $data)) {
+            throw new BadRequestHttpException('Service id is required');
+        }
         $create = $provider->serviceRequest()->create($this->buildSaveData($data));
         if (!$create->exists) {
             return false;
         }
         $this->setModel($create);
+        return $this->saveAssociations($create, $data);
+    }
+
+    public function saveAssociations(Sr $serviceRequest, array $data) {
+        if (
+            UtilHelpers::isArrayItemNumeric('service', $data) &&
+            !$this->associateServiceById($serviceRequest, $data['service'])
+        ) {
+            throw new BadRequestHttpException('Error saving service association');
+        }
+        if (
+            UtilHelpers::isArrayItemNumeric('category', $data) &&
+            !$this->associateCategoryById($serviceRequest, $data['category'])
+        ) {
+            throw new BadRequestHttpException('Error saving category association');
+        }
         return true;
+    }
+
+    public function associateServiceById(Sr $serviceRequest, int $serviceId) {
+        $service = (new SRepository())->findById($serviceId);
+        if (!$service instanceof S) {
+            return false;
+        }
+        return $serviceRequest->s()->associate($service)->save();
+    }
+    public function associateCategoryById(Sr $serviceRequest, int $categoryId) {
+        $category = (new CategoryRepository())->findById($categoryId);
+        if (!$category instanceof Category) {
+            return false;
+        }
+        return $serviceRequest->category()->associate($categoryId)->save();
     }
     public function saveServiceRequest(Sr $serviceRequest, array $data) {
         $this->setModel($serviceRequest);
-        return $this->save($this->buildSaveData($data));
+        if (!$this->save($this->buildSaveData($data))) {
+            return false;
+        }
+        return $this->saveAssociations($this->getModel(), $data);
     }
     public function duplicateServiceRequest(Sr $serviceRequest, array $data)
     {
