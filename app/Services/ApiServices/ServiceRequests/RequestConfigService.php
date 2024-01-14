@@ -1,9 +1,11 @@
 <?php
 namespace App\Services\ApiServices\ServiceRequests;
 
+use App\Models\Property;
 use App\Models\Sr;
 use App\Models\SrConfig;
 use App\Library\Defaults\DefaultData;
+use App\Repositories\PropertyRepository;
 use App\Repositories\SRepository;
 use App\Repositories\SrConfigRepository;
 use App\Repositories\SrParameterRepository;
@@ -18,23 +20,25 @@ use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 class RequestConfigService extends BaseService
 {
 
-    const REQUEST_CONFIG_ITEM_NAME = "item_name";
-    const REQUEST_CONFIG_ITEM_SELECTED_VALUE_TYPE = "selected_value_type";
-    const REQUEST_CONFIG_ITEM_VALUE = "item_value";
-    const REQUEST_CONFIG_ITEM_ARRAY_VALUE = "item_array_value";
-    const REQUEST_CONFIG_ITEM_VALUE_CHOICES = "item_value_choices";
+    const REQUEST_CONFIG_ITEM_NAME = "name";
+    const REQUEST_CONFIG_ITEM_SELECTED_VALUE_TYPE = "value_type";
+    const REQUEST_CONFIG_ITEM_VALUE = "value";
+    const REQUEST_CONFIG_ITEM_ARRAY_VALUE = "array_value";
+    const REQUEST_CONFIG_ITEM_VALUE_CHOICES = "value_choices";
 
-    private $serviceRepository;
-    private $providerService;
-    private $serviceRequestRepository;
-    private $requestParametersRepo;
-    private $requestConfigRepo;
-    private $responseKeysRepo;
+    private SRepository $serviceRepository;
+    private PropertyRepository $propertyRepository;
+    private ProviderService $providerService;
+    private SrRepository $serviceRequestRepository;
+    private SrParameterRepository $requestParametersRepo;
+    private SrConfigRepository $requestConfigRepo;
+    private SResponseKeyRepository $responseKeysRepo;
 
     public function __construct(ProviderService $providerService)
     {
         parent::__construct();
         $this->providerService = $providerService;
+        $this->propertyRepository = new PropertyRepository();
         $this->serviceRepository = new SRepository();
         $this->serviceRequestRepository = new SrRepository();
         $this->requestParametersRepo = new SrParameterRepository();
@@ -70,16 +74,17 @@ class RequestConfigService extends BaseService
         return $this->requestConfigRepo->findByParams($serviceRequest, $sort, $order, $count);
     }
 
-    public function requestConfigValidator(Model $serviceRequest) {
-        $provider = $serviceRequest->getProvider();
-        $apiAuthTypeProviderProperty = $this->providerService->getProviderPropertyObjectByName(
+    public function requestConfigValidator(Sr $serviceRequest) {
+        $provider = $serviceRequest->provider()->first();
+        $apiAuthTypeProviderProperty = $this->propertyRepository->getProviderPropertyByPropertyName(
             $provider, "api_authentication_type"
         );
-        if (!property_exists($apiAuthTypeProviderProperty, "property_value")) {
+
+        if (!($apiAuthTypeProviderProperty instanceof Property)) {
             throw new BadRequestHttpException("Provider api_authentication_type property not found");
         }
 
-        switch ($apiAuthTypeProviderProperty->property_value) {
+        switch ($apiAuthTypeProviderProperty->providerProperty->value) {
             case ApiBase::AUTH_BASIC:
                 $config = DefaultData::getServiceRequestBasicAuthConfig();
                 break;
@@ -133,10 +138,12 @@ class RequestConfigService extends BaseService
     }
 
     public function createDefaultRequestConfigs(Sr $serviceRequest, array $defaultConfig = []) {
-    $provider = $serviceRequest->getProvider();
+        $provider = $serviceRequest->provider()->first();
+
         foreach ($defaultConfig as $item) {
             $findConfig = $this->requestConfigRepo->getRequestConfigByName(
-                $provider, $serviceRequest,
+                $provider,
+                $serviceRequest,
                 $item[self::REQUEST_CONFIG_ITEM_NAME]
             );
             if ($findConfig instanceof SrConfig) {

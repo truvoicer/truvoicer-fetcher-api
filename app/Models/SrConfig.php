@@ -22,6 +22,7 @@ class SrConfig extends Model
         'value',
         'value_type',
         'array_value',
+        'value_choices',
     ];
     public function sr()
     {

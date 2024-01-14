@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\Backend\Services;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Service\CreateServiceRequest;
+use App\Http\Requests\Service\DeleteBatchServiceRequest;
 use App\Http\Requests\Service\UpdateServiceRequest;
 use App\Http\Resources\Service\ServiceRequest\ServiceRequestResource;
 use App\Models\Provider;
@@ -328,6 +329,33 @@ class ServiceRequestController extends Controller
             return $this->sendErrorResponse("Access denied");
         }
         if (!$this->requestService->deleteServiceRequest($serviceRequest)) {
+            return $this->sendErrorResponse(
+                "Error deleting service request",
+            );
+        }
+        return $this->sendSuccessResponse(
+            "Service request deleted.",
+        );
+    }
+    public function deleteBatchServiceRequest(
+        Provider $provider,
+        DeleteBatchServiceRequest  $request
+    ): \Illuminate\Http\JsonResponse
+    {
+        $this->setAccessControlUser($request->user());
+        if (
+            !$this->accessControlService->checkPermissionsForEntity(
+                $provider,
+                [
+                    PermissionService::PERMISSION_ADMIN,
+                    PermissionService::PERMISSION_DELETE,
+                ],
+            )
+        ) {
+            return $this->sendErrorResponse("Access denied");
+        }
+
+        if (!$this->requestService->deleteBatchServiceRequests($request->get('ids'))) {
             return $this->sendErrorResponse(
                 "Error deleting service request",
             );

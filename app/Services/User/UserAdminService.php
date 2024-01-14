@@ -80,7 +80,6 @@ class UserAdminService extends BaseService
                 break;
         }
 
-        $user->tokens()->delete();
         return $this->createUserTokenByRole($user, $role, new \DateTime($expiry));
     }
     public function createUserTokenByRole(User $user, Role $role, \DateTime $expiry)

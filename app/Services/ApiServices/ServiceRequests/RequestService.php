@@ -169,29 +169,16 @@ class RequestService extends BaseService
         if (empty($data["name"])) {
             $data['name'] = UtilHelpers::labelToName($data['label'], false, '-');
         }
-//        $service = $this->serviceRepository->findById($data["service_id"]);
         $saveServiceRequest = $this->serviceRequestRepository->createServiceRequest($provider, $data);
-//        if ($saveServiceRequest) {
-//            $this->requestConfigService->requestConfigValidator($this->serviceRequestRepository->getModel());
-//        }
+        if ($saveServiceRequest) {
+            $this->requestConfigService->requestConfigValidator($this->serviceRequestRepository->getModel());
+        }
         return $saveServiceRequest;
 
     }
 
     public function updateServiceRequest(Sr $serviceRequest, array $data)
     {
-//        if (isset($data["service"]['id'])) {
-//            $serviceId = $data["service"]['id'];
-//        } elseif (isset($data["service_id"])) {
-//            $serviceId = $data["service_id"];
-//        } else {
-//            throw new BadRequestHttpException("Service id is not set.");
-//        }
-//        $service = $this->serviceRepository->find($serviceId);
-//        if ($service === null) {
-//            throw new BadRequestHttpException("Invalid service in request");
-//        }
-
         return $this->serviceRequestRepository->saveServiceRequest($serviceRequest, $data);
     }
 
@@ -217,13 +204,12 @@ class RequestService extends BaseService
         return $requestResponseKeyRepo->mergeRequestResponseKeys($sourceServiceRequest, $destinationServiceRequest);
     }
 
-    public function deleteServiceRequestById(int $id)
+    public function deleteBatchServiceRequests(array $ids)
     {
-        $serviceRequest = $this->serviceRequestRepository->findById($id);
-        if ($serviceRequest === null) {
-            throw new BadRequestHttpException(sprintf("Service request id: %s not found in database.", $id));
+        if (!count($ids)) {
+            throw new BadRequestHttpException("No service request ids provided.");
         }
-        return $this->deleteServiceRequest($serviceRequest);
+        return $this->serviceRequestRepository->deleteBatch($ids);
     }
 
     public function deleteServiceRequest(Sr $serviceRequest)

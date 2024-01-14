@@ -2,6 +2,7 @@
 namespace App\Services\Property;
 
 use App\Models\Property;
+use App\Models\Provider;
 use App\Repositories\PropertyRepository;
 use App\Services\BaseService;
 use App\Services\Permission\AccessControlService;
@@ -51,6 +52,9 @@ class PropertyService extends BaseService {
             ));
         }
         return $property;
+    }
+    public function getProviderPropertyByPropertyName(Provider $provider, string $propertyName) {
+        return $this->propertyRepository->getProviderPropertyByPropertyName($provider, $propertyName);
     }
 
     public function getPropertyById(int $propertyId) {

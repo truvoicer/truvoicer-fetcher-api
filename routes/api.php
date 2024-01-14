@@ -114,6 +114,9 @@ Route::middleware(['auth:sanctum', 'ability:api:admin,api:superuser,api:user'])-
                     Route::get('/test-run', [ServiceRequestController::class, 'runApiRequest'])->name('test-run');
                     Route::post('/response-keys/merge', [ServiceRequestController::class, 'mergeServiceRequestResponseKeys'])->name('response-keys.merge');
                     Route::post('/create', [ServiceRequestController::class, 'createServiceRequest'])->name('create');
+                    Route::prefix('batch')->name('batch.')->group(function () {
+                        Route::delete('/delete', [ServiceRequestController::class, 'deleteBatchServiceRequest'])->name('delete');
+                    });
                     Route::get('/{serviceRequest}', [ServiceRequestController::class, 'getServiceRequest'])->name('detail');
                     Route::prefix('{serviceRequest}')->name('single.')->group(function () {
                         Route::delete('/delete', [ServiceRequestController::class, 'deleteServiceRequest'])->name('delete');

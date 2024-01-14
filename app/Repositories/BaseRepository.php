@@ -221,6 +221,16 @@ class BaseRepository
         return true;
     }
 
+    public function deleteBatch(array $ids) {
+        foreach ($ids as $index => $id) {
+            if ($index === 0) {
+                $this->addWhere('id', $id);
+                continue;
+            }
+            $this->addWhere('id', $id, '=', 'OR');
+        }
+        return $this->getQuery()->delete();
+    }
     public function delete() {
         if (!$this->model->delete()) {
             $this->addError('Error deleting listing');

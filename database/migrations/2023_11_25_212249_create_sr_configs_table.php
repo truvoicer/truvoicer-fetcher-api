@@ -17,7 +17,8 @@ return new class extends Migration
             $table->string('name');
             $table->string('value')->nullable();
             $table->string('value_type');
-            $table->longText('array_value')->nullable();
+            $table->json('array_value')->nullable();
+            $table->json('value_choices')->nullable();
             $table->timestamps();
         });
     }

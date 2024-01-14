@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Library\Defaults\DefaultData;
 use App\Models\Role;
 use App\Models\User;
 use App\Services\Auth\AuthService;
@@ -16,7 +17,7 @@ class UserSeeder extends Seeder
      */
     public function run(RoleService $roleService, UserAdminService $userAdminService): void
     {
-        $email = 'mikydxl@gmail.com';
+        $testUserData = DefaultData::TEST_USER_DATA;
         $role = $roleService->getRoleRepository()->findOneBy(
             [['name', '=', AuthService::ABILITY_SUPERUSER]]
         );
@@ -26,16 +27,17 @@ class UserSeeder extends Seeder
         }
 
         $user = $userAdminService->getUserRepository()->findOneBy(
-            [['email', '=', $email]]
+            [['email', '=', $testUserData['email']]]
         );
         if ($user instanceof User) {
             return;
         }
 
         $createUser = $userAdminService->createUser([
-            'email' => $email,
-            'password' => 'Deelite4'
-        ], $role);
+            'email' => $testUserData['email'],
+            'password' => $testUserData['password']
+        ], [$role->id]);
+
         if (!$createUser) {
             throw new \Exception("Error creating user");
         }

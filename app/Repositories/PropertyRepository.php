@@ -3,6 +3,7 @@
 namespace App\Repositories;
 
 use App\Models\Property;
+use App\Models\Provider;
 
 class PropertyRepository extends BaseRepository
 {
@@ -19,6 +20,11 @@ class PropertyRepository extends BaseRepository
         return $this->findAll();
     }
 
+    public function getProviderPropertyByPropertyName(Provider $provider, string $propertyName) {
+        return $provider->properties()
+            ->where('name', $propertyName)
+            ->first();
+    }
     public function createProperty(array $data) {
         return $this->insert($data);
     }

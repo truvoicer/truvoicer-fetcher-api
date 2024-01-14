@@ -4,7 +4,9 @@ namespace App\Http\Controllers\Api\Backend\Services;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Service\CreateServiceRequest;
+use App\Http\Requests\Service\CreateSRequest;
 use App\Http\Requests\Service\UpdateServiceRequest;
+use App\Http\Requests\Service\UpdateSRequest;
 use App\Http\Resources\Service\ServiceResource;
 use App\Models\S;
 use App\Services\ApiServices\ApiService;
@@ -104,7 +106,7 @@ class ServiceController extends Controller
      * Returns error response and message on fail
      *
      */
-    public function createService(CreateServiceRequest $request): \Illuminate\Http\JsonResponse
+    public function createService(CreateSRequest $request): \Illuminate\Http\JsonResponse
     {
         $create = $this->apiServicesService->createService(
             $request->user(),
@@ -128,7 +130,7 @@ class ServiceController extends Controller
      * Returns error response and message on fail
      *
      */
-    public function updateService(S $service, UpdateServiceRequest $request): \Illuminate\Http\JsonResponse
+    public function updateService(S $service, UpdateSRequest $request): \Illuminate\Http\JsonResponse
     {
         $this->setAccessControlUser($request->user());
         if (

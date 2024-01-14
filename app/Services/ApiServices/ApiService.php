@@ -84,11 +84,15 @@ class ApiService extends BaseService
         if (!$createService) {
             return false;
         }
-        return $this->permissionEntities->saveUserEntityPermissions(
+        $addRelations = $this->permissionEntities->saveUserEntityPermissions(
             $user,
             $this->serviceRepository->getModel(),
             ['name' => PermissionService::PERMISSION_ADMIN]
         );
+        if (!$addRelations) {
+            return false;
+        }
+        return $this->responseKeysService->createDefaultServiceResponseKeys($this->serviceRepository->getModel());
     }
 
     public function updateService(S $service, array $data)

@@ -7,7 +7,11 @@ use App\Services\ApiServices\ServiceRequests\RequestConfigService;
 
 class DefaultData
 {
-
+    public const TEST_USER_DATA = [
+        'name' => 'Test User',
+        'email' => 'test@user.com',
+        'password' => 'password',
+    ];
     public const REQUEST_KEYS = [
         "POST_PER_PAGE" => "posts_per_page",
     ];
