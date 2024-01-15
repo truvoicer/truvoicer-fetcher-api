@@ -156,6 +156,7 @@ Route::middleware(['auth:sanctum', 'ability:api:admin,api:superuser,api:user'])-
                 Route::patch('/update', [ServiceController::class, 'updateService'])->name('update');
                 Route::delete('/delete', [ServiceController::class, 'deleteService'])->name('delete');
                 Route::prefix('response-key')->name('response-key.')->group(function () {
+                    Route::post('/load-default', [ServiceResponseKeyController::class, 'loadDefaultServiceResponseKeys'])->name('load-default');
                     Route::get('/list', [ServiceResponseKeyController::class, 'getServiceResponseKeyList'])->name('list');
                     Route::post('/create', [ServiceResponseKeyController::class, 'createServiceResponseKey'])->name('create');
                     Route::get('/{serviceResponseKey}', [ServiceResponseKeyController::class, 'getServiceResponseKey'])->name('detail');

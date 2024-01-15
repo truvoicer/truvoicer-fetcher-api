@@ -135,7 +135,7 @@ class RequestResponseKeysService extends BaseService
     }
 
     public function getRequestResponseKeys(Sr $serviceRequest, string $sort = "name", string $order = "asc", ?int $count = null) {
-        return $this->requestResponseKeyRepository->findServiceRequestResponseKeys($serviceRequest, $sort, $order, $count);
+        return $this->requestResponseKeyRepository->findSrResponseKeysWithRelation($serviceRequest, $sort, $order, $count);
     }
 
 

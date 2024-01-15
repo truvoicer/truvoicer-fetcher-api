@@ -110,6 +110,38 @@ class ServiceResponseKeyController extends Controller
         );
     }
 
+
+
+    /**
+     * Create an api service response key based on request POST data
+     * Returns json success message and api service response key data on successful creation
+     * Returns error response and message on fail
+     *
+     */
+    public function loadDefaultServiceResponseKeys(S $service, Request $request)
+    {
+        $this->setAccessControlUser($request->user());
+        if (
+            !$this->accessControlService->checkPermissionsForEntity(
+                $service,
+                [
+                    PermissionService::PERMISSION_ADMIN,
+                    PermissionService::PERMISSION_WRITE,
+                ]
+            )
+        ) {
+            return $this->sendErrorResponse(
+                "You do not have permission to view this service",
+            );
+        }
+        if (!$this->responseKeysService->createDefaultServiceResponseKeys($service)) {
+            return $this->sendErrorResponse("Error loading default service response keys");
+        }
+        return $this->sendSuccessResponse(
+            "Default service response keys loaded",
+        );
+    }
+
     /**
      * Create an api service response key based on request POST data
      * Returns json success message and api service response key data on successful creation

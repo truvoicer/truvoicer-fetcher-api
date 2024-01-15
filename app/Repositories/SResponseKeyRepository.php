@@ -6,6 +6,7 @@ use App\Models\Provider;
 use App\Models\S;
 use App\Models\Sr;
 use App\Models\SResponseKey;
+use App\Models\SrResponseKey;
 use Illuminate\Database\Eloquent\Model;
 
 class SResponseKeyRepository extends BaseRepository
@@ -26,6 +27,12 @@ class SResponseKeyRepository extends BaseRepository
     }
 
 
+    public function findServiceResponseKeysByNameBatch(S $service, array $names) {
+        return $service->sResponseKey()->whereIn('name', $names)->get();
+    }
+    public function findServiceResponseKeysDiffByNameBatch(S $service, array $names) {
+        return $service->sResponseKey()->get()->diff(SResponseKey::whereIn('name', $names)->get());
+    }
     public function getServiceResponseKeyByName(S $service, string $name)
     {
         return $service->sResponseKey()->where('name', $name)->first();

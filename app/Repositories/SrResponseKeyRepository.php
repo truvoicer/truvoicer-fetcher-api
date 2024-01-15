@@ -2,10 +2,13 @@
 
 namespace App\Repositories;
 
+use App\Models\Property;
 use App\Models\Provider;
+use App\Models\S;
 use App\Models\Sr;
 use App\Models\SrResponseKey;
 use App\Models\SResponseKey;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class SrResponseKeyRepository extends BaseRepository
 {
@@ -18,6 +21,7 @@ class SrResponseKeyRepository extends BaseRepository
     {
         return parent::getModel();
     }
+
 
     public function getRequestResponseKeyByName(Provider $provider, Sr $serviceRequest, string $keyName)
     {
@@ -71,6 +75,12 @@ class SrResponseKeyRepository extends BaseRepository
         return $this->save($data);
     }
 
+    public function findSrResponseKeysWithRelation(Sr $serviceRequest)
+    {
+        $service = $serviceRequest->s()->first()->sResponseKey();
+        return $service->with('srResponseKey')
+            ->get();
+    }
     public function findServiceRequestResponseKeys(Sr $serviceRequest, string $sort = "name", string $order = "asc", ?int $count = null) {
         return $serviceRequest->srResponseKeys()
             ->with('srResponseKey')

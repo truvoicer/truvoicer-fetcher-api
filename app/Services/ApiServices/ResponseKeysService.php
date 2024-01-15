@@ -114,13 +114,22 @@ class ResponseKeysService extends BaseService
 
     public function createDefaultServiceResponseKeys(S $service) {
         $errors = [];
-        foreach (DefaultData::getServiceResponseKeys() as $keyName => $keyValue) {
+        $defaultResponseKeys = DefaultData::getServiceResponseKeys();
+        $defaultResponseKeyNames = array_values($defaultResponseKeys);
+        $findByNames = $this->responseKeyRepository->findServiceResponseKeysByNameBatch(
+            $service,
+            $defaultResponseKeyNames
+        );
+        $diff = array_diff(
+          $defaultResponseKeyNames,
+            array_column($findByNames->toArray(), 'name')
+        );
+        foreach ($diff as $key) {
             $create = $this->createServiceResponseKeys($service, [
-               "name" => $keyName,
-               "value" => $keyValue
+               "name" => $key
             ]);
             if (!$create) {
-                $errors[] = sprintf("Error creating default response key: %s", $keyName);
+                $errors[] = sprintf("Error creating default response key: %s", $key);
             }
         }
         return count($errors) === 0;

@@ -15,10 +15,7 @@ class SResponseKey extends Model
     protected $fillable = [
         'name',
     ];
-    public function srResponseKey()
-    {
-        return $this->hasMany(SrResponseKey::class);
-    }
+
     public function srResponseKeys()
     {
         return $this->belongsToMany(
@@ -26,6 +23,15 @@ class SResponseKey extends Model
             SrResponseKey::TABLE_NAME,
             'sr_id',
             's_response_key_id'
+        );
+    }
+
+    public function srResponseKey()
+    {
+        return $this->hasOne(
+            SrResponseKey::class,
+            's_response_key_id',
+            'id'
         );
     }
     public function service()
