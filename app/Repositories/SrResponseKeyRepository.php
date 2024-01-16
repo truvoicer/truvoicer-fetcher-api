@@ -95,8 +95,8 @@ class SrResponseKeyRepository extends BaseRepository
     }
     public function saveServiceRequestResponseKey(Sr $serviceRequest, SResponseKey $serviceResponseKey, array $data) {
         $find = $this->findServiceRequestResponseKeyByResponseKey($serviceRequest, $serviceResponseKey);
-//        dd($find);
-        if (!$find instanceof Sr) {
+
+        if (!$find instanceof SResponseKey ) {
             return $this->dbHelpers->validateToggle(
                 $serviceRequest->srResponseKeys()->toggle([$serviceResponseKey->id => $data]),
                 [$serviceResponseKey->id]

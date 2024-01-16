@@ -44,10 +44,10 @@ class Sr extends Model
     public function srResponseKeys()
     {
         return $this->belongsToMany(
-            Sr::class,
+            SResponseKey::class,
             SrResponseKey::TABLE_NAME,
-            's_response_key_id',
-            'sr_id'
+            'sr_id',
+            's_response_key_id'
         );
     }
     public function srResponseKeySrs()

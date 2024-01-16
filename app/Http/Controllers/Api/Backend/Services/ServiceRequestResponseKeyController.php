@@ -84,7 +84,7 @@ class ServiceRequestResponseKeyController extends Controller
     public function getRequestResponseKey(
         Provider     $provider,
         Sr           $serviceRequest,
-        SrResponseKey $serviceResponseKey,
+        SrResponseKey $srResponseKey,
         Request      $request
     ) {
         $this->setAccessControlUser($request->user());
@@ -101,7 +101,37 @@ class ServiceRequestResponseKeyController extends Controller
         }
         return $this->sendSuccessResponse(
             "success",
-            new ServiceRequestResponseKeyResource($serviceResponseKey)
+            new ServiceRequestResponseKeyResource($srResponseKey)
+        );
+    }
+    public function getRequestResponseKeyByResponseKey(
+        Provider     $provider,
+        Sr           $serviceRequest,
+        SResponseKey $sResponseKey,
+        Request      $request
+    ) {
+        $this->setAccessControlUser($request->user());
+        if (
+            !$this->accessControlService->checkPermissionsForEntity(
+                $provider,
+                [
+                    PermissionService::PERMISSION_ADMIN,
+                    PermissionService::PERMISSION_READ,
+                ]
+            )
+        ) {
+            return $this->sendErrorResponse("Access denied");
+        }
+        $find = $this->requestResponseKeysService->getRequestResponseKeyByResponseKey(
+            $serviceRequest,
+            $sResponseKey
+        );
+        if (!$find) {
+            return $this->sendErrorResponse("Error finding response key.");
+        }
+        return $this->sendSuccessResponse(
+            "success",
+            new ServiceRequestResponseKeyResource($find)
         );
     }
 
@@ -111,9 +141,10 @@ class ServiceRequestResponseKeyController extends Controller
      * Returns error response and message on fail
      *
      */
-    public function createRequestResponseKey(
+    public function saveRequestResponseKey(
         Provider     $provider,
         Sr           $serviceRequest,
+        SResponseKey $sResponseKey,
         Request      $request
     ) {
         $this->setAccessControlUser($request->user());
@@ -128,9 +159,9 @@ class ServiceRequestResponseKeyController extends Controller
         ) {
             return $this->sendErrorResponse("Access denied");
         }
-        $create = $this->requestResponseKeysService->createSrResponseKeyBySResponseKeyId(
+        $create = $this->requestResponseKeysService->createSrResponseKey(
             $serviceRequest,
-            $request->get('s_response_key_id'),
+            $sResponseKey,
             $request->all()
         );
         if (!$create) {
@@ -153,7 +184,7 @@ class ServiceRequestResponseKeyController extends Controller
     public function updateRequestResponseKey(
         Provider      $provider,
         Sr            $serviceRequest,
-        SrResponseKey $serviceResponseKey,
+        SrResponseKey $srResponseKey,
         Request       $request
     ) {
         $this->setAccessControlUser($request->user());
@@ -169,7 +200,7 @@ class ServiceRequestResponseKeyController extends Controller
             return $this->sendErrorResponse("Access denied");
         }
         $update = $this->requestResponseKeysService->updateRequestResponseKey(
-            $serviceResponseKey,
+            $srResponseKey,
             $request->all()
         );
 
@@ -193,7 +224,7 @@ class ServiceRequestResponseKeyController extends Controller
     public function deleteRequestResponseKey(
         Provider      $provider,
         Sr            $serviceRequest,
-        SrResponseKey $serviceResponseKey,
+        SrResponseKey $srResponseKey,
         Request       $request
     ) {
         $this->setAccessControlUser($request->user());
@@ -208,7 +239,7 @@ class ServiceRequestResponseKeyController extends Controller
         ) {
             return $this->sendErrorResponse("Access denied");
         }
-        if (!$this->requestResponseKeysService->deleteRequestResponseKey($serviceResponseKey)) {
+        if (!$this->requestResponseKeysService->deleteRequestResponseKey($srResponseKey)) {
             return $this->sendErrorResponse(
                 "Error deleting service response key"
             );

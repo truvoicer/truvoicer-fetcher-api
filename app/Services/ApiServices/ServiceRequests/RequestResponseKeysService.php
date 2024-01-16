@@ -121,15 +121,16 @@ class RequestResponseKeysService extends BaseService
     }
 
     public function getRequestResponseKeyObjectById(Sr $serviceRequest, SResponseKey $serviceResponseKey) {
-        return $this->getRequestResponseKey($serviceRequest, $serviceResponseKey);
+        return $this->getRequestResponseKeyByResponseKey($serviceRequest, $serviceResponseKey);
     }
 
-    public function getRequestResponseKey(Sr $serviceRequest, SResponseKey $responseKey) {
-        $getRequestResponseKey = $this->responseKeyRepository->getRequestResponseKey($serviceRequest, $responseKey);
-        if ($getRequestResponseKey === null) {
-            return [
-                "service_response_key" => $responseKey
-            ];
+    public function getRequestResponseKeyByResponseKey(Sr $serviceRequest, SResponseKey $responseKey) {
+        $getRequestResponseKey = $this->requestResponseKeyRepository->findServiceRequestResponseKeyByResponseKey(
+            $serviceRequest,
+            $responseKey
+        );
+        if (!$getRequestResponseKey instanceof SResponseKey ) {
+            return false;
         }
         return $getRequestResponseKey;
     }
@@ -204,13 +205,6 @@ class RequestResponseKeysService extends BaseService
         return $requestResponseKeyData;
     }
 
-    public function createSrResponseKeyBySResponseKeyId(Sr $serviceRequest, int $serviceResponseKeyId, array $data) {
-        return $this->createSrResponseKey(
-            $serviceRequest,
-            $this->getResponseKeyById($serviceResponseKeyId),
-            $data
-        );
-    }
     public function createSrResponseKey(Sr $serviceRequest, SResponseKey $serviceResponseKey, array $data) {
         return $this->requestResponseKeyRepository->saveServiceRequestResponseKey(
             $serviceRequest,
