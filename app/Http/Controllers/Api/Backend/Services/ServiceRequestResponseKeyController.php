@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api\Backend\Services;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Service\CreateServiceRequestResponseKeyRequest;
 use App\Http\Resources\Service\ServiceRequest\ServiceRequestResponseKeyResource;
 use App\Models\Provider;
 use App\Models\Sr;
@@ -141,6 +142,62 @@ class ServiceRequestResponseKeyController extends Controller
      * Returns error response and message on fail
      *
      */
+    public function createRequestResponseKey(
+        Provider     $provider,
+        Sr           $serviceRequest,
+        CreateServiceRequestResponseKeyRequest $request
+    ) {
+        $this->setAccessControlUser($request->user());
+        if (
+            !$this->accessControlService->checkPermissionsForEntity(
+                $provider,
+                [
+                    PermissionService::PERMISSION_ADMIN,
+                    PermissionService::PERMISSION_WRITE,
+                ]
+            )
+        ) {
+            return $this->sendErrorResponse("Access denied");
+        }
+        if (
+            !$this->accessControlService->checkPermissionsForEntity(
+                $serviceRequest->s()->first(),
+                [
+                    PermissionService::PERMISSION_ADMIN,
+                    PermissionService::PERMISSION_WRITE,
+                ]
+            )
+        ) {
+            return $this->sendErrorResponse("Access denied");
+        }
+        $create = $this->requestResponseKeysService->createSrResponseKey(
+            $serviceRequest,
+            $request->get('name'),
+            $request->all([
+                'value',
+                'show_in_response',
+                'has_array_value',
+                'array_keys',
+                'list_item',
+                'return_data_type',
+                'append_extra_data',
+                'append_extra_data_value',
+                'prepend_extra_data',
+                'prepend_extra_data_value',
+                'is_service_request'
+            ])
+        );
+        if (!$create) {
+            return $this->sendErrorResponse("Error adding response key.");
+        }
+        return $this->sendSuccessResponse(
+            "Successfully added response key.",
+            new ServiceRequestResponseKeyResource(
+                $this->requestResponseKeysService->getRequestResponseKeyRepository()->getModel()
+            )
+        );
+    }
+
     public function saveRequestResponseKey(
         Provider     $provider,
         Sr           $serviceRequest,
@@ -159,7 +216,7 @@ class ServiceRequestResponseKeyController extends Controller
         ) {
             return $this->sendErrorResponse("Access denied");
         }
-        $create = $this->requestResponseKeysService->createSrResponseKey(
+        $create = $this->requestResponseKeysService->saveSrResponseKey(
             $serviceRequest,
             $sResponseKey,
             $request->all()

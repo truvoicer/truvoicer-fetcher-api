@@ -9,6 +9,7 @@ use App\Models\Sr;
 use App\Models\SrResponseKey;
 use App\Models\SResponseKey;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 
 class SrResponseKeyRepository extends BaseRepository
 {
@@ -70,7 +71,7 @@ class SrResponseKeyRepository extends BaseRepository
         return true;
     }
 
-    public function saveRequestResponseKey(SrResponseKey $serviceRequestResponseKey, array $data) {
+    public function updateSrResponseKey(SrResponseKey $serviceRequestResponseKey, array $data) {
         $this->setModel($serviceRequestResponseKey);
         return $this->save($data);
     }
@@ -88,15 +89,44 @@ class SrResponseKeyRepository extends BaseRepository
             ->paginate();
     }
     public function findServiceRequestResponseKeyByResponseKey(Sr $serviceRequest, SResponseKey $serviceResponseKey) {
-        return $serviceRequest->srResponseKeys()
-            ->where('s_response_key_id', '=', $serviceResponseKey->id)
-            ->with('srResponseKey')
+        $query = SResponseKey::with(['srResponseKey' => function ($query) use ($serviceRequest) {
+                $query->where('sr_id', '=', $serviceRequest->id);
+            }])
+            ->where('id', '=', $serviceResponseKey->id)
             ->first();
+        return $query;
     }
+    public function createServiceRequestResponseKey(Sr $serviceRequest, string $sResponseKeyName, array $data) {
+        $sResponseKerRepo = new SResponseKeyRepository();
+        $findSResponseKey = $sResponseKerRepo->getServiceResponseKeyByName(
+            $serviceRequest->s()->first(),
+            $sResponseKeyName
+        );
+
+        if ($findSResponseKey instanceof SResponseKey) {
+            return $this->saveServiceRequestResponseKey(
+                $serviceRequest,
+                $findSResponseKey,
+                $data
+            );
+        }
+        $sResponseKey = $sResponseKerRepo->createServiceResponseKey(
+            $serviceRequest->s()->first(),
+            ['name' => $sResponseKeyName]
+        );
+        if (!$sResponseKey) {
+            return false;
+        }
+        return $this->saveServiceRequestResponseKey(
+            $serviceRequest,
+            $sResponseKerRepo->getModel(),
+            $data
+        );
+    }
+
     public function saveServiceRequestResponseKey(Sr $serviceRequest, SResponseKey $serviceResponseKey, array $data) {
         $find = $this->findServiceRequestResponseKeyByResponseKey($serviceRequest, $serviceResponseKey);
-
-        if (!$find instanceof SResponseKey ) {
+        if (!$find->srResponseKey()->exists()) {
             return $this->dbHelpers->validateToggle(
                 $serviceRequest->srResponseKeys()->toggle([$serviceResponseKey->id => $data]),
                 [$serviceResponseKey->id]

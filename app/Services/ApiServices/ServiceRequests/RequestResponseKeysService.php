@@ -205,7 +205,14 @@ class RequestResponseKeysService extends BaseService
         return $requestResponseKeyData;
     }
 
-    public function createSrResponseKey(Sr $serviceRequest, SResponseKey $serviceResponseKey, array $data) {
+    public function createSrResponseKey(Sr $serviceRequest, string $sResponseKeyName, array $data) {
+        return $this->requestResponseKeyRepository->createServiceRequestResponseKey(
+            $serviceRequest,
+            $sResponseKeyName,
+            $this->setRequestResponseKeyObject($data)
+        );
+    }
+    public function saveSrResponseKey(Sr $serviceRequest, SResponseKey $serviceResponseKey, array $data) {
         return $this->requestResponseKeyRepository->saveServiceRequestResponseKey(
             $serviceRequest,
             $serviceResponseKey,
@@ -214,7 +221,7 @@ class RequestResponseKeysService extends BaseService
     }
 
     public function updateRequestResponseKey(SrResponseKey $serviceResponseKey, array $data) {
-        return $this->requestResponseKeyRepository->saveRequestResponseKey(
+        return $this->requestResponseKeyRepository->updateSrResponseKey(
             $serviceResponseKey,
             $this->setRequestResponseKeyObject($data)
         );

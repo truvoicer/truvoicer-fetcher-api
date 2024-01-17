@@ -25,18 +25,19 @@ class CreateServiceRequestResponseKeyRequest extends FormRequest
         return [
             'name' => 'required|string',
             'value' => [
-                'string',
-                'nullable',
-                Rule::requiredIf(fn () => in_array($this->get('value_type'), ['text', 'choice']))
+                'required',
+                'string'
             ],
-            "value_type" => [
-                Rule::in(['list', 'text', 'choice'])
-            ],
-            "array_value" => [
-                'array',
-                'nullable',
-                'required_if:value_type,list'
-            ]
+            'show_in_response' => 'nullable|boolean',
+            'list_item' => 'nullable|boolean',
+            'append_extra_data' => 'nullable|boolean',
+            'append_extra_data_value' => 'string|nullable',
+            'prepend_extra_data' => 'nullable|boolean',
+            'prepend_extra_data_value' => 'string|nullable',
+            'is_service_request' => 'nullable|boolean',
+            'has_array_value' => 'nullable|boolean',
+            'array_keys' => 'nullable|array',
+            'return_data_type' => 'string|nullable|in:text,object,array',
         ];
     }
 }

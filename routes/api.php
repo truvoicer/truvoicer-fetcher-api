@@ -139,10 +139,11 @@ Route::middleware(['auth:sanctum', 'ability:api:admin,api:superuser,api:user'])-
                         });
                         Route::prefix('response-key')->name('response-key.')->group(function () {
                             Route::get('/list', [ServiceRequestResponseKeyController::class, 'getRequestResponseKeyList'])->name('list');
+                            Route::post('/create', [ServiceRequestResponseKeyController::class, 'createRequestResponseKey'])->name('create');
 
                             Route::prefix('service')->name('service.')->group(function () {
                                 Route::get('/{sResponseKey}', [ServiceRequestResponseKeyController::class, 'getRequestResponseKeyByResponseKey'])->name('detail');
-                                Route::post('/{sResponseKey}/create', [ServiceRequestResponseKeyController::class, 'saveRequestResponseKey'])->name('create');
+                                Route::post('/{sResponseKey}/save', [ServiceRequestResponseKeyController::class, 'saveRequestResponseKey'])->name('save');
                             });
 
                             Route::get('/{srResponseKey}', [ServiceRequestResponseKeyController::class, 'getRequestResponseKey'])->name('detail');

@@ -27,6 +27,7 @@ class UpdateServiceRequestResponseKeyRequest extends FormRequest
             'value' => [
                 'string'
             ],
+
         ];
     }
 }
