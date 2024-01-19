@@ -231,6 +231,7 @@ class ServiceRequestController extends Controller
 
         $requestOperation->setProviderName($data['provider']);
         $requestOperation->setApiRequestName($data["request_type"]);
+        $requestOperation->setUser($request->user());
         $runApiRequest = $requestOperation->getOperationRequestContent($data);
 
         return new JsonResponse(

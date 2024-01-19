@@ -5,19 +5,19 @@ namespace App\Services\ApiManager\Response\Entity;
 class ApiResponse
 {
 
-    private $status;
+    public string $status;
 
-    private $contentType;
+    public string $contentType;
 
-    private $provider;
+    public string $provider;
 
-    private $requestService;
+    public string $requestService;
 
-    private $category;
+    public $category;
 
-    private $requestData;
+    public $requestData;
 
-    private $extraData;
+    public $extraData;
 
     private array $apiRequest;
 

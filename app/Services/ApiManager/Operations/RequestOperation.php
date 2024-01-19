@@ -3,6 +3,7 @@ namespace App\Services\ApiManager\Operations;
 
 use App\Services\ApiManager\Response\Entity\ApiResponse;
 use App\Services\ApiManager\Response\Entity\RequestResponse;
+use App\Traits\User\UserTrait;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 
 class RequestOperation extends BaseOperations

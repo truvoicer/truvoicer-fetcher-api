@@ -4,6 +4,7 @@ namespace App\Services\ApiManager\Operations;
 
 use App\Models\Provider;
 use App\Models\Sr;
+use App\Models\SrConfig;
 use App\Services\ApiManager\ApiBase;
 use App\Services\ApiManager\Client\ApiClientHandler;
 use App\Services\ApiManager\Client\Entity\ApiRequest;
@@ -14,12 +15,15 @@ use App\Services\Tools\EventsService;
 use App\Services\Provider\ProviderService;
 use App\Services\ApiServices\ServiceRequests\RequestService;
 use App\Services\Tools\SerializerService;
+use App\Traits\User\UserTrait;
 use DateTime;
 use Exception;
+use Illuminate\Database\Eloquent\Collection;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 
 class BaseOperations extends ApiBase
 {
+    use UserTrait;
     private Oauth $oath;
     private ProviderService $providerService;
     private SerializerService $serializerService;
@@ -132,12 +136,12 @@ class BaseOperations extends ApiBase
         }
         if ($password === null || $password === "") {
             $this->apiRequest->addBasicAuthentication(
-                $this->filterParameterValue($username->getItemValue())
+                $this->filterParameterValue($username->value)
             );
         }
         $this->apiRequest->addBasicAuthentication(
-            $this->filterParameterValue($username->getItemValue()),
-            $password->getItemValue()
+            $this->filterParameterValue($username->value),
+            $password->value
         );
     }
     private function getAuthBearerAuthentication() {
@@ -146,14 +150,15 @@ class BaseOperations extends ApiBase
             throw new BadRequestHttpException("Request config bearer token not set.");
         }
         $this->apiRequest->addTokenAuthentication(
-            $this->filterParameterValue($bearerToken->getItemValue())
+            $this->filterParameterValue($bearerToken->value)
         );
     }
 
     private function setRequestData() {
         $providerServiceParams = $this->requestService->getRequestParametersByRequestName(
             $this->provider,
-            $this->apiRequestName);
+            $this->apiRequestName
+        );
         switch ($this->providerService->getProviderPropertyValue($this->provider, self::API_TYPE)) {
             case "query_string":
                 $requestQueryArray = $this->buildRequestQuery($providerServiceParams);
@@ -173,7 +178,7 @@ class BaseOperations extends ApiBase
     private function getRequestBody($providerServiceParams) {
         $queryArray = [];
         foreach ($providerServiceParams as $requestParameter) {
-            array_push($queryArray, $this->filterParameterValue($requestParameter->getParameterValue()));
+            array_push($queryArray, $this->filterParameterValue($requestParameter->value));
         }
         return implode(" ", $queryArray);
     }
@@ -199,7 +204,7 @@ class BaseOperations extends ApiBase
         if ($getHeaders === null) {
             return $headers;
         }
-        $headerArray = $getHeaders->getItemArrayValue();
+        $headerArray = $getHeaders->array_value;
         foreach ($headerArray as $item) {
             $headers[$item["name"]] = $this->filterParameterValue($item["value"]);
         }
@@ -212,7 +217,7 @@ class BaseOperations extends ApiBase
         if ($endpoint === null) {
             throw new BadRequestHttpException("Endpoint is not specified in request config");
         }
-        return $this->getQueryFilterValue($endpoint->getItemValue());
+        return $this->getQueryFilterValue($endpoint->value);
     }
 
     private function getMethod()
@@ -221,7 +226,7 @@ class BaseOperations extends ApiBase
         if ($method === null) {
             throw new BadRequestHttpException("Request method is not specified in request config");
         }
-        return $this->getQueryFilterValue($method->getItemValue());
+        return $this->getQueryFilterValue($method->value);
     }
 
     private function getQueryFilterValue($string)
@@ -240,27 +245,31 @@ class BaseOperations extends ApiBase
 
     private function getRequestConfig(string $parameterName)
     {
-        return $this->requestService->getRequestConfigByName($this->provider, $this->apiService, $parameterName);
+        $config = $this->requestService->getRequestConfigByName($this->provider, $this->apiService, $parameterName);
+        if (!$config instanceof  SrConfig) {
+            return null;
+        }
+        return $config;
     }
 
-    public function buildRequestQuery(array $apiParamsArray)
+    public function buildRequestQuery(Collection $apiParamsArray)
     {
         $queryArray = [];
         foreach ($apiParamsArray as $requestParameter) {
-            $paramValue = $this->filterParameterValue($requestParameter->getParameterValue());
+            $paramValue = $this->filterParameterValue($requestParameter->value);
             if (empty($paramValue)) {
                 continue;
             }
             $value = trim($paramValue);
-            if (!array_key_exists($requestParameter->getParameterName(), $queryArray)) {
-                $queryArray[$requestParameter->getParameterName()] = $value;
+            if (!array_key_exists($requestParameter->name, $queryArray)) {
+                $queryArray[$requestParameter->name] = $value;
                 continue;
             }
-            if (empty($queryArray[$requestParameter->getParameterName()])) {
-                $queryArray[$requestParameter->getParameterName()] = $value;
+            if (empty($queryArray[$requestParameter->name])) {
+                $queryArray[$requestParameter->name] = $value;
                 continue;
             }
-            $queryArray[$requestParameter->getParameterName()] = $queryArray[$requestParameter->getParameterName()] . "," . $value;
+            $queryArray[$requestParameter->name] = $queryArray[$requestParameter->name] . "," . $value;
 
         }
         return $queryArray;
@@ -339,11 +348,12 @@ class BaseOperations extends ApiBase
      */
     public function setProvider($providerName): void
     {
-        $provider = $this->providerService->getUserProviderByName($providerName);
-        if ($provider === null) {
+        $provider = $this->providerService->getUserProviderByName($this->getUser(), $providerName);
+
+        if (!$provider instanceof Provider) {
             throw new BadRequestHttpException("Provider in request not found...");
         } else {
-            $this->provider = $provider->getProvider();
+            $this->provider = $provider;
         }
     }
 

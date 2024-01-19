@@ -65,9 +65,9 @@ class ProviderService extends BaseService
         return $this->providerRepository->findByName($providerName);
     }
 
-    public function getUserProviderByName(string $providerName = null)
+    public function getUserProviderByName(User $user, string $providerName = null)
     {
-        return $this->userProviderRepository->findUserProviderByName($this->user, $providerName);
+        return $this->userProviderRepository->findUserProviderByName($user, $providerName);
     }
 
     public function getProviderById(int $providerId)
@@ -164,8 +164,11 @@ class ProviderService extends BaseService
 
     public function getProviderPropertyValue(Provider $provider, string $propertyName)
     {
-        return $this->getProviderPropertyObjectByName($provider,
-            $propertyName)->property_value;
+        $property = $this->getProviderPropertyObjectByName($provider, $propertyName);
+        if (!$property instanceof Property) {
+            return null;
+        }
+        return $property->providerProperty->value;
     }
 
     private function setProviderObject(array $providerData)

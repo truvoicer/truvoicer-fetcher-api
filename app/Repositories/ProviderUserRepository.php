@@ -21,7 +21,7 @@ class ProviderUserRepository extends BaseRepository
 
     public function findUserProviderByName(User $user, string $value)
     {
-        return $user->provider()
+        return $user->providers()
             ->where('name', $value)
             ->first();
     }

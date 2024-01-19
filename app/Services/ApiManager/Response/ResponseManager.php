@@ -34,13 +34,20 @@ class ResponseManager extends BaseService
         $this->xmlResponseHandler = $xmlResponseHandler;
     }
 
+    private function getContentTypesFromHeaders(Response $response) {
+        $headers = $response->headers();
+        if (isset($headers['Content-Type']) && is_array($headers['Content-Type'])) {
+            return $headers['Content-Type'];
+        }
+        return [];
+    }
     public function getRequestContent(Sr $serviceRequest, Provider $provider, Response $response, ApiRequest $apiRequest)
     {
         $this->setProvider($provider);
         $this->setServiceRequest($serviceRequest);
         try {
             $contentType = null;
-            switch ($this->getContentType($response->headers()['content-type'])) {
+            switch ($this->getContentType($response)) {
                 case self::CONTENT_TYPES['JSON']:
                     $contentType = "json";
                     $content = $response->json();
@@ -69,7 +76,7 @@ class ResponseManager extends BaseService
         $this->setServiceRequest($serviceRequest);
         try {
             $contentType = null;
-            switch ($this->getContentType($response->headers()['content-type'])) {
+            switch ($this->getContentType($response)) {
                 case self::CONTENT_TYPES['JSON']:
                     $contentType = "json";
                     $this->jsonResponseHandler->setApiService($serviceRequest);
@@ -106,7 +113,7 @@ class ResponseManager extends BaseService
         $apiResponse->setStatus("error");
         $apiResponse->setRequestService($this->serviceRequest->name);
         $apiResponse->setPaginationType($this->serviceRequest->pagination_type);
-        $apiResponse->setCategory($this->serviceRequest->category()->first()->getCategoryName());
+        $apiResponse->setCategory($this->serviceRequest->category()->first()->name);
         $apiResponse->setProvider($this->provider->name);
         $apiResponse->setRequestData($requestData);
         $apiResponse->setApiRequest($apiRequest->toArray());
@@ -114,11 +121,12 @@ class ResponseManager extends BaseService
     }
 
     private function successResponse($contentType, $requestData, $extraData, Response $response, ApiRequest $apiRequest) {
+//        dd($requestData);
         $apiResponse = new ApiResponse();
         $apiResponse->setContentType($contentType);
         $apiResponse->setPaginationType($this->serviceRequest->pagination_type);
         $apiResponse->setRequestService($this->serviceRequest->name);
-        $apiResponse->setCategory($this->serviceRequest->category()->getCategoryName());
+        $apiResponse->setCategory($this->serviceRequest->category()->first()->name);
         $apiResponse->setStatus("success");
         $apiResponse->setProvider($this->provider->name);
         $apiResponse->setRequestData($requestData);
@@ -136,12 +144,19 @@ class ResponseManager extends BaseService
         return $buildArray;
     }
 
-    private function getContentType(array $contentTypeArray = [])
+    private function getContentType(Response $response)
     {
+        $contentTypeArray = [];
+        $headers = $response->headers();
+        if (isset($headers['Content-Type']) && is_array($headers['Content-Type'])) {
+            $contentTypeArray = $headers['Content-Type'];
+        }
+        $step = 0;
         foreach (self::CONTENT_TYPES as $key => $item) {
-            if (strpos($contentTypeArray[0], $item) !== false) {
+            if (str_contains($contentTypeArray[$step], $item)) {
                 return $item;
             }
+            $step++;
         }
         return false;
     }
