@@ -5,6 +5,7 @@ namespace App\Services\Provider;
 use App\Models\Category;
 use App\Models\Property;
 use App\Models\Provider;
+use App\Models\ProviderProperty;
 use App\Models\User;
 use App\Repositories\PermissionRepository;
 use App\Repositories\PropertyRepository;
@@ -22,6 +23,7 @@ use App\Services\Property\PropertyService;
 use App\Services\ApiServices\ResponseKeysService;
 use App\Helpers\Tools\UtilHelpers;
 use App\Services\User\UserAdminService;
+use Illuminate\Support\Facades\Request;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 
 class ProviderService extends BaseService
@@ -168,6 +170,9 @@ class ProviderService extends BaseService
         if (!$property instanceof Property) {
             return null;
         }
+        if (!$property->providerProperty instanceof ProviderProperty ) {
+            return null;
+        }
         return $property->providerProperty->value;
     }
 
@@ -241,9 +246,23 @@ class ProviderService extends BaseService
     }
 
 
-    public function updateProvider(Provider $provider, array $providerData)
+    public function updateProvider(User $user, Provider $provider, array $providerData)
     {
         $providerData = $this->setProviderObject($providerData);
+
+        if (!empty($providerData['label'])) {
+            if (empty($providerData['name'])) {
+                $providerData['name'] = UtilHelpers::labelToName($providerData['label'], false, '-');
+            }
+            $checkProvider = $this->providerRepository->findUserModelBy($provider, $user, [
+                ['name', '=', $providerData['name']]
+            ], false);
+
+            if ($checkProvider instanceof Provider) {
+                throw new BadRequestHttpException(sprintf("Provider (%s) already exists.", $providerData['name']));
+            }
+        }
+
         $update = $this->providerRepository->updateProvider($provider, $providerData);
         if (!$update) {
             throw new BadRequestHttpException(sprintf("Error updating provider: %s", $providerData['name']));
@@ -251,7 +270,7 @@ class ProviderService extends BaseService
         return $this->permissionEntities->saveRelatedEntity(
             $provider,
             Category::class,
-            $providerData['categories'],
+            (!empty($providerData['categories']) && is_array($providerData['categories'])) ? $providerData['categories'] : []
         );
     }
 

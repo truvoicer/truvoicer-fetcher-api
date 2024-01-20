@@ -63,7 +63,8 @@ class XmlResponseHandler extends ResponseHandler
         if ($this->xmlService->checkXmlErrors($responseContent)) {
             throw new BadRequestHttpException("item_request_error");
         }
-        $itemsArrayString = $this->getRequestResponseKeyByName($this->responseKeysArray['ITEMS_ARRAY'])->value;
+        $itemsArrayString = $this->getRequestResponseKeyByName($this->responseKeysArray['items_array'])->value;
+        dd($itemsArrayString);
         $this->responseArray = $this->xmlService->convertXmlToArray($responseContent,
             $this->filterItemsArrayValue($itemsArrayString)["value"],
             $this->filterItemsArrayValue($itemsArrayString)["brackets"]

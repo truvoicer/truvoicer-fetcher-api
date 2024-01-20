@@ -401,8 +401,11 @@ class ResponseHandler extends ApiBase
     public function setResponseKeysArray(): void
     {
         $buildArray = [];
-        foreach ($this->requestService->getResponseKeysByRequest($this->provider, $this->apiService) as $key => $value) {
-            $buildArray[$value->getKeyName()] = $value->getKeyValue();
+        foreach ($this->requestService->getResponseKeysByRequest($this->provider, $this->apiService) as $key => $responseKey) {
+            if (!$responseKey->srResponseKey instanceof SrResponseKey) {
+                continue;
+            }
+            $buildArray[$responseKey->name] = $responseKey->srResponseKey->value;
         }
         $this->responseKeysArray = $buildArray;
     }

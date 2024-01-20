@@ -121,6 +121,7 @@ class ProviderRepository extends BaseRepository
         if (!$provider->exists) {
             return false;
         }
+        $provider->categories()->whereNotIn('category_id', $categoryIds)->detach();
         $provider->categories()->sync($categoryIds);
         return true;
     }

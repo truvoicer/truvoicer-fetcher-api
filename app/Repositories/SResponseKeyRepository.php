@@ -11,9 +11,11 @@ use Illuminate\Database\Eloquent\Model;
 
 class SResponseKeyRepository extends BaseRepository
 {
+    private SrResponseKeyRepository $srResponseKeyRepository;
     public function __construct()
     {
         parent::__construct(SResponseKey::class);
+        $this->srResponseKeyRepository = new SrResponseKeyRepository();
     }
 
     public function getModel(): SResponseKey
@@ -27,6 +29,10 @@ class SResponseKeyRepository extends BaseRepository
     }
 
 
+    public function getResponseKeysByRequest(Provider $provider, Sr $serviceRequest)
+    {
+        return $this->srResponseKeyRepository->findSrResponseKeysWithRelation($serviceRequest);
+    }
     public function findServiceResponseKeysByNameBatch(S $service, array $names) {
         return $service->sResponseKey()->whereIn('name', $names)->get();
     }

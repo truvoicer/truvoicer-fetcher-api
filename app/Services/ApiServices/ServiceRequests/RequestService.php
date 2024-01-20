@@ -121,7 +121,7 @@ class RequestService extends BaseService
 
     public function getResponseKeysByRequest(Provider $provider, Sr $serviceRequest)
     {
-        return $this->responseKeysRepo->getResponseKeys($provider, $serviceRequest);
+        return $this->responseKeysRepo->getResponseKeysByRequest($provider, $serviceRequest);
     }
 
     private function getServiceRequestObject(Provider $provider, S $service, array $data)

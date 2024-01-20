@@ -136,6 +136,7 @@ class ProviderController extends Controller
             return $this->sendErrorResponse("Access control: operation not permitted");
         }
         $updateProvider = $this->providerService->updateProvider(
+            $request->user(),
             $provider,
             $request->validated()
         );

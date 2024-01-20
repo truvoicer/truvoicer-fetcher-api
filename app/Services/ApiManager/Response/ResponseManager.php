@@ -54,8 +54,12 @@ class ResponseManager extends BaseService
                     break;
                 case self::CONTENT_TYPES['XML']:
                 case self::CONTENT_TYPES['RSS_XML']:
-                    $contentType = "xml";
-                    $content = $response->body();
+                    return $this->processResponse(
+                        $serviceRequest,
+                        $provider,
+                        $response,
+                        $apiRequest
+                    );
                     break;
             }
             return $this->successResponse(
@@ -153,8 +157,10 @@ class ResponseManager extends BaseService
         }
         $step = 0;
         foreach (self::CONTENT_TYPES as $key => $item) {
-            if (str_contains($contentTypeArray[$step], $item)) {
-                return $item;
+            foreach ($contentTypeArray as $contentType) {
+                if (str_contains($contentType, $item)) {
+                    return $item;
+                }
             }
             $step++;
         }
