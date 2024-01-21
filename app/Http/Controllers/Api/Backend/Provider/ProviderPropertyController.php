@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api\Backend\Provider;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Property\DeleteBatchPropertyRequest;
 use App\Http\Requests\Provider\Property\SaveProviderPropertyRequest;
 use App\Http\Resources\PropertyResource;
 use App\Models\Property;
@@ -176,6 +177,33 @@ class ProviderPropertyController extends Controller
         }
         return $this->sendSuccessResponse(
             "Provider property value deleted."
+        );
+    }
+    public function deleteBatch(
+        Provider $provider,
+        DeleteBatchPropertyRequest $request
+    ): \Illuminate\Http\JsonResponse
+    {
+        $this->setAccessControlUser($request->user());
+        if (
+            !$this->accessControlService->checkPermissionsForEntity(
+                $provider,
+                [
+                    PermissionService::PERMISSION_ADMIN,
+                    PermissionService::PERMISSION_DELETE,
+                ],
+            )
+        ) {
+            return $this->sendErrorResponse("Access denied");
+        }
+
+        if (!$this->providerService->deleteBatchProviderProperty($request->get('ids'))) {
+            return $this->sendErrorResponse(
+                "Error deleting provider properties",
+            );
+        }
+        return $this->sendSuccessResponse(
+            "Provider properties deleted.",
         );
     }
 }

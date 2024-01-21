@@ -13,7 +13,7 @@ use App\Services\ApiManager\Response\ResponseManager;
 use App\Services\Category\CategoryService;
 use App\Services\Tools\EventsService;
 use App\Services\Provider\ProviderService;
-use App\Services\ApiServices\ServiceRequests\RequestService;
+use App\Services\ApiServices\ServiceRequests\SrService;
 use App\Services\Tools\SerializerService;
 use App\Traits\User\UserTrait;
 use DateTime;
@@ -28,7 +28,7 @@ class BaseOperations extends ApiBase
     private ProviderService $providerService;
     private SerializerService $serializerService;
     private EventsService $eventsService;
-    private RequestService $requestService;
+    private SrService $requestService;
     protected Provider $provider;
     protected string $apiRequestName;
     protected Sr $apiService;
@@ -43,7 +43,7 @@ class BaseOperations extends ApiBase
 
     public function __construct(ProviderService $providerService, SerializerService $serializerService, Oauth $oauth,
                                 ResponseManager $responseManager, CategoryService $categoryService, ApiClientHandler $apiClientHandler,
-                                ApiRequest $apiRequest, EventsService $eventsService, RequestService $requestService)
+                                ApiRequest      $apiRequest, EventsService $eventsService, SrService $requestService)
     {
         $this->providerService = $providerService;
         $this->serializerService = $serializerService;

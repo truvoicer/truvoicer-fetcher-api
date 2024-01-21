@@ -1,10 +1,12 @@
 <?php
 
-namespace App\Http\Requests\Service;
+namespace App\Http\Requests\Category;
 
+use App\Models\Category;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
-class UpdateServiceRequest extends FormRequest
+class DeleteBatchCategoryRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -22,10 +24,11 @@ class UpdateServiceRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => 'string|nullable',
-            'label' => 'string|nullable',
-            'service' => 'integer|nullable',
-            'category' => 'integer|nullable',
+            'ids.*' => Rule::forEach(function ($value, string $attribute) {
+                return [
+                    Rule::exists(Category::class, 'id'),
+                ];
+            })
         ];
     }
 }

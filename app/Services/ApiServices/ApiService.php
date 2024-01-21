@@ -17,13 +17,13 @@ class ApiService extends BaseService
     protected SRepository $serviceRepository;
     protected SrRepository $serviceRequestRepository;
     protected SrParameterRepository $requestParametersRepo;
-    protected ResponseKeysService $responseKeysService;
+    protected SResponseKeysService $responseKeysService;
 
     /**
      * ApiServicesService constructor.
-     * @param ResponseKeysService $responseKeysService
+     * @param SResponseKeysService $responseKeysService
      */
-    public function __construct(ResponseKeysService $responseKeysService)
+    public function __construct(SResponseKeysService $responseKeysService)
     {
         parent::__construct();
         $this->serviceRepository = new SRepository();
@@ -113,6 +113,13 @@ class ApiService extends BaseService
     public function deleteService(S $service) {
         $this->serviceRepository->setModel($service);
         return $this->serviceRepository->delete();
+    }
+    public function deleteBatch(array $ids)
+    {
+        if (!count($ids)) {
+            throw new BadRequestHttpException("No service ids provided.");
+        }
+        return $this->serviceRepository->deleteBatch($ids);
     }
 
     public function getServiceRepository(): SRepository

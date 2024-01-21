@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\Backend;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Property\CreatePropertyRequest;
+use App\Http\Requests\Property\DeleteBatchPropertyRequest;
 use App\Http\Requests\Property\UpdatePropertyRequest;
 use App\Http\Resources\PropertyResource;
 use App\Models\Property;
@@ -127,6 +128,21 @@ class PropertyController extends Controller
         }
         return $this->sendSuccessResponse(
             "Property deleted."
+        );
+    }
+    public function deleteBatch(
+        DeleteBatchPropertyRequest $request
+    ): \Illuminate\Http\JsonResponse
+    {
+        $this->setAccessControlUser($request->user());
+
+        if (!$this->propertyService->deleteBatch($request->get('ids'))) {
+            return $this->sendErrorResponse(
+                "Error deleting properties",
+            );
+        }
+        return $this->sendSuccessResponse(
+            "Properties deleted.",
         );
     }
 }

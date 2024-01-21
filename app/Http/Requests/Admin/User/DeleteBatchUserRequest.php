@@ -1,10 +1,13 @@
 <?php
 
-namespace App\Http\Requests\Service;
+namespace App\Http\Requests\Admin\User;
 
+use App\Models\Property;
+use App\Models\User;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
-class CreateServiceRequest extends FormRequest
+class DeleteBatchUserRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -22,10 +25,11 @@ class CreateServiceRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => 'string|nullable',
-            'label' => 'required|string',
-            'service' => 'required|integer',
-            'category' => 'integer|nullable',
+            'ids.*' => Rule::forEach(function ($value, string $attribute) {
+                return [
+                    Rule::exists(User::class, 'id'),
+                ];
+            })
         ];
     }
 }

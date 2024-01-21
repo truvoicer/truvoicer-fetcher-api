@@ -1,10 +1,12 @@
 <?php
 
-namespace App\Http\Requests\Service;
+namespace App\Http\Requests\Provider;
 
+use App\Models\Provider;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
-class UpdateServiceResponseKeyRequest extends FormRequest
+class DeleteBatchProvidersRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -22,7 +24,11 @@ class UpdateServiceResponseKeyRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => 'string'
+            'ids.*' => Rule::forEach(function ($value, string $attribute) {
+                return [
+                    Rule::exists(Provider::class, 'id'),
+                ];
+            })
         ];
     }
 }

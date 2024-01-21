@@ -1,11 +1,12 @@
 <?php
 
-namespace App\Http\Requests\Service;
+namespace App\Http\Requests\Service\Request;
 
+use App\Models\Sr;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
-class UpdateServiceRequestConfigRequest extends FormRequest
+class DeleteBatchSrRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -23,10 +24,11 @@ class UpdateServiceRequestConfigRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => 'string',
-            'value' => [
-                'string'
-            ],
+            'ids.*' => Rule::forEach(function ($value, string $attribute) {
+                return [
+                    Rule::exists(Sr::class, 'id'),
+                ];
+            })
         ];
     }
 }

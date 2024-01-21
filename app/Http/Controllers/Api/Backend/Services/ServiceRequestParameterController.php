@@ -3,17 +3,18 @@
 namespace App\Http\Controllers\Api\Backend\Services;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\Service\CreateServiceRequestParameterRequest;
-use App\Http\Requests\Service\UpdateServiceRequestParameterRequest;
+use App\Http\Requests\Service\Request\Parameter\CreateServiceRequestParameterRequest;
+use App\Http\Requests\Service\Request\Parameter\DeleteBatchSrParameterRequest;
+use App\Http\Requests\Service\Request\Parameter\UpdateServiceRequestParameterRequest;
 use App\Http\Resources\Service\ServiceRequest\ServiceRequestParameterResource;
 use App\Http\Resources\Service\ServiceRequest\ServiceRequestResource;
 use App\Models\Provider;
 use App\Models\Sr;
 use App\Models\SrParameter;
+use App\Services\ApiServices\ServiceRequests\SrParametersService;
 use App\Services\Permission\AccessControlService;
 use App\Services\Permission\PermissionService;
 use App\Services\Tools\HttpRequestService;
-use App\Services\ApiServices\ServiceRequests\RequestParametersService;
 use App\Services\Tools\SerializerService;
 use Illuminate\Http\Request;
 
@@ -25,7 +26,7 @@ use Illuminate\Http\Request;
  */
 class ServiceRequestParameterController extends Controller
 {
-    private RequestParametersService $requestParametersService;
+    private SrParametersService $requestParametersService;
 
     /**
      * ServiceRequestParameterController constructor.
@@ -33,13 +34,13 @@ class ServiceRequestParameterController extends Controller
      *
      * @param HttpRequestService $httpRequestService
      * @param SerializerService $serializerService
-     * @param RequestParametersService $requestParametersService
+     * @param SrParametersService $requestParametersService
      * @param AccessControlService $accessControlService
      */
     public function __construct(
-        HttpRequestService $httpRequestService,
-        SerializerService $serializerService,
-        RequestParametersService $requestParametersService,
+        HttpRequestService   $httpRequestService,
+        SerializerService    $serializerService,
+        SrParametersService  $requestParametersService,
         AccessControlService $accessControlService
     ) {
         parent::__construct($accessControlService, $httpRequestService, $serializerService);
@@ -239,6 +240,34 @@ class ServiceRequestParameterController extends Controller
         }
         return $this->sendSuccessResponse(
             "Parameter deleted."
+        );
+    }
+    public function deleteBatch(
+        Provider      $provider,
+        Sr            $serviceRequest,
+        DeleteBatchSrParameterRequest $request
+    ): \Illuminate\Http\JsonResponse
+    {
+        $this->setAccessControlUser($request->user());
+        if (
+            !$this->accessControlService->checkPermissionsForEntity(
+                $provider,
+                [
+                    PermissionService::PERMISSION_ADMIN,
+                    PermissionService::PERMISSION_DELETE,
+                ],
+            )
+        ) {
+            return $this->sendErrorResponse("Access denied");
+        }
+
+        if (!$this->requestParametersService->deleteBatch($request->get('ids'))) {
+            return $this->sendErrorResponse(
+                "Error deleting service request parameters",
+            );
+        }
+        return $this->sendSuccessResponse(
+            "Service request parameters deleted.",
         );
     }
 }

@@ -7,7 +7,7 @@ use App\Http\Requests\Admin\User\CreateUserRequest;
 use App\Http\Requests\Admin\User\UpdateUserRequest;
 use App\Http\Resources\PersonalAccessTokenResource;
 use App\Http\Resources\UserResource;
-use App\Services\ApiServices\ServiceRequests\RequestService;
+use App\Services\ApiServices\ServiceRequests\SrService;
 use App\Services\Category\CategoryService;
 use App\Services\Permission\AccessControlService;
 use App\Services\Permission\PermissionEntities;

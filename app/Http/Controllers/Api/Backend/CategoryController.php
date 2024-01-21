@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\Backend;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Category\CreateCategoryRequest;
+use App\Http\Requests\Category\DeleteBatchCategoryRequest;
 use App\Http\Requests\Category\UpdateCategoryRequest;
 use App\Http\Resources\CategoryResource;
 use App\Models\Category;
@@ -152,5 +153,20 @@ class CategoryController extends Controller
             return $this->sendErrorResponse("Error deleting category", $this->serializerService->entityToArray($delete, ['main']));
         }
         return $this->sendSuccessResponse("Category deleted.", $this->serializerService->entityToArray($delete, ['main']));
+    }
+    public function deleteBatch(
+        DeleteBatchCategoryRequest $request
+    ): \Illuminate\Http\JsonResponse
+    {
+        $this->setAccessControlUser($request->user());
+
+        if (!$this->categoryService->deleteBatch($request->get('ids'))) {
+            return $this->sendErrorResponse(
+                "Error deleting categories",
+            );
+        }
+        return $this->sendSuccessResponse(
+            "Categories deleted.",
+        );
     }
 }

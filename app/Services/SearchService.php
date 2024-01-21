@@ -3,22 +3,22 @@
 namespace App\Services;
 
 use App\Services\ApiServices\ApiService;
-use App\Services\ApiServices\ServiceRequests\RequestService;
+use App\Services\ApiServices\ServiceRequests\SrService;
 use App\Services\Category\CategoryService;
 use App\Services\Provider\ProviderService;
 
 class SearchService extends BaseService
 {
     private ProviderService $providerService;
-    private RequestService $requestService;
+    private SrService $requestService;
     private CategoryService $categoryService;
     private ApiService $apiService;
 
     public function __construct(
         ProviderService $providerService,
-        RequestService $requestService,
+        SrService       $requestService,
         CategoryService $categoryService,
-        ApiService $apiService
+        ApiService      $apiService
     ) {
         parent::__construct();
         $this->providerService = $providerService;

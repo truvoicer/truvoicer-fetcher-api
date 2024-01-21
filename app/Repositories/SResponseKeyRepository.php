@@ -8,7 +8,7 @@ use App\Models\S;
 use App\Models\Sr;
 use App\Models\SResponseKey;
 use App\Models\SrResponseKey;
-use App\Services\ApiServices\ResponseKeysService;
+use App\Services\ApiServices\SResponseKeysService;
 use Illuminate\Database\Eloquent\Model;
 
 class SResponseKeyRepository extends BaseRepository
@@ -41,10 +41,10 @@ class SResponseKeyRepository extends BaseRepository
         $defaultResponseKeys = DefaultData::getServiceResponseKeys($contentType);
         if ($requiredOnly) {
             $defaultResponseKeys = array_filter($defaultResponseKeys, function ($item) {
-                return $item[ResponseKeysService::RESPONSE_KEY_REQUIRED];
+                return $item[SResponseKeysService::RESPONSE_KEY_REQUIRED];
             });
         }
-        $defaultResponseKeyNames = array_column($defaultResponseKeys, ResponseKeysService::RESPONSE_KEY_NAME);
+        $defaultResponseKeyNames = array_column($defaultResponseKeys, SResponseKeysService::RESPONSE_KEY_NAME);
         $findByNames = $this->findServiceResponseKeysByNameBatch(
             $service,
             $defaultResponseKeyNames

@@ -5,8 +5,8 @@ namespace App\Http\Controllers\Api\Frontend;
 use App\Http\Controllers\Controller;
 use App\Models\Category;
 use App\Services\ApiServices\ApiService;
-use App\Services\ApiServices\ResponseKeysService;
-use App\Services\ApiServices\ServiceRequests\RequestConfigService;
+use App\Services\ApiServices\SResponseKeysService;
+use App\Services\ApiServices\ServiceRequests\SrConfigService;
 use App\Services\Category\CategoryService;
 use App\Services\Permission\AccessControlService;
 use App\Services\Provider\ProviderService;
@@ -61,7 +61,7 @@ class ListController extends Controller
      * Returns a list of response keys based on the request query parameters
      *
      */
-    public function frontendServiceResponseKeyList(Request $request, ResponseKeysService $responseKeysService)
+    public function frontendServiceResponseKeyList(Request $request, SResponseKeysService $responseKeysService)
     {
         $data = $request->query->all();
         if (isset($data["service_id"])) {

@@ -211,6 +211,13 @@ class CategoryService extends BaseService
     {
         return $this->categoryRepository->setModel($category)->delete();
     }
+    public function deleteBatch(array $ids)
+    {
+        if (!count($ids)) {
+            throw new BadRequestHttpException("No category ids provided.");
+        }
+        return $this->categoryRepository->deleteBatch($ids);
+    }
 
     public function getPermissionRepository(): PermissionRepository
     {

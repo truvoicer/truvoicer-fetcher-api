@@ -1,10 +1,10 @@
 <?php
 
-namespace App\Http\Requests\Service;
+namespace App\Http\Requests\Service\Request;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class CreateServiceResponseKeyRequest extends FormRequest
+class CreateSrRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -22,7 +22,10 @@ class CreateServiceResponseKeyRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => 'required|string'
+            'name' => 'string|nullable',
+            'label' => 'required|string',
+            'service' => 'required|integer',
+            'category' => 'integer|nullable',
         ];
     }
 }

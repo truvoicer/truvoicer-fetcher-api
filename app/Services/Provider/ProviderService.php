@@ -20,7 +20,7 @@ use App\Services\Category\CategoryService;
 use App\Services\Permission\AccessControlService;
 use App\Services\Permission\PermissionService;
 use App\Services\Property\PropertyService;
-use App\Services\ApiServices\ResponseKeysService;
+use App\Services\ApiServices\SResponseKeysService;
 use App\Helpers\Tools\UtilHelpers;
 use App\Services\User\UserAdminService;
 use Illuminate\Support\Facades\Request;
@@ -38,14 +38,14 @@ class ProviderService extends BaseService
     protected SRepository $serviceRepository;
     protected CategoryService $categoryService;
     protected ApiService $apiService;
-    protected ResponseKeysService $responseKeysService;
+    protected SResponseKeysService $responseKeysService;
     protected AccessControlService $accessControlService;
 
     public function __construct(
         PropertyService      $propertyService,
         CategoryService      $categoryService,
         ApiService           $apiService,
-        ResponseKeysService  $responseKeysService,
+        SResponseKeysService $responseKeysService,
         AccessControlService $accessControlService
     )
     {
@@ -99,7 +99,7 @@ class ProviderService extends BaseService
         return $providerProperty;
     }
 
-    public function getProviderList(string $sort = "name", string $order = "asc", int $count = -1)
+    public function getProviderList(?string $sort = "name", ?string $order = "asc", ?int $count = -1)
     {
         $this->providerRepository->setOrderDir($order);
         $this->providerRepository->setSortField($sort);
@@ -107,7 +107,7 @@ class ProviderService extends BaseService
         return $this->providerRepository->getQuery()->get();
     }
 
-    public function findUserProviders(User $user, string $sort, string $order, ?int $count) {
+    public function findUserProviders(User $user, ?string $sort = "name", ?string $order = "asc", ?int $count = -1) {
         $this->providerRepository->setPermissions([
             PermissionService::PERMISSION_ADMIN,
             PermissionService::PERMISSION_READ,
@@ -292,6 +292,20 @@ class ProviderService extends BaseService
     public function deleteProviderProperty(Provider $provider, Property $property)
     {
         return $this->providerPropertyRepository->deleteProviderProperty($provider, $property);
+    }
+    public function deleteBatchProvider(array $ids)
+    {
+        if (!count($ids)) {
+            throw new BadRequestHttpException("No provider ids provided.");
+        }
+        return $this->providerRepository->deleteBatch($ids);
+    }
+    public function deleteBatchProviderProperty(array $ids)
+    {
+        if (!count($ids)) {
+            throw new BadRequestHttpException("No property ids provided.");
+        }
+        return $this->providerPropertyRepository->deleteBatch($ids);
     }
 
     public function getProviderRepository(): ProviderRepository

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\Backend;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\User\CreateUserRequest;
+use App\Http\Requests\Admin\User\DeleteBatchUserRequest;
 use App\Http\Requests\Auth\GenerateApiTokenRequest;
 use App\Http\Resources\PersonalAccessTokenResource;
 use App\Http\Resources\RoleResource;
@@ -278,4 +279,19 @@ class AdminController extends Controller
         );
     }
 
+    public function deleteBatchUser(
+        DeleteBatchUserRequest $request
+    ): \Illuminate\Http\JsonResponse
+    {
+        $this->setAccessControlUser($request->user());
+
+        if (!$this->userService->deleteBatchUser($request->get('ids'))) {
+            return $this->sendErrorResponse(
+                "Error deleting users",
+            );
+        }
+        return $this->sendSuccessResponse(
+            "Users deleted.",
+        );
+    }
 }

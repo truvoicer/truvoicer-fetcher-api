@@ -9,7 +9,7 @@ class ApiServiceImporterService extends ApiService
 {
 
     public function __construct(
-        ResponseKeysService $responseKeysService
+        SResponseKeysService $responseKeysService
     )
     {
         parent::__construct($responseKeysService);

@@ -3,21 +3,20 @@
 namespace App\Http\Controllers\Api\Backend\Services;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\Service\CreateServiceRequest;
-use App\Http\Requests\Service\DeleteBatchServiceRequest;
-use App\Http\Requests\Service\UpdateServiceRequest;
+use App\Http\Requests\Service\Request\CreateSrRequest;
+use App\Http\Requests\Service\Request\DeleteBatchSrRequest;
+use App\Http\Requests\Service\Request\UpdateServiceRequest;
 use App\Http\Resources\Service\ServiceRequest\ServiceRequestResource;
 use App\Models\Provider;
 use App\Models\S;
 use App\Models\Sr;
 use App\Services\ApiManager\Operations\RequestOperation;
 use App\Services\ApiServices\ApiService;
-use App\Services\Auth\AuthService;
+use App\Services\ApiServices\ServiceRequests\SrService;
 use App\Services\Permission\AccessControlService;
 use App\Services\Permission\PermissionService;
-use App\Services\Tools\HttpRequestService;
 use App\Services\Provider\ProviderService;
-use App\Services\ApiServices\ServiceRequests\RequestService;
+use App\Services\Tools\HttpRequestService;
 use App\Services\Tools\SerializerService;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -35,7 +34,7 @@ class ServiceRequestController extends Controller
     // Initialise services variables for this controller
     private ProviderService $providerService;
     private ApiService $apiServicesService;
-    private RequestService $requestService;
+    private SrService $requestService;
 
     /**
      * ServiceRequestController constructor.
@@ -44,15 +43,15 @@ class ServiceRequestController extends Controller
      * @param HttpRequestService $httpRequestService
      * @param SerializerService $serializerService
      * @param ApiService $apiServicesService
-     * @param RequestService $requestService
+     * @param SrService $requestService
      * @param AccessControlService $accessControlService
      */
     public function __construct(
-        ProviderService $providerService,
-        HttpRequestService $httpRequestService,
-        SerializerService $serializerService,
-        ApiService $apiServicesService,
-        RequestService $requestService,
+        ProviderService      $providerService,
+        HttpRequestService   $httpRequestService,
+        SerializerService    $serializerService,
+        ApiService           $apiServicesService,
+        SrService            $requestService,
         AccessControlService $accessControlService
     ) {
         parent::__construct($accessControlService, $httpRequestService, $serializerService);
@@ -135,7 +134,7 @@ class ServiceRequestController extends Controller
      * @param Request $request
      * @return JsonResponse
      */
-    public function createServiceRequest(Provider $provider, CreateServiceRequest $request): JsonResponse
+    public function createServiceRequest(Provider $provider, CreateSrRequest $request): JsonResponse
     {
         $this->setAccessControlUser($request->user());
         if (
@@ -340,7 +339,7 @@ class ServiceRequestController extends Controller
     }
     public function deleteBatchServiceRequest(
         Provider $provider,
-        DeleteBatchServiceRequest  $request
+        DeleteBatchSrRequest $request
     ): \Illuminate\Http\JsonResponse
     {
         $this->setAccessControlUser($request->user());

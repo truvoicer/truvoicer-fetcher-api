@@ -17,7 +17,7 @@ use App\Services\Provider\ProviderService;
 use Illuminate\Database\Eloquent\Model;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 
-class RequestConfigService extends BaseService
+class SrConfigService extends BaseService
 {
 
     const REQUEST_CONFIG_ITEM_REQUIRED = "required";
@@ -189,5 +189,12 @@ class RequestConfigService extends BaseService
     public function getRequestConfigRepo(): SrConfigRepository
     {
         return $this->requestConfigRepo;
+    }
+    public function deleteBatch(array $ids)
+    {
+        if (!count($ids)) {
+            throw new BadRequestHttpException("No service request config ids provided.");
+        }
+        return $this->requestConfigRepo->deleteBatch($ids);
     }
 }

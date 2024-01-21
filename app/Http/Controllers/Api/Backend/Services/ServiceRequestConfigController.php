@@ -3,16 +3,17 @@
 namespace App\Http\Controllers\Api\Backend\Services;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\Service\CreateServiceRequestConfigRequest;
-use App\Http\Requests\Service\UpdateServiceRequestConfigRequest;
+use App\Http\Requests\Service\Request\Config\CreateServiceRequestConfigRequest;
+use App\Http\Requests\Service\Request\Config\DeleteBatchSrConfigRequest;
+use App\Http\Requests\Service\Request\Config\UpdateServiceRequestConfigRequest;
 use App\Http\Resources\Service\ServiceRequest\ServiceRequestConfigResource;
 use App\Models\Provider;
 use App\Models\Sr;
 use App\Models\SrConfig;
+use App\Services\ApiServices\ServiceRequests\SrConfigService;
 use App\Services\Permission\AccessControlService;
 use App\Services\Permission\PermissionService;
 use App\Services\Tools\HttpRequestService;
-use App\Services\ApiServices\ServiceRequests\RequestConfigService;
 use App\Services\Tools\SerializerService;
 use Illuminate\Http\Request;
 
@@ -26,7 +27,7 @@ class ServiceRequestConfigController extends Controller
 {
 
     // Initialise services for this controller
-    private RequestConfigService $requestConfigService;
+    private SrConfigService $requestConfigService;
 
     /**
      * ServiceRequestConfigController constructor.
@@ -34,13 +35,13 @@ class ServiceRequestConfigController extends Controller
      *
      * @param HttpRequestService $httpRequestService
      * @param SerializerService $serializerService
-     * @param RequestConfigService $requestConfigService
+     * @param SrConfigService $requestConfigService
      * @param AccessControlService $accessControlService
      */
     public function __construct(
-        HttpRequestService $httpRequestService,
-        SerializerService $serializerService,
-        RequestConfigService $requestConfigService,
+        HttpRequestService   $httpRequestService,
+        SerializerService    $serializerService,
+        SrConfigService      $requestConfigService,
         AccessControlService $accessControlService
     ) {
         parent::__construct($accessControlService, $httpRequestService, $serializerService);
@@ -227,6 +228,34 @@ class ServiceRequestConfigController extends Controller
         }
         return $this->sendSuccessResponse(
             "Config item deleted."
+        );
+    }
+    public function deleteBatch(
+        Provider      $provider,
+        Sr            $serviceRequest,
+        DeleteBatchSrConfigRequest $request
+    ): \Illuminate\Http\JsonResponse
+    {
+        $this->setAccessControlUser($request->user());
+        if (
+            !$this->accessControlService->checkPermissionsForEntity(
+                $provider,
+                [
+                    PermissionService::PERMISSION_ADMIN,
+                    PermissionService::PERMISSION_DELETE,
+                ],
+            )
+        ) {
+            return $this->sendErrorResponse("Access denied");
+        }
+
+        if (!$this->requestConfigService->deleteBatch($request->get('ids'))) {
+            return $this->sendErrorResponse(
+                "Error deleting service request configs",
+            );
+        }
+        return $this->sendSuccessResponse(
+            "Service request configs deleted.",
         );
     }
 }

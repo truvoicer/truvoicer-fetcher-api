@@ -3,13 +3,14 @@
 namespace App\Http\Controllers\Api\Backend\Services;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\Service\CreateServiceRequestResponseKeyRequest;
+use App\Http\Requests\Service\Request\ResponseKey\CreateServiceRequestResponseKeyRequest;
+use App\Http\Requests\Service\Request\ResponseKey\DeleteBatchSrResponseKeyRequest;
 use App\Http\Resources\Service\ServiceRequest\ServiceRequestResponseKeyResource;
 use App\Models\Provider;
 use App\Models\Sr;
-use App\Models\SrResponseKey;
 use App\Models\SResponseKey;
-use App\Services\ApiServices\ServiceRequests\RequestResponseKeysService;
+use App\Models\SrResponseKey;
+use App\Services\ApiServices\ServiceRequests\SrResponseKeyService;
 use App\Services\Permission\AccessControlService;
 use App\Services\Permission\PermissionService;
 use App\Services\Tools\HttpRequestService;
@@ -24,7 +25,7 @@ use Illuminate\Http\Request;
  */
 class ServiceRequestResponseKeyController extends Controller
 {
-    private RequestResponseKeysService $requestResponseKeysService;
+    private SrResponseKeyService $srResponseKeyService;
 
     /**
      * ServiceRequestResponseKeyController constructor.
@@ -32,17 +33,17 @@ class ServiceRequestResponseKeyController extends Controller
      *
      * @param HttpRequestService $httpRequestService
      * @param SerializerService $serializerService
-     * @param RequestResponseKeysService $requestResponseKeysService
+     * @param SrResponseKeyService $requestResponseKeysService
      * @param AccessControlService $accessControlService
      */
     public function __construct(
-        HttpRequestService $httpRequestService,
-        SerializerService $serializerService,
-        RequestResponseKeysService $requestResponseKeysService,
+        HttpRequestService   $httpRequestService,
+        SerializerService    $serializerService,
+        SrResponseKeyService $requestResponseKeysService,
         AccessControlService $accessControlService
     ) {
         parent::__construct($accessControlService, $httpRequestService, $serializerService);
-        $this->requestResponseKeysService = $requestResponseKeysService;
+        $this->srResponseKeyService = $requestResponseKeysService;
     }
 
     /**
@@ -64,10 +65,10 @@ class ServiceRequestResponseKeyController extends Controller
         ) {
             return $this->sendErrorResponse("Access denied");
         }
-        if (!$this->requestResponseKeysService->validateSrResponseKeys($serviceRequest, true)) {
+        if (!$this->srResponseKeyService->validateSrResponseKeys($serviceRequest, true)) {
             return $this->sendErrorResponse("Error validating response keys");
         }
-            $responseKeys = $this->requestResponseKeysService->getRequestResponseKeys(
+            $responseKeys = $this->srResponseKeyService->getRequestResponseKeys(
                 $serviceRequest,
                 $request->get('sort', "name"),
                 $request->get('order', "asc"),
@@ -126,7 +127,7 @@ class ServiceRequestResponseKeyController extends Controller
         ) {
             return $this->sendErrorResponse("Access denied");
         }
-        $find = $this->requestResponseKeysService->getRequestResponseKeyByResponseKey(
+        $find = $this->srResponseKeyService->getRequestResponseKeyByResponseKey(
             $serviceRequest,
             $sResponseKey
         );
@@ -173,7 +174,7 @@ class ServiceRequestResponseKeyController extends Controller
         ) {
             return $this->sendErrorResponse("Access denied");
         }
-        $create = $this->requestResponseKeysService->createSrResponseKey(
+        $create = $this->srResponseKeyService->createSrResponseKey(
             $serviceRequest,
             $request->get('name'),
             $request->all([
@@ -196,7 +197,7 @@ class ServiceRequestResponseKeyController extends Controller
         return $this->sendSuccessResponse(
             "Successfully added response key.",
             new ServiceRequestResponseKeyResource(
-                $this->requestResponseKeysService->getRequestResponseKeyRepository()->getModel()
+                $this->srResponseKeyService->getSrResponseKeyRepository()->getModel()
             )
         );
     }
@@ -219,7 +220,7 @@ class ServiceRequestResponseKeyController extends Controller
         ) {
             return $this->sendErrorResponse("Access denied");
         }
-        $create = $this->requestResponseKeysService->saveSrResponseKey(
+        $create = $this->srResponseKeyService->saveSrResponseKey(
             $serviceRequest,
             $sResponseKey,
             $request->all()
@@ -230,7 +231,7 @@ class ServiceRequestResponseKeyController extends Controller
         return $this->sendSuccessResponse(
             "Successfully added response key.",
             new ServiceRequestResponseKeyResource(
-                $this->requestResponseKeysService->getRequestResponseKeyRepository()->getModel()
+                $this->srResponseKeyService->getSrResponseKeyRepository()->getModel()
             )
         );
     }
@@ -259,7 +260,7 @@ class ServiceRequestResponseKeyController extends Controller
         ) {
             return $this->sendErrorResponse("Access denied");
         }
-        $update = $this->requestResponseKeysService->updateRequestResponseKey(
+        $update = $this->srResponseKeyService->updateRequestResponseKey(
             $srResponseKey,
             $request->all()
         );
@@ -270,7 +271,7 @@ class ServiceRequestResponseKeyController extends Controller
         return $this->sendSuccessResponse(
             "Service response key updated",
             new ServiceRequestResponseKeyResource(
-                $this->requestResponseKeysService->getRequestResponseKeyRepository()->getModel()
+                $this->srResponseKeyService->getSrResponseKeyRepository()->getModel()
             )
         );
     }
@@ -299,13 +300,41 @@ class ServiceRequestResponseKeyController extends Controller
         ) {
             return $this->sendErrorResponse("Access denied");
         }
-        if (!$this->requestResponseKeysService->deleteRequestResponseKey($srResponseKey)) {
+        if (!$this->srResponseKeyService->deleteRequestResponseKey($srResponseKey)) {
             return $this->sendErrorResponse(
                 "Error deleting service response key"
             );
         }
         return $this->sendSuccessResponse(
             "Response key service deleted."
+        );
+    }
+    public function deleteBatch(
+        Provider      $provider,
+        Sr            $serviceRequest,
+        DeleteBatchSrResponseKeyRequest $request
+    ): \Illuminate\Http\JsonResponse
+    {
+        $this->setAccessControlUser($request->user());
+        if (
+            !$this->accessControlService->checkPermissionsForEntity(
+                $provider,
+                [
+                    PermissionService::PERMISSION_ADMIN,
+                    PermissionService::PERMISSION_DELETE,
+                ],
+            )
+        ) {
+            return $this->sendErrorResponse("Access denied");
+        }
+
+        if (!$this->srResponseKeyService->deleteBatch($request->get('ids'))) {
+            return $this->sendErrorResponse(
+                "Error deleting service request response keys",
+            );
+        }
+        return $this->sendSuccessResponse(
+            "Service request response keys deleted.",
         );
     }
 }

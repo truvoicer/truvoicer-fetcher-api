@@ -145,6 +145,13 @@ class UserAdminService extends BaseService
         return $apiToken->delete();
     }
 
+    public function deleteBatchUser(array $ids)
+    {
+        if (!count($ids)) {
+            throw new BadRequestHttpException("No user ids provided.");
+        }
+        return $this->userRepository->deleteBatch($ids);
+    }
     public function getPersonalAccessTokenRepository(): PersonalAccessTokenRepository
     {
         return $this->personalAccessTokenRepository;

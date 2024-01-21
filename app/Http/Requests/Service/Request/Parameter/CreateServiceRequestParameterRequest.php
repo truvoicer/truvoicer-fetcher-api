@@ -1,11 +1,10 @@
 <?php
 
-namespace App\Http\Requests\Service;
+namespace App\Http\Requests\Service\Request\Parameter;
 
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Validation\Rule;
 
-class CreateServiceRequestConfigRequest extends FormRequest
+class CreateServiceRequestParameterRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -25,18 +24,9 @@ class CreateServiceRequestConfigRequest extends FormRequest
         return [
             'name' => 'required|string',
             'value' => [
-                'string',
-                'nullable',
-                Rule::requiredIf(fn () => in_array($this->get('value_type'), ['text', 'choice']))
+                'required',
+                'string'
             ],
-            "value_type" => [
-                Rule::in(['list', 'text', 'choice'])
-            ],
-            "array_value" => [
-                'array',
-                'nullable',
-                'required_if:value_type,list'
-            ]
         ];
     }
 }

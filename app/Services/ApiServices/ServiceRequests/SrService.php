@@ -19,7 +19,7 @@ use App\Services\Tools\HttpRequestService;
 use App\Helpers\Tools\UtilHelpers;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 
-class RequestService extends BaseService
+class SrService extends BaseService
 {
     private HttpRequestService $httpRequestService;
     private ProviderService $providerService;
@@ -28,13 +28,13 @@ class RequestService extends BaseService
     private SrParameterRepository $requestParametersRepo;
     private SrConfigRepository $requestConfigRepo;
     private SResponseKeyRepository $responseKeysRepo;
-    private RequestConfigService $requestConfigService;
-    private RequestParametersService $requestParametersService;
+    private SrConfigService $requestConfigService;
+    private SrParametersService $requestParametersService;
     private ApiService $apiService;
 
-    public function __construct(HttpRequestService $httpRequestService,
-                                ProviderService $providerService, RequestConfigService $requestConfigService,
-                                RequestParametersService $requestParametersService, ApiService $apiService
+    public function __construct(HttpRequestService  $httpRequestService,
+                                ProviderService     $providerService, SrConfigService $requestConfigService,
+                                SrParametersService $requestParametersService, ApiService $apiService
     )
     {
         parent::__construct();

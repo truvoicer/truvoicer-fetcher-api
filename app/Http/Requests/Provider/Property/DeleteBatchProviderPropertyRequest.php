@@ -1,11 +1,12 @@
 <?php
 
-namespace App\Http\Requests\Service;
+namespace App\Http\Requests\Provider\Property;
 
+use App\Models\Property;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
-class UpdateServiceRequestResponseKeyRequest extends FormRequest
+class DeleteBatchProviderPropertyRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -23,11 +24,11 @@ class UpdateServiceRequestResponseKeyRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => 'string',
-            'value' => [
-                'string'
-            ],
-
+            'ids.*' => Rule::forEach(function ($value, string $attribute) {
+                return [
+                    Rule::exists(Property::class, 'id'),
+                ];
+            })
         ];
     }
 }

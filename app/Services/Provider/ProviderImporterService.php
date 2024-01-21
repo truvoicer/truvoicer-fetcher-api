@@ -7,7 +7,7 @@ use App\Models\S;
 use App\Models\Sr;
 use App\Models\SResponseKey;
 use App\Services\ApiServices\ApiService;
-use App\Services\ApiServices\ResponseKeysService;
+use App\Services\ApiServices\SResponseKeysService;
 use App\Services\Category\CategoryService;
 use App\Services\Permission\AccessControlService;
 use App\Services\Property\PropertyService;
@@ -17,10 +17,10 @@ class ProviderImporterService extends ProviderService
 {
 
     public function __construct(
-        PropertyService $propertyService,
-        CategoryService $categoryService,
-        ApiService $apiService,
-        ResponseKeysService $responseKeysService,
+        PropertyService      $propertyService,
+        CategoryService      $categoryService,
+        ApiService           $apiService,
+        SResponseKeysService $responseKeysService,
         AccessControlService $accessControlService
     ) {
         parent::__construct(

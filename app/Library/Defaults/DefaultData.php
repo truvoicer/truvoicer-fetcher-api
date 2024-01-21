@@ -3,8 +3,8 @@
 namespace App\Library\Defaults;
 
 use App\Services\ApiManager\ApiBase;
-use App\Services\ApiServices\ResponseKeysService;
-use App\Services\ApiServices\ServiceRequests\RequestConfigService;
+use App\Services\ApiServices\SResponseKeysService;
+use App\Services\ApiServices\ServiceRequests\SrConfigService;
 
 class DefaultData
 {
@@ -18,42 +18,42 @@ class DefaultData
     ];
     public const SERVICE_RESPONSE_KEYS = [
         "ITEMS_ARRAY" => [
-            ResponseKeysService::RESPONSE_KEY_REQUIRED => true,
-            ResponseKeysService::RESPONSE_KEY_NAME => "items_array",
+            SResponseKeysService::RESPONSE_KEY_REQUIRED => true,
+            SResponseKeysService::RESPONSE_KEY_NAME => "items_array",
         ],
         "TOTAL_ITEMS" => [
-            ResponseKeysService::RESPONSE_KEY_REQUIRED => true,
-            ResponseKeysService::RESPONSE_KEY_NAME => "total_items"
+            SResponseKeysService::RESPONSE_KEY_REQUIRED => true,
+            SResponseKeysService::RESPONSE_KEY_NAME => "total_items"
         ],
         "TOTAL_PAGES" => [
-            ResponseKeysService::RESPONSE_KEY_REQUIRED => true,
-            ResponseKeysService::RESPONSE_KEY_NAME => "total_pages"
+            SResponseKeysService::RESPONSE_KEY_REQUIRED => true,
+            SResponseKeysService::RESPONSE_KEY_NAME => "total_pages"
         ],
         "PAGE_SIZE" => [
-            ResponseKeysService::RESPONSE_KEY_REQUIRED => true,
-            ResponseKeysService::RESPONSE_KEY_NAME => "page_size"
+            SResponseKeysService::RESPONSE_KEY_REQUIRED => true,
+            SResponseKeysService::RESPONSE_KEY_NAME => "page_size"
         ],
         "PAGE_COUNT" => [
-            ResponseKeysService::RESPONSE_KEY_REQUIRED => true,
-            ResponseKeysService::RESPONSE_KEY_NAME => "page_count"
+            SResponseKeysService::RESPONSE_KEY_REQUIRED => true,
+            SResponseKeysService::RESPONSE_KEY_NAME => "page_count"
         ],
         "PAGE_NUMBER" => [
-            ResponseKeysService::RESPONSE_KEY_REQUIRED => true,
-            ResponseKeysService::RESPONSE_KEY_NAME => "page_number"
+            SResponseKeysService::RESPONSE_KEY_REQUIRED => true,
+            SResponseKeysService::RESPONSE_KEY_NAME => "page_number"
         ],
         "OFFSET" => [
-            ResponseKeysService::RESPONSE_KEY_REQUIRED => true,
-            ResponseKeysService::RESPONSE_KEY_NAME => "offset"
+            SResponseKeysService::RESPONSE_KEY_REQUIRED => true,
+            SResponseKeysService::RESPONSE_KEY_NAME => "offset"
         ],
         "ITEM_ID" => [
-            ResponseKeysService::RESPONSE_KEY_REQUIRED => true,
-            ResponseKeysService::RESPONSE_KEY_NAME => "item_id"
+            SResponseKeysService::RESPONSE_KEY_REQUIRED => true,
+            SResponseKeysService::RESPONSE_KEY_NAME => "item_id"
         ],
     ];
     public const XML_SERVICE_RESPONSE_KEYS = [
         "ITEM_REPEATER_KEY" => [
-            ResponseKeysService::RESPONSE_KEY_REQUIRED => true,
-            ResponseKeysService::RESPONSE_KEY_NAME => "item_repeater_key"
+            SResponseKeysService::RESPONSE_KEY_REQUIRED => true,
+            SResponseKeysService::RESPONSE_KEY_NAME => "item_repeater_key"
         ],
     ];
     public static function getServiceResponseKeys(string $contentType = 'json')
@@ -173,31 +173,31 @@ class DefaultData
     {
         return [
             [
-                RequestConfigService::REQUEST_CONFIG_ITEM_NAME => 'endpoint',
-                RequestConfigService::REQUEST_CONFIG_ITEM_SELECTED_VALUE_TYPE => "text",
-                RequestConfigService::REQUEST_CONFIG_ITEM_VALUE => '',
-                RequestConfigService::REQUEST_CONFIG_ITEM_ARRAY_VALUE => [],
+                SrConfigService::REQUEST_CONFIG_ITEM_NAME => 'endpoint',
+                SrConfigService::REQUEST_CONFIG_ITEM_SELECTED_VALUE_TYPE => "text",
+                SrConfigService::REQUEST_CONFIG_ITEM_VALUE => '',
+                SrConfigService::REQUEST_CONFIG_ITEM_ARRAY_VALUE => [],
             ],
             [
-                RequestConfigService::REQUEST_CONFIG_ITEM_NAME => 'request_method',
-                RequestConfigService::REQUEST_CONFIG_ITEM_SELECTED_VALUE_TYPE => "choice",
-                RequestConfigService::REQUEST_CONFIG_ITEM_VALUE => '',
-                RequestConfigService::REQUEST_CONFIG_ITEM_ARRAY_VALUE => [],
-                RequestConfigService::REQUEST_CONFIG_ITEM_VALUE_CHOICES => ['get', 'post'],
+                SrConfigService::REQUEST_CONFIG_ITEM_NAME => 'request_method',
+                SrConfigService::REQUEST_CONFIG_ITEM_SELECTED_VALUE_TYPE => "choice",
+                SrConfigService::REQUEST_CONFIG_ITEM_VALUE => '',
+                SrConfigService::REQUEST_CONFIG_ITEM_ARRAY_VALUE => [],
+                SrConfigService::REQUEST_CONFIG_ITEM_VALUE_CHOICES => ['get', 'post'],
             ],
             [
-                RequestConfigService::REQUEST_CONFIG_ITEM_NAME => 'headers',
-                RequestConfigService::REQUEST_CONFIG_ITEM_SELECTED_VALUE_TYPE => "list",
-                RequestConfigService::REQUEST_CONFIG_ITEM_VALUE => '',
-                RequestConfigService::REQUEST_CONFIG_ITEM_ARRAY_VALUE => [],
+                SrConfigService::REQUEST_CONFIG_ITEM_NAME => 'headers',
+                SrConfigService::REQUEST_CONFIG_ITEM_SELECTED_VALUE_TYPE => "list",
+                SrConfigService::REQUEST_CONFIG_ITEM_VALUE => '',
+                SrConfigService::REQUEST_CONFIG_ITEM_ARRAY_VALUE => [],
             ],
             [
-                RequestConfigService::REQUEST_CONFIG_ITEM_REQUIRED => true,
-                RequestConfigService::REQUEST_CONFIG_ITEM_NAME => 'content_type',
-                RequestConfigService::REQUEST_CONFIG_ITEM_SELECTED_VALUE_TYPE => "choice",
-                RequestConfigService::REQUEST_CONFIG_ITEM_VALUE => 'json',
-                RequestConfigService::REQUEST_CONFIG_ITEM_ARRAY_VALUE => [],
-                RequestConfigService::REQUEST_CONFIG_ITEM_VALUE_CHOICES => ['json', 'xml'],
+                SrConfigService::REQUEST_CONFIG_ITEM_REQUIRED => true,
+                SrConfigService::REQUEST_CONFIG_ITEM_NAME => 'content_type',
+                SrConfigService::REQUEST_CONFIG_ITEM_SELECTED_VALUE_TYPE => "choice",
+                SrConfigService::REQUEST_CONFIG_ITEM_VALUE => 'json',
+                SrConfigService::REQUEST_CONFIG_ITEM_ARRAY_VALUE => [],
+                SrConfigService::REQUEST_CONFIG_ITEM_VALUE_CHOICES => ['json', 'xml'],
             ]
         ];
     }
@@ -205,16 +205,16 @@ class DefaultData
     {
         return [
             [
-                RequestConfigService::REQUEST_CONFIG_ITEM_NAME => 'username',
-                RequestConfigService::REQUEST_CONFIG_ITEM_SELECTED_VALUE_TYPE => "text",
-                RequestConfigService::REQUEST_CONFIG_ITEM_VALUE => '',
-                RequestConfigService::REQUEST_CONFIG_ITEM_ARRAY_VALUE => [],
+                SrConfigService::REQUEST_CONFIG_ITEM_NAME => 'username',
+                SrConfigService::REQUEST_CONFIG_ITEM_SELECTED_VALUE_TYPE => "text",
+                SrConfigService::REQUEST_CONFIG_ITEM_VALUE => '',
+                SrConfigService::REQUEST_CONFIG_ITEM_ARRAY_VALUE => [],
             ],
             [
-                RequestConfigService::REQUEST_CONFIG_ITEM_NAME => 'password',
-                RequestConfigService::REQUEST_CONFIG_ITEM_SELECTED_VALUE_TYPE => "text",
-                RequestConfigService::REQUEST_CONFIG_ITEM_VALUE => '',
-                RequestConfigService::REQUEST_CONFIG_ITEM_ARRAY_VALUE => [],
+                SrConfigService::REQUEST_CONFIG_ITEM_NAME => 'password',
+                SrConfigService::REQUEST_CONFIG_ITEM_SELECTED_VALUE_TYPE => "text",
+                SrConfigService::REQUEST_CONFIG_ITEM_VALUE => '',
+                SrConfigService::REQUEST_CONFIG_ITEM_ARRAY_VALUE => [],
             ]
         ];
     }
@@ -222,10 +222,10 @@ class DefaultData
     {
         return [
             [
-                RequestConfigService::REQUEST_CONFIG_ITEM_NAME => 'bearer_token',
-                RequestConfigService::REQUEST_CONFIG_ITEM_SELECTED_VALUE_TYPE => "text",
-                RequestConfigService::REQUEST_CONFIG_ITEM_VALUE => '',
-                RequestConfigService::REQUEST_CONFIG_ITEM_ARRAY_VALUE => [],
+                SrConfigService::REQUEST_CONFIG_ITEM_NAME => 'bearer_token',
+                SrConfigService::REQUEST_CONFIG_ITEM_SELECTED_VALUE_TYPE => "text",
+                SrConfigService::REQUEST_CONFIG_ITEM_VALUE => '',
+                SrConfigService::REQUEST_CONFIG_ITEM_ARRAY_VALUE => [],
             ]
         ];
     }

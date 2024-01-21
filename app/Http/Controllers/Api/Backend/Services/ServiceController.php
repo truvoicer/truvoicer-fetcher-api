@@ -3,9 +3,8 @@
 namespace App\Http\Controllers\Api\Backend\Services;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\Service\CreateServiceRequest;
 use App\Http\Requests\Service\CreateSRequest;
-use App\Http\Requests\Service\UpdateServiceRequest;
+use App\Http\Requests\Service\DeleteBatchSRequest;
 use App\Http\Requests\Service\UpdateSRequest;
 use App\Http\Resources\Service\ServiceResource;
 use App\Models\S;
@@ -192,6 +191,19 @@ class ServiceController extends Controller
         }
         return $this->sendSuccessResponse(
             "Service deleted."
+        );
+    }
+    public function deleteBatch(
+        DeleteBatchSRequest $request
+    ): \Illuminate\Http\JsonResponse
+    {
+        if (!$this->apiServicesService->deleteBatch($request->get('ids'))) {
+            return $this->sendErrorResponse(
+                "Error deleting services",
+            );
+        }
+        return $this->sendSuccessResponse(
+            "Services deleted.",
         );
     }
 }

@@ -8,8 +8,8 @@ use App\Models\SResponseKey;
 use App\Models\SrResponseKey;
 use App\Services\ApiManager\ApiBase;
 use App\Services\Provider\ProviderService;
-use App\Services\ApiServices\ServiceRequests\RequestService;
-use App\Services\ApiServices\ResponseKeysService;
+use App\Services\ApiServices\ServiceRequests\SrService;
+use App\Services\ApiServices\SResponseKeysService;
 use App\Services\Tools\XmlService;
 use Illuminate\Database\Eloquent\Collection;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
@@ -17,8 +17,8 @@ use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 class ResponseHandler extends ApiBase
 {
     protected ProviderService $providerService;
-    protected RequestService $requestService;
-    protected ResponseKeysService $responseKeysService;
+    protected SrService $requestService;
+    protected SResponseKeysService $responseKeysService;
     protected $provider;
     protected $apiService;
     protected XmlService $xmlService;
@@ -29,8 +29,8 @@ class ResponseHandler extends ApiBase
     private string $needleMatchArrayValue = "=";
     private string $needleMatchArrayKey = ".";
 
-    public function __construct(ProviderService $providerService, RequestService $requestService,
-                                XmlService $xmlService, ResponseKeysService $responseKeysService)
+    public function __construct(ProviderService $providerService, SrService $requestService,
+                                XmlService      $xmlService, SResponseKeysService $responseKeysService)
     {
         $this->providerService = $providerService;
         $this->requestService = $requestService;

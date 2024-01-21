@@ -89,6 +89,13 @@ class PropertyService extends BaseService {
         return $this->propertyRepository->deleteProperty($property);
     }
 
+    public function deleteBatch(array $ids)
+    {
+        if (!count($ids)) {
+            throw new BadRequestHttpException("No property ids provided.");
+        }
+        return $this->propertyRepository->deleteBatch($ids);
+    }
     public function getPropertyRepository(): PropertyRepository
     {
         return $this->propertyRepository;

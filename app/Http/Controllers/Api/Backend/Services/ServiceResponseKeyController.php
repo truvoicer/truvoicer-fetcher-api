@@ -3,13 +3,16 @@
 namespace App\Http\Controllers\Api\Backend\Services;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\Service\CreateServiceResponseKeyRequest;
-use App\Http\Requests\Service\UpdateServiceResponseKeyRequest;
+use App\Http\Requests\Service\ResponseKey\CreateSResponseKeyRequest;
+use App\Http\Requests\Service\ResponseKey\DeleteBatchSResponseKeyRequest;
+use App\Http\Requests\Service\ResponseKey\UpdateServiceResponseKeyRequest;
 use App\Http\Resources\Service\ServiceResponseKeyResource;
+use App\Models\Provider;
 use App\Models\S;
+use App\Models\Sr;
 use App\Models\SResponseKey;
 use App\Services\ApiServices\ApiService;
-use App\Services\ApiServices\ResponseKeysService;
+use App\Services\ApiServices\SResponseKeysService;
 use App\Services\Permission\AccessControlService;
 use App\Services\Permission\PermissionService;
 use App\Services\Provider\ProviderService;
@@ -27,7 +30,7 @@ class ServiceResponseKeyController extends Controller
 {
     private ProviderService $providerService;
     private ApiService $apiServicesService;
-    private ResponseKeysService $responseKeysService;
+    private SResponseKeysService $responseKeysService;
 
     /**
      * ServiceResponseKeyController constructor.
@@ -37,15 +40,15 @@ class ServiceResponseKeyController extends Controller
      * @param HttpRequestService $httpRequestService
      * @param SerializerService $serializerService
      * @param ApiService $apiServicesService
-     * @param ResponseKeysService $responseKeysService
+     * @param SResponseKeysService $responseKeysService
      * @param AccessControlService $accessControlService
      */
     public function __construct(
-        ProviderService $providerService,
-        HttpRequestService $httpRequestService,
-        SerializerService $serializerService,
-        ApiService $apiServicesService,
-        ResponseKeysService $responseKeysService,
+        ProviderService      $providerService,
+        HttpRequestService   $httpRequestService,
+        SerializerService    $serializerService,
+        ApiService           $apiServicesService,
+        SResponseKeysService $responseKeysService,
         AccessControlService $accessControlService
     ) {
         parent::__construct($accessControlService, $httpRequestService, $serializerService);
@@ -148,7 +151,7 @@ class ServiceResponseKeyController extends Controller
      * Returns error response and message on fail
      *
      */
-    public function createServiceResponseKey(S $service, CreateServiceResponseKeyRequest $request)
+    public function createServiceResponseKey(S $service, CreateSResponseKeyRequest $request)
     {
         $this->setAccessControlUser($request->user());
         if (
@@ -247,6 +250,34 @@ class ServiceResponseKeyController extends Controller
         }
         return $this->sendSuccessResponse(
             "Response key service deleted."
+        );
+    }
+    public function deleteBatch(
+        Provider      $provider,
+        Sr            $serviceRequest,
+        DeleteBatchSResponseKeyRequest $request
+    ): \Illuminate\Http\JsonResponse
+    {
+        $this->setAccessControlUser($request->user());
+        if (
+            !$this->accessControlService->checkPermissionsForEntity(
+                $provider,
+                [
+                    PermissionService::PERMISSION_ADMIN,
+                    PermissionService::PERMISSION_DELETE,
+                ],
+            )
+        ) {
+            return $this->sendErrorResponse("Access denied");
+        }
+
+        if (!$this->responseKeysService->deleteBatch($request->get('ids'))) {
+            return $this->sendErrorResponse(
+                "Error deleting service response keys",
+            );
+        }
+        return $this->sendSuccessResponse(
+            "Service response keys deleted.",
         );
     }
 }

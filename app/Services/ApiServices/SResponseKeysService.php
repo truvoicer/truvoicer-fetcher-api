@@ -18,7 +18,7 @@ use App\Helpers\Tools\UtilHelpers;
 use Illuminate\Database\Eloquent\Model;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 
-class ResponseKeysService extends BaseService
+class SResponseKeysService extends BaseService
 {
     const RESPONSE_KEY_REQUIRED = "required";
     const RESPONSE_KEY_NAME = "name";
@@ -218,6 +218,13 @@ class ResponseKeysService extends BaseService
             $requestResponseKey->setReturnDataType($responseKeyData['return_data_type']);
         }
         return $requestResponseKey;
+    }
+    public function deleteBatch(array $ids)
+    {
+        if (!count($ids)) {
+            throw new BadRequestHttpException("No service ids provided.");
+        }
+        return $this->serviceRepository->deleteBatch($ids);
     }
 
     public function getResponseKeyRepository(): SResponseKeyRepository

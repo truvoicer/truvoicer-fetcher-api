@@ -1,9 +1,8 @@
 <?php
 
-namespace App\Http\Requests\Service;
+namespace App\Http\Requests\Service\Request\ResponseKey;
 
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Validation\Rule;
 
 class CreateServiceRequestResponseKeyRequest extends FormRequest
 {

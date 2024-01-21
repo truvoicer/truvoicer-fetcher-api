@@ -5,8 +5,9 @@ use App\Models\Sr;
 use App\Models\SrParameter;
 use App\Repositories\SrParameterRepository;
 use App\Services\BaseService;
+use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 
-class RequestParametersService extends BaseService
+class SrParametersService extends BaseService
 {
     private SrParameterRepository $requestParametersRepo;
 
@@ -55,6 +56,13 @@ class RequestParametersService extends BaseService
     public function deleteRequestParameter(SrParameter $serviceRequestParameter) {
         $this->requestParametersRepo->setModel($serviceRequestParameter);
         return $this->requestParametersRepo->delete();
+    }
+    public function deleteBatch(array $ids)
+    {
+        if (!count($ids)) {
+            throw new BadRequestHttpException("No service request parameter ids provided.");
+        }
+        return $this->requestParametersRepo->deleteBatch($ids);
     }
 
     public function getRequestParametersRepo(): SrParameterRepository

@@ -7,7 +7,7 @@ use App\Http\Controllers\Api\Backend\PermissionController;
 use App\Http\Controllers\Api\Backend\PropertyController;
 use App\Http\Controllers\Api\Backend\Provider\ProviderController;
 use App\Http\Controllers\Api\Backend\Provider\ProviderPropertyController;
-use App\Http\Controllers\Api\Backend\RouteController;
+use App\Http\Controllers\Api\Backend\ValidationController;
 use App\Http\Controllers\Api\Backend\SearchController;
 use App\Http\Controllers\Api\Backend\Services\ServiceController;
 use App\Http\Controllers\Api\Backend\Services\ServiceRequestConfigController;
@@ -38,14 +38,6 @@ Route::prefix('auth')->name('auth.')->group(function () {
     Route::post('/login', [AuthController::class, 'login'])->name('login');
 });
 
-
-Route::middleware(['auth:sanctum', 'ability:api:admin,api:superuser,api:user'])->group(function () {
-    Route::prefix('route')->name('route.')->group(function () {
-        Route::get('/list', [RouteController::class, 'getRouteList'])->name('list');
-    });
-});
-
-
 Route::middleware(['auth:sanctum', 'ability:api:admin,api:superuser,api:user'])->group(function () {
     Route::prefix('front')->name('front.')->group(function () {
         Route::get('/category/{name}/providers', [ListController::class, 'getCategoryProviderList'])->name('category.providers.list');
@@ -56,6 +48,9 @@ Route::middleware(['auth:sanctum', 'ability:api:admin,api:superuser,api:user'])-
         });
     });
     Route::prefix('backend')->name('backend.')->group(function () {
+        Route::prefix('validate')->name('validate.')->group(function () {
+            Route::get('/all', [ValidationController::class, 'validateAll'])->name('all');
+        });
         Route::prefix('auth')->name('auth.')->group(function () {
             Route::prefix('account')->name('account.')->group(function () {
                 Route::post('/details', [AuthController::class, 'getAccountDetails'])->name('details');
@@ -91,6 +86,9 @@ Route::middleware(['auth:sanctum', 'ability:api:admin,api:superuser,api:user'])-
         Route::prefix('category')->name('category.')->group(function () {
             Route::get('/list', [CategoryController::class, 'getCategories'])->name('list');
             Route::post('/create', [CategoryController::class, 'createCategory'])->name('create');
+            Route::prefix('batch')->name('batch.')->group(function () {
+                Route::delete('/delete', [CategoryController::class, 'deleteBatch'])->name('delete');
+            });
             Route::get('/{category}', [CategoryController::class, 'getSingleCategory'])->name('detail');
             Route::patch('/{category}/update', [CategoryController::class, 'updateCategory'])->name('update');
             Route::delete('/{category}/delete', [CategoryController::class, 'deleteCategory'])->name('delete');
@@ -99,11 +97,17 @@ Route::middleware(['auth:sanctum', 'ability:api:admin,api:superuser,api:user'])-
             Route::get('/list', [ProviderController::class, 'getProviderList'])->name('list');
             Route::post('/create', [ProviderController::class, 'createProvider'])->name('create');
             Route::get('/{provider}', [ProviderController::class, 'getProvider'])->name('detail');
+            Route::prefix('batch')->name('batch.')->group(function () {
+                Route::delete('/delete', [ProviderController::class, 'deleteBatchProviders'])->name('delete');
+            });
             Route::prefix('{provider}')->name('single.')->group(function () {
                 Route::patch('/update', [ProviderController::class, 'updateProvider'])->name('update');
                 Route::delete('/delete', [ProviderController::class, 'deleteProvider'])->name('delete');
                 Route::prefix('property')->name('property.')->group(function () {
                     Route::get('/list', [ProviderPropertyController::class, 'getProviderPropertyList'])->name('list');
+                    Route::prefix('batch')->name('batch.')->group(function () {
+                        Route::delete('/delete', [ProviderPropertyController::class, 'deleteBatch'])->name('delete');
+                    });
                     Route::get('/{property}', [ProviderPropertyController::class, 'getProviderProperty'])->name('detail');
                     Route::patch('/{property}/update', [ProviderPropertyController::class, 'saveProviderProperty'])->name('save');
                     Route::delete('/{property}/delete', [ProviderPropertyController::class, 'deleteProviderProperty'])->name('delete');
@@ -125,6 +129,9 @@ Route::middleware(['auth:sanctum', 'ability:api:admin,api:superuser,api:user'])-
                         Route::prefix('config')->name('config.')->group(function () {
                             Route::get('/list', [ServiceRequestConfigController::class, 'getRequestConfigList'])->name('list');
                             Route::post('/create', [ServiceRequestConfigController::class, 'createRequestConfig'])->name('create');
+                            Route::prefix('batch')->name('batch.')->group(function () {
+                                Route::delete('/delete', [ServiceRequestConfigController::class, 'deleteBatch'])->name('delete');
+                            });
                             Route::get('/{serviceRequestConfig}', [ServiceRequestConfigController::class, 'getServiceRequestConfig'])->name('detail');
                             Route::delete('/{serviceRequestConfig}/delete', [ServiceRequestConfigController::class, 'deleteRequestConfig'])->name('delete');
                             Route::patch('/{serviceRequestConfig}/update', [ServiceRequestConfigController::class, 'updateRequestConfig'])->name('update');
@@ -133,6 +140,9 @@ Route::middleware(['auth:sanctum', 'ability:api:admin,api:superuser,api:user'])-
                             Route::get('/list', [ServiceRequestParameterController::class, 'getServiceRequestParameterList'])->name('list');
                             Route::get('/list/single', [ServiceRequestParameterController::class, 'getSingleServiceRequestParameters'])->name('list.single');
                             Route::post('/create', [ServiceRequestParameterController::class, 'createServiceRequestParameter'])->name('create');
+                            Route::prefix('batch')->name('batch.')->group(function () {
+                                Route::delete('/delete', [ServiceRequestParameterController::class, 'deleteBatch'])->name('delete');
+                            });
                             Route::get('/{serviceRequestParameter}', [ServiceRequestParameterController::class, 'getServiceRequestParameter'])->name('detail');
                             Route::delete('/{serviceRequestParameter}/delete', [ServiceRequestParameterController::class, 'deleteServiceRequestParameter'])->name('delete');
                             Route::patch('/{serviceRequestParameter}/update', [ServiceRequestParameterController::class, 'updateServiceRequestParameter'])->name('update');
@@ -141,6 +151,9 @@ Route::middleware(['auth:sanctum', 'ability:api:admin,api:superuser,api:user'])-
                             Route::get('/list', [ServiceRequestResponseKeyController::class, 'getRequestResponseKeyList'])->name('list');
                             Route::post('/create', [ServiceRequestResponseKeyController::class, 'createRequestResponseKey'])->name('create');
 
+                            Route::prefix('batch')->name('batch.')->group(function () {
+                                Route::delete('/delete', [ServiceRequestResponseKeyController::class, 'deleteBatch'])->name('delete');
+                            });
                             Route::prefix('service')->name('service.')->group(function () {
                                 Route::get('/{sResponseKey}', [ServiceRequestResponseKeyController::class, 'getRequestResponseKeyByResponseKey'])->name('detail');
                                 Route::post('/{sResponseKey}/save', [ServiceRequestResponseKeyController::class, 'saveRequestResponseKey'])->name('save');
@@ -157,11 +170,17 @@ Route::middleware(['auth:sanctum', 'ability:api:admin,api:superuser,api:user'])-
         Route::prefix('service')->name('service.')->group(function () {
             Route::get('/list', [ServiceController::class, 'getServices'])->name('list');
             Route::post('/create', [ServiceController::class, 'createService'])->name('create');
+            Route::prefix('batch')->name('batch.')->group(function () {
+                Route::delete('/delete', [ServiceController::class, 'deleteBatch'])->name('delete');
+            });
             Route::get('/{service}', [ServiceController::class, 'getService'])->name('detail');
             Route::prefix('{service}')->name('single.')->group(function () {
                 Route::patch('/update', [ServiceController::class, 'updateService'])->name('update');
                 Route::delete('/delete', [ServiceController::class, 'deleteService'])->name('delete');
                 Route::prefix('response-key')->name('response-key.')->group(function () {
+                    Route::prefix('batch')->name('batch.')->group(function () {
+                        Route::delete('/delete', [ServiceResponseKeyController::class, 'deleteBatch'])->name('delete');
+                    });
                     Route::post('/load-default', [ServiceResponseKeyController::class, 'loadDefaultServiceResponseKeys'])->name('load-default');
                     Route::get('/list', [ServiceResponseKeyController::class, 'getServiceResponseKeyList'])->name('list');
                     Route::post('/create', [ServiceResponseKeyController::class, 'createServiceResponseKey'])->name('create');
@@ -226,6 +245,9 @@ Route::middleware(['auth:sanctum', 'ability:api:admin,api:superuser'])->group(fu
             Route::prefix('user')->name('user.')->group(function () {
                 Route::get('/list', [AdminController::class, 'getUsersList'])->name('list');
                 Route::post('/create', [AdminController::class, 'createUser'])->name('create');
+                Route::prefix('batch')->name('batch.')->group(function () {
+                    Route::delete('/delete', [AdminController::class, 'deleteBatchUser'])->name('delete');
+                });
                 Route::get('/{user}', [AdminController::class, 'getSingleUser'])->name('detail');
                 Route::prefix('{user}')->name('single.')->group(function () {
                     Route::patch('/update', [AdminController::class, 'updateUser'])->name('update');
@@ -244,6 +266,9 @@ Route::middleware(['auth:sanctum', 'ability:api:admin,api:superuser'])->group(fu
         Route::prefix('property')->name('property.')->group(function () {
             Route::get('/list', [PropertyController::class, 'getPropertyList'])->name('list');
             Route::post('/create', [PropertyController::class, 'createProperty'])->name('create');
+            Route::prefix('batch')->name('batch.')->group(function () {
+                Route::delete('/delete', [PropertyController::class, 'deleteBatch'])->name('delete');
+            });
             Route::get('/{property}', [PropertyController::class, 'getProperty'])->name('detail');
             Route::patch('/{property}/update', [PropertyController::class, 'updateProperty'])->name('update');
             Route::delete('/{property}/delete', [PropertyController::class, 'deleteProperty'])->name('delete');

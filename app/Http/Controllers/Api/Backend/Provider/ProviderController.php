@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\Backend\Provider;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Provider\CreateProviderRequest;
+use App\Http\Requests\Provider\DeleteBatchProvidersRequest;
 use App\Http\Requests\Provider\UpdateProviderRequest;
 use App\Http\Resources\ProviderResource;
 use App\Models\Provider;
@@ -178,6 +179,22 @@ class ProviderController extends Controller
         }
         return $this->sendSuccessResponse(
             "Provider deleted."
+        );
+    }
+    public function deleteBatchProviders(
+        Provider $provider,
+        DeleteBatchProvidersRequest  $request
+    ): \Illuminate\Http\JsonResponse
+    {
+        $this->setAccessControlUser($request->user());
+
+        if (!$this->providerService->deleteBatchProvider($request->get('ids'))) {
+            return $this->sendErrorResponse(
+                "Error deleting providers",
+            );
+        }
+        return $this->sendSuccessResponse(
+            "Providers deleted.",
         );
     }
 }
