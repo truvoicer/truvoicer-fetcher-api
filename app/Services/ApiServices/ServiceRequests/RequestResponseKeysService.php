@@ -5,13 +5,16 @@ namespace App\Services\ApiServices\ServiceRequests;
 use App\Models\S;
 use App\Models\Provider;
 use App\Models\Sr;
+use App\Models\SrConfig;
 use App\Models\SrResponseKey;
 use App\Models\SResponseKey;
 use App\Library\Defaults\DefaultData;
+use App\Repositories\SrConfigRepository;
 use App\Repositories\SRepository;
 use App\Repositories\SrRepository;
 use App\Repositories\SrResponseKeyRepository;
 use App\Repositories\SResponseKeyRepository;
+use App\Services\ApiServices\ResponseKeysService;
 use App\Services\BaseService;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 
@@ -21,13 +24,16 @@ class RequestResponseKeysService extends BaseService
     private SrRepository $serviceRequestRepository;
     private SrResponseKeyRepository $requestResponseKeyRepository;
     private SResponseKeyRepository $responseKeyRepository;
-    public function __construct()
+    private SrConfigRepository $configRepository;
+    public function __construct(
+    )
     {
         parent::__construct();
         $this->serviceRepository = new SRepository();
         $this->serviceRequestRepository = new SrRepository();
         $this->responseKeyRepository = new SResponseKeyRepository();
         $this->requestResponseKeyRepository = new SrResponseKeyRepository();
+        $this->configRepository = new SrConfigRepository();
 //        $this->responseKeyRequestItemRepo = $this->entityManager->getRepository(ResponseKeyRequestItem::class);
     }
 
@@ -85,6 +91,17 @@ class RequestResponseKeysService extends BaseService
         return $this->responseKeyRepository->findById($service->id);
     }
 
+    public function validateSrResponseKeys(Sr $sr, ?bool $requiredOnly = false) {
+        $configItem = $this->configRepository->getRequestConfigByName($sr, 'content_type');
+        if (!$configItem instanceof SrConfig) {
+            return null;
+        }
+        return $this->responseKeyRepository->createDefaultServiceResponseKeys(
+            $sr->s()->first(),
+            $configItem->value,
+            $requiredOnly
+        );
+    }
     public function createDefaultServiceResponseKeys(S $service) {
         foreach (DefaultData::getServiceResponseKeys() as $keyName => $keyValue) {
             $this->createServiceResponseKeys([

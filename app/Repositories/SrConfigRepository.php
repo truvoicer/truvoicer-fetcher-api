@@ -25,7 +25,7 @@ class SrConfigRepository extends BaseRepository
             ->get();
     }
 
-    public function getRequestConfigByName(Provider $provider, Sr $serviceRequest, string $configItemName)
+    public function getRequestConfigByName(Sr $serviceRequest, string $configItemName)
     {
         return $serviceRequest
             ->srConfig()

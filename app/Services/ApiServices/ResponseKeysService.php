@@ -20,6 +20,8 @@ use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 
 class ResponseKeysService extends BaseService
 {
+    const RESPONSE_KEY_REQUIRED = "required";
+    const RESPONSE_KEY_NAME = "name";
     private SRepository $serviceRepository;
     private SrRepository $serviceRequestRepository;
     private SrResponseKeyRepository $requestKeysRepo;
@@ -112,27 +114,8 @@ class ResponseKeysService extends BaseService
         return $this->responseKeyRepository->findOne();
     }
 
-    public function createDefaultServiceResponseKeys(S $service) {
-        $errors = [];
-        $defaultResponseKeys = DefaultData::getServiceResponseKeys();
-        $defaultResponseKeyNames = array_values($defaultResponseKeys);
-        $findByNames = $this->responseKeyRepository->findServiceResponseKeysByNameBatch(
-            $service,
-            $defaultResponseKeyNames
-        );
-        $diff = array_diff(
-          $defaultResponseKeyNames,
-            array_column($findByNames->toArray(), 'name')
-        );
-        foreach ($diff as $key) {
-            $create = $this->createServiceResponseKeys($service, [
-               "name" => $key
-            ]);
-            if (!$create) {
-                $errors[] = sprintf("Error creating default response key: %s", $key);
-            }
-        }
-        return count($errors) === 0;
+    public function createDefaultServiceResponseKeys(S $service, ?string $contentType = 'json', ?bool $requiredOnly = false) {
+        return $this->responseKeyRepository->createDefaultServiceResponseKeys($service, $contentType, $requiredOnly);
     }
 
     public function createServiceResponseKeys(S $service, array $data)

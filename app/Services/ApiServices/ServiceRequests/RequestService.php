@@ -111,7 +111,7 @@ class RequestService extends BaseService
 
     public function getRequestConfigByName(Provider $provider, Sr $serviceRequest, string $configItemName)
     {
-        return $this->requestConfigRepo->getRequestConfigByName($provider, $serviceRequest, $configItemName);
+        return $this->requestConfigRepo->getRequestConfigByName($serviceRequest, $configItemName);
     }
 
     public function getRequestParametersByRequestName(Provider $provider, string $serviceRequestName = null)

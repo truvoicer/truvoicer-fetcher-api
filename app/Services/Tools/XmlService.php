@@ -27,10 +27,11 @@ class XmlService
      * @param bool $parentItemArray
      * @return array
      */
-    public function convertXmlToArray(string $xmlContent, string $childKey, bool $parentItemArray)
+    public function convertXmlToArray(string $xmlContent, string $childKey, bool $parentItemArray, string $itemRepeaterKey)
     {
         $simpleXMLIterator = new SimpleXmlIterator($xmlContent, null, false);
-        return $this->getXmlArray($simpleXMLIterator, $childKey, $parentItemArray);
+        $xmlarray =  $this->getXmlArray($simpleXMLIterator, $childKey, $parentItemArray, $itemRepeaterKey);
+        return $xmlarray;
     }
 
     /**
@@ -40,7 +41,7 @@ class XmlService
      * @param bool $parentItemArray
      * @return array
      */
-    public function getXmlArray(SimpleXMLIterator $xmlIterator, string $childKey, bool $parentItemArray)
+    public function getXmlArray(SimpleXMLIterator $xmlIterator, string $childKey, bool $parentItemArray, string $itemRepeaterKey)
     {
         $items = [];
         $extra = [];
@@ -66,8 +67,8 @@ class XmlService
                 $extra[$xmlIterator->key()] = strval($xmlIterator->current());
             }
         }
-        $items = array_map(function ($iterator) {
-            return $this->xmlToArrayIterator($iterator);
+        $items = array_map(function ($iterator) use($itemRepeaterKey) {
+            return $this->xmlToArrayIterator($iterator, $itemRepeaterKey);
         }, $items);
 
         $xmlArray = $extra;
@@ -86,21 +87,24 @@ class XmlService
      * @param SimpleXMLIterator $xmlIterator
      * @return array
      */
-    public function xmlToArrayIterator(SimpleXMLIterator $xmlIterator)
+    public function xmlToArrayIterator(SimpleXMLIterator $xmlIterator, string $itemRepeaterKey, ?bool $parentItemArray = false)
     {
         $a = array();
         $i = 0;
         for ($xmlIterator->rewind(); $xmlIterator->valid(); $xmlIterator->next()) {
+            if (!$parentItemArray && $xmlIterator->key() !== $itemRepeaterKey) {
+                continue;
+            }
             if ($xmlIterator->hasChildren()) {
                 if (array_key_exists($xmlIterator->key(), $a)) {
                     $a[$xmlIterator->key() . $i] = $this->getNamespacedNodes(
                         $xmlIterator->current(),
-                        $this->xmlToArrayIterator($xmlIterator->current())
+                        $this->xmlToArrayIterator($xmlIterator->current(), $itemRepeaterKey, true)
                     );
                 } else {
                     $a[$xmlIterator->key()] = $this->getNamespacedNodes(
                         $xmlIterator->current(),
-                        $this->xmlToArrayIterator($xmlIterator->current())
+                        $this->xmlToArrayIterator($xmlIterator->current(), $itemRepeaterKey, true)
                     );
                 }
             } else {

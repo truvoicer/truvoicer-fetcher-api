@@ -2,11 +2,13 @@
 
 namespace App\Repositories;
 
+use App\Library\Defaults\DefaultData;
 use App\Models\Provider;
 use App\Models\S;
 use App\Models\Sr;
 use App\Models\SResponseKey;
 use App\Models\SrResponseKey;
+use App\Services\ApiServices\ResponseKeysService;
 use Illuminate\Database\Eloquent\Model;
 
 class SResponseKeyRepository extends BaseRepository
@@ -32,6 +34,34 @@ class SResponseKeyRepository extends BaseRepository
     public function getResponseKeysByRequest(Provider $provider, Sr $serviceRequest)
     {
         return $this->srResponseKeyRepository->findSrResponseKeysWithRelation($serviceRequest);
+    }
+
+    public function createDefaultServiceResponseKeys(S $service, ?string $contentType = 'json', ?bool $requiredOnly = false) {
+        $errors = [];
+        $defaultResponseKeys = DefaultData::getServiceResponseKeys($contentType);
+        if ($requiredOnly) {
+            $defaultResponseKeys = array_filter($defaultResponseKeys, function ($item) {
+                return $item[ResponseKeysService::RESPONSE_KEY_REQUIRED];
+            });
+        }
+        $defaultResponseKeyNames = array_column($defaultResponseKeys, ResponseKeysService::RESPONSE_KEY_NAME);
+        $findByNames = $this->findServiceResponseKeysByNameBatch(
+            $service,
+            $defaultResponseKeyNames
+        );
+        $diff = array_diff(
+            $defaultResponseKeyNames,
+            array_column($findByNames->toArray(), 'name')
+        );
+        foreach ($diff as $key) {
+            $create = $this->createServiceResponseKey($service, [
+                "name" => $key
+            ]);
+            if (!$create) {
+                $errors[] = sprintf("Error creating default response key: %s", $key);
+            }
+        }
+        return count($errors) === 0;
     }
     public function findServiceResponseKeysByNameBatch(S $service, array $names) {
         return $service->sResponseKey()->whereIn('name', $names)->get();

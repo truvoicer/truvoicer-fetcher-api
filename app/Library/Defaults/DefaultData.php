@@ -3,6 +3,7 @@
 namespace App\Library\Defaults;
 
 use App\Services\ApiManager\ApiBase;
+use App\Services\ApiServices\ResponseKeysService;
 use App\Services\ApiServices\ServiceRequests\RequestConfigService;
 
 class DefaultData
@@ -16,15 +17,53 @@ class DefaultData
         "POST_PER_PAGE" => "posts_per_page",
     ];
     public const SERVICE_RESPONSE_KEYS = [
-        "ITEMS_ARRAY" => "items_array",
-        "ITEM_ID" => "item_id",
-        "TOTAL_ITEMS" => "total_items",
-        "TOTAL_PAGES" => "total_pages",
-        "PAGE_SIZE" => "page_size",
-        "PAGE_COUNT" => "page_count",
-        "PAGE_NUMBER" => "page_number",
-        "OFFSET" => "offset",
+        "ITEMS_ARRAY" => [
+            ResponseKeysService::RESPONSE_KEY_REQUIRED => true,
+            ResponseKeysService::RESPONSE_KEY_NAME => "items_array",
+        ],
+        "TOTAL_ITEMS" => [
+            ResponseKeysService::RESPONSE_KEY_REQUIRED => true,
+            ResponseKeysService::RESPONSE_KEY_NAME => "total_items"
+        ],
+        "TOTAL_PAGES" => [
+            ResponseKeysService::RESPONSE_KEY_REQUIRED => true,
+            ResponseKeysService::RESPONSE_KEY_NAME => "total_pages"
+        ],
+        "PAGE_SIZE" => [
+            ResponseKeysService::RESPONSE_KEY_REQUIRED => true,
+            ResponseKeysService::RESPONSE_KEY_NAME => "page_size"
+        ],
+        "PAGE_COUNT" => [
+            ResponseKeysService::RESPONSE_KEY_REQUIRED => true,
+            ResponseKeysService::RESPONSE_KEY_NAME => "page_count"
+        ],
+        "PAGE_NUMBER" => [
+            ResponseKeysService::RESPONSE_KEY_REQUIRED => true,
+            ResponseKeysService::RESPONSE_KEY_NAME => "page_number"
+        ],
+        "OFFSET" => [
+            ResponseKeysService::RESPONSE_KEY_REQUIRED => true,
+            ResponseKeysService::RESPONSE_KEY_NAME => "offset"
+        ],
+        "ITEM_ID" => [
+            ResponseKeysService::RESPONSE_KEY_REQUIRED => true,
+            ResponseKeysService::RESPONSE_KEY_NAME => "item_id"
+        ],
     ];
+    public const XML_SERVICE_RESPONSE_KEYS = [
+        "ITEM_REPEATER_KEY" => [
+            ResponseKeysService::RESPONSE_KEY_REQUIRED => true,
+            ResponseKeysService::RESPONSE_KEY_NAME => "item_repeater_key"
+        ],
+    ];
+    public static function getServiceResponseKeys(string $contentType = 'json')
+    {
+        $keys = self::SERVICE_RESPONSE_KEYS;
+        if ($contentType === 'xml') {
+            $keys = array_merge($keys, self::XML_SERVICE_RESPONSE_KEYS);
+        }
+        return $keys;
+    }
     public static function getPermissions()
     {
         return [
@@ -129,10 +168,6 @@ class DefaultData
         ];
     }
 
-    public static function getServiceResponseKeys()
-    {
-        return self::SERVICE_RESPONSE_KEYS;
-    }
 
     public static function getServiceRequestConfig()
     {
@@ -156,6 +191,14 @@ class DefaultData
                 RequestConfigService::REQUEST_CONFIG_ITEM_VALUE => '',
                 RequestConfigService::REQUEST_CONFIG_ITEM_ARRAY_VALUE => [],
             ],
+            [
+                RequestConfigService::REQUEST_CONFIG_ITEM_REQUIRED => true,
+                RequestConfigService::REQUEST_CONFIG_ITEM_NAME => 'content_type',
+                RequestConfigService::REQUEST_CONFIG_ITEM_SELECTED_VALUE_TYPE => "choice",
+                RequestConfigService::REQUEST_CONFIG_ITEM_VALUE => 'json',
+                RequestConfigService::REQUEST_CONFIG_ITEM_ARRAY_VALUE => [],
+                RequestConfigService::REQUEST_CONFIG_ITEM_VALUE_CHOICES => ['json', 'xml'],
+            ]
         ];
     }
     public static function getServiceRequestBasicAuthConfig()

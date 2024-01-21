@@ -20,6 +20,7 @@ use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 class RequestConfigService extends BaseService
 {
 
+    const REQUEST_CONFIG_ITEM_REQUIRED = "required";
     const REQUEST_CONFIG_ITEM_NAME = "name";
     const REQUEST_CONFIG_ITEM_SELECTED_VALUE_TYPE = "value_type";
     const REQUEST_CONFIG_ITEM_VALUE = "value";
@@ -60,7 +61,7 @@ class RequestConfigService extends BaseService
             $listObject->key_value = $item->getKeyValue();
             $listObject->item_value = "";
             $listObject->item_array_value = "";
-            $getConfig = $this->requestConfigRepo->getRequestConfigByName($provider, $serviceRequest, $item->getKeyName());
+            $getConfig = $this->requestConfigRepo->getRequestConfigByName($serviceRequest, $item->getKeyName());
             if ($getConfig !== null) {
                 $listObject->item_value = $getConfig->getItemValue();
                 $listObject->item_array_value = $getConfig->getItemArrayValue();
@@ -74,7 +75,7 @@ class RequestConfigService extends BaseService
         return $this->requestConfigRepo->findByParams($serviceRequest, $sort, $order, $count);
     }
 
-    public function requestConfigValidator(Sr $serviceRequest) {
+    public function requestConfigValidator(Sr $serviceRequest, ?bool $requiredOnly = false) {
         $provider = $serviceRequest->provider()->first();
         $apiAuthTypeProviderProperty = $this->propertyRepository->getProviderPropertyByPropertyName(
             $provider, "api_authentication_type"
@@ -83,7 +84,7 @@ class RequestConfigService extends BaseService
         if (!($apiAuthTypeProviderProperty instanceof Property)) {
             throw new BadRequestHttpException("Provider api_authentication_type property not found");
         }
-
+        $config = [];
         switch ($apiAuthTypeProviderProperty->providerProperty->value) {
             case ApiBase::AUTH_BASIC:
                 $config = DefaultData::getServiceRequestBasicAuthConfig();
@@ -91,14 +92,21 @@ class RequestConfigService extends BaseService
             case ApiBase::AUTH_BEARER:
                 $config = DefaultData::getServiceRequestBearerAuthConfig();
                 break;
-            default:
-                throw new BadRequestHttpException("Provider api_authentication_type property not found");
         }
 
         $defaultConfig = DefaultData::getServiceRequestConfig();
+        $config = array_merge($defaultConfig, $config);
+        if ($requiredOnly) {
+            $config = array_filter($config, function ($item) {
+                return (
+                    isset($item[self::REQUEST_CONFIG_ITEM_REQUIRED]) &&
+                    $item[self::REQUEST_CONFIG_ITEM_REQUIRED] === true
+                );
+            });
+        }
         $this->createDefaultRequestConfigs(
             $serviceRequest,
-            array_merge($defaultConfig, $config)
+            $config
         );
         return true;
     }
@@ -142,7 +150,6 @@ class RequestConfigService extends BaseService
 
         foreach ($defaultConfig as $item) {
             $findConfig = $this->requestConfigRepo->getRequestConfigByName(
-                $provider,
                 $serviceRequest,
                 $item[self::REQUEST_CONFIG_ITEM_NAME]
             );

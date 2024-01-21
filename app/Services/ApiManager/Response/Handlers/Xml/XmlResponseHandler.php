@@ -2,6 +2,8 @@
 
 namespace App\Services\ApiManager\Response\Handlers\Xml;
 
+use App\Models\SResponseKey;
+use App\Models\SrResponseKey;
 use App\Services\ApiManager\Response\Handlers\ResponseHandler;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 
@@ -10,7 +12,9 @@ class XmlResponseHandler extends ResponseHandler
 
     public function getListItems()
     {
-        return $this->buildListItems($this->getItemList());
+        $itemList = $this->getItemList();
+        $buildListItems =  $this->buildListItems($itemList);
+        return $buildListItems;
     }
 
     public function getListData()
@@ -22,16 +26,22 @@ class XmlResponseHandler extends ResponseHandler
     {
         return array_map(function ($item) {
             $itemList = [];
-            foreach ($this->responseKeysArray as $keys) {
-                $getKey = $this->getRequestResponseKeyByName($keys);
-                if ($getKey !== null && $getKey->getListItem()) {
-                    $getAttribute = $this->getAttribute($getKey->value, $item);
-                    if ($getAttribute && $getKey->getShowInResponse()) {
-                        $itemList[$keys] = $getAttribute;
-                    } elseif ($getKey->getShowInResponse()) {
-                        $itemList[$keys] = $this->buildList($item, $getKey);
-                    }
+            foreach ($this->responseKeysArray as $responseKey) {
+                if (!$responseKey->srResponseKey instanceof SrResponseKey) {
+                    continue;
                 }
+                if (!$responseKey->srResponseKey->list_item) {
+                    continue;
+                }
+                $name = $responseKey->name;
+                $srResponseKey = $responseKey->srResponseKey;
+                $getAttribute = $this->getAttribute($srResponseKey->value, $item);
+                if ($getAttribute && $srResponseKey->show_in_response) {
+                    $itemList[$name] = $getAttribute;
+                } elseif ($srResponseKey->show_in_response) {
+                    $itemList[$name] = $this->buildList($item, $srResponseKey);
+                }
+
             }
             $itemList["provider"] = $this->provider->name;
             return $itemList;
@@ -63,11 +73,19 @@ class XmlResponseHandler extends ResponseHandler
         if ($this->xmlService->checkXmlErrors($responseContent)) {
             throw new BadRequestHttpException("item_request_error");
         }
-        $itemsArrayString = $this->getRequestResponseKeyByName($this->responseKeysArray['items_array'])->value;
-        dd($itemsArrayString);
-        $this->responseArray = $this->xmlService->convertXmlToArray($responseContent,
-            $this->filterItemsArrayValue($itemsArrayString)["value"],
-            $this->filterItemsArrayValue($itemsArrayString)["brackets"]
+        $responseKeyValue = $this->findSrResponseKeyValueInArray('items_array');
+        if (empty($responseKeyValue)) {
+            throw new BadRequestHttpException("Response key value is empty.");
+        }
+        $itemRepeaterKeyValue = $this->findSrResponseKeyValueInArray('item_repeater_key');
+        if (empty($itemRepeaterKeyValue)) {
+            throw new BadRequestHttpException("item_repeater_key value is empty.");
+        }
+        $this->responseArray = $this->xmlService->convertXmlToArray(
+            $responseContent,
+            $this->filterItemsArrayValue($responseKeyValue)["value"],
+            $this->filterItemsArrayValue($responseKeyValue)["brackets"],
+            $this->filterItemsArrayValue($itemRepeaterKeyValue)["value"]
         );
     }
 }

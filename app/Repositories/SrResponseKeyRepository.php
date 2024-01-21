@@ -29,7 +29,8 @@ class SrResponseKeyRepository extends BaseRepository
         return $provider->serviceRequest()
             ->where('id', $serviceRequest->id)
             ->first()
-            ->srResponseKey()
+            ->srResponseKeys()
+            ->with('srResponseKey')
             ->where('name', $keyName)
             ->first();
     }

@@ -3,6 +3,7 @@
 namespace App\Services\ApiManager;
 
 use App\Library\Defaults\DefaultData;
+use App\Services\ApiServices\ResponseKeysService;
 use App\Services\BaseService;
 
 class ApiBase extends BaseService
@@ -60,19 +61,19 @@ class ApiBase extends BaseService
         ],
         "TOTAL_ITEMS" => [
             'placeholder' => '[TOTAL_ITEMS]',
-            'keymap' => DefaultData::SERVICE_RESPONSE_KEYS['TOTAL_ITEMS']
+            'keymap' => DefaultData::SERVICE_RESPONSE_KEYS['TOTAL_ITEMS'][ResponseKeysService::RESPONSE_KEY_NAME]
         ],
         "TOTAL_PAGES" => [
             'placeholder' => '[TOTAL_PAGES]',
-            'keymap' => DefaultData::SERVICE_RESPONSE_KEYS['TOTAL_PAGES']
+            'keymap' => DefaultData::SERVICE_RESPONSE_KEYS['TOTAL_PAGES'][ResponseKeysService::RESPONSE_KEY_NAME]
         ],
         "CURRENT_PAGE" => [
             'placeholder' => '[CURRENT_PAGE]',
-            'keymap' => DefaultData::SERVICE_RESPONSE_KEYS['PAGE_NUMBER']
+            'keymap' => DefaultData::SERVICE_RESPONSE_KEYS['PAGE_NUMBER'][ResponseKeysService::RESPONSE_KEY_NAME]
         ],
         "OFFSET" => [
             'placeholder' => '[OFFSET]',
-            'keymap' => DefaultData::SERVICE_RESPONSE_KEYS['OFFSET']
+            'keymap' => DefaultData::SERVICE_RESPONSE_KEYS['OFFSET'][ResponseKeysService::RESPONSE_KEY_NAME]
         ],
     ];
 
