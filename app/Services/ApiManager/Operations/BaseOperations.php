@@ -129,25 +129,37 @@ class BaseOperations extends ApiBase
     }
 
     private function getBasicAuthentication() {
-        $username = $this->getRequestConfig("username");
-        $password = $this->getRequestConfig("password");
+        $usernameConfig = $this->getRequestConfig("username");
+        $passwordConfig = $this->getRequestConfig("password");
+        $username = null;
+        $password = null;
+        if ($usernameConfig  instanceof SrConfig) {
+            $username = $usernameConfig->value;
+        }
+        if ($passwordConfig instanceof SrConfig) {
+            $password = $passwordConfig->value;
+        }
+
         if ($username === null && $password === null) {
             throw new BadRequestHttpException("Request config username and password are both not set.");
         }
         if ($password === null || $password === "") {
             $this->apiRequest->addBasicAuthentication(
-                $this->filterParameterValue($username->value)
+                $this->filterParameterValue($username)
             );
         }
         $this->apiRequest->addBasicAuthentication(
-            $this->filterParameterValue($username->value),
-            $password->value
+            $this->filterParameterValue($username),
+            $password
         );
     }
     private function getAuthBearerAuthentication() {
         $bearerToken = $this->getRequestConfig("bearer_token");
-        if (!$bearerToken) {
-            throw new BadRequestHttpException("Request config bearer token not set.");
+        if (!$bearerToken instanceof SrConfig) {
+            throw new BadRequestHttpException("Request config bearer token not found.");
+        }
+        if (empty($bearerToken->value)) {
+            throw new BadRequestHttpException("Request config bearer token is invalid.");
         }
         $this->apiRequest->addTokenAuthentication(
             $this->filterParameterValue($bearerToken->value)
@@ -201,7 +213,10 @@ class BaseOperations extends ApiBase
     {
         $headers = ["Content-Type" => "application/json;charset=utf-8"];
         $getHeaders = $this->getRequestConfig("headers");
-        if ($getHeaders === null) {
+        if (!$getHeaders instanceof SrConfig) {
+            return $headers;
+        }
+        if (empty($getHeaders->array_value)) {
             return $headers;
         }
         $headerArray = $getHeaders->array_value;
@@ -214,8 +229,11 @@ class BaseOperations extends ApiBase
     private function getEndpoint()
     {
         $endpoint = $this->getRequestConfig("endpoint");
-        if ($endpoint === null) {
+        if (!$endpoint instanceof SrConfig) {
             throw new BadRequestHttpException("Endpoint is not specified in request config");
+        }
+        if (empty($endpoint->value)) {
+            throw new BadRequestHttpException("Endpoint is not valid");
         }
         return $this->getQueryFilterValue($endpoint->value);
     }
@@ -223,8 +241,11 @@ class BaseOperations extends ApiBase
     private function getMethod()
     {
         $method = $this->getRequestConfig("request_method");
-        if ($method === null) {
+        if (!$method instanceof SrConfig) {
             throw new BadRequestHttpException("Request method is not specified in request config");
+        }
+        if (empty($method->value)) {
+            throw new BadRequestHttpException("Request method is invalid");
         }
         return $this->getQueryFilterValue($method->value);
     }

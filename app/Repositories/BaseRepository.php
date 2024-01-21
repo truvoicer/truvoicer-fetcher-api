@@ -205,7 +205,7 @@ class BaseRepository
         $this->model = $this->getModelInstance($data);
         $createListing = $this->model->save();
         if (!$createListing) {
-            $this->addError('Error creating listing for user', $data);
+            $this->addError('repository_insert_error', 'Error creating listing for user', $data);
             return false;
         }
         return true;
@@ -215,7 +215,7 @@ class BaseRepository
         $this->model->fill($data);
         $saveListing = $this->model->save();
         if (!$saveListing) {
-            $this->addError('Error saving listing', $data);
+            $this->addError('repository_update_error', 'Error saving listing', $data);
             return false;
         }
         return true;
@@ -233,7 +233,7 @@ class BaseRepository
     }
     public function delete() {
         if (!$this->model->delete()) {
-            $this->addError('Error deleting listing');
+            $this->addError('repository_delete_error', 'Error deleting listing');
             return false;
         }
         return true;

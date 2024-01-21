@@ -48,7 +48,7 @@ Route::middleware(['auth:sanctum', 'ability:api:admin,api:superuser,api:user'])-
         });
     });
     Route::prefix('backend')->name('backend.')->group(function () {
-        Route::prefix('validate')->name('validate.')->group(function () {
+        Route::prefix('validation')->name('validation.')->group(function () {
             Route::get('/all', [ValidationController::class, 'validateAll'])->name('all');
         });
         Route::prefix('auth')->name('auth.')->group(function () {

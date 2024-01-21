@@ -43,14 +43,22 @@ class ApiClientHandler extends ApiBase
             return $client;
         }
         if (isset($authentication[ApiRequest::AUTH_DIGEST])) {
+            $password = '';
+            if (!empty($authentication[ApiRequest::AUTH_DIGEST][ApiRequest::PASSWORD])) {
+                $password = $authentication[ApiRequest::AUTH_DIGEST][ApiRequest::PASSWORD];
+            }
             $client->withDigestAuth(
                 $authentication[ApiRequest::AUTH_DIGEST][ApiRequest::USERNAME],
-                $authentication[ApiRequest::AUTH_DIGEST][ApiRequest::PASSWORD]
+                $password
             );
         } elseif (isset($authentication[ApiRequest::AUTH_BASIC])) {
+            $password = '';
+            if (!empty($authentication[ApiRequest::AUTH_BASIC][ApiRequest::PASSWORD])) {
+                $password = $authentication[ApiRequest::AUTH_BASIC][ApiRequest::PASSWORD];
+            }
             $client->withBasicAuth(
                 $authentication[ApiRequest::AUTH_BASIC][ApiRequest::USERNAME],
-                $authentication[ApiRequest::AUTH_BASIC][ApiRequest::PASSWORD]
+                $password
             );
         } elseif (isset($authentication[ApiRequest::AUTH_TOKEN])) {
             $client->withToken(

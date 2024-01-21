@@ -80,7 +80,9 @@ class SrResponseKeyRepository extends BaseRepository
     public function findSrResponseKeysWithRelation(Sr $serviceRequest)
     {
         $service = $serviceRequest->s()->first()->sResponseKey();
-        return $service->with('srResponseKey')
+        return $service->with(['srResponseKey' => function ($query) use ($serviceRequest) {
+            $query->where('sr_id', '=', $serviceRequest->id);
+        }])
             ->get();
     }
     public function findServiceRequestResponseKeys(Sr $serviceRequest, string $sort = "name", string $order = "asc", ?int $count = null) {
@@ -127,7 +129,7 @@ class SrResponseKeyRepository extends BaseRepository
 
     public function saveServiceRequestResponseKey(Sr $serviceRequest, SResponseKey $serviceResponseKey, array $data) {
         $find = $this->findServiceRequestResponseKeyByResponseKey($serviceRequest, $serviceResponseKey);
-        if (!$find->srResponseKey()->exists()) {
+        if (!$find->srResponseKey instanceof SrResponseKey) {
             return $this->dbHelpers->validateToggle(
                 $serviceRequest->srResponseKeys()->toggle([$serviceResponseKey->id => $data]),
                 [$serviceResponseKey->id]

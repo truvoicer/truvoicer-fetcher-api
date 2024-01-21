@@ -8,7 +8,9 @@ class JsonResponseHandler extends ResponseHandler
     public function getListItems()
     {
         $this->setResponseKeysArray();
-        return $this->buildListItems($this->getItemList());
+        $itemList = $this->getItemList();
+        $build =  $this->buildListItems($itemList);
+        return $build;
     }
 
     public function getListData()

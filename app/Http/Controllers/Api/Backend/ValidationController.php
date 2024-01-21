@@ -37,12 +37,17 @@ class ValidationController extends Controller
 
     public function validateAll(Request $request)
     {
-
         $user = $request->user();
-        $validated = $this->validatorService->validateAllProviderData($user);
-        dd($validated);
+        if (!$this->validatorService->validateAllProviderData($user)) {
+            return $this->sendErrorResponse(
+                "Validation failed"
+            );
+        }
         return $this->sendSuccessResponse(
-            "success"
+            "Validation check successful",
+            [
+                'errors' => $this->validatorService->getErrors()
+            ]
         );
     }
 }

@@ -91,9 +91,12 @@ class SrResponseKeyService extends BaseService
 
     public function validateSrResponseKeys(Sr $sr, ?bool $requiredOnly = false) {
         $configItem = $this->srConfigRepository->getRequestConfigByName($sr, 'content_type');
-        dd($configItem);
         if (!$configItem instanceof SrConfig) {
-            return null;
+            $this->addError(
+                'validation_sr_r_key_content_type_not_found',
+                sprintf("Service request id:%s does not have a content_type config item.", $sr->id)
+            );
+            return false;
         }
         return $this->SResponseKeyRepository->createDefaultServiceResponseKeys(
             $sr->s()->first(),

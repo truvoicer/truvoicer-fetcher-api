@@ -111,13 +111,19 @@ class ResponseHandler extends ApiBase
     {
         return array_map(function ($item) {
             $itemList = [];
-            foreach ($this->responseKeysArray as $keys) {
-                $getKey = $this->findSrResponseKeyValueInArray($keys);
-                if ($getKey !== null && $getKey->getListItem()) {
-                    if ($getKey->getShowInResponse()) {
-                        $itemList[$keys] = $this->buildList($item, $getKey);
-                    }
+            foreach ($this->responseKeysArray as $responseKey) {
+                if (!$responseKey->srResponseKey instanceof SrResponseKey) {
+                    continue;
                 }
+                if (!$responseKey->srResponseKey->list_item) {
+                    continue;
+                }
+                $name = $responseKey->name;
+                $srResponseKey = $responseKey->srResponseKey;
+                if ($srResponseKey->show_in_response) {
+                    $itemList[$name] = $this->buildList($item, $srResponseKey);
+                }
+
             }
             $itemList["provider"] = $this->provider->name;
             return $itemList;
@@ -142,7 +148,7 @@ class ResponseHandler extends ApiBase
     }
 
     protected function buildResponseKeyRequestItem($itemValue, SrResponseKey $requestResponseKey) {
-        if ($requestResponseKey->getResponseKeyRequestItem() === null) {
+        if ($requestResponseKey->srResponseKeySrs()->get()->count() === 0) {
             return null;
         }
         $data = null;
@@ -154,7 +160,7 @@ class ResponseHandler extends ApiBase
                 $requestResponseKey
             );
         }
-        $serviceRequest = $requestResponseKey->getResponseKeyRequestItem()->getServiceRequest();
+        $serviceRequest = $requestResponseKey->$requestResponseKey->srResponseKeySrs()->first()->sr()->first();
         return [
             "data"      => $data,
             "request_item" => [

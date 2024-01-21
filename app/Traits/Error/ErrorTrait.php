@@ -7,20 +7,22 @@ trait ErrorTrait
     private array $errors;
 
     /**
-     * @return array
+     * @return bool
      */
-    public function getErrors(): array
+    public function hasErrors(): bool
     {
-        return $this->errors ?? [];
+        return count($this->errors ?? []) > 0;
     }
 
     /**
+     * @param string $code
      * @param string $message
      * @param array|null $data
      */
-    public function addError(string $message, ?array $data = []): void
+    public function addError(string $code, string $message, ?array $data = []): void
     {
         $error = [
+            'code' => $code,
             'message' => $message
         ];
         if (count($data)) {
@@ -30,10 +32,20 @@ trait ErrorTrait
     }
 
     /**
+     * @return array
+     */
+    public function getErrors(): array
+    {
+        return $this->errors ?? [];
+    }
+
+    /**
      * @param array $errors
      */
     public function setErrors(array $errors): void
     {
         $this->errors = $errors;
     }
+
+
 }
