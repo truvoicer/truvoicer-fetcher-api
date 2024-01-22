@@ -55,8 +55,8 @@ class Sr extends Model
         return $this->belongsToMany(
             Sr::class,
             SrResponseKeySr::TABLE_NAME,
-            'sr_response_key_id',
-            'sr_id'
+            'sr_id',
+            'sr_response_key_id'
         );
     }
 

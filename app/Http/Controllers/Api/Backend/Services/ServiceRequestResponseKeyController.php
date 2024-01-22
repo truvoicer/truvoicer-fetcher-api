@@ -175,6 +175,7 @@ class ServiceRequestResponseKeyController extends Controller
             return $this->sendErrorResponse("Access denied");
         }
         $create = $this->srResponseKeyService->createSrResponseKey(
+            $request->user(),
             $serviceRequest,
             $request->get('name'),
             $request->all([
@@ -221,6 +222,7 @@ class ServiceRequestResponseKeyController extends Controller
             return $this->sendErrorResponse("Access denied");
         }
         $create = $this->srResponseKeyService->saveSrResponseKey(
+            $request->user(),
             $serviceRequest,
             $sResponseKey,
             $request->all()
@@ -261,6 +263,7 @@ class ServiceRequestResponseKeyController extends Controller
             return $this->sendErrorResponse("Access denied");
         }
         $update = $this->srResponseKeyService->updateRequestResponseKey(
+            $request->user(),
             $srResponseKey,
             $request->all()
         );

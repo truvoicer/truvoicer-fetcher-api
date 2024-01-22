@@ -20,4 +20,12 @@ class SrResponseKeySrRepository extends BaseRepository
         return parent::getModel();
     }
 
+    public function saveResponseKeySr(SrResponseKey $srResponseKey,  array $srIds)
+    {
+        if (!$srResponseKey->exists) {
+            return false;
+        }
+        $srResponseKey->srResponseKeySrs()->sync($srIds);
+        return true;
+    }
 }

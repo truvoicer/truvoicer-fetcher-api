@@ -40,8 +40,8 @@ class SrResponseKey extends Model
         return $this->belongsToMany(
             SrResponseKey::class,
             SrResponseKeySr::TABLE_NAME,
-            'sr_id',
-            'sr_response_key_id'
+            'sr_response_key_id',
+            'sr_id'
         );
     }
 }

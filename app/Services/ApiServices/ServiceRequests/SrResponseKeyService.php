@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Services\ApiServices\ServiceRequests;
 
 //use App\Models\ResponseKeyRequestItem;
@@ -9,40 +10,54 @@ use App\Models\SrConfig;
 use App\Models\SrResponseKey;
 use App\Models\SResponseKey;
 use App\Library\Defaults\DefaultData;
+use App\Models\User;
 use App\Repositories\SrConfigRepository;
 use App\Repositories\SRepository;
 use App\Repositories\SrRepository;
 use App\Repositories\SrResponseKeyRepository;
 use App\Repositories\SResponseKeyRepository;
+use App\Repositories\SrResponseKeySrRepository;
 use App\Services\ApiServices\SResponseKeysService;
 use App\Services\BaseService;
+use App\Services\Permission\AccessControlService;
+use App\Services\Permission\PermissionService;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 
 class SrResponseKeyService extends BaseService
 {
     private SRepository $serviceRepository;
+    private SrRepository $srRepository;
     private SrResponseKeyRepository $srResponseKeyRepository;
+    private SrResponseKeySrRepository $srResponseKeySrRepository;
     private SResponseKeyRepository $SResponseKeyRepository;
     private SrConfigRepository $srConfigRepository;
+    private AccessControlService $accessControlService;
+
     public function __construct(
+        AccessControlService $accessControlService
     )
     {
         parent::__construct();
         $this->serviceRepository = new SRepository();
+        $this->srRepository = new SrRepository();
         $this->SResponseKeyRepository = new SResponseKeyRepository();
         $this->srResponseKeyRepository = new SrResponseKeyRepository();
         $this->srConfigRepository = new SrConfigRepository();
+        $this->srResponseKeySrRepository = new SrResponseKeySrRepository();
+        $this->accessControlService = $accessControlService;
 //        $this->responseKeyRequestItemRepo = $this->entityManager->getRepository(ResponseKeyRequestItem::class);
     }
 
-    public function findByParams(string $sort, string $order, int $count = -1) {
+    public function findByParams(string $sort, string $order, int $count = -1)
+    {
         $this->SResponseKeyRepository->setOrderDir($order);
         $this->SResponseKeyRepository->setSortField($sort);
         $this->SResponseKeyRepository->setLimit($count);
         return $this->SResponseKeyRepository->findMany();
     }
 
-    public function getResponseKeyById(int $responseKeyId) {
+    public function getResponseKeyById(int $responseKeyId)
+    {
         $responseKey = $this->SResponseKeyRepository->findById($responseKeyId);
         if ($responseKey === null) {
             throw new BadRequestHttpException(sprintf("Response key id:%s not found in database.",
@@ -52,7 +67,8 @@ class SrResponseKeyService extends BaseService
         return $responseKey;
     }
 
-    public function getRequestResponseKeyById(int $requestResponseKeyId) {
+    public function getRequestResponseKeyById(int $requestResponseKeyId)
+    {
         $requestResponseKey = $this->srResponseKeyRepository->findById($requestResponseKeyId);
         if ($requestResponseKey === null) {
             throw new BadRequestHttpException(sprintf("Request response key id:%s not found in database.",
@@ -81,7 +97,8 @@ class SrResponseKeyService extends BaseService
 //        return $responseKeyRequestItem;
 //    }
 
-    public function getResponseKeysByServiceId(int $serviceId) {
+    public function getResponseKeysByServiceId(int $serviceId)
+    {
         $service = $this->serviceRepository->findById($serviceId);
         if ($service === null) {
             throw new BadRequestHttpException(sprintf("Service id:%s not found.", $serviceId));
@@ -89,7 +106,8 @@ class SrResponseKeyService extends BaseService
         return $this->SResponseKeyRepository->findById($service->id);
     }
 
-    public function validateSrResponseKeys(Sr $sr, ?bool $requiredOnly = false) {
+    public function validateSrResponseKeys(Sr $sr, ?bool $requiredOnly = false)
+    {
         $configItem = $this->srConfigRepository->getRequestConfigByName($sr, 'content_type');
         if (!$configItem instanceof SrConfig) {
             $this->addError(
@@ -104,12 +122,14 @@ class SrResponseKeyService extends BaseService
             $requiredOnly
         );
     }
-    public function createDefaultServiceResponseKeys(S $service) {
+
+    public function createDefaultServiceResponseKeys(S $service)
+    {
         foreach (DefaultData::getServiceResponseKeys() as $keyName => $keyValue) {
             $this->createServiceResponseKeys([
-               "service_id" => $service->id,
-               "key_name" => $keyName,
-               "key_value" => $keyValue
+                "service_id" => $service->id,
+                "key_name" => $keyName,
+                "key_value" => $keyValue
             ]);
         }
     }
@@ -130,7 +150,8 @@ class SrResponseKeyService extends BaseService
         return $this->SResponseKeyRepository->save($responseKey);
     }
 
-    public function deleteServiceResponseKey(int $id) {
+    public function deleteServiceResponseKey(int $id)
+    {
         $responseKey = $this->SResponseKeyRepository->findById($id);
         if ($responseKey === null) {
             throw new BadRequestHttpException(sprintf("Service response key id: %s not found in database.", $id));
@@ -139,22 +160,25 @@ class SrResponseKeyService extends BaseService
         return $this->SResponseKeyRepository->delete();
     }
 
-    public function getRequestResponseKeyObjectById(Sr $serviceRequest, SResponseKey $serviceResponseKey) {
+    public function getRequestResponseKeyObjectById(Sr $serviceRequest, SResponseKey $serviceResponseKey)
+    {
         return $this->getRequestResponseKeyByResponseKey($serviceRequest, $serviceResponseKey);
     }
 
-    public function getRequestResponseKeyByResponseKey(Sr $serviceRequest, SResponseKey $responseKey) {
+    public function getRequestResponseKeyByResponseKey(Sr $serviceRequest, SResponseKey $responseKey)
+    {
         $getRequestResponseKey = $this->srResponseKeyRepository->findServiceRequestResponseKeyByResponseKey(
             $serviceRequest,
             $responseKey
         );
-        if (!$getRequestResponseKey instanceof SResponseKey ) {
+        if (!$getRequestResponseKey instanceof SResponseKey) {
             return false;
         }
         return $getRequestResponseKey;
     }
 
-    public function getRequestResponseKeys(Sr $serviceRequest, string $sort = "name", string $order = "asc", ?int $count = null) {
+    public function getRequestResponseKeys(Sr $serviceRequest, string $sort = "name", string $order = "asc", ?int $count = null)
+    {
         return $this->srResponseKeyRepository->findSrResponseKeysWithRelation($serviceRequest, $sort, $order, $count);
     }
 
@@ -163,24 +187,25 @@ class SrResponseKeyService extends BaseService
     {
         return $this->SResponseKeyRepository->getServiceResponseKeyByName($service, $responseKeyName);
     }
+
     public function getRequestResponseKeyByName(Provider $provider, Sr $serviceRequest, string $configItemName)
     {
         return $this->srResponseKeyRepository->getRequestResponseKeyByName($provider, $serviceRequest, $configItemName);
     }
 
-    private function getServiceRequestIdFromRequest($requestData) {
+    private function getServiceRequestIdFromRequest($requestData)
+    {
         if (!array_key_exists("response_key_request_item", $requestData)) {
-            throw new BadRequestHttpException("response_key_request_item not in request");
+            return false;
         }
-        if (array_key_exists("service_request", $requestData["response_key_request_item"])) {
-            return $requestData['response_key_request_item']["service_request"]["id"];
-        } elseif (array_key_exists("value", $requestData["response_key_request_item"])) {
+        if (array_key_exists("value", $requestData["response_key_request_item"])) {
             return $requestData['response_key_request_item']["value"];
         }
-        return null;
+        return false;
     }
 
-    public function setRequestResponseKeyObject(array $data) {
+    public function setRequestResponseKeyObject(array $data)
+    {
         $fields = [
             "value",
             "show_in_response",
@@ -201,57 +226,111 @@ class SrResponseKeyService extends BaseService
             }
         }
 
-//        if ($responseKeyData['is_service_request']) {
-//            $serviceRequestId = $this->getServiceRequestIdFromRequest($responseKeyData);
-//            if ($serviceRequestId !== null) {
-//                $getResponseKeyRequestItem = $requestResponseKey->getResponseKeyRequestItem();
-//                if ($getResponseKeyRequestItem === null) {
-//                    $getResponseKeyRequestItem = new ResponseKeyRequestItem();
-//                }
-//                $responseKeyRequestItem = $this->getResponseKeyRequestItemObject(
-//                    $getResponseKeyRequestItem,
-//                    $requestResponseKey,
-//                    $serviceRequestId
-//                );
-//                $requestResponseKey->setResponseKeyRequestItem($responseKeyRequestItem);
-//            }
-//        }
-
         $requestResponseKeyData['array_keys'] = null;
-        if(!empty($responseKeyData['array_keys']) && !is_array($responseKeyData['array_keys'])) {
+        if (!empty($responseKeyData['array_keys']) && !is_array($responseKeyData['array_keys'])) {
             throw new BadRequestHttpException("array_keys must be an array");
         }
         return $requestResponseKeyData;
     }
 
-    public function createSrResponseKey(Sr $serviceRequest, string $sResponseKeyName, array $data) {
-        return $this->srResponseKeyRepository->createServiceRequestResponseKey(
+    public function saveSrResponseKeySrValue(User $user, SrResponseKey $srResponseKey, array $data)
+    {
+        $serviceRequestId = $this->getServiceRequestIdFromRequest($data);
+        if (!$serviceRequestId) {
+            return false;
+        }
+        $serviceRequest = $this->srRepository->findById($serviceRequestId);
+        if (!$serviceRequest instanceof Sr) {
+            return false;
+        }
+
+        $this->accessControlService->setUser($user);
+        if (
+            !$this->accessControlService->checkPermissionsForEntity(
+                $serviceRequest->provider()->first(),
+                [
+                    PermissionService::PERMISSION_ADMIN,
+                    PermissionService::PERMISSION_READ,
+                ],
+            )
+        ) {
+            return false;
+        }
+        return $this->srResponseKeySrRepository->saveResponseKeySr(
+            $srResponseKey,
+            [$serviceRequestId]
+        );
+    }
+
+    public function createSrResponseKey(User $user, Sr $serviceRequest, string $sResponseKeyName, array $data)
+    {
+        $createResponseKey = $this->srResponseKeyRepository->createServiceRequestResponseKey(
             $serviceRequest,
             $sResponseKeyName,
             $this->setRequestResponseKeyObject($data)
         );
+        if (!$createResponseKey) {
+            return false;
+        }
+
+        if (!empty($data['is_service_request']) && $data['is_service_request'] === true) {
+            $createResponseKey = $this->saveSrResponseKeySrValue(
+                $user,
+                $this->srResponseKeyRepository->getModel(),
+                $data
+            );
+        }
+        return $createResponseKey;
     }
-    public function saveSrResponseKey(Sr $serviceRequest, SResponseKey $serviceResponseKey, array $data) {
-        return $this->srResponseKeyRepository->saveServiceRequestResponseKey(
+
+    public function saveSrResponseKey(User $user, Sr $serviceRequest, SResponseKey $serviceResponseKey, array $data)
+    {
+        $save = $this->srResponseKeyRepository->saveServiceRequestResponseKey(
             $serviceRequest,
             $serviceResponseKey,
             $this->setRequestResponseKeyObject($data)
         );
+        if (!$save) {
+            return false;
+        }
+
+        if (!empty($data['is_service_request']) && $data['is_service_request'] === true) {
+            $save = $this->saveSrResponseKeySrValue(
+                $user,
+                $this->srResponseKeyRepository->getModel(),
+                $data
+            );
+        }
+        return $save;
     }
 
-    public function updateRequestResponseKey(SrResponseKey $serviceResponseKey, array $data) {
-        return $this->srResponseKeyRepository->updateSrResponseKey(
+    public function updateRequestResponseKey(User $user, SrResponseKey $serviceResponseKey, array $data)
+    {
+        $save = $this->srResponseKeyRepository->updateSrResponseKey(
             $serviceResponseKey,
             $this->setRequestResponseKeyObject($data)
         );
+        if (!$save) {
+            return false;
+        }
+        if (!empty($data['is_service_request']) && $data['is_service_request'] === true) {
+            $save = $this->saveSrResponseKeySrValue(
+                $user,
+                $this->srResponseKeyRepository->getModel(),
+                $data
+            );
+        }
+        return $save;
     }
 
-    public function deleteRequestResponseKey(SrResponseKey $serviceRequestResponseKey) {
+    public function deleteRequestResponseKey(SrResponseKey $serviceRequestResponseKey)
+    {
         $this->srResponseKeyRepository->setModel($serviceRequestResponseKey);
         return $this->srResponseKeyRepository->delete();
     }
 
-    public function deleteRequestResponseKeyByServiceResponseKey(Sr $serviceRequest, SResponseKey $serviceResponseKey) {
+    public function deleteRequestResponseKeyByServiceResponseKey(Sr $serviceRequest, SResponseKey $serviceResponseKey)
+    {
         $this->srResponseKeyRepository->addWhere("service_request", $serviceRequest->id);
         $this->srResponseKeyRepository->addWhere("service_response_key", $serviceResponseKey->id);
         $requestResponseKey = $this->srResponseKeyRepository->findOne();
@@ -263,6 +342,7 @@ class SrResponseKeyService extends BaseService
                 $requestResponseKey, $serviceResponseKey
             ));
     }
+
     public function deleteBatch(array $ids)
     {
         if (!count($ids)) {
