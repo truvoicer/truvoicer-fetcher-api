@@ -60,6 +60,12 @@ class Provider extends Model
     {
         return $this->hasMany(Sr::class);
     }
+
+    public function sr()
+    {
+        return $this->hasMany(Sr::class);
+    }
+
     public function property()
     {
         return $this->hasMany(Property::class);

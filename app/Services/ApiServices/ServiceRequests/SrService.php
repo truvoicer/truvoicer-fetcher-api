@@ -5,6 +5,7 @@ namespace App\Services\ApiServices\ServiceRequests;
 use App\Models\S;
 use App\Models\Provider;
 use App\Models\Sr;
+use App\Models\SrSchedule;
 use App\Repositories\CategoryRepository;
 use App\Repositories\SRepository;
 use App\Repositories\SrConfigRepository;
@@ -12,11 +13,15 @@ use App\Repositories\SrParameterRepository;
 use App\Repositories\SrRepository;
 use App\Repositories\SrResponseKeyRepository;
 use App\Repositories\SResponseKeyRepository;
+use App\Repositories\SrScheduleRepository;
+use App\Services\ApiManager\Operations\RequestOperation;
 use App\Services\ApiServices\ApiService;
 use App\Services\BaseService;
 use App\Services\Provider\ProviderService;
+use App\Services\Task\ScheduleService;
 use App\Services\Tools\HttpRequestService;
 use App\Helpers\Tools\UtilHelpers;
+use Illuminate\Support\Facades\App;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 
 class SrService extends BaseService
@@ -30,6 +35,7 @@ class SrService extends BaseService
     private SResponseKeyRepository $responseKeysRepo;
     private SrConfigService $requestConfigService;
     private SrParametersService $requestParametersService;
+    private SrScheduleRepository $srScheduleRepository;
     private ApiService $apiService;
 
     public function __construct(HttpRequestService  $httpRequestService,
@@ -48,6 +54,7 @@ class SrService extends BaseService
         $this->requestParametersRepo = new SrParameterRepository();
         $this->responseKeysRepo = new SResponseKeyRepository();
         $this->requestConfigRepo = new SrConfigRepository();
+        $this->srScheduleRepository = new SrScheduleRepository();
     }
 
     public function findByQuery(string $query)
@@ -124,45 +131,29 @@ class SrService extends BaseService
         return $this->responseKeysRepo->getResponseKeysByRequest($provider, $serviceRequest);
     }
 
-    private function getServiceRequestObject(Provider $provider, S $service, array $data)
-    {
-        $fields = [
+    private function getRequestOperationClass(): RequestOperation {
+        return App::make(RequestOperation::class);
+    }
 
-        ];
-        $serviceRequestData = [];
-        $categoryRepo = new CategoryRepository();
-        $data['service_id'] = $service->id;
-        $data['provider_id'] = $provider->id;
-        if (!empty($data['pagination_type'])) {
-            $paginationType = null;
-            if (is_array($data['pagination_type']) && !empty($data['pagination_type']['name'])) {
-                $paginationType = $data['pagination_type']['name'];
-            } else if (is_string($data['pagination_type'])) {
-                $paginationType = $data['pagination_type'];
-            }
-            $data['pagination_type'] = $paginationType;
+    public function getSrsByScheduleInterval(Provider $provider, string $interval)
+    {
+        if (!in_array($interval, ScheduleService::SCHEDULE_INTERVALS)) {
+            return false;
         }
-        if (!array_key_exists("category", $data) && !array_key_exists("id", $data["category"])) {
-            throw new BadRequestHttpException("No category selected.");
+        if (!in_array($interval, SrSchedule::FIELDS)) {
+            return false;
         }
-        $category = $categoryRepo->findById($data["category"]["id"]);
-        $data['category_id'] = $category->id;
-        return $data;
+        $serviceRequests =  $this->srScheduleRepository->fetchSrsByScheduleInterval($provider, $interval);
+        $requestOperation = $this->getRequestOperationClass();
+        $requestOperation->setProvider($provider);
+        foreach ($serviceRequests as $serviceRequest) {
+            $requestOperation->setSr($serviceRequest);
+            $operationData = $requestOperation->runOperation([]);
+        }
     }
 
     public function createServiceRequest(Provider $provider, array $data)
     {
-//        $apiAuthTypeProviderProperty = $this->providerService->getProviderPropertyObjectByName(
-//            $provider, "api_authentication_type"
-//        );
-//        if (
-//            !property_exists($apiAuthTypeProviderProperty, "property_value") ||
-//            empty($apiAuthTypeProviderProperty->property_value)
-//        ) {
-//            throw new BadRequestHttpException(
-//                "Provider property (api_authentication_type) has to be set before creating a service request."
-//            );
-//        }
         if (empty($data["label"])) {
             throw new BadRequestHttpException("Service request label is not set.");
         }

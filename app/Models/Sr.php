@@ -11,7 +11,7 @@ class Sr extends Model
     use HasFactory;
     public const TABLE_NAME = 'srs';
     public const REPOSITORY = SrRepository::class;
-    protected $with = ['category', 's'];
+    protected $with = ['category', 's', 'srSchedule'];
     protected $fillable = [
         'name',
         'label',

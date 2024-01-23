@@ -70,8 +70,16 @@ class BaseOperations extends ApiBase
 
     public function runRequest(string $providerName = null)
     {
-        $this->setProvider($providerName);
-        $this->setApiService();
+        if (!isset($this->provider) && !empty($providerName)) {
+            $this->setProvider($providerName);
+        }
+        if (
+            !isset($this->apiService) &&
+            !empty($this->provider) &&
+            !empty($this->apiRequestName)
+        ) {
+            $this->setApiService();
+        }
         return $this->getRequest();
     }
 
@@ -353,6 +361,11 @@ class BaseOperations extends ApiBase
     public function setApiRequestName(string $apiRequestName)
     {
         $this->apiRequestName = $apiRequestName;
+    }
+
+    public function setSr(Sr $sr)
+    {
+        $this->apiService = $sr;
     }
 
     public function setApiService()
