@@ -22,7 +22,26 @@ class UpdateSrScheduleRequest extends FormRequest
     public function rules(): array
     {
         return [
-            //
+            'execute_immediately' => 'boolean|nullable',
+            'forever' => 'boolean|nullable',
+            'disabled' => 'boolean|nullable',
+            'locked' => 'boolean|nullable',
+            'priority' => 'boolean|nullable',
+            'start_date' => 'date|nullable',
+            'end_date' => 'date|nullable',
+            'use_cron_expression' => 'boolean|nullable',
+            'cron_expression' => 'string|nullable',
+            'every_minute' => 'boolean|nullable',
+            'minute' => 'integer|nullable',
+            'every_hour' => 'boolean|nullable',
+            'hour' => 'integer|nullable',
+            'every_day' => 'boolean|nullable',
+            'day' => 'integer|nullable',
+            'every_weekday' => 'boolean|nullable',
+            'weekday' => 'integer|nullable',
+            'every_month' => 'boolean|nullable',
+            'month' => 'integer|nullable',
+            'arguments' => 'string|nullable',
         ];
     }
 }
