@@ -7,6 +7,7 @@ use App\Http\Controllers\Api\Backend\PermissionController;
 use App\Http\Controllers\Api\Backend\PropertyController;
 use App\Http\Controllers\Api\Backend\Provider\ProviderController;
 use App\Http\Controllers\Api\Backend\Provider\ProviderPropertyController;
+use App\Http\Controllers\Api\Backend\Services\ServiceRequestScheduleController;
 use App\Http\Controllers\Api\Backend\ValidationController;
 use App\Http\Controllers\Api\Backend\SearchController;
 use App\Http\Controllers\Api\Backend\Services\ServiceController;
@@ -126,6 +127,12 @@ Route::middleware(['auth:sanctum', 'ability:api:admin,api:superuser,api:user'])-
                         Route::delete('/delete', [ServiceRequestController::class, 'deleteServiceRequest'])->name('delete');
                         Route::patch('/update', [ServiceRequestController::class, 'updateServiceRequest'])->name('update');
                         Route::post('/duplicate', [ServiceRequestController::class, 'duplicateServiceRequest'])->name('duplicate');
+                        Route::prefix('schedule')->name('schedule.')->group(function () {
+                            Route::post('/create', [ServiceRequestScheduleController::class, 'createRequestSchedule'])->name('create');
+                            Route::get('/{srSchedule}', [ServiceRequestScheduleController::class, 'getServiceSchedule'])->name('detail');
+                            Route::delete('/{srSchedule}/delete', [ServiceRequestScheduleController::class, 'deleteRequestSchedule'])->name('delete');
+                            Route::patch('/{srSchedule}/update', [ServiceRequestScheduleController::class, 'updateRequestSchedule'])->name('update');
+                        });
                         Route::prefix('config')->name('config.')->group(function () {
                             Route::get('/list', [ServiceRequestConfigController::class, 'getRequestConfigList'])->name('list');
                             Route::post('/create', [ServiceRequestConfigController::class, 'createRequestConfig'])->name('create');

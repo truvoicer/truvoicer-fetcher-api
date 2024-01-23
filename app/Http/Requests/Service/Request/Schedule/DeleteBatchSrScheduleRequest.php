@@ -1,10 +1,12 @@
 <?php
 
-namespace App\Http\Requests\Service\ResponseKey;
+namespace App\Http\Requests\Service\Request\Schedule;
 
+use App\Models\SrSchedule;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
-class UpdateSResponseKeyRequest extends FormRequest
+class DeleteBatchSrScheduleRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -22,7 +24,11 @@ class UpdateSResponseKeyRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => 'string'
+            'ids.*' => Rule::forEach(function ($value, string $attribute) {
+                return [
+                    Rule::exists(SrSchedule::class, 'id'),
+                ];
+            })
         ];
     }
 }

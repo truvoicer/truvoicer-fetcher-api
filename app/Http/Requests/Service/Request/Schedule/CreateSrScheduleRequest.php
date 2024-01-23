@@ -1,10 +1,10 @@
 <?php
 
-namespace App\Http\Requests\Service\ResponseKey;
+namespace App\Http\Requests\Service\Request\Schedule;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class UpdateSResponseKeyRequest extends FormRequest
+class CreateSrScheduleRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -22,7 +22,8 @@ class UpdateSResponseKeyRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => 'string'
+            //
+
         ];
     }
 }

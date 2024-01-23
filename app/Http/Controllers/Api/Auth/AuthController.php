@@ -6,12 +6,14 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginRequest;
 use App\Http\Resources\AccessTokenResource;
 use App\Http\Resources\UserResource;
+use App\Models\Mongo\Recruitment;
 use App\Models\User;
 use App\Services\Permission\AccessControlService;
 use App\Services\Tools\HttpRequestService;
 use App\Services\Tools\SerializerService;
 use App\Services\User\UserAdminService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -32,6 +34,10 @@ class AuthController extends Controller
 
     public function login(LoginRequest $request): \Illuminate\Http\JsonResponse
     {
+        DB::connection('mongodb')->collection('recruitment')->insert([
+            'job_id' => 1,
+            'job_title' => 'test'
+        ]);
         $user = User::where('email', $request->get('email'))->first();
         if (!$user) {
             return response()->json([
