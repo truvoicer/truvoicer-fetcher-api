@@ -1,23 +1,26 @@
 <?php
 namespace App\Services\ApiManager\Response\Entity;
 
+use App\Traits\ObjectTrait;
+
 class RequestResponse
 {
-    private $status;
+    use ObjectTrait;
+    private string $status;
 
     private string $message;
 
-    private $contentType;
+    private string $contentType;
 
     private string $provider;
 
-    private $requestService;
+    private string $requestService;
 
     private string $category;
 
-    private $requestData;
+    private array $requestData;
 
-    private $extraData;
+    private array $extraData;
 
     private ?string $paginationType = null;
 
@@ -40,7 +43,7 @@ class RequestResponse
     }
 
     /**
-     * @return mixed
+     * @return string
      */
     public function getStatus()
     {
@@ -50,7 +53,7 @@ class RequestResponse
     /**
      * @param mixed $status
      */
-    public function setStatus($status): void
+    public function setStatus(string $status): void
     {
         $this->status = $status;
     }
@@ -58,111 +61,111 @@ class RequestResponse
     /**
      * @return mixed
      */
-    public function getMessage()
+    public function getMessage(): string
     {
         return $this->message;
     }
 
     /**
-     * @param mixed $message
+     * @param string $message
      */
-    public function setMessage($message): void
+    public function setMessage(string $message): void
     {
         $this->message = $message;
     }
 
     /**
-     * @return mixed
+     * @return string
      */
-    public function getContentType()
+    public function getContentType(): string
     {
         return $this->contentType;
     }
 
     /**
-     * @param mixed $contentType
+     * @param string $contentType
      */
-    public function setContentType($contentType): void
+    public function setContentType(string $contentType): void
     {
         $this->contentType = $contentType;
     }
 
     /**
-     * @return mixed
+     * @return string
      */
-    public function getRequestService()
+    public function getRequestService(): string
     {
         return $this->requestService;
     }
 
     /**
-     * @return mixed
+     * @return string
      */
-    public function getCategory()
+    public function getCategory(): string
     {
         return $this->category;
     }
 
     /**
-     * @param mixed $category
+     * @param string $category
      */
-    public function setCategory($category): void
+    public function setCategory(string$category): void
     {
         $this->category = $category;
     }
 
     /**
-     * @param mixed $requestService
+     * @param string $requestService
      */
-    public function setRequestService($requestService): void
+    public function setRequestService(string $requestService): void
     {
         $this->requestService = $requestService;
     }
 
     /**
-     * @return mixed
+     * @return string
      */
-    public function getProvider()
+    public function getProvider(): string
     {
         return $this->provider;
     }
 
     /**
-     * @param mixed $provider
+     * @param string $provider
      */
-    public function setProvider($provider): void
+    public function setProvider(string $provider): void
     {
         $this->provider = $provider;
     }
 
     /**
-     * @return mixed
+     * @return array
      */
-    public function getRequestData()
+    public function getRequestData(): array
     {
         return $this->requestData;
     }
 
     /**
-     * @param mixed $requestData
+     * @param array $requestData
      */
-    public function setRequestData($requestData): void
+    public function setRequestData(array $requestData): void
     {
         $this->requestData = $requestData;
     }
 
     /**
-     * @return mixed
+     * @return array
      */
-    public function getExtraData()
+    public function getExtraData(): array
     {
         return $this->extraData;
     }
 
     /**
-     * @param mixed $extraData
+     * @param array $extraData
      */
-    public function setExtraData($extraData): void
+    public function setExtraData(array $extraData): void
     {
         $this->extraData = $extraData;
     }

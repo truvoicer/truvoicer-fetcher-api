@@ -14,11 +14,11 @@ use Illuminate\Support\Facades\DB;
 
 class Kernel extends ConsoleKernel
 {
-    private ProviderEventsService $providerService;
-    public function __construct(Application $app, Dispatcher $events, ProviderEventsService $providerService)
+    private ScheduleService $scheduleService;
+    public function __construct(Application $app, Dispatcher $events, ScheduleService $scheduleService)
     {
         parent::__construct($app, $events);
-        $this->providerService = $providerService;
+        $this->scheduleService = $scheduleService;
     }
 
     /**
@@ -27,7 +27,8 @@ class Kernel extends ConsoleKernel
     protected function schedule(Schedule $schedule): void
     {
 
-        $this->providerService->providerSrSchedule($schedule);
+        $this->scheduleService->setSchedule($schedule);
+        $this->scheduleService->run();
         // $schedule->command('inspire')->hourly();
     }
 

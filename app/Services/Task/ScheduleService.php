@@ -2,6 +2,7 @@
 
 namespace App\Services\Task;
 
+use App\Services\Provider\ProviderEventsService;
 use Illuminate\Console\Scheduling\Schedule;
 
 class ScheduleService
@@ -36,21 +37,21 @@ class ScheduleService
     ];
 
     private Schedule $schedule;
+    private ProviderEventsService $providerEventsService;
 
-    public function __construct()
+    public function __construct(ProviderEventsService $providerEventsService)
     {
-
+        $this->providerEventsService = $providerEventsService;
     }
 
-    public function run($callable, ?array $parameters = []): void
+    public function run(): void
     {
         foreach (self::SCHEDULE_INTERVALS as $interval) {
             $method = $interval['method'];
             $this->schedule->call(
-                function () use ($callable, $parameters, $interval){
-                    $callable($interval, $parameters);
+                function () use ($interval){
+                    $this->providerEventsService->providerSrSchedule($interval);
                 },
-                array_merge($parameters, ['interval' => $interval['field']])
             )
                 ->{$method}();
         }

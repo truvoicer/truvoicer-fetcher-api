@@ -133,10 +133,16 @@ class BaseRepository
 
     public function applyConditions(array $conditions) {
         foreach ($conditions as $condition) {
-            if (count($condition) !== 3) {
+            $conditionCount = count($condition);
+            if ($conditionCount !== 3 && $conditionCount !== 2) {
                 return false;
             }
-            list($column, $value, $comparison) = $condition;
+            if ($conditionCount === 2) {
+                list($column, $value) = $condition;
+                $comparison = '=';
+            } else {
+                list($column, $value, $comparison) = $condition;
+            }
             $this->addWhere(
                 $column,
                 $value,

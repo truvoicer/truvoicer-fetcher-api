@@ -8,44 +8,37 @@ use App\Repositories\MongoDB\MongoDBRepository;
 use App\Services\ApiManager\Operations\RequestOperation;
 use App\Services\ApiServices\ServiceRequests\SrService;
 use App\Services\Task\ScheduleService;
-use Illuminate\Console\Scheduling\Schedule;
+use App\Traits\Error\ErrorTrait;
 use Illuminate\Database\Eloquent\Collection;
-use Illuminate\Support\Facades\App;
+use Illuminate\Support\Arr;
 
 class ProviderEventsService
 {
+    use ErrorTrait;
     private MongoDBRepository $mongoDBRepository;
-    private ScheduleService $scheduleService;
     private SrService $srService;
     private ProviderService $providerService;
     private RequestOperation $requestOperation;
     public function __construct(
-        ScheduleService $scheduleService,
         SrService $srService,
         ProviderService $providerService,
         RequestOperation $requestOperation,
     ) {
-        $this->scheduleService = $scheduleService;
         $this->srService = $srService;
         $this->providerService = $providerService;
         $this->requestOperation = $requestOperation;
         $this->mongoDBRepository = new MongoDBRepository();
     }
 
-    public function providerSrSchedule(Schedule $schedule)
+    public function providerSrSchedule(array $interval)
     {
-        $this->scheduleService->setSchedule($schedule);
         $providers = $this->providerService->getProviderRepository()->findAll();
         foreach ($providers as $provider) {
-            $this->scheduleService->run(
-                function ($interval, $params) use ($provider) {
-                    $srs = $this->getSrsByScheduleInterval($provider, $interval['field']);
-                    if ($srs->count() === 0) {
-                        return;
-                    }
-                    $this->runSrOperations($srs, $provider);
-                }
-            );
+            $srs = $this->getSrsByScheduleInterval($provider, $interval['field']);
+            if ($srs->count() === 0) {
+                return;
+            }
+            $this->runSrOperations($srs, $provider);
         }
     }
 
@@ -70,12 +63,29 @@ class ProviderEventsService
             if ($operationData->getStatus() !== 'success') {
                 continue;
             }
-            $data = $operationData->getRequestData();
+            $toArray = $operationData->toArray();
+            $requestData = Arr::pull($toArray, 'requestData');
+
             $this->mongoDBRepository->setCollection($serviceRequest->s()->first()->name);
-            foreach ($data as $item) {
-                $this->mongoDBRepository->insert($item);
+            foreach ($requestData as $item) {
+                $insertData = array_merge(
+                    $toArray,
+                    $item
+                );
+                $findExisting = $this->mongoDBRepository->findOneBy([
+                    ['item_id', $insertData['item_id']],
+                    ['contentType', $insertData['contentType']],
+                    ['provider',  $insertData['provider']],
+                    ['requestService', $insertData['requestService']],
+                    ['category', $insertData['category']],
+                ]);
+                if ($findExisting) {
+                    continue;
+                }
+                if (!$this->mongoDBRepository->insert($insertData)) {
+                    $this->addError('error', 'Error inserting data into mongoDB');
+                }
             }
-            dd($operationData);
         }
     }
 }
