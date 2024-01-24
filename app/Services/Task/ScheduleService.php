@@ -15,7 +15,7 @@ class ScheduleService
     const SCHEDULE_INTERVALS = [
         self::SCHEDULE_EVERY_MINUTE => [
             'field' => 'every_minute',
-            'method' => 'every_minute'
+            'method' => 'everyMinute'
         ],
         self::SCHEDULE_EVERY_HOUR => [
             'field' => 'every_hour',
@@ -42,14 +42,16 @@ class ScheduleService
 
     }
 
-    public function run(): void
+    public function run($callable, ?array $parameters = []): void
     {
         foreach (self::SCHEDULE_INTERVALS as $interval) {
             $method = $interval['method'];
             $this->schedule->call(
-                function () {
-
-                })
+                function () use ($callable, $parameters, $interval){
+                    $callable($interval, $parameters);
+                },
+                array_merge($parameters, ['interval' => $interval['field']])
+            )
                 ->{$method}();
         }
     }

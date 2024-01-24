@@ -5,6 +5,7 @@ namespace App\Repositories;
 use App\Models\Provider;
 use App\Models\Sr;
 use App\Models\SrSchedule;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class SrScheduleRepository extends BaseRepository
@@ -29,12 +30,14 @@ class SrScheduleRepository extends BaseRepository
     {
         $today = now()->toDateString();
         $serviceRequests = $provider->sr()
-            ->whereHas('srSchedule', function (HasOne $query) use ($interval, $today) {
-                $query->where($interval, true)
+            ->whereHas('srSchedule', function (Builder $query) use ($interval, $today) {
+                $query->where($interval, '=', true)
                     ->where('disabled', false)
                     ->where('locked', false)
-                    ->whereDate('end_date', '<=', $today)
-                    ->whereDate('start_date', '>=', $today);
+                    ->whereNull('end_date')
+                    ->orWhereDate('end_date', '<=', $today)
+                    ->whereNull('start_date')
+                    ->orWhereDate('start_date', '>=', $today);
             })
             ->get();
         return $serviceRequests;

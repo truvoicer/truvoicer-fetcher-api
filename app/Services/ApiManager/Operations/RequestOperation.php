@@ -43,7 +43,11 @@ class RequestOperation extends BaseOperations
             return $this->multipleQueryOperation($query);
         }
         $this->initialize($query);
-        return $this->buildResponseObject($this->getOperationResponse($this->providerName));
+        $providerName = null;
+        if (!empty($this->providerName)) {
+            $providerName = $this->providerName;
+        }
+        return $this->buildResponseObject($this->getOperationResponse($providerName));
     }
 
     public function getOperationRequestContent(array $query = []) {
@@ -56,7 +60,7 @@ class RequestOperation extends BaseOperations
         $getResponse = new RequestResponse();
         $getResponse->setStatus($apiResponse->getStatus());
         $getResponse->setMessage('Api request sent');
-        $getResponse->setPaginationType($apiResponse->pagination_type);
+//        $getResponse->setPaginationType($apiResponse->pagination_type);
         $getResponse->setContentType($apiResponse->getContentType());
         $getResponse->setRequestService($apiResponse->getRequestService());
         $getResponse->setCategory($apiResponse->getCategory());

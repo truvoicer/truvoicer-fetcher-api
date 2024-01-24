@@ -56,22 +56,22 @@ class BaseOperations extends ApiBase
         $this->requestService = $requestService;
     }
 
-    public function getRequestContent(string $providerName = null)
+    public function getRequestContent(?string $providerName = null)
     {
         $response = $this->runRequest($providerName);
         return $this->responseManager->getRequestContent($this->apiService, $this->provider, $response, $this->apiRequest);
     }
 
-    public function getOperationResponse(string $providerName = null)
+    public function getOperationResponse(?string $providerName = null)
     {
         $response = $this->runRequest($providerName);
         return $this->responseManager->processResponse($this->apiService, $this->provider, $response, $this->apiRequest);
     }
 
-    public function runRequest(string $providerName = null)
+    public function runRequest(?string $providerName = null)
     {
         if (!isset($this->provider) && !empty($providerName)) {
-            $this->setProvider($providerName);
+            $this->setProviderByName($providerName);
         }
         if (
             !isset($this->apiService) &&
@@ -366,6 +366,7 @@ class BaseOperations extends ApiBase
     public function setSr(Sr $sr)
     {
         $this->apiService = $sr;
+        $this->apiRequestName = $sr->name;
     }
 
     public function setApiService()
@@ -380,7 +381,7 @@ class BaseOperations extends ApiBase
     /**
      * @param $providerName
      */
-    public function setProvider($providerName): void
+    public function setProviderByName($providerName): void
     {
         $provider = $this->providerService->getUserProviderByName($this->getUser(), $providerName);
 
@@ -389,6 +390,11 @@ class BaseOperations extends ApiBase
         } else {
             $this->provider = $provider;
         }
+    }
+
+    public function setProvider(Provider $provider): void
+    {
+        $this->provider = $provider;
     }
 
     public function setQuery(string $query)

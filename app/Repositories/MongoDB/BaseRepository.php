@@ -31,11 +31,17 @@ class BaseRepository
     /**
      * @throws \Exception
      */
-    public function __construct(string $collection)
+    public function __construct()
+    {
+    }
+
+    public function setCollection(string $collection): void
     {
         $this->collection = $collection;
         $this->connection = DB::connection('mongodb');
     }
+
+
 
     public function findAll()
     {
@@ -68,10 +74,10 @@ class BaseRepository
         }
         $query->orderBy($this->sortField, $this->orderDir);
         if ($this->limit > 0) {
-            $query->limit($this->limit);
+            $query->take($this->limit);
         }
         if ($this->offset > 0) {
-            $query->offset($this->offset);
+            $query->skip($this->offset);
         }
         return $query;
     }
@@ -152,6 +158,9 @@ class BaseRepository
         return $this->findMany();
     }
 
+    public function insert(array $data) {
+        return $this->connection->collection($this->collection)->insert($data);
+    }
     public function deleteBatch(array $ids) {
         foreach ($ids as $index => $id) {
             if ($index === 0) {

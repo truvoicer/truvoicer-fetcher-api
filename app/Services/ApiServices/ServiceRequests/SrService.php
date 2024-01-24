@@ -21,6 +21,7 @@ use App\Services\Provider\ProviderService;
 use App\Services\Task\ScheduleService;
 use App\Services\Tools\HttpRequestService;
 use App\Helpers\Tools\UtilHelpers;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\App;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 
@@ -131,26 +132,6 @@ class SrService extends BaseService
         return $this->responseKeysRepo->getResponseKeysByRequest($provider, $serviceRequest);
     }
 
-    private function getRequestOperationClass(): RequestOperation {
-        return App::make(RequestOperation::class);
-    }
-
-    public function getSrsByScheduleInterval(Provider $provider, string $interval)
-    {
-        if (!in_array($interval, ScheduleService::SCHEDULE_INTERVALS)) {
-            return false;
-        }
-        if (!in_array($interval, SrSchedule::FIELDS)) {
-            return false;
-        }
-        $serviceRequests =  $this->srScheduleRepository->fetchSrsByScheduleInterval($provider, $interval);
-        $requestOperation = $this->getRequestOperationClass();
-        $requestOperation->setProvider($provider);
-        foreach ($serviceRequests as $serviceRequest) {
-            $requestOperation->setSr($serviceRequest);
-            $operationData = $requestOperation->runOperation([]);
-        }
-    }
 
     public function createServiceRequest(Provider $provider, array $data)
     {
@@ -214,5 +195,9 @@ class SrService extends BaseService
         return $this->serviceRequestRepository;
     }
 
+    public function getSrScheduleRepository(): SrScheduleRepository
+    {
+        return $this->srScheduleRepository;
+    }
 
 }

@@ -34,10 +34,6 @@ class AuthController extends Controller
 
     public function login(LoginRequest $request): \Illuminate\Http\JsonResponse
     {
-        DB::connection('mongodb')->collection('recruitment')->insert([
-            'job_id' => 1,
-            'job_title' => 'test'
-        ]);
         $user = User::where('email', $request->get('email'))->first();
         if (!$user) {
             return response()->json([
