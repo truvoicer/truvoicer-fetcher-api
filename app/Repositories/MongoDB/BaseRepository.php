@@ -177,7 +177,7 @@ class BaseRepository
         }
         return $this->getQuery()->delete();
     }
-    public function addWhere(string $field, string $value, ?string $compare = '=', ?string $op = 'AND'): self
+    public function addWhere(string $field, $value, ?string $compare = '=', ?string $op = 'AND'): self
     {
         $this->where[] = [
             'field' => $field,

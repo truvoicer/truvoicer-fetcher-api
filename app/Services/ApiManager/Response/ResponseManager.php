@@ -49,12 +49,9 @@ class ResponseManager extends BaseService
             $contentType = null;
             switch ($this->getContentType($response)) {
                 case self::CONTENT_TYPES['JSON']:
-                    return $this->processResponse(
-                        $serviceRequest,
-                        $provider,
-                        $response,
-                        $apiRequest
-                    );
+                    $contentType = "json";
+                    $content = $response->json();
+                    break;
                 case self::CONTENT_TYPES['XML']:
                 case self::CONTENT_TYPES['RSS_XML']:
                     return $this->processResponse(

@@ -229,9 +229,17 @@ class ServiceRequestController extends Controller
         }
 
         $requestOperation->setProviderName($data['provider']);
-        $requestOperation->setApiRequestName($data["request_type"]);
+        $requestOperation->setApiRequestName($data["sr_name"]);
+        $requestType = 'raw';
+        if (!empty($data['request_type'])) {
+            $requestType = $data['request_type'];
+        }
         $requestOperation->setUser($request->user());
-        $runApiRequest = $requestOperation->getOperationRequestContent($data);
+        if ($requestType === 'json') {
+            $runApiRequest = $requestOperation->runOperation($data);
+        } else {
+            $runApiRequest = $requestOperation->getOperationRequestContent($data);
+        }
 
         return new JsonResponse(
             $this->serializerService->entityToArray($runApiRequest),

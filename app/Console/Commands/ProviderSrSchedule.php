@@ -3,9 +3,13 @@
 namespace App\Console\Commands;
 
 use App\Http\Requests\Admin\User\CreateUserRequest;
+use App\Models\Provider;
 use App\Models\Role;
 use App\Helpers\Tools\UtilHelpers;
+use App\Models\Sr;
+use App\Services\Provider\ProviderEventsService;
 use App\Services\Provider\ProviderService;
+use App\Services\Task\ScheduleService;
 use App\Services\User\RoleService;
 use App\Services\User\UserAdminService;
 use Illuminate\Console\Command;
@@ -33,10 +37,10 @@ class ProviderSrSchedule extends Command
      *
      * @return int
      */
-    public function handle(ProviderService $providerService)
+    public function handle(ProviderEventsService $providerService)
     {
-
-        $providerService->providerSrSchedule();
+        $provider = Provider::where('name', '=', 'reed')->first();
+        $providerService->runSrOperationsByInterval($provider, ScheduleService::SCHEDULE_EVERY_DAY);
         return CommandAlias::SUCCESS;
     }
 }
