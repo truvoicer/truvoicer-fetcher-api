@@ -73,17 +73,7 @@ class SrService extends BaseService
 
     public function getRequestByName(Provider $provider, string $serviceRequestName = null)
     {
-        return $this->serviceRequestRepository->getRequestByName($provider, $serviceRequestName);
-    }
-
-    public function getRequestByRequestName(Provider $provider, string $serviceName = null)
-    {
-        return $this->serviceRequestRepository->getRequestByName($provider, $serviceName);
-    }
-
-    public function getServiceByRequestName(Provider $provider, string $serviceName = null)
-    {
-        return $this->serviceRepository->getServiceByRequestName($provider, $serviceName);
+        return $this->serviceRequestRepository::getSrByName($provider, $serviceRequestName);
     }
 
     public function getServiceRequestById($id)

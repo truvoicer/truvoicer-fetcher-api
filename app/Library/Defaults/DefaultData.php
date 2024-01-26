@@ -33,10 +33,6 @@ class DefaultData
             SResponseKeysService::RESPONSE_KEY_REQUIRED => true,
             SResponseKeysService::RESPONSE_KEY_NAME => "page_size"
         ],
-        "PAGE_COUNT" => [
-            SResponseKeysService::RESPONSE_KEY_REQUIRED => true,
-            SResponseKeysService::RESPONSE_KEY_NAME => "page_count"
-        ],
         "PAGE_NUMBER" => [
             SResponseKeysService::RESPONSE_KEY_REQUIRED => true,
             SResponseKeysService::RESPONSE_KEY_NAME => "page_number"

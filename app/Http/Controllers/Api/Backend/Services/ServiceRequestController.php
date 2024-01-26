@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Service\Request\CreateSrRequest;
 use App\Http\Requests\Service\Request\DeleteBatchSrRequest;
 use App\Http\Requests\Service\Request\UpdateServiceRequest;
+use App\Http\Requests\Service\Request\UpdateSrRequest;
 use App\Http\Resources\Service\ServiceRequest\ServiceRequestResource;
 use App\Models\Provider;
 use App\Models\S;
@@ -169,7 +170,7 @@ class ServiceRequestController extends Controller
     public function updateServiceRequest(
         Provider $provider,
         Sr       $serviceRequest,
-        UpdateServiceRequest  $request
+        UpdateSrRequest  $request
     ): \Illuminate\Http\JsonResponse {
         $this->setAccessControlUser($request->user());
         if (
@@ -236,7 +237,7 @@ class ServiceRequestController extends Controller
         }
         $requestOperation->setUser($request->user());
         if ($requestType === 'json') {
-            $runApiRequest = $requestOperation->runOperation($data);
+            $runApiRequest = $requestOperation->runOperation($data)->toArray();
         } else {
             $runApiRequest = $requestOperation->getOperationRequestContent($data);
         }

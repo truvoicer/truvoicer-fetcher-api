@@ -32,10 +32,6 @@ class SRepository extends BaseRepository
         return $this->save($data);
     }
 
-    public function getServiceByRequestName(Provider $provider, string $serviceName) {
-        return $provider->serviceRequest()->where('name', $serviceName)->first();
-    }
-
     public function findByParams(string $sort, string  $order, ?int $count)
     {
         return $this->findAllWithParams($sort, $order, $count);

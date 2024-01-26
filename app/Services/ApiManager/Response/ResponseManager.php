@@ -116,7 +116,7 @@ class ResponseManager extends BaseService
         $apiResponse = new ApiResponse();
         $apiResponse->setStatus("error");
         $apiResponse->setRequestService($this->serviceRequest->name);
-        $apiResponse->setPaginationType($this->serviceRequest->pagination_type);
+        $apiResponse->setPaginationType($this->serviceRequest->pagination_type['value']);
         $apiResponse->setCategory($this->serviceRequest->category()->first()->name);
         $apiResponse->setProvider($this->provider->name);
         $apiResponse->setRequestData($requestData);
@@ -128,7 +128,7 @@ class ResponseManager extends BaseService
 //        dd($requestData);
         $apiResponse = new ApiResponse();
         $apiResponse->setContentType($contentType);
-        $apiResponse->setPaginationType($this->serviceRequest->pagination_type);
+        $apiResponse->setPaginationType($this->serviceRequest->pagination_type['value']);
         $apiResponse->setRequestService($this->serviceRequest->name);
         $apiResponse->setCategory($this->serviceRequest->category()->first()->name);
         $apiResponse->setStatus("success");

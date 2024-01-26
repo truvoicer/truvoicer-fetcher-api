@@ -32,7 +32,7 @@ class SrRepository extends BaseRepository
             ->orderBy($sort, $order)->get();
     }
 
-    public function getRequestByName(Provider $provider, string $serviceRequestName) {
+    public static function getSrByName(Provider $provider, string $serviceRequestName) {
         return $provider->serviceRequest()
             ->where('name', $serviceRequestName)
             ->first();

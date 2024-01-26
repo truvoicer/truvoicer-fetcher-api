@@ -24,7 +24,7 @@ class SrResponseKeyRepository extends BaseRepository
     }
 
 
-    public function getRequestResponseKeyByName(Provider $provider, Sr $serviceRequest, string $keyName)
+    public static function getRequestResponseKeyByName(Provider $provider, Sr $serviceRequest, string $keyName)
     {
         return $provider->serviceRequest()
             ->where('id', $serviceRequest->id)
@@ -33,6 +33,19 @@ class SrResponseKeyRepository extends BaseRepository
             ->with('srResponseKey')
             ->where('name', $keyName)
             ->first();
+    }
+
+    public static function getSrResponseKeyValueByName(Provider $provider, Sr $serviceRequest,  string $keyName)
+    {
+        $responseKey = self::getRequestResponseKeyByName($provider, $serviceRequest, $keyName);
+        if (!$responseKey instanceof SResponseKey) {
+            return null;
+        }
+        $value = $responseKey->srResponseKey()->first();
+        if (!$value instanceof SrResponseKey) {
+            return null;
+        }
+        return $value->value;
     }
 
     public function removeAllServiceRequestResponseKeys(Sr $serviceRequest) {

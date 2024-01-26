@@ -17,6 +17,9 @@ class Sr extends Model
         'label',
         'pagination_type',
     ];
+    protected $casts = [
+        'pagination_type' => 'json',
+    ];
     public function s()
     {
         return $this->belongsTo(S::class);

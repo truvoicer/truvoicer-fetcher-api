@@ -158,7 +158,7 @@ class SResponseKeysService extends BaseService
     }
     public function getRequestResponseKeyByName(Provider $provider, Sr $serviceRequest, string $configItemName)
     {
-        return $this->requestKeysRepo->getRequestResponseKeyByName($provider, $serviceRequest, $configItemName);
+        return $this->requestKeysRepo::getRequestResponseKeyByName($provider, $serviceRequest, $configItemName);
     }
 
     private function getServiceRequestIdFromRequest($requestData) {
