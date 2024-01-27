@@ -19,11 +19,10 @@ class ResponseHandler extends ApiBase
     protected ProviderService $providerService;
     protected SrService $requestService;
     protected SResponseKeysService $responseKeysService;
-    protected $provider;
-    protected $apiService;
+    protected Provider $provider;
+    protected Sr $apiService;
     protected XmlService $xmlService;
-    protected $responseArray;
-    protected $response;
+    protected array $responseArray;
     protected Collection $responseKeysArray;
 
     private string $needleMatchArrayValue = "=";
@@ -96,13 +95,18 @@ class ResponseHandler extends ApiBase
     protected function buildParentListItems(array $itemList)
     {
         $buildList = [];
-        foreach ($this->responseKeysArray as $keys) {
-            $getKey = $this->findSrResponseKeyValueInArray($keys);
-            if ($getKey !== null) {
-                if (!$getKey->getListItem() && $getKey->getShowInResponse()) {
-                    $buildList[$keys] = $this->buildList($itemList, $getKey);
-                }
+        foreach ($this->responseKeysArray as $key) {
+            $srResponseKey = $key->srResponseKey()->first();
+            if (!$srResponseKey instanceof SrResponseKey) {
+                continue;
             }
+            if (!$srResponseKey->exists) {
+                continue;
+            }
+            if (!$srResponseKey->list_item && $srResponseKey->show_in_response) {
+                $buildList[$key->name] = $this->buildList($itemList, $srResponseKey);
+            }
+
         }
         return $buildList;
     }
@@ -136,14 +140,8 @@ class ResponseHandler extends ApiBase
         if ($requestResponseKey->is_service_request) {
             return $this->buildResponseKeyRequestItem($getItemValue, $requestResponseKey);
         }
-        elseif ($requestResponseKey->has_array_value) {
-            return $this->getRequestKeyArrayValue($getItemValue, $requestResponseKey);
-        }
         else {
-            return $this->buildResponseKeyValue(
-                $getItemValue,
-                $requestResponseKey
-            );
+            return $this->getReturnDataType($requestResponseKey, $getItemValue);
         }
     }
 
@@ -151,15 +149,7 @@ class ResponseHandler extends ApiBase
         if ($requestResponseKey->srResponseKeySrs()->get()->count() === 0) {
             return null;
         }
-        $data = null;
-        if ($requestResponseKey->has_array_value) {
-            $data = $this->getRequestKeyArrayValue($itemValue, $requestResponseKey);
-        } else {
-            $data = $this->buildResponseKeyValue(
-                $itemValue,
-                $requestResponseKey
-            );
-        }
+        $data = $this->getReturnDataType($requestResponseKey, $itemValue);
 
         $serviceRequest = $requestResponseKey->srResponseKeySrs()->first()->sr()->first();
         return [
@@ -184,18 +174,17 @@ class ResponseHandler extends ApiBase
     protected function buildResponseKeyValue($keyValue, SrResponseKey $requestResponseKey)
     {
         $responseKeyValue = $keyValue;
-        if ($requestResponseKey->prepend_extra_data) {
-            $prependValue = $requestResponseKey->prepend_extra_data_value;
-            if ($prependValue !== null && $prependValue !== "") {
-                $responseKeyValue = $requestResponseKey->prepend_extra_data . $responseKeyValue;
-            }
+
+        if ($requestResponseKey->custom_value) {
+            $responseKeyValue = $requestResponseKey->value;
         }
-        if ($requestResponseKey->append_extra_data) {
-            $appendValue = $requestResponseKey->append_extra_data_value;
-            if ($appendValue !== null && $appendValue !== "") {
-                $responseKeyValue = $responseKeyValue . $requestResponseKey->append_extra_data_value;
-            }
+        if (!empty($requestResponseKey->prepend_extra_data_value)) {
+            $responseKeyValue = $requestResponseKey->prepend_extra_data_value . $responseKeyValue;
         }
+        if (!empty( $requestResponseKey->append_extra_data_value)) {
+            $responseKeyValue = $responseKeyValue . $requestResponseKey->append_extra_data_value;
+        }
+
         return $this->replaceReservedResponseKeyValue($responseKeyValue);
     }
 
@@ -222,27 +211,23 @@ class ResponseHandler extends ApiBase
 
     private function getReturnDataType(SrResponseKey $requestResponseKey, $itemArrayValue)
     {
-        switch ($requestResponseKey->return_data_type) {
-            case "object":
-                return $this->buildRequestKeyObjectValue($requestResponseKey, $itemArrayValue);
-            case "array":
-                return $this->buildRequestKeyArrayValue($requestResponseKey, $itemArrayValue);
-            case "text":
-            default:
-                return $this->buildResponseKeyValue(
-                    $this->buildRequestKeyTextValue($requestResponseKey, $itemArrayValue),
-                    $requestResponseKey
-                );
+        if (is_array($itemArrayValue)) {
+            return $this->buildRequestKeyArrayValue($requestResponseKey, $itemArrayValue);
+        } else if (is_object($itemArrayValue)) {
+            return $this->buildRequestKeyObjectValue($requestResponseKey, $itemArrayValue);
         }
+        return $this->buildResponseKeyValue(
+            $this->buildRequestKeyTextValue($requestResponseKey, $itemArrayValue),
+            $requestResponseKey
+        );
     }
 
     private function buildRequestKeyArrayValue(SrResponseKey $requestResponseKey, $itemArrayValue)
     {
-        if ($requestResponseKey->array_keys === null || count($requestResponseKey->array_keys) === 0) {
+        if (empty($requestResponseKey->array_keys) || !is_array($requestResponseKey->array_keys) || count($requestResponseKey->array_keys) === 0) {
             return $itemArrayValue;
         }
         $buildArray = [];
-        $i = 0;
         foreach ($itemArrayValue as $item) {
             $array = [];
             foreach ($requestResponseKey->array_keys as $arrayKey) {
@@ -251,9 +236,8 @@ class ResponseHandler extends ApiBase
                 }
             }
             if (count($array) > 0) {
-                array_push($buildArray, $array);
+                $buildArray[] = $array;
             }
-            $i++;
         }
         return $buildArray;
     }
@@ -273,6 +257,9 @@ class ResponseHandler extends ApiBase
 
     private function buildRequestKeyTextValue(SrResponseKey $requestResponseKey, $itemArrayValue)
     {
+        if (!is_array($itemArrayValue)) {
+            return $itemArrayValue;
+        }
         foreach ($itemArrayValue as $item) {
             foreach ($requestResponseKey->array_keys as $arrayKey) {
                 if (is_array($item)) {
@@ -385,23 +372,6 @@ class ResponseHandler extends ApiBase
     {
         $this->apiService = $apiService;
     }
-
-    /**
-     * @return mixed
-     */
-    public function getResponse()
-    {
-        return $this->response;
-    }
-
-    /**
-     * @param mixed $response
-     */
-    public function setResponse($response): void
-    {
-        $this->response = $response;
-    }
-
 
     /**
      * @return mixed

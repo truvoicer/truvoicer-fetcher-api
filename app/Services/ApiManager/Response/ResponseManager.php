@@ -65,9 +65,7 @@ class ResponseManager extends BaseService
             return $this->successResponse(
                 $contentType,
                 $content,
-                [],
-                $response,
-                $apiRequest
+                []
             );
         } catch (Exception $exception) {
             return $this->errorResponse($exception->getMessage(), $response, $apiRequest);
@@ -88,6 +86,7 @@ class ResponseManager extends BaseService
                     $this->jsonResponseHandler->setProvider($provider);
                     $listItems = $this->jsonResponseHandler->getListItems();
                     $listData = $this->jsonResponseHandler->getListData();
+//                    dd($listData);
                     break;
                 case self::CONTENT_TYPES['XML']:
                 case self::CONTENT_TYPES['RSS_XML']:
@@ -103,39 +102,39 @@ class ResponseManager extends BaseService
             return $this->successResponse(
                 $contentType,
                 $this->buildArray($listItems),
-                $listData,
-                $response,
-                $apiRequest
+                $listData
             );
         } catch (Exception $exception) {
-            return $this->errorResponse($exception->getMessage(), $response, $apiRequest);
+            return $this->errorResponse($exception->getMessage());
         }
     }
 
-    private function errorResponse($requestData, Response $response, ApiRequest $apiRequest) {
+    private function errorResponse(string $message) {
         $apiResponse = new ApiResponse();
         $apiResponse->setStatus("error");
+        $apiResponse->setMessage($message);
         $apiResponse->setRequestService($this->serviceRequest->name);
-        $apiResponse->setPaginationType($this->serviceRequest->pagination_type['value']);
+        if (is_array($this->serviceRequest->pagination_type) && isset($this->serviceRequest->pagination_type['value'])) {
+            $apiResponse->setPaginationType($this->serviceRequest->pagination_type['value']);
+        }
         $apiResponse->setCategory($this->serviceRequest->category()->first()->name);
         $apiResponse->setProvider($this->provider->name);
-        $apiResponse->setRequestData($requestData);
-        $apiResponse->setApiRequest($apiRequest->toArray());
         return $apiResponse;
     }
 
-    private function successResponse($contentType, $requestData, $extraData, Response $response, ApiRequest $apiRequest) {
+    private function successResponse(string $contentType, array $requestData, array $extraData) {
 //        dd($requestData);
         $apiResponse = new ApiResponse();
         $apiResponse->setContentType($contentType);
-        $apiResponse->setPaginationType($this->serviceRequest->pagination_type['value']);
+        if (is_array($this->serviceRequest->pagination_type) && isset($this->serviceRequest->pagination_type['value'])) {
+            $apiResponse->setPaginationType($this->serviceRequest->pagination_type['value']);
+        }
         $apiResponse->setRequestService($this->serviceRequest->name);
         $apiResponse->setCategory($this->serviceRequest->category()->first()->name);
         $apiResponse->setStatus("success");
         $apiResponse->setProvider($this->provider->name);
         $apiResponse->setRequestData($requestData);
         $apiResponse->setExtraData($extraData);
-        $apiResponse->setApiRequest($apiRequest->toArray());
         return $apiResponse;
     }
 

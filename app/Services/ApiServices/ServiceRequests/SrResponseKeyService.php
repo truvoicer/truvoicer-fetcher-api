@@ -210,14 +210,11 @@ class SrResponseKeyService extends BaseService
             "value",
             "show_in_response",
             "list_item",
-            "append_extra_data",
+            "custom_value",
             "append_extra_data_value",
-            "prepend_extra_data",
             "prepend_extra_data_value",
             "is_service_request",
-            "has_array_value",
             "array_keys",
-            "return_data_type"
         ];
         $requestResponseKeyData = [];
         foreach ($fields as $field) {

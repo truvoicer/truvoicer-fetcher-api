@@ -13,12 +13,12 @@ return new class extends Migration
     {
         Schema::create('srs', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('s_id')->nullable(true)->constrained('s')->onDelete('cascade');
+            $table->foreignId('s_id')->nullable()->constrained('s')->onDelete('cascade');
             $table->foreignId('provider_id')->constrained('providers')->onDelete('cascade');
-            $table->foreignId('category_id')->nullable(true)->constrained('categories')->onDelete('cascade');
+            $table->foreignId('category_id')->nullable()->constrained('categories')->onDelete('cascade');
             $table->string('name');
             $table->string('label');
-            $table->string('pagination_type')->nullable(true);
+            $table->string('pagination_type')->nullable();
             $table->timestamps();
         });
     }

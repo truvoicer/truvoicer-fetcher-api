@@ -6,7 +6,7 @@ use App\Library\Defaults\DefaultData;
 use App\Services\ApiServices\SResponseKeysService;
 use App\Services\BaseService;
 
-class ApiBase extends BaseService
+class ApiBase
 {
     const API_TYPE = "api_type";
 

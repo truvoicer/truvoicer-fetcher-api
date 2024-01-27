@@ -22,11 +22,17 @@ class UpdateServiceRequestResponseKeyRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => 'string',
+            'name' => 'nullable|string',
             'value' => [
+                'nullable',
                 'string'
             ],
-
+            'show_in_response' => 'nullable|boolean',
+            'list_item' => 'nullable|boolean',
+            'append_extra_data_value' => 'string|nullable',
+            'prepend_extra_data_value' => 'string|nullable',
+            'is_service_request' => 'nullable|boolean',
+            'array_keys' => 'nullable|array',
         ];
     }
 }

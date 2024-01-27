@@ -29,14 +29,10 @@ class CreateServiceRequestResponseKeyRequest extends FormRequest
             ],
             'show_in_response' => 'nullable|boolean',
             'list_item' => 'nullable|boolean',
-            'append_extra_data' => 'nullable|boolean',
             'append_extra_data_value' => 'string|nullable',
-            'prepend_extra_data' => 'nullable|boolean',
             'prepend_extra_data_value' => 'string|nullable',
             'is_service_request' => 'nullable|boolean',
-            'has_array_value' => 'nullable|boolean',
             'array_keys' => 'nullable|array',
-            'return_data_type' => 'string|nullable|in:text,object,array',
         ];
     }
 }

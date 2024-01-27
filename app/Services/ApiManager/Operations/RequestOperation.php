@@ -2,7 +2,6 @@
 namespace App\Services\ApiManager\Operations;
 
 use App\Services\ApiManager\Response\Entity\ApiResponse;
-use App\Services\ApiManager\Response\Entity\RequestResponse;
 use App\Traits\User\UserTrait;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 
@@ -32,9 +31,7 @@ class RequestOperation extends BaseOperations
             $query["query"] = $item;
             $this->setQueryArray($query);
             $this->setQuery($item);
-            $getResponse = $this->getOperationResponse($this->providerName);
-
-            return $this->buildResponseObject($getResponse);
+            return $this->getOperationResponse($this->providerName);
         }, $queryItems);
     }
 
@@ -47,7 +44,7 @@ class RequestOperation extends BaseOperations
         if (!empty($this->providerName)) {
             $providerName = $this->providerName;
         }
-        return $this->buildResponseObject($this->getOperationResponse($providerName));
+        return $this->getOperationResponse($providerName);
     }
 
     public function getOperationRequestContent(array $query = []) {
@@ -55,20 +52,6 @@ class RequestOperation extends BaseOperations
         return $this->getRequestContent($this->providerName);
     }
 
-    private function buildResponseObject(ApiResponse $apiResponse)
-    {
-        $getResponse = new RequestResponse();
-        $getResponse->setStatus($apiResponse->getStatus());
-        $getResponse->setMessage('Api request sent');
-//        $getResponse->setPaginationType($apiResponse->pagination_type);
-        $getResponse->setContentType($apiResponse->getContentType());
-        $getResponse->setRequestService($apiResponse->getRequestService());
-        $getResponse->setCategory($apiResponse->getCategory());
-        $getResponse->setProvider($apiResponse->getProvider());
-        $getResponse->setRequestData($apiResponse->getRequestData());
-        $getResponse->setExtraData($apiResponse->getExtraData());
-        return $getResponse;
-    }
     public function setProviderName(string $providerName)
     {
         $this->providerName = $providerName;

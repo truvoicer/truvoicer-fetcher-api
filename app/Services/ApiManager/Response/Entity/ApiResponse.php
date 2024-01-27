@@ -2,10 +2,13 @@
 namespace App\Services\ApiManager\Response\Entity;
 
 
+use App\Traits\ObjectTrait;
+
 class ApiResponse
 {
-
+    use ObjectTrait;
     public string $status;
+    public string $message;
 
     public string $contentType;
 
@@ -13,24 +16,22 @@ class ApiResponse
 
     public string $requestService;
 
-    public $category;
+    public string $category;
 
-    public $requestData;
+    public array $requestData;
 
-    public $extraData;
-
-    private array $apiRequest;
+    public array $extraData = [];
 
     private ?string $paginationType = null;
 
-    public function getApiRequest(): array
+    public function getMessage(): string
     {
-        return $this->apiRequest;
+        return $this->message;
     }
 
-    public function setApiRequest(array $apiRequest): void
+    public function setMessage(string $message): void
     {
-        $this->apiRequest = $apiRequest;
+        $this->message = $message;
     }
 
 
@@ -45,7 +46,7 @@ class ApiResponse
     /**
      * @param mixed $status
      */
-    public function setStatus($status): void
+    public function setStatus(string $status): void
     {
         $this->status = $status;
     }
@@ -61,7 +62,7 @@ class ApiResponse
     /**
      * @param mixed $contentType
      */
-    public function setContentType($contentType): void
+    public function setContentType(string $contentType): void
     {
         $this->contentType = $contentType;
     }
@@ -77,7 +78,7 @@ class ApiResponse
     /**
      * @param mixed $requestService
      */
-    public function setRequestService($requestService): void
+    public function setRequestService(string $requestService): void
     {
         $this->requestService = $requestService;
     }
@@ -93,7 +94,7 @@ class ApiResponse
     /**
      * @param mixed $category
      */
-    public function setCategory($category): void
+    public function setCategory(string $category): void
     {
         $this->category = $category;
     }
@@ -109,7 +110,7 @@ class ApiResponse
     /**
      * @param mixed $provider
      */
-    public function setProvider($provider): void
+    public function setProvider(string $provider): void
     {
         $this->provider = $provider;
     }
@@ -125,7 +126,7 @@ class ApiResponse
     /**
      * @param mixed $requestData
      */
-    public function setRequestData($requestData): void
+    public function setRequestData(array $requestData): void
     {
         $this->requestData = $requestData;
     }
@@ -141,7 +142,7 @@ class ApiResponse
     /**
      * @param mixed $extraData
      */
-    public function setExtraData($extraData): void
+    public function setExtraData(array $extraData): void
     {
         $this->extraData = $extraData;
     }

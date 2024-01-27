@@ -181,13 +181,9 @@ class ServiceRequestResponseKeyController extends Controller
             $request->all([
                 'value',
                 'show_in_response',
-                'has_array_value',
                 'array_keys',
                 'list_item',
-                'return_data_type',
-                'append_extra_data',
                 'append_extra_data_value',
-                'prepend_extra_data',
                 'prepend_extra_data_value',
                 'is_service_request'
             ])

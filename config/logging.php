@@ -1,5 +1,6 @@
 <?php
 
+use App\Services\Provider\ProviderEventsService;
 use Monolog\Handler\NullHandler;
 use Monolog\Handler\StreamHandler;
 use Monolog\Handler\SyslogUdpHandler;
@@ -68,6 +69,13 @@ return [
         'daily' => [
             'driver' => 'daily',
             'path' => storage_path('logs/laravel.log'),
+            'level' => env('LOG_LEVEL', 'debug'),
+            'days' => 14,
+            'replace_placeholders' => true,
+        ],
+        ProviderEventsService::LOGGING_NAME => [
+            'driver' => 'daily',
+            'path' => storage_path(ProviderEventsService::LOGGING_PATH),
             'level' => env('LOG_LEVEL', 'debug'),
             'days' => 14,
             'replace_placeholders' => true,

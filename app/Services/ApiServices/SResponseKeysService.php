@@ -26,17 +26,6 @@ class SResponseKeysService extends BaseService
     private SrRepository $serviceRequestRepository;
     private SrResponseKeyRepository $requestKeysRepo;
     private SResponseKeyRepository $responseKeyRepository;
-    private $defaultRequestResponseKeyData = [
-        "response_key_value" => "",
-        "show_in_response" => false,
-        "list_item" => false,
-        "append_extra_data" => false,
-        "append_extra_data_value" => "",
-        "prepend_extra_data" => false,
-        "prepend_extra_data_value" => "",
-        "is_service_request" => false,
-        "has_array_value" => false,
-    ];
     public function __construct()
     {
         parent::__construct();
@@ -173,52 +162,6 @@ class SResponseKeysService extends BaseService
         return null;
     }
 
-    public function setRequestResponseKeyObject(SrResponseKey $requestResponseKey,
-                                                Sr            $serviceRequest,
-                                                SResponseKey  $responseKey, array $data) {
-        $responseKeyData = array_merge($this->defaultRequestResponseKeyData, $data);
-        $requestResponseKey->setServiceRequest($serviceRequest);
-        $requestResponseKey->setServiceResponseKey($responseKey);
-        $requestResponseKey->setResponseKeyValue($responseKeyData['response_key_value']);
-        $requestResponseKey->setShowInResponse($responseKeyData['show_in_response']);
-        $requestResponseKey->setListItem($responseKeyData['list_item']);
-
-        $requestResponseKey->setAppendExtraData($responseKeyData['append_extra_data']);
-        $requestResponseKey->setAppendExtraDataValue($responseKeyData['append_extra_data_value']);
-        $requestResponseKey->setPrependExtraData($responseKeyData['prepend_extra_data']);
-        $requestResponseKey->setPrependExtraDataValue($responseKeyData['prepend_extra_data_value']);
-
-        $requestResponseKey->setIsServiceRequest($responseKeyData['is_service_request']);
-//        if ($responseKeyData['is_service_request']) {
-//            $serviceRequestId = $this->getServiceRequestIdFromRequest($responseKeyData);
-//            if ($serviceRequestId !== null) {
-//                $getResponseKeyRequestItem = $requestResponseKey->getResponseKeyRequestItem();
-//                if ($getResponseKeyRequestItem === null) {
-//                    $getResponseKeyRequestItem = new ResponseKeyRequestItem();
-//                }
-//                $responseKeyRequestItem = $this->getResponseKeyRequestItemObject(
-//                    $getResponseKeyRequestItem,
-//                    $requestResponseKey,
-//                    $serviceRequestId
-//                );
-//                $requestResponseKey->setResponseKeyRequestItem($responseKeyRequestItem);
-//            }
-//        }
-
-        $requestResponseKey->setHasArrayValue($responseKeyData['has_array_value']);
-        if((array_key_exists("array_keys", $responseKeyData) && is_array($responseKeyData['array_keys'])) ||
-            (array_key_exists("array_keys", $responseKeyData) && $responseKeyData['array_keys'] === null)
-        ) {
-            $requestResponseKey->setArrayKeys($responseKeyData['array_keys']);
-        } else {
-
-            $requestResponseKey->setArrayKeys(null);
-        }
-        if(array_key_exists("return_data_type", $responseKeyData) && isset($responseKeyData['return_data_type']) && $responseKeyData['return_data_type'] !== null) {
-            $requestResponseKey->setReturnDataType($responseKeyData['return_data_type']);
-        }
-        return $requestResponseKey;
-    }
     public function deleteBatch(array $ids)
     {
         if (!count($ids)) {

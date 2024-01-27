@@ -18,12 +18,8 @@ return new class extends Migration
             $table->string('value');
             $table->boolean('show_in_response')->default(false);
             $table->boolean('list_item')->default(false);
-            $table->boolean('has_array_value')->default(false);
             $table->longText('array_keys')->nullable();
-            $table->string('return_data_type')->nullable();
-            $table->boolean('prepend_extra_data')->default(false);
             $table->string('prepend_extra_data_value')->nullable();
-            $table->boolean('append_extra_data')->default(false);
             $table->string('append_extra_data_value')->nullable();
             $table->boolean('is_service_request')->default(false);
             $table->timestamps();
