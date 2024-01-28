@@ -41,7 +41,7 @@ class ProviderEventsService
     private RequestOperation $requestOperation;
     private int $offset = 0;
     private int $pageNumber = 1;
-    private int $pageSize = 10;
+    private int $pageSize = 100;
     private int $totalItems = 1000;
     private int $totalPages = 1000;
 
@@ -132,7 +132,6 @@ class ProviderEventsService
         }
         foreach ($data as $key => $item) {
 
-            Log::channel(self::LOGGING_NAME)->info('Key: ' . $key);
             if (!is_array($item)) {
                 continue;
             }
@@ -150,11 +149,17 @@ class ProviderEventsService
             if (empty($requestItem['request_name'])) {
                 continue;
             }
-            Log::channel(self::LOGGING_NAME)->info('Request item: ' . $requestItem['request_name']);
             if (empty($requestItem['request_operation'])) {
                 continue;
             }
-            Log::channel(self::LOGGING_NAME)->info('Request data: ' . $item['data']);
+            Log::channel(self::LOGGING_NAME)->info(
+                sprintf(
+                    'Nested Item Request name: %s | Request Operation: %s | Request data: %s |',
+                    $requestItem['request_name'],
+                    $requestItem['request_operation'],
+                    $item['data']
+                )
+            );
             $sr = SrRepository::getSrByName($provider, $requestItem['request_operation']);
             if (!$sr instanceof Sr) {
                 continue;
@@ -229,8 +234,8 @@ class ProviderEventsService
             if (!$insertData) {
                 continue;
             }
-            $this->runSrPagination($sr, $operationData);
         }
+        $this->runSrPagination($sr, $operationData);
         return true;
     }
 
@@ -249,7 +254,6 @@ class ProviderEventsService
             return;
         }
         $paginationType = $sr->pagination_type['value'];
-
 
         Log::channel(self::LOGGING_NAME)->info('Pagination type: ' . $paginationType);
         switch ($paginationType) {
@@ -284,27 +288,41 @@ class ProviderEventsService
         if (!$provider instanceof Provider) {
             return;
         }
-        $offsetResponseKey = DefaultData::SERVICE_RESPONSE_KEYS['OFFSET'][SResponseKeysService::RESPONSE_KEY_NAME];
-        $pageSizeResponseKey = DefaultData::SERVICE_RESPONSE_KEYS['PAGE_SIZE'][SResponseKeysService::RESPONSE_KEY_NAME];
 
         $extraData = $apiResponse->getExtraData();
-        $totalItems = $this->getTotalItems($apiResponse);
+
+        $this->totalItems = $this->getTotalItems($apiResponse);
+
         $pageSize  = $this->getPageSize($apiResponse);
+
+        $offsetResponseKey = DefaultData::SERVICE_RESPONSE_KEYS['OFFSET'][SResponseKeysService::RESPONSE_KEY_NAME];
         if (isset($extraData[$offsetResponseKey]) && $extraData[$offsetResponseKey] !== '') {
             $this->offset = (int)$extraData[$offsetResponseKey];
+        } else {
+            $this->offset += $pageSize;
         }
+
         if ($pageSize !== false) {
-            $this->pageSize = (int)$extraData[$pageSizeResponseKey];
+            $this->pageSize = $pageSize;
         }
-        $this->totalItems = 20;
-        Log::channel(self::LOGGING_NAME)->info('Pagesize: ' . $this->pageSize);
-
-        $this->offset += $this->pageSize;
-        Log::channel(self::LOGGING_NAME)->info('Offset: ' . $this->offset);
-
-        Log::channel(self::LOGGING_NAME)->info('Total items: ' . $this->totalItems);
+        Log::channel(self::LOGGING_NAME)->info(
+            sprintf(
+                'Total items: %s | Page size: %s | Offset: %s',
+                $this->totalItems,
+                $this->pageSize,
+                $this->offset
+            )
+        );
 
         if ($this->offset >= $this->totalItems) {
+            Log::channel(self::LOGGING_NAME)->info(
+                sprintf(
+                    'Offset: %s is greater than or equal to total items: %s | Page size: %s',
+                    $this->totalItems,
+                    $this->pageSize,
+                    $this->offset
+                )
+            );
             return;
         }
         $this->runOperationForSr($sr, [

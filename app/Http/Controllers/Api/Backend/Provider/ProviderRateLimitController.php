@@ -1,16 +1,16 @@
 <?php
 
-namespace App\Http\Controllers\Api\Backend\Services;
+namespace App\Http\Controllers\Api\Backend\Provider;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\Service\Request\Schedule\CreateSrRateLimitRequest;
-use App\Http\Requests\Service\Request\Schedule\UpdateSrScheduleRequest;
+use App\Http\Requests\Provider\RateLimit\CreateProviderRateLimitRequest;
+use App\Http\Requests\Provider\RateLimit\UpdateProviderRateLimitRequest;
 use App\Http\Resources\Service\ServiceRequest\ServiceRequestConfigResource;
-use App\Http\Resources\SrScheduleResource;
+use App\Http\Resources\ProviderRateLimitResource;
 use App\Models\Provider;
 use App\Models\Sr;
-use App\Models\SrSchedule;
-use App\Services\ApiServices\ServiceRequests\SrScheduleService;
+use App\Models\ProviderRateLimit;
+use App\Services\ApiServices\RateLimitService;
 use App\Services\Permission\AccessControlService;
 use App\Services\Permission\PermissionService;
 use App\Services\Tools\HttpRequestService;
@@ -23,11 +23,11 @@ use Illuminate\Http\Request;
  * Require ROLE_ADMIN for *every* controller method in this class.
  *
  */
-class ServiceRequestScheduleController extends Controller
+class ProviderRateLimitController extends Controller
 {
 
     // Initialise services for this controller
-    private SrScheduleService $srScheduleService;
+    private RateLimitService $providerRateLimitService;
 
     /**
      * ServiceRequestConfigController constructor.
@@ -35,24 +35,23 @@ class ServiceRequestScheduleController extends Controller
      *
      * @param HttpRequestService $httpRequestService
      * @param SerializerService $serializerService
-     * @param SrScheduleService $srScheduleService
+     * @param RateLimitService $providerRateLimitService
      * @param AccessControlService $accessControlService
      */
     public function __construct(
         HttpRequestService   $httpRequestService,
         SerializerService    $serializerService,
-        SrScheduleService      $srScheduleService,
+        RateLimitService     $providerRateLimitService,
         AccessControlService $accessControlService
     ) {
         parent::__construct($accessControlService, $httpRequestService, $serializerService);
         // Initialise services for this controller
-        $this->srScheduleService = $srScheduleService;
+        $this->providerRateLimitService = $providerRateLimitService;
     }
 
-    public function getServiceSchedule(
+    public function getProviderRateLimit(
         Provider $provider,
-        Sr       $serviceRequest,
-        SrSchedule $srSchedule,
+        ProviderRateLimit $providerRateLimit,
         Request  $request
     ): \Illuminate\Http\JsonResponse
     {
@@ -70,7 +69,7 @@ class ServiceRequestScheduleController extends Controller
         }
         return $this->sendSuccessResponse(
             "success",
-            new SrScheduleResource($srSchedule)
+            new ProviderRateLimitResource($providerRateLimit)
         );
     }
 
@@ -80,10 +79,9 @@ class ServiceRequestScheduleController extends Controller
      * Returns error response and message on fail
      *
      */
-    public function createRequestSchedule(
+    public function createProviderRateLimit(
         Provider                          $provider,
-        Sr                                $serviceRequest,
-        CreateSrRateLimitRequest $request
+        CreateProviderRateLimitRequest $request
     ): \Illuminate\Http\JsonResponse
     {
         $this->setAccessControlUser($request->user());
@@ -99,18 +97,18 @@ class ServiceRequestScheduleController extends Controller
         ) {
             return $this->sendErrorResponse("Access denied");
         }
-        $create = $this->srScheduleService->createSrSchedule(
-            $serviceRequest,
+        $create = $this->providerRateLimitService->createProviderRateLimit(
+            $provider,
             $request->all()
         );
 
         if (!$create) {
-            return $this->sendErrorResponse("Error creating schedule");
+            return $this->sendErrorResponse("Error creating rate limit");
         }
         return $this->sendSuccessResponse(
-            "Schedule created",
-            new ServiceRequestConfigResource(
-                $this->srScheduleService->getSrScheduleRepository()->getModel()
+            "Rate Limit created",
+            new ProviderRateLimitResource(
+                $this->providerRateLimitService->getProviderRateLimitRepository()->getModel()
             )
         );
     }
@@ -121,11 +119,10 @@ class ServiceRequestScheduleController extends Controller
      *
      * Returns error response and message on fail
      */
-    public function updateRequestSchedule(
+    public function updateProviderRateLimit(
         Provider                          $provider,
-        Sr                                $serviceRequest,
-        SrSchedule                    $srSchedule,
-        UpdateSrScheduleRequest $request
+        ProviderRateLimit                    $providerRateLimit,
+        UpdateProviderRateLimitRequest $request
     ): \Illuminate\Http\JsonResponse
     {
         $this->setAccessControlUser($request->user());
@@ -140,18 +137,18 @@ class ServiceRequestScheduleController extends Controller
         ) {
             return $this->sendErrorResponse("Access denied");
         }
-        $update = $this->srScheduleService->saveSrSchedule(
-            $srSchedule,
+        $update = $this->providerRateLimitService->saveProviderRateLimit(
+            $providerRateLimit,
             $request->all()
         );
 
         if (!$update) {
-            return $this->sendErrorResponse("Error updating schedule");
+            return $this->sendErrorResponse("Error updating rate limit");
         }
         return $this->sendSuccessResponse(
-            "Schedule updated",
-            new ServiceRequestConfigResource(
-                $this->srScheduleService->getSrScheduleRepository()->getModel()
+            "RateLimit updated",
+            new ProviderRateLimitResource(
+                $this->providerRateLimitService->getProviderRateLimitRepository()->getModel()
             )
         );
     }
@@ -162,10 +159,9 @@ class ServiceRequestScheduleController extends Controller
      *
      * Returns error response and message on fail
      */
-    public function deleteRequestSchedule(
+    public function deleteProviderRateLimit(
         Provider $provider,
-        Sr       $serviceRequest,
-        SrSchedule $srSchedule,
+        ProviderRateLimit $providerRateLimit,
         Request  $request
     ): \Illuminate\Http\JsonResponse
     {
@@ -181,13 +177,13 @@ class ServiceRequestScheduleController extends Controller
         ) {
             return $this->sendErrorResponse("Access denied");
         }
-        if (!$this->srScheduleService->deleteSrSchedule($srSchedule)) {
+        if (!$this->providerRateLimitService->deleteProviderRateLimit($providerRateLimit)) {
             return $this->sendErrorResponse(
-                "Error deleting schedule"
+                "Error deleting rate limit"
             );
         }
         return $this->sendSuccessResponse(
-            "Schedule deleted."
+            "RateLimit deleted."
         );
     }
 }

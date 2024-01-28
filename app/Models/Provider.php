@@ -60,6 +60,10 @@ class Provider extends Model
     {
         return $this->hasMany(Sr::class);
     }
+    public function providerRateLimit()
+    {
+        return $this->hasOne(ProviderRateLimit::class, 'provider_id', 'id');
+    }
 
     public function sr()
     {

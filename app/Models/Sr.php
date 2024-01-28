@@ -49,6 +49,10 @@ class Sr extends Model
     {
         return $this->hasOne(SrSchedule::class, 'sr_id', 'id');
     }
+    public function srRateLimit()
+    {
+        return $this->hasOne(SrRateLimit::class, 'sr_id', 'id');
+    }
     public function srResponseKeys()
     {
         return $this->belongsToMany(

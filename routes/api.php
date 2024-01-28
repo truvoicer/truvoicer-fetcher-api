@@ -7,7 +7,9 @@ use App\Http\Controllers\Api\Backend\PermissionController;
 use App\Http\Controllers\Api\Backend\PropertyController;
 use App\Http\Controllers\Api\Backend\Provider\ProviderController;
 use App\Http\Controllers\Api\Backend\Provider\ProviderPropertyController;
+use App\Http\Controllers\Api\Backend\Provider\ProviderRateLimitController;
 use App\Http\Controllers\Api\Backend\Services\ServiceRequestScheduleController;
+use App\Http\Controllers\Api\Backend\Services\SrRateLimitController;
 use App\Http\Controllers\Api\Backend\ValidationController;
 use App\Http\Controllers\Api\Backend\SearchController;
 use App\Http\Controllers\Api\Backend\Services\ServiceController;
@@ -104,6 +106,12 @@ Route::middleware(['auth:sanctum', 'ability:api:admin,api:superuser,api:user'])-
             Route::prefix('{provider}')->name('single.')->group(function () {
                 Route::patch('/update', [ProviderController::class, 'updateProvider'])->name('update');
                 Route::delete('/delete', [ProviderController::class, 'deleteProvider'])->name('delete');
+                Route::prefix('rate-limit')->name('rate-limit.')->group(function () {
+                    Route::post('/create', [ProviderRateLimitController::class, 'createProviderRateLimit'])->name('create');
+                    Route::get('/{providerRateLimit}', [ProviderRateLimitController::class, 'getProviderRateLimit'])->name('detail');
+                    Route::delete('/{providerRateLimit}/delete', [ProviderRateLimitController::class, 'deleteProviderRateLimit'])->name('delete');
+                    Route::patch('/{providerRateLimit}/update', [ProviderRateLimitController::class, 'updateProviderRateLimit'])->name('update');
+                });
                 Route::prefix('property')->name('property.')->group(function () {
                     Route::get('/list', [ProviderPropertyController::class, 'getProviderPropertyList'])->name('list');
                     Route::prefix('batch')->name('batch.')->group(function () {
@@ -132,6 +140,12 @@ Route::middleware(['auth:sanctum', 'ability:api:admin,api:superuser,api:user'])-
                             Route::get('/{srSchedule}', [ServiceRequestScheduleController::class, 'getServiceSchedule'])->name('detail');
                             Route::delete('/{srSchedule}/delete', [ServiceRequestScheduleController::class, 'deleteRequestSchedule'])->name('delete');
                             Route::patch('/{srSchedule}/update', [ServiceRequestScheduleController::class, 'updateRequestSchedule'])->name('update');
+                        });
+                        Route::prefix('rate-limit')->name('rate-limit.')->group(function () {
+                            Route::post('/create', [SrRateLimitController::class, 'createRequestRateLimit'])->name('create');
+                            Route::get('/{srRateLimit}', [SrRateLimitController::class, 'getServiceRateLimit'])->name('detail');
+                            Route::delete('/{srRateLimit}/delete', [SrRateLimitController::class, 'deleteRequestRateLimit'])->name('delete');
+                            Route::patch('/{srRateLimit}/update', [SrRateLimitController::class, 'updateRequestRateLimit'])->name('update');
                         });
                         Route::prefix('config')->name('config.')->group(function () {
                             Route::get('/list', [ServiceRequestConfigController::class, 'getRequestConfigList'])->name('list');

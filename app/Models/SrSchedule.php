@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Repositories\SrScheduleRepository;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -9,6 +10,8 @@ class SrSchedule extends Model
 {
     use HasFactory;
 
+    public const TABLE_NAME = 'sr_schedules';
+    public const REPOSITORY = SrScheduleRepository::class;
     const FIELDS = [
         'execute_immediately',
         'forever',
