@@ -41,8 +41,9 @@ class ProviderEventsService
     private RequestOperation $requestOperation;
     private int $offset = 0;
     private int $pageNumber = 1;
-    private int $pageSize = 100;
+    private int $pageSize = 10;
     private int $totalItems = 1000;
+    private int $totalPages = 1000;
 
     public function __construct(
         SrService        $srService,
@@ -180,10 +181,25 @@ class ProviderEventsService
             $sr->name
         );
     }
-    public function runOperationForSr(Sr $sr, ?array $requestData = ['query' => ''])
+    public function runOperationForSr(Sr $sr, ?array $queryData = ['query' => ''])
     {
         $this->requestOperation->setSr($sr);
-        $operationData = $this->requestOperation->runOperation($requestData);
+        $provider = $sr->provider()->first();
+        if (!$provider instanceof Provider) {
+            return;
+        }
+        $pageSizeResponseKey = DefaultData::SERVICE_RESPONSE_KEYS['PAGE_SIZE'][SResponseKeysService::RESPONSE_KEY_NAME];
+        $pageSize = SrResponseKeyRepository::getSrResponseKeyValueByName(
+            $provider,
+            $sr,
+            $pageSizeResponseKey
+        );
+        if (!empty($pageSize)) {
+            $queryData[$pageSizeResponseKey] = (int)$pageSize;
+        } else {
+            $queryData[$pageSizeResponseKey] = $this->pageSize;
+        }
+        $operationData = $this->requestOperation->runOperation($queryData);
         if ($operationData->getStatus() !== 'success') {
             return false;
         }
@@ -193,8 +209,9 @@ class ProviderEventsService
         }
         $requestData = $operationData->getRequestData();
 
-        $this->mongoDBRepository->setCollection($this->getCollectionName($sr));
         foreach ($requestData as $item) {
+            $collectionName = $this->getCollectionName($sr);
+            $this->mongoDBRepository->setCollection($collectionName);
             $insertData = $this->buildSaveData($operationData, $item);
             if (!$insertData) {
                 continue;
@@ -245,34 +262,48 @@ class ProviderEventsService
         }
     }
 
+    private function getTotalItems(ApiResponse $apiResponse) {
+        $totalItemsResponseKey = DefaultData::SERVICE_RESPONSE_KEYS['TOTAL_ITEMS'][SResponseKeysService::RESPONSE_KEY_NAME];
+        $extraData = $apiResponse->getExtraData();
+        if (!isset($extraData[$totalItemsResponseKey]) || $extraData[$totalItemsResponseKey] === '') {
+            return $this->totalItems;
+        }
+        return (int)$extraData[$totalItemsResponseKey];
+    }
+    private function getPageSize(ApiResponse $apiResponse) {
+        $pageSizeResponseKey = DefaultData::SERVICE_RESPONSE_KEYS['PAGE_SIZE'][SResponseKeysService::RESPONSE_KEY_NAME];
+        $extraData = $apiResponse->getExtraData();
+        if (!isset($extraData[$pageSizeResponseKey]) || $extraData[$pageSizeResponseKey] === '') {
+            return false;
+        }
+        return (int)$extraData[$pageSizeResponseKey];
+    }
     private function runSrPaginationOffset(Sr $sr, ApiResponse $apiResponse) {
         Log::channel(self::LOGGING_NAME)->info('Running offset pagination!');
         $provider = $sr->provider()->first();
         if (!$provider instanceof Provider) {
             return;
         }
-        $totalItemsResponseKey = DefaultData::SERVICE_RESPONSE_KEYS['TOTAL_ITEMS'][SResponseKeysService::RESPONSE_KEY_NAME];
         $offsetResponseKey = DefaultData::SERVICE_RESPONSE_KEYS['OFFSET'][SResponseKeysService::RESPONSE_KEY_NAME];
         $pageSizeResponseKey = DefaultData::SERVICE_RESPONSE_KEYS['PAGE_SIZE'][SResponseKeysService::RESPONSE_KEY_NAME];
 
         $extraData = $apiResponse->getExtraData();
-        if (isset($extraData[$totalItemsResponseKey])) {
-            $this->totalItems = $extraData[$totalItemsResponseKey];
+        $totalItems = $this->getTotalItems($apiResponse);
+        $pageSize  = $this->getPageSize($apiResponse);
+        if (isset($extraData[$offsetResponseKey]) && $extraData[$offsetResponseKey] !== '') {
+            $this->offset = (int)$extraData[$offsetResponseKey];
         }
-        if (isset($extraData[$offsetResponseKey])) {
-            $this->offset = $extraData[$offsetResponseKey];
+        if ($pageSize !== false) {
+            $this->pageSize = (int)$extraData[$pageSizeResponseKey];
         }
-        if (isset($extraData[$pageSizeResponseKey])) {
-            $this->pageSize = $extraData[$pageSizeResponseKey];
-        }
-
+        $this->totalItems = 20;
         Log::channel(self::LOGGING_NAME)->info('Pagesize: ' . $this->pageSize);
 
         $this->offset += $this->pageSize;
         Log::channel(self::LOGGING_NAME)->info('Offset: ' . $this->offset);
 
-        Log::channel(self::LOGGING_NAME)->info('Total items: ' . $totalItemsResponseKey);
-        dd($this->offset, $totalItemsResponseKey);
+        Log::channel(self::LOGGING_NAME)->info('Total items: ' . $this->totalItems);
+
         if ($this->offset >= $this->totalItems) {
             return;
         }
@@ -281,6 +312,18 @@ class ProviderEventsService
             DefaultData::SERVICE_RESPONSE_KEYS['OFFSET'][SResponseKeysService::RESPONSE_KEY_NAME] => $this->offset,
         ]);
     }
+
+    private function getTotalPagesFromTotalItems() {
+        return $this->totalItems / $this->pageSize;
+    }
+    private function getPageFromOffset(int $offset) {
+        $totalPages = $this->getTotalPagesFromTotalItems();
+        $offsetPageCount = $this->totalItems - $offset;
+        return round($totalPages - round($offsetPageCount / $this->pageSize));
+    }
+    private function getOffsetFromPageNumber() {
+        return ($this->pageNumber * $this->pageSize);
+    }
     private function runSrPaginationPage(Sr $sr, ApiResponse $apiResponse) {
         Log::channel(self::LOGGING_NAME)->info('Running page pagination!');
         $provider = $sr->provider()->first();
@@ -288,33 +331,34 @@ class ProviderEventsService
             return;
         }
 
-        $totalItemsResponseKey = SrResponseKeyRepository::getSrResponseKeyValueByName(
-            $provider,
-            $sr,
-            DefaultData::SERVICE_RESPONSE_KEYS['TOTAL_ITEMS'][SResponseKeysService::RESPONSE_KEY_NAME]
-        );
-        $pageSizeResponseKey = SrResponseKeyRepository::getSrResponseKeyValueByName(
-            $provider,
-            $sr,
-            DefaultData::SERVICE_RESPONSE_KEYS['PAGE_SIZE'][SResponseKeysService::RESPONSE_KEY_NAME]
-        );
-        $pageNumberResponseKey = SrResponseKeyRepository::getSrResponseKeyValueByName(
-            $provider,
-            $sr,
-            DefaultData::SERVICE_RESPONSE_KEYS['PAGE_NUMBER'][SResponseKeysService::RESPONSE_KEY_NAME]
-        );
+        $totalItemsResponseKey = DefaultData::SERVICE_RESPONSE_KEYS['TOTAL_ITEMS'][SResponseKeysService::RESPONSE_KEY_NAME];
+        $totalPagesResponseKey = DefaultData::SERVICE_RESPONSE_KEYS['TOTAL_PAGES'][SResponseKeysService::RESPONSE_KEY_NAME];
+        $pageNumberResponseKey = DefaultData::SERVICE_RESPONSE_KEYS['PAGE_NUMBER'][SResponseKeysService::RESPONSE_KEY_NAME];
+        $pageSizeResponseKey = DefaultData::SERVICE_RESPONSE_KEYS['PAGE_SIZE'][SResponseKeysService::RESPONSE_KEY_NAME];
 
-        if (empty($totalItemsResponseKey)) {
+        $extraData = $apiResponse->getExtraData();
+//        $totalItems = null;
+        $totalPages = null;
+//        if (isset($extraData[$totalItemsResponseKey]) && $extraData[$totalItemsResponseKey] !== '') {
+//            $totalItems = (int)$extraData[$totalItemsResponseKey];
+//        }
+        if (!isset($extraData[$totalPagesResponseKey]) || $extraData[$totalPagesResponseKey] === '') {
             return;
         }
-        if (!empty($pageSizeResponseKey) && is_integer($pageSizeResponseKey)) {
-            $this->pageSize = $pageSizeResponseKey;
+        $totalPages = (int)$extraData[$totalPagesResponseKey];
+
+        if (isset($extraData[$pageNumberResponseKey]) && $extraData[$pageNumberResponseKey] !== '') {
+            $this->pageNumber = (int)$extraData[$pageNumberResponseKey];
         }
-        if (!empty($pageNumberResponseKey) && is_integer($pageNumberResponseKey)) {
-            $this->pageNumber = $pageNumberResponseKey;
+        if (isset($extraData[$pageSizeResponseKey]) && $extraData[$totalItemsResponseKey] !== '') {
+            $this->pageSize = (int)$extraData[$pageSizeResponseKey];
         }
+        $this->totalItems = 5;
 
         $this->pageNumber += 1;
+        if ($this->pageNumber > $totalPages) {
+            return;
+        }
         $this->runOperationForSr($sr, [
             'query' => '',
             DefaultData::SERVICE_RESPONSE_KEYS['PAGE_NUMBER'][SResponseKeysService::RESPONSE_KEY_NAME] => $this->pageNumber,

@@ -56,8 +56,8 @@ class ApiBase
             'keymap' => null
         ],
         "LIMIT" => [
-            'placeholder' => "[LIMIT]",
-            'keymap' => DefaultData::REQUEST_KEYS['POST_PER_PAGE']
+            'placeholder' => "[PAGE_SIZE]",
+            'keymap' => DefaultData::SERVICE_RESPONSE_KEYS['PAGE_SIZE'][SResponseKeysService::RESPONSE_KEY_NAME]
         ],
         "TOTAL_ITEMS" => [
             'placeholder' => '[TOTAL_ITEMS]',
