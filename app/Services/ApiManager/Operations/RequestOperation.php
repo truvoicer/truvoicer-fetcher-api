@@ -44,12 +44,12 @@ class RequestOperation extends BaseOperations
         if (!empty($this->providerName)) {
             $providerName = $this->providerName;
         }
-        return $this->getOperationResponse($providerName);
+        return $this->getOperationResponse('json', $providerName);
     }
 
     public function getOperationRequestContent(array $query = []) {
         $this->initialize($query);
-        return $this->getRequestContent($this->providerName);
+        return $this->getOperationResponse('raw', $this->providerName);
     }
 
     public function setProviderName(string $providerName)

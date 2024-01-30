@@ -45,7 +45,7 @@ class ProviderRateLimitRepository extends BaseRepository
     public function saveProviderRateLimit(ProviderRateLimit $providerRateLimit, array $data = []): bool
     {
         $this->setModel($providerRateLimit);
-        return $providerRateLimit->save($this->buildData($data));
+        return $providerRateLimit->update($this->buildData($data));
     }
 
     public function deleteProviderRateLimit(ProviderRateLimit $providerRateLimit): bool

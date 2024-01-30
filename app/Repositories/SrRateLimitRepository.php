@@ -51,7 +51,7 @@ class SrRateLimitRepository extends BaseRepository
     public function saveSrRateLimit(SrRateLimit $srRateLimit, array $data = []): bool
     {
         $this->setModel($srRateLimit);
-        return $srRateLimit->save($this->buildData($data));
+        return $this->model->update($this->buildData($data));
     }
 
     public function deleteSrRateLimit(SrRateLimit $srRateLimit): bool

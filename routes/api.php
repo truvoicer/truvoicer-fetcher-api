@@ -106,7 +106,7 @@ Route::middleware(['auth:sanctum', 'ability:api:admin,api:superuser,api:user'])-
             Route::prefix('{provider}')->name('single.')->group(function () {
                 Route::patch('/update', [ProviderController::class, 'updateProvider'])->name('update');
                 Route::delete('/delete', [ProviderController::class, 'deleteProvider'])->name('delete');
-                Route::prefix('rate-limit')->name('rate-limit.')->group(function () {
+                Route::prefix('rate-limits')->name('rate-limits.')->group(function () {
                     Route::post('/create', [ProviderRateLimitController::class, 'createProviderRateLimit'])->name('create');
                     Route::get('/{providerRateLimit}', [ProviderRateLimitController::class, 'getProviderRateLimit'])->name('detail');
                     Route::delete('/{providerRateLimit}/delete', [ProviderRateLimitController::class, 'deleteProviderRateLimit'])->name('delete');
@@ -141,7 +141,7 @@ Route::middleware(['auth:sanctum', 'ability:api:admin,api:superuser,api:user'])-
                             Route::delete('/{srSchedule}/delete', [ServiceRequestScheduleController::class, 'deleteRequestSchedule'])->name('delete');
                             Route::patch('/{srSchedule}/update', [ServiceRequestScheduleController::class, 'updateRequestSchedule'])->name('update');
                         });
-                        Route::prefix('rate-limit')->name('rate-limit.')->group(function () {
+                        Route::prefix('rate-limits')->name('rate-limits.')->group(function () {
                             Route::post('/create', [SrRateLimitController::class, 'createRequestRateLimit'])->name('create');
                             Route::get('/{srRateLimit}', [SrRateLimitController::class, 'getServiceRateLimit'])->name('detail');
                             Route::delete('/{srRateLimit}/delete', [SrRateLimitController::class, 'deleteRequestRateLimit'])->name('delete');

@@ -3,12 +3,15 @@
 namespace App\Services\ApiManager\Operations;
 
 use App\Models\Provider;
+use App\Models\ProviderRateLimit;
 use App\Models\Sr;
 use App\Models\SrConfig;
+use App\Models\SrRateLimit;
 use App\Services\ApiManager\ApiBase;
 use App\Services\ApiManager\Client\ApiClientHandler;
 use App\Services\ApiManager\Client\Entity\ApiRequest;
 use App\Services\ApiManager\Client\Oauth\Oauth;
+use App\Services\ApiManager\Response\Entity\ApiResponse;
 use App\Services\ApiManager\Response\ResponseManager;
 use App\Services\Category\CategoryService;
 use App\Services\Tools\EventsService;
@@ -19,6 +22,7 @@ use App\Traits\User\UserTrait;
 use DateTime;
 use Exception;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Facades\RateLimiter;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 
 class BaseOperations extends ApiBase
@@ -56,16 +60,75 @@ class BaseOperations extends ApiBase
         $this->requestService = $requestService;
     }
 
-    public function getRequestContent(?string $providerName = null)
+    public function getOperationResponse(string $requestType, ?string $providerName = null)
     {
-        $response = $this->runRequest($providerName);
-        return $this->responseManager->getRequestContent($this->apiService, $this->provider, $response, $this->apiRequest);
+        return $this->responseHandler(
+            $requestType,
+            $this->runRequest($providerName)
+        );
     }
 
-    public function getOperationResponse(?string $providerName = null)
-    {
-        $response = $this->runRequest($providerName);
-        return $this->responseManager->processResponse($this->apiService, $this->provider, $response, $this->apiRequest);
+    private function responseHandler(string $requestType, $response) {
+        $apiResponse = new ApiResponse();
+        $apiResponse->setStatus("error");
+        $apiResponse->setRequestService($this->apiService->name);
+        if (is_array($this->apiService->pagination_type) && isset($this->apiService->pagination_type['value'])) {
+            $apiResponse->setPaginationType($this->apiService->pagination_type['value']);
+        }
+        $apiResponse->setCategory($this->apiService->category()->first()->name);
+        $apiResponse->setProvider($this->provider->name);
+        if (!$response) {
+            $apiResponse->setMessage('Too many requests, please try again later.');
+            return $apiResponse;
+        }
+        switch ($requestType) {
+            case "json":
+                return $this->responseManager->processResponse($this->apiService, $this->provider, $response, $this->apiRequest);
+            case "raw":
+                return $this->responseManager->getRequestContent($this->apiService, $this->provider, $response, $this->apiRequest);
+            default:
+                $apiResponse->setMessage('Invalid request type.');
+                return $apiResponse;
+        }
+    }
+
+    private function requestHandler() {
+        $srRateLimit = $this->apiService->srRateLimit()->first();
+        $providerRateLimit = $this->provider->providerRateLimit()->first();
+        $rateLimiterKey = null;
+        $maxAttempts = null;
+        $decaySeconds = null;
+        $delay_seconds_per_request = null;
+        if ($srRateLimit instanceof SrRateLimit && $srRateLimit->override) {
+            $rateLimiterKey = sprintf(
+                "%s_%s_%s_%s",
+                $this->provider->id,
+                $this->provider->name,
+                $this->apiService->id,
+                $this->apiService->name
+            );
+            $maxAttempts = $srRateLimit->max_attempts;
+            $decaySeconds = $srRateLimit->decay_seconds;
+            $delay_seconds_per_request = $srRateLimit->delay_seconds_per_request;
+        } else if ($providerRateLimit instanceof ProviderRateLimit) {
+            $rateLimiterKey = sprintf(
+                "%s_%s",
+                $this->provider->id,
+                $this->provider->name
+            );
+            $maxAttempts = $providerRateLimit->max_attempts;
+            $decaySeconds = $providerRateLimit->decay_seconds;
+            $delay_seconds_per_request = $providerRateLimit->delay_seconds_per_request;
+        }
+
+        return RateLimiter::attempt(
+            $rateLimiterKey,
+            $maxAttempts,
+            function() {
+                return $this->getRequest();
+            },
+            $decaySeconds,
+        );
     }
 
     public function runRequest(?string $providerName = null)
@@ -80,7 +143,8 @@ class BaseOperations extends ApiBase
         ) {
             $this->setApiService();
         }
-        return $this->getRequest();
+        $getRequest = $this->requestHandler();
+        return $getRequest;
     }
 
     private function getRequest()
