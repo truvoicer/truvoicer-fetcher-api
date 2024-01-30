@@ -65,7 +65,6 @@ class ServiceRequestResponseKeyController extends Controller
         ) {
             return $this->sendErrorResponse("Access denied");
         }
-        dd($serviceRequest);
         if (!$this->srResponseKeyService->validateSrResponseKeys($serviceRequest, true)) {
             return $this->sendErrorResponse("Error validating response keys");
         }

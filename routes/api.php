@@ -187,7 +187,7 @@ Route::middleware(['auth:sanctum', 'ability:api:admin,api:superuser,api:user'])-
                     });
                 });
             });
-        });
+        })->scopeBindings();
         Route::prefix('service')->name('service.')->group(function () {
             Route::get('/list', [ServiceController::class, 'getServices'])->name('list');
             Route::post('/create', [ServiceController::class, 'createService'])->name('create');
