@@ -54,12 +54,8 @@ class ResponseManager extends BaseService
                     break;
                 case self::CONTENT_TYPES['XML']:
                 case self::CONTENT_TYPES['RSS_XML']:
-                    return $this->processResponse(
-                        $serviceRequest,
-                        $provider,
-                        $response,
-                        $apiRequest
-                    );
+                    $contentType = "xml";
+                    $content = $response->body();
                     break;
             }
             return $this->successResponse(
