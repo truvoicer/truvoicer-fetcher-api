@@ -2,10 +2,11 @@
 
 namespace App\Providers;
 
-use Illuminate\Auth\Events\Registered;
-use Illuminate\Auth\Listeners\SendEmailVerificationNotification;
+use App\Events\RunProviderSrOperationEvent;
+use App\Events\RunSrOperationEvent;
+use App\Listeners\RunProviderSrOperationListener;
+use App\Listeners\RunSrOperationListener;
 use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
-use Illuminate\Support\Facades\Event;
 
 class EventServiceProvider extends ServiceProvider
 {
@@ -15,8 +16,11 @@ class EventServiceProvider extends ServiceProvider
      * @var array<class-string, array<int, class-string>>
      */
     protected $listen = [
-        Registered::class => [
-            SendEmailVerificationNotification::class,
+        RunProviderSrOperationEvent::class => [
+            RunProviderSrOperationListener::class,
+        ],
+        RunSrOperationEvent::class => [
+            RunSrOperationListener::class,
         ],
     ];
 

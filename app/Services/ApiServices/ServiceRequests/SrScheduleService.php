@@ -17,6 +17,7 @@ use App\Repositories\SrScheduleRepository;
 use App\Services\ApiManager\Operations\SrOperationsService;
 use App\Services\ApiServices\ApiService;
 use App\Services\BaseService;
+use App\Services\Provider\ProviderEventService;
 use App\Services\Provider\ProviderService;
 use App\Services\Tools\HttpRequestService;
 use App\Helpers\Tools\UtilHelpers;
@@ -26,7 +27,9 @@ use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 class SrScheduleService extends BaseService
 {
     private SrScheduleRepository $srScheduleRepository;
-    public function __construct()
+    public function __construct(
+        private ProviderEventService $providerEventService
+    )
     {
         parent::__construct();
         $this->srScheduleRepository = new SrScheduleRepository();
@@ -50,7 +53,9 @@ class SrScheduleService extends BaseService
         if (!$this->srScheduleRepository->createSrSchedule($serviceRequest, $data)) {
             return false;
         }
-        return true;
+        return $this->runServiceRequest(
+            $this->srScheduleRepository->getModel()
+        );
     }
     public function saveSrSchedule(SrSchedule $srSchedule, array $data)
     {
@@ -58,8 +63,9 @@ class SrScheduleService extends BaseService
         if (!$this->srScheduleRepository->saveSrSchedule($data)) {
             return false;
         }
-
-        return true;
+        return $this->runServiceRequest(
+            $this->srScheduleRepository->getModel()
+        );
     }
 
     public function runServiceRequest(SrSchedule $srSchedule) {
@@ -67,11 +73,11 @@ class SrScheduleService extends BaseService
             return true;
         }
         $sr = $srSchedule->sr()->first();
-        if (!$sr->exists) {
+        if (!$sr instanceof Sr || !$sr->exists) {
             return false;
         }
-        $srOperationsService = App::make(SrOperationsService::class);
-        return $srOperationsService->runOperationForSr($sr);
+        $this->providerEventService->dispatchSrOperationEvent($sr);
+        return true;
     }
 
     public function getSrScheduleById(int $id)

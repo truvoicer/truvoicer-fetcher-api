@@ -378,4 +378,9 @@ class SrOperationsService
             DefaultData::SERVICE_RESPONSE_KEYS['PAGE_NUMBER'][SResponseKeysService::RESPONSE_KEY_NAME] => $this->pageNumber,
         ]);
     }
+
+    public function getRequestOperation(): RequestOperation
+    {
+        return $this->requestOperation;
+    }
 }
