@@ -14,11 +14,13 @@ use App\Repositories\SrRepository;
 use App\Repositories\SrResponseKeyRepository;
 use App\Repositories\SResponseKeyRepository;
 use App\Repositories\SrScheduleRepository;
+use App\Services\ApiManager\Operations\SrOperationsService;
 use App\Services\ApiServices\ApiService;
 use App\Services\BaseService;
 use App\Services\Provider\ProviderService;
 use App\Services\Tools\HttpRequestService;
 use App\Helpers\Tools\UtilHelpers;
+use Illuminate\Support\Facades\App;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 
 class SrScheduleService extends BaseService
@@ -45,12 +47,31 @@ class SrScheduleService extends BaseService
 
     public function createSrSchedule(Sr $serviceRequest, array $data)
     {
-        return $this->srScheduleRepository->createSrSchedule($serviceRequest, $data);
+        if (!$this->srScheduleRepository->createSrSchedule($serviceRequest, $data)) {
+            return false;
+        }
+        return true;
     }
     public function saveSrSchedule(SrSchedule $srSchedule, array $data)
     {
         $this->srScheduleRepository->setModel($srSchedule);
-        return $this->srScheduleRepository->saveSrSchedule($data);
+        if (!$this->srScheduleRepository->saveSrSchedule($data)) {
+            return false;
+        }
+
+        return true;
+    }
+
+    public function runServiceRequest(SrSchedule $srSchedule) {
+        if (!$srSchedule->execute_immediately) {
+            return true;
+        }
+        $sr = $srSchedule->sr()->first();
+        if (!$sr->exists) {
+            return false;
+        }
+        $srOperationsService = App::make(SrOperationsService::class);
+        return $srOperationsService->runOperationForSr($sr);
     }
 
     public function getSrScheduleById(int $id)

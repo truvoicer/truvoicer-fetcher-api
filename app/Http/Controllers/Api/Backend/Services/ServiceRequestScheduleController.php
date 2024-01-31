@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Api\Backend\Services;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\Service\Request\Schedule\CreateSrRateLimitRequest;
+use App\Http\Requests\Service\Request\RateLimit\CreateSrRateLimitRequest;
 use App\Http\Requests\Service\Request\Schedule\UpdateSrScheduleRequest;
 use App\Http\Resources\Service\ServiceRequest\ServiceRequestConfigResource;
 use App\Http\Resources\SrScheduleResource;

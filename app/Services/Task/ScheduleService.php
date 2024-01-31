@@ -2,7 +2,7 @@
 
 namespace App\Services\Task;
 
-use App\Services\Provider\ProviderEventsService;
+use App\Services\ApiManager\Operations\SrOperationsService;
 use Illuminate\Console\Scheduling\Schedule;
 
 class ScheduleService
@@ -37,9 +37,9 @@ class ScheduleService
     ];
 
     private Schedule $schedule;
-    private ProviderEventsService $providerEventsService;
+    private SrOperationsService $providerEventsService;
 
-    public function __construct(ProviderEventsService $providerEventsService)
+    public function __construct(SrOperationsService $providerEventsService)
     {
         $this->providerEventsService = $providerEventsService;
     }

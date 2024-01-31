@@ -1,6 +1,6 @@
 <?php
 
-use App\Services\Provider\ProviderEventsService;
+use App\Services\ApiManager\Operations\SrOperationsService;
 use Monolog\Handler\NullHandler;
 use Monolog\Handler\StreamHandler;
 use Monolog\Handler\SyslogUdpHandler;
@@ -73,9 +73,9 @@ return [
             'days' => 14,
             'replace_placeholders' => true,
         ],
-        ProviderEventsService::LOGGING_NAME => [
+        SrOperationsService::LOGGING_NAME => [
             'driver' => 'daily',
-            'path' => storage_path(ProviderEventsService::LOGGING_PATH),
+            'path' => storage_path(SrOperationsService::LOGGING_PATH),
             'level' => env('LOG_LEVEL', 'debug'),
             'days' => 14,
             'replace_placeholders' => true,

@@ -1,28 +1,24 @@
 <?php
 
-namespace App\Services\Provider;
+namespace App\Services\ApiManager\Operations;
 
 use App\Library\Defaults\DefaultData;
 use App\Models\Provider;
 use App\Models\S;
 use App\Models\Sr;
-use App\Models\SResponseKey;
 use App\Models\SrSchedule;
 use App\Repositories\MongoDB\MongoDBRepository;
 use App\Repositories\SrRepository;
 use App\Repositories\SrResponseKeyRepository;
-use App\Services\ApiManager\Operations\RequestOperation;
 use App\Services\ApiManager\Response\Entity\ApiResponse;
-use App\Services\ApiServices\ServiceRequests\SrResponseKeyService;
 use App\Services\ApiServices\ServiceRequests\SrService;
 use App\Services\ApiServices\SResponseKeysService;
+use App\Services\Provider\ProviderService;
 use App\Services\Task\ScheduleService;
 use App\Traits\Error\ErrorTrait;
-use Illuminate\Database\Eloquent\Collection;
-use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Log;
 
-class ProviderEventsService
+class SrOperationsService
 {
     use ErrorTrait;
     const LOGGING_NAME = 'SrMongoOperations';
