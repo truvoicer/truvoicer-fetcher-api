@@ -61,10 +61,11 @@ class ResponseManager extends BaseService
             return $this->successResponse(
                 $contentType,
                 $content,
-                []
+                [],
+                $apiRequest
             );
         } catch (Exception $exception) {
-            return $this->errorResponse($exception->getMessage(), $response, $apiRequest);
+            return $this->errorResponse($exception->getMessage(), $apiRequest);
         }
     }
 
@@ -100,14 +101,15 @@ class ResponseManager extends BaseService
             return $this->successResponse(
                 $contentType,
                 $this->buildArray($listItems),
-                $listData
+                $listData,
+                $apiRequest
             );
         } catch (Exception $exception) {
-            return $this->errorResponse($exception->getMessage());
+            return $this->errorResponse($exception->getMessage(), $apiRequest);
         }
     }
 
-    private function errorResponse(string $message) {
+    private function errorResponse(string $message, ApiRequest $apiRequest) {
         $apiResponse = new ApiResponse();
         $apiResponse->setStatus("error");
         $apiResponse->setMessage($message);
@@ -117,10 +119,11 @@ class ResponseManager extends BaseService
         }
         $apiResponse->setCategory($this->serviceRequest->category()->first()->name);
         $apiResponse->setProvider($this->provider->name);
+        $apiResponse->setApiRequest($apiRequest);
         return $apiResponse;
     }
 
-    private function successResponse(string $contentType, array $requestData, array $extraData) {
+    private function successResponse(string $contentType, array $requestData, array $extraData, ApiRequest $apiRequest) {
 //        dd($requestData);
         $apiResponse = new ApiResponse();
         $apiResponse->setContentType($contentType);
@@ -133,6 +136,7 @@ class ResponseManager extends BaseService
         $apiResponse->setProvider($this->provider->name);
         $apiResponse->setRequestData($requestData);
         $apiResponse->setExtraData($extraData);
+        $apiResponse->setApiRequest($apiRequest);
         return $apiResponse;
     }
 

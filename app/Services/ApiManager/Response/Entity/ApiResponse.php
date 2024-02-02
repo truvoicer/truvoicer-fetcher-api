@@ -2,6 +2,7 @@
 namespace App\Services\ApiManager\Response\Entity;
 
 
+use App\Services\ApiManager\Client\Entity\ApiRequest;
 use App\Traits\ObjectTrait;
 
 class ApiResponse
@@ -23,6 +24,18 @@ class ApiResponse
     public array $extraData = [];
 
     private ?string $paginationType = null;
+    private ?ApiRequest $apiRequest = null;
+
+    public function getApiRequest(): ?ApiRequest
+    {
+        return $this->apiRequest;
+    }
+
+    public function setApiRequest(?ApiRequest $apiRequest): void
+    {
+        $this->apiRequest = $apiRequest;
+    }
+
 
     public function getMessage(): string
     {
