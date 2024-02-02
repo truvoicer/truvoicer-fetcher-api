@@ -242,6 +242,8 @@ class SrOperationsService
         }
         $requestData = $operationData->getRequestData();
         if (count($requestData) === 0) {
+            $apiRequest = $operationData->getApiRequest();
+            $response = $operationData->getResponse();
             Log::channel(self::LOGGING_NAME)->info(
                 sprintf(
                     'No request data found for service request: %s | Provider: %s',
@@ -250,7 +252,12 @@ class SrOperationsService
                 ),
                 [
                     'data' => $operationData->toArray(),
-                    'request_data' => ($operationData->getApiRequest() instanceof ApiRequest) ? $operationData->getApiRequest()->toArray() : []
+                    'request_data' => ($apiRequest) ? $apiRequest->toArray() : [],
+                    'response' => (empty($response)) ? null : [
+                        'status' => $response->status(),
+                        'headers' => $response->headers(),
+                        'body' => $response->body(),
+                    ]
                 ]
             );
             return false;

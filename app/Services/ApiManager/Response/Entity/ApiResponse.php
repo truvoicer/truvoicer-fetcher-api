@@ -4,6 +4,7 @@ namespace App\Services\ApiManager\Response\Entity;
 
 use App\Services\ApiManager\Client\Entity\ApiRequest;
 use App\Traits\ObjectTrait;
+use Illuminate\Http\Client\Response;
 
 class ApiResponse
 {
@@ -25,6 +26,7 @@ class ApiResponse
 
     private ?string $paginationType = null;
     private ?ApiRequest $apiRequest = null;
+    private ?Response $response = null;
 
     public function getApiRequest(): ?ApiRequest
     {
@@ -35,6 +37,17 @@ class ApiResponse
     {
         $this->apiRequest = $apiRequest;
     }
+
+    public function getResponse(): ?Response
+    {
+        return $this->response;
+    }
+
+    public function setResponse(?Response $response): void
+    {
+        $this->response = $response;
+    }
+
 
 
     public function getMessage(): string
