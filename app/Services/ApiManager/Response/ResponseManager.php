@@ -74,6 +74,7 @@ class ResponseManager extends BaseService
         $this->setServiceRequest($serviceRequest);
         try {
             $contentType = null;
+            $listItems = [];
             switch ($this->getContentType($response)) {
                 case self::CONTENT_TYPES['JSON']:
                     $contentType = "json";
