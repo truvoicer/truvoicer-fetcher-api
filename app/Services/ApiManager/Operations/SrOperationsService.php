@@ -32,6 +32,11 @@ class SrOperationsService
         'requestService',
         'category',
     ];
+    const REMOVE_SAVE_DATA_FIELDS = [
+        'requestData',
+        'apiRequest',
+        'response',
+    ];
     private MongoDBRepository $mongoDBRepository;
     private SrService $srService;
     private ProviderService $providerService;
@@ -88,8 +93,10 @@ class SrOperationsService
     private function buildSaveData(ApiResponse $requestResponse, array $data)
     {
         $requestData = $requestResponse->toArray();
-        if (isset($requestData['requestData'])) {
-            unset($requestData['requestData']);
+        foreach (self::REMOVE_SAVE_DATA_FIELDS as $field) {
+            if (isset($requestData[$field])) {
+                unset($requestData[$field]);
+            }
         }
         $insertData = array_merge(
             $requestData,
