@@ -240,7 +240,7 @@ class SrOperationsService
             return false;
         }
         $requestData = $operationData->getRequestData();
-
+        dd($requestData);
         foreach ($requestData as $item) {
             $collectionName = $this->getCollectionName($sr);
             $this->mongoDBRepository->setCollection($collectionName);
