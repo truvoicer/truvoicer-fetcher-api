@@ -32,6 +32,7 @@ class RunSrOperation extends Command
      */
     public function handle(SrOperationsService $srOperationsService, ProviderEventService $providerEventService)
     {
+        $type = $this->ask('Event type? (queue/event)');
         $providerName = $this->ask('Enter provider name');
         $srName = $this->ask('Enter service request name');
         $provider = Provider::where('name', '=', $providerName)->first();
@@ -44,7 +45,14 @@ class RunSrOperation extends Command
             $this->error('Sr not found');
             return CommandAlias::FAILURE;
         }
-        $providerEventService->dispatchSrOperationEvent($sr);
+
+        if ($type === 'queue') {
+            $providerEventService->dispatchSrOperationEvent($sr);
+            return CommandAlias::SUCCESS;
+        }
+
+        $srOperationsService->getRequestOperation()->setProvider($provider);
+        $srOperationsService->runOperationForSr($sr);
         return CommandAlias::SUCCESS;
     }
 }

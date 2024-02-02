@@ -32,14 +32,24 @@ class RunProviderSrOperation extends Command
      */
     public function handle(SrOperationsService $srOperationsService, ProviderEventService $providerEventService)
     {
+        $type = $this->ask('Event type? (queue/event)');
+        $interval = $this->ask(
+            sprintf(
+                'Interval? (%s)',
+                implode(', ', array_keys(ScheduleService::SCHEDULE_INTERVALS))
+            )
+        );
         $providerName = $this->ask('Enter provider name');
         $provider = Provider::where('name', '=', $providerName)->first();
         if (!$provider) {
             $this->error('Provider not found');
             return CommandAlias::FAILURE;
         }
-//        $srOperationsService->runSrOperationsByInterval($provider, ScheduleService::SCHEDULE_EVERY_DAY);
-        $providerEventService->dispatchProviderSrOperationEvent($provider, ScheduleService::SCHEDULE_EVERY_DAY);
+        if ($type === 'queue') {
+            $providerEventService->dispatchProviderSrOperationEvent($provider, $interval);
+            return CommandAlias::SUCCESS;
+        }
+        $srOperationsService->runSrOperationsByInterval($provider, $interval);
         return CommandAlias::SUCCESS;
     }
 }
