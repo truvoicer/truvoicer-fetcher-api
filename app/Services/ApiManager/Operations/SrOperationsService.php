@@ -240,7 +240,17 @@ class SrOperationsService
             return false;
         }
         $requestData = $operationData->getRequestData();
-        dd($requestData);
+        if (count($requestData) === 0) {
+            Log::channel(self::LOGGING_NAME)->info(
+                sprintf(
+                    'No request data found for service request: %s | Provider: %s',
+                    $sr->label,
+                    $provider->name,
+                ),
+                $operationData->toArray()
+            );
+            return false;
+        }
         foreach ($requestData as $item) {
             $collectionName = $this->getCollectionName($sr);
             $this->mongoDBRepository->setCollection($collectionName);
