@@ -73,7 +73,6 @@ class ResponseManager extends BaseService
         $this->setProvider($provider);
         $this->setServiceRequest($serviceRequest);
         try {
-            $contentType = null;
             $listItems = [];
             $listData = [];
             $contentType = "na";
