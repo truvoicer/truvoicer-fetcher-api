@@ -184,11 +184,25 @@ class SrOperationsService
     }
     public function runOperationForSr(Sr $sr, ?array $queryData = ['query' => ''])
     {
+        Log::channel(self::LOGGING_NAME)->info(
+            sprintf(
+                'Running operation for service request: %s | Request name: %s',
+                $sr->label,
+                $sr->name,
+            )
+        );
         $this->requestOperation->setSr($sr);
         $provider = $sr->provider()->first();
         if (!$provider instanceof Provider) {
             return;
         }
+        Log::channel(self::LOGGING_NAME)->info(
+            sprintf(
+                'Found provider: %s | Service request: %s',
+                $provider->label,
+                $sr->name,
+            )
+        );
         $pageSizeResponseKey = DefaultData::SERVICE_RESPONSE_KEYS['PAGE_SIZE'][SResponseKeysService::RESPONSE_KEY_NAME];
         $pageSize = SrResponseKeyRepository::getSrResponseKeyValueByName(
             $provider,
@@ -202,10 +216,27 @@ class SrOperationsService
         }
         $operationData = $this->requestOperation->runOperation($queryData);
         if ($operationData->getStatus() !== 'success') {
+            Log::channel(self::LOGGING_NAME)->error(
+                sprintf(
+                    'Error running operation for service request: %s | Provider: %s | Error: %s',
+                    $sr->label,
+                    $provider->name,
+                    $operationData->getMessage()
+                ),
+                $operationData->toArray()
+            );
             return false;
         }
         $service = $sr->s()->first();
         if (!$service instanceof S) {
+            Log::channel(self::LOGGING_NAME)->error(
+                sprintf(
+                    'Error finding service for service request: %s | Provider: %s',
+                    $sr->label,
+                    $provider->name,
+                ),
+                $operationData->toArray()
+            );
             return false;
         }
         $requestData = $operationData->getRequestData();
