@@ -10,6 +10,7 @@ use App\Models\SrSchedule;
 use App\Repositories\MongoDB\MongoDBRepository;
 use App\Repositories\SrRepository;
 use App\Repositories\SrResponseKeyRepository;
+use App\Services\ApiManager\Client\Entity\ApiRequest;
 use App\Services\ApiManager\Response\Entity\ApiResponse;
 use App\Services\ApiServices\ServiceRequests\SrService;
 use App\Services\ApiServices\SResponseKeysService;
@@ -247,7 +248,10 @@ class SrOperationsService
                     $sr->label,
                     $provider->name,
                 ),
-                $operationData->toArray()
+                [
+                    'data' => $operationData->toArray(),
+                    'request_data' => ($operationData->getApiRequest() instanceof ApiRequest) ? $operationData->getApiRequest()->toArray() : []
+                ]
             );
             return false;
         }

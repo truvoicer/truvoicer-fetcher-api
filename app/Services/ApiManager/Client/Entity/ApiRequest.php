@@ -1,8 +1,11 @@
 <?php
 namespace App\Services\ApiManager\Client\Entity;
 
+use App\Traits\ObjectTrait;
+
 class ApiRequest
 {
+    use ObjectTrait;
     public const METHOD_POST = 'POST';
     public const METHOD_GET = 'GET';
     public const AUTH_TOKEN = 'auth_token';
