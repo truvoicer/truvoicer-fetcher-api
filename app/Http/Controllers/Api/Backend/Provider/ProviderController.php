@@ -105,7 +105,7 @@ class ProviderController extends Controller
     {
         $createProvider = $this->providerService->createProvider(
             $request->user(),
-            $request->all()
+            $request->validated()
         );
 
         if (!$createProvider) {

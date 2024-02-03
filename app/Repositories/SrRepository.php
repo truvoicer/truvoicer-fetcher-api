@@ -7,6 +7,7 @@ use App\Models\Category;
 use App\Models\Provider;
 use App\Models\S;
 use App\Models\Sr;
+use App\Models\SrChildSr;
 use App\Services\Category\CategoryService;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 
@@ -28,7 +29,13 @@ class SrRepository extends BaseRepository
     }
 
     public function getServiceRequestByProvider(Provider $provider, string $sort, string $order, ?int $count = null) {
-        return $provider->serviceRequest()
+        $srs = $provider->serviceRequest()->orderBy($sort, $order)->get();
+        return $srs->filter(function (Sr $sr) {
+            return $sr->parentSrs()->count() === 0;
+        });
+    }
+    public function getChildSrs(Sr $sr, string $sort, string $order, ?int $count = null) {
+        return $sr->childSrs()
             ->orderBy($sort, $order)->get();
     }
 
@@ -38,7 +45,7 @@ class SrRepository extends BaseRepository
             ->first();
     }
 
-    private function buildSaveData(array $data)
+    public function buildSaveData(array $data, ?Sr $serviceRequest = null)
     {
         $fields = [
             'name',
@@ -46,9 +53,30 @@ class SrRepository extends BaseRepository
             'pagination_type'
         ];
         $saveData = [];
+        $attributes = null;
+        if ($serviceRequest instanceof Sr) {
+            $attributes = $serviceRequest->getAttributes();
+        }
         foreach ($fields as $field) {
             if (array_key_exists($field, $data)) {
                 $saveData[$field] = $data[$field];
+            } else if (
+                $serviceRequest instanceof Sr &&
+                array_key_exists($field, $attributes)
+            ) {
+                $saveData[$field] = $serviceRequest->{$field};
+            }
+        }
+        if (empty($data['service']) && $serviceRequest instanceof Sr) {
+            $service = $serviceRequest->s()->first();
+            if ($service instanceof S) {
+                $saveData['service'] = $service->id;
+            }
+        }
+        if (empty($data['category']) && $serviceRequest instanceof Sr) {
+            $category = $serviceRequest->category()->first();
+            if ($category instanceof Category) {
+                $saveData['category'] = $category->id;
             }
         }
         return $saveData;

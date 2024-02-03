@@ -1,10 +1,10 @@
 <?php
 
-namespace App\Http\Requests\Provider;
+namespace App\Http\Requests\Service\Request;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class CreateProviderRequest extends FormRequest
+class CreateChildSrRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -23,12 +23,9 @@ class CreateProviderRequest extends FormRequest
     {
         return [
             'name' => 'string|nullable',
-            'label' => 'required|string',
-            'api_base_url' => 'nullable|string',
-            'access_key' => 'nullable|string',
-            'secret_key' => 'nullable|string',
-            'user_id' => 'nullable|string',
-            'categories' => 'array|nullable',
+            'label' => 'nullable|string',
+            'service' => 'nullable|integer',
+            'category' => 'nullable|nullable',
         ];
     }
 }

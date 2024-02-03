@@ -132,6 +132,12 @@ Route::middleware(['auth:sanctum', 'ability:api:admin,api:superuser,api:user'])-
                     });
                     Route::get('/{serviceRequest}', [ServiceRequestController::class, 'getServiceRequest'])->name('detail');
                     Route::prefix('{serviceRequest}')->name('single.')->group(function () {
+                        Route::prefix('child')->name('child.')->group(function () {
+                            Route::get('/list', [ServiceRequestController::class, 'getChildServiceRequestList'])->name('list');
+                            Route::post('/create', [ServiceRequestController::class, 'createChildServiceRequest'])->name('create');
+                            Route::patch('/{childSr}/update', [ServiceRequestController::class, 'updateChildServiceRequest'])->name('update');
+                            Route::delete('/{childSr}/delete', [ServiceRequestController::class, 'deleteChildServiceRequest'])->name('delete');
+                        });
                         Route::delete('/delete', [ServiceRequestController::class, 'deleteServiceRequest'])->name('delete');
                         Route::patch('/update', [ServiceRequestController::class, 'updateServiceRequest'])->name('update');
                         Route::post('/duplicate', [ServiceRequestController::class, 'duplicateServiceRequest'])->name('duplicate');

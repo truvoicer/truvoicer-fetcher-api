@@ -7,6 +7,7 @@ use App\Models\Provider;
 use App\Models\Sr;
 use App\Models\SrSchedule;
 use App\Repositories\CategoryRepository;
+use App\Repositories\SrChildSrRepository;
 use App\Repositories\SRepository;
 use App\Repositories\SrConfigRepository;
 use App\Repositories\SrParameterRepository;
@@ -38,6 +39,7 @@ class SrService extends BaseService
     private SrParametersService $requestParametersService;
     private SrScheduleRepository $srScheduleRepository;
     private ApiService $apiService;
+    private SrChildSrRepository $srChildSrRepository;
 
     public function __construct(HttpRequestService  $httpRequestService,
                                 ProviderService     $providerService, SrConfigService $requestConfigService,
@@ -56,6 +58,7 @@ class SrService extends BaseService
         $this->responseKeysRepo = new SResponseKeyRepository();
         $this->requestConfigRepo = new SrConfigRepository();
         $this->srScheduleRepository = new SrScheduleRepository();
+        $this->srChildSrRepository = new SrChildSrRepository();
     }
 
     public function findByQuery(string $query)
@@ -99,6 +102,15 @@ class SrService extends BaseService
             $count
         );
     }
+    public function getUserChildSrsByProvider(Provider $provider, Sr $sr, string $sort, string $order, ?int $count = null)
+    {
+        return $this->serviceRequestRepository->getChildSrs(
+            $sr,
+            $sort,
+            $order,
+            $count
+        );
+    }
 
     public function getProviderServiceRequest(S $service, Provider $provider)
     {
@@ -123,7 +135,7 @@ class SrService extends BaseService
     }
 
 
-    public function createServiceRequest(Provider $provider, array $data)
+    public function createServiceRequest(Provider $provider, array $data, ?bool $validateConfig = true)
     {
         if (empty($data["label"])) {
             throw new BadRequestHttpException("Service request label is not set.");
@@ -132,11 +144,29 @@ class SrService extends BaseService
             $data['name'] = UtilHelpers::labelToName($data['label'], false, '-');
         }
         $saveServiceRequest = $this->serviceRequestRepository->createServiceRequest($provider, $data);
-        if ($saveServiceRequest) {
+        if ($saveServiceRequest && $validateConfig) {
             $this->requestConfigService->requestConfigValidator($this->serviceRequestRepository->getModel());
         }
         return $saveServiceRequest;
 
+    }
+    public function createChildSr(Provider $provider, Sr $sr, array $data)
+    {
+        $saveServiceRequest = $this->createServiceRequest(
+            $provider,
+            $this->serviceRequestRepository->buildSaveData($data, $sr)
+        );
+        if (!$saveServiceRequest) {
+            return false;
+        }
+        $childSr = $this->serviceRequestRepository->getModel();
+        if (!$childSr instanceof Sr) {
+            return false;
+        }
+        return $this->srChildSrRepository->saveParentChildSr(
+            $sr,
+            $childSr
+        );
     }
 
     public function updateServiceRequest(Sr $serviceRequest, array $data)

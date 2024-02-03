@@ -11,7 +11,7 @@ class Sr extends Model
     use HasFactory;
     public const TABLE_NAME = 'srs';
     public const REPOSITORY = SrRepository::class;
-    protected $with = ['category', 's', 'srSchedule', 'srRateLimit'];
+    protected $with = ['category', 's', 'srSchedule', 'srRateLimit', 'childSrs'];
     protected $fillable = [
         'name',
         'label',
@@ -71,5 +71,25 @@ class Sr extends Model
             'sr_response_key_id'
         );
     }
+
+    public function parentSrs()
+    {
+        return $this->belongsToMany(
+            self::class,
+            SrChildSr::TABLE_NAME,
+            'sr_child_id',
+            'sr_id'
+        );
+    }
+    public function childSrs()
+    {
+        return $this->belongsToMany(
+            self::class,
+            SrChildSr::TABLE_NAME,
+            'sr_id',
+            'sr_child_id'
+        );
+    }
+
 
 }

@@ -22,13 +22,13 @@ class UpdateProviderRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => 'string',
-            'label' => 'string',
-            'api_base_url' => 'string',
-            'access_key' => 'string',
-            'secret_key' => 'string',
-            'user_id' => 'string',
-            'categories' => 'array',
+            'name' => 'string|nullable',
+            'label' => 'string|nullable',
+            'api_base_url' => 'string|nullable',
+            'access_key' => 'string|nullable',
+            'secret_key' => 'string|nullable',
+            'user_id' => 'string|nullable',
+            'categories' => 'array|nullable',
         ];
     }
 }
