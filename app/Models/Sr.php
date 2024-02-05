@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Model;
 class Sr extends Model
 {
     use HasFactory;
+
     public const TABLE_NAME = 'srs';
     public const REPOSITORY = SrRepository::class;
     protected $with = ['category', 's', 'srSchedule', 'srRateLimit', 'childSrs'];
@@ -20,26 +21,32 @@ class Sr extends Model
     protected $casts = [
         'pagination_type' => 'json',
     ];
+
     public function s()
     {
         return $this->belongsTo(S::class);
     }
+
     public function provider()
     {
         return $this->belongsTo(Provider::class);
     }
+
     public function category()
     {
         return $this->belongsTo(Category::class);
     }
+
     public function srConfig()
     {
         return $this->hasMany(SrConfig::class);
     }
+
     public function srParameter()
     {
         return $this->hasMany(SrParameter::class);
     }
+
     public function srResponseKey()
     {
         return $this->hasMany(SrResponseKey::class);
@@ -49,10 +56,12 @@ class Sr extends Model
     {
         return $this->hasOne(SrSchedule::class, 'sr_id', 'id');
     }
+
     public function srRateLimit()
     {
         return $this->hasOne(SrRateLimit::class, 'sr_id', 'id');
     }
+
     public function srResponseKeys()
     {
         return $this->belongsToMany(
@@ -62,6 +71,7 @@ class Sr extends Model
             's_response_key_id'
         );
     }
+
     public function srResponseKeySrs()
     {
         return $this->belongsToMany(
@@ -79,8 +89,15 @@ class Sr extends Model
             SrChildSr::TABLE_NAME,
             'sr_child_id',
             'sr_id'
+        )->withPivot(
+            'response_key_override',
+            'config_override',
+            'parameter_override',
+            'scheduler_override',
+            'rate_limits_override'
         );
     }
+
     public function childSrs()
     {
         return $this->belongsToMany(
@@ -88,6 +105,12 @@ class Sr extends Model
             SrChildSr::TABLE_NAME,
             'sr_id',
             'sr_child_id'
+        )->withPivot(
+            'response_key_override',
+            'config_override',
+            'parameter_override',
+            'scheduler_override',
+            'rate_limits_override'
         );
     }
 
