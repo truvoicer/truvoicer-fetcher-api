@@ -11,6 +11,13 @@ class SrChildSr extends Model
     use HasFactory;
     public const TABLE_NAME = 'sr_child_srs';
     public const REPOSITORY = SrChildSrRepository::class;
+    public const FIELDS = [
+        'response_key_override',
+        'config_override',
+        'parameter_override',
+        'scheduler_override',
+        'rate_limits_override',
+    ];
     protected $casts = [
         'response_key_override' => 'boolean',
         'config_override' => 'boolean',
@@ -19,8 +26,12 @@ class SrChildSr extends Model
         'rate_limits_override' => 'boolean',
     ];
 
-    public function sr()
+    public function parentSr()
     {
-        return $this->belongsTo(Sr::class);
+        return $this->belongsTo(Sr::class, 'sr_id');
+    }
+    public function childSr()
+    {
+        return $this->belongsTo(Sr::class, 'sr_child_id');
     }
 }

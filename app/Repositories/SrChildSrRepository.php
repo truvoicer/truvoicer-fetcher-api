@@ -43,4 +43,14 @@ class SrChildSrRepository extends BaseRepository
         $parentSr->childSrs()->attach($childSr->id);
         return true;
     }
+
+    public function saveChildSrOverrides(Sr $serviceRequest, array $data) {
+        $this->setModel($serviceRequest);
+//        $parentSr = $serviceRequest->parentSrs()->first();
+//
+//        if (!$parentSr instanceof Sr) {
+//            return false;
+//        }
+        return $this->getModel()->pivot->update($data);
+    }
 }

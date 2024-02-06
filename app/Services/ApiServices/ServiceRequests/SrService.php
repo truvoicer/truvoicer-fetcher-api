@@ -79,6 +79,10 @@ class SrService extends BaseService
         return $this->serviceRequestRepository::getSrByName($provider, $serviceRequestName);
     }
 
+    public function getServiceRequest(Sr $serviceRequest)
+    {
+        return $this->castServiceRequest($getServiceRequest);
+    }
     public function getServiceRequestById($id)
     {
         $getServiceRequest = $this->serviceRequestRepository->findById($id);
@@ -172,6 +176,14 @@ class SrService extends BaseService
     public function updateServiceRequest(Sr $serviceRequest, array $data)
     {
         return $this->serviceRequestRepository->saveServiceRequest($serviceRequest, $data);
+    }
+
+    public function overrideChildSr(Sr $serviceRequest, array $data)
+    {
+        $saveData = [
+            $data['key'] => $data['value']
+        ];
+        return $this->serviceRequestRepository->saveChildSrOverrides($serviceRequest, $saveData);
     }
 
     public function duplicateServiceRequest(Sr $serviceRequest, array $data)

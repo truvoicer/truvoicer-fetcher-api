@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Service\Request\CreateChildSrRequest;
 use App\Http\Requests\Service\Request\CreateSrRequest;
 use App\Http\Requests\Service\Request\DeleteBatchSrRequest;
+use App\Http\Requests\Service\Request\OverrideChildSrRequest;
 use App\Http\Requests\Service\Request\UpdateServiceRequest;
 use App\Http\Requests\Service\Request\UpdateSrRequest;
 use App\Http\Resources\Service\ServiceRequest\ServiceRequestResource;
@@ -220,6 +221,31 @@ class ServiceRequestController extends Controller
             return $this->sendErrorResponse("Access denied");
         }
         $create = $this->srService->createChildSr($provider, $serviceRequest, $request->all());
+        if (!$create) {
+            return $this->sendErrorResponse("Error inserting service request");
+        }
+        return $this->sendSuccessResponse(
+            "Service request inserted",
+            new  ServiceRequestResource(
+                $this->srService->getServiceRequestRepository()->getModel()
+            )
+        );
+    }
+    public function overrideChildServiceRequest(Provider $provider, Sr $serviceRequest, Sr $childSr, OverrideChildSrRequest $request): JsonResponse
+    {
+        $this->setAccessControlUser($request->user());
+        if (
+            !$this->accessControlService->checkPermissionsForEntity(
+                $provider,
+                [
+                    PermissionService::PERMISSION_ADMIN,
+                    PermissionService::PERMISSION_WRITE,
+                ],
+            )
+        ) {
+            return $this->sendErrorResponse("Access denied");
+        }
+        $create = $this->srService->overrideChildSr($childSr, $request->all());
         if (!$create) {
             return $this->sendErrorResponse("Error inserting service request");
         }
@@ -532,7 +558,34 @@ class ServiceRequestController extends Controller
         }
         return $this->sendSuccessResponse(
             "success",
-            new ServiceRequestResource($serviceRequest)
+            new ServiceRequestResource(
+                $serviceRequest
+            )
+        );
+    }
+    public function getChildServiceRequest(
+        Provider $provider,
+        Sr       $serviceRequest,
+        Sr       $childSr,
+        Request  $request
+    ): \Illuminate\Http\JsonResponse {
+        $this->setAccessControlUser($request->user());
+        if (
+            !$this->accessControlService->checkPermissionsForEntity(
+                $provider,
+                [
+                    PermissionService::PERMISSION_ADMIN,
+                    PermissionService::PERMISSION_READ,
+                ],
+            )
+        ) {
+            return $this->sendErrorResponse("Access denied");
+        }
+        return $this->sendSuccessResponse(
+            "success",
+            new ServiceRequestResource(
+                $childSr
+            )
         );
     }
 }

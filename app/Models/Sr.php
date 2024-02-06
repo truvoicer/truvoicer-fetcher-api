@@ -17,9 +17,11 @@ class Sr extends Model
         'name',
         'label',
         'pagination_type',
+        'query_parameters'
     ];
     protected $casts = [
         'pagination_type' => 'json',
+        'query_parameters' => 'json',
     ];
 
     public function s()

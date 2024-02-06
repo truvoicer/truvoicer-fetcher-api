@@ -3,6 +3,7 @@
 namespace App\Http\Requests\Service\Request;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class CreateSrRequest extends FormRequest
 {
@@ -26,6 +27,12 @@ class CreateSrRequest extends FormRequest
             'label' => 'required|string',
             'service' => 'required|integer',
             'category' => 'integer|nullable',
+            'pagination_type' => [
+                'nullable',
+                'string',
+                Rule::in(['page', 'offset'])
+            ],
+            'query_parameters' => 'array|nullable'
         ];
     }
 }

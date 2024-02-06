@@ -50,7 +50,8 @@ class SrRepository extends BaseRepository
         $fields = [
             'name',
             'label',
-            'pagination_type'
+            'pagination_type',
+            'query_parameters'
         ];
         $saveData = [];
         $attributes = null;
@@ -66,6 +67,9 @@ class SrRepository extends BaseRepository
             ) {
                 $saveData[$field] = $serviceRequest->{$field};
             }
+        }
+        if (!empty($data['query_parameters']) && !is_array($data['query_parameters'])) {
+            unset($saveData['query_parameters']);
         }
         if (empty($data['service']) && $serviceRequest instanceof Sr) {
             $service = $serviceRequest->s()->first();
@@ -129,6 +133,16 @@ class SrRepository extends BaseRepository
             return false;
         }
         return $this->saveAssociations($this->getModel(), $data);
+    }
+
+    public function saveChildSrOverrides(Sr $serviceRequest, array $data) {
+        $this->setModel($serviceRequest);
+//        $parentSr = $serviceRequest->parentSrs()->first();
+//
+//        if (!$parentSr instanceof Sr) {
+//            return false;
+//        }
+        return $this->getModel()->pivot->update($data);
     }
     public function duplicateServiceRequest(Sr $serviceRequest, array $data)
     {

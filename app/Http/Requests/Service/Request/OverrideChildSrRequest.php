@@ -2,9 +2,11 @@
 
 namespace App\Http\Requests\Service\Request;
 
+use App\Models\SrChildSr;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
-class CreateChildSrRequest extends FormRequest
+class OverrideChildSrRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -22,11 +24,11 @@ class CreateChildSrRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => 'string|nullable',
-            'label' => 'nullable|string',
-            'service' => 'nullable|integer',
-            'category' => 'nullable|nullable',
-
+            "key" => [
+                'required',
+                Rule::in(SrChildSr::FIELDS)
+            ],
+            "value" => "boolean|required"
         ];
     }
 }

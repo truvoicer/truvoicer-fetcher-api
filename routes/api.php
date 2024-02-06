@@ -135,6 +135,8 @@ Route::middleware(['auth:sanctum', 'ability:api:admin,api:superuser,api:user'])-
                         Route::prefix('child')->name('child.')->group(function () {
                             Route::get('/list', [ServiceRequestController::class, 'getChildServiceRequestList'])->name('list');
                             Route::post('/create', [ServiceRequestController::class, 'createChildServiceRequest'])->name('create');
+                            Route::get('/{childSr}', [ServiceRequestController::class, 'getChildServiceRequest'])->name('detail');
+                            Route::patch('/{childSr}/override', [ServiceRequestController::class, 'overrideChildServiceRequest'])->name('override');
                             Route::patch('/{childSr}/update', [ServiceRequestController::class, 'updateChildServiceRequest'])->name('update');
                             Route::delete('/{childSr}/delete', [ServiceRequestController::class, 'deleteChildServiceRequest'])->name('delete');
                         });
