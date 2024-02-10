@@ -17,6 +17,7 @@ use App\Repositories\SResponseKeyRepository;
 use App\Repositories\SrScheduleRepository;
 use App\Services\ApiManager\Operations\RequestOperation;
 use App\Services\ApiServices\ApiService;
+use App\Services\ApiServices\RateLimitService;
 use App\Services\BaseService;
 use App\Services\Provider\ProviderService;
 use App\Services\Task\ScheduleService;
@@ -28,39 +29,26 @@ use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 
 class SrService extends BaseService
 {
-    private HttpRequestService $httpRequestService;
-    private ProviderService $providerService;
-    private SRepository $serviceRepository;
     private SrRepository $serviceRequestRepository;
-    private SrParameterRepository $requestParametersRepo;
-    private SrConfigRepository $requestConfigRepo;
     private SResponseKeyRepository $responseKeysRepo;
-    private SrConfigService $requestConfigService;
-    private SrParametersService $requestParametersService;
-    private SrScheduleRepository $srScheduleRepository;
-    private ApiService $apiService;
     private SrChildSrRepository $srChildSrRepository;
 
-    public function __construct(HttpRequestService  $httpRequestService,
-                                ProviderService     $providerService, SrConfigService $requestConfigService,
-                                SrParametersService $requestParametersService, ApiService $apiService
+    public function __construct(
     )
     {
         parent::__construct();
-        $this->httpRequestService = $httpRequestService;
-        $this->providerService = $providerService;
-        $this->apiService = $apiService;
-        $this->requestConfigService = $requestConfigService;
-        $this->requestParametersService = $requestParametersService;
-        $this->serviceRepository = new SRepository();
         $this->serviceRequestRepository = new SrRepository();
-        $this->requestParametersRepo = new SrParameterRepository();
         $this->responseKeysRepo = new SResponseKeyRepository();
-        $this->requestConfigRepo = new SrConfigRepository();
-        $this->srScheduleRepository = new SrScheduleRepository();
         $this->srChildSrRepository = new SrChildSrRepository();
     }
 
+    public function findParentSr(Sr $serviceRequest) {
+        $parentServiceRequest = $serviceRequest->parentSrs()->first();
+        if (!$parentServiceRequest instanceof Sr) {
+            return false;
+        }
+        return $parentServiceRequest;
+    }
     public function findByQuery(string $query)
     {
         return $this->serviceRequestRepository->findByQuery($query);
@@ -97,6 +85,7 @@ class SrService extends BaseService
             $count
         );
     }
+
     public function getUserChildSrsByProvider(Provider $provider, Sr $sr, string $sort, string $order, ?int $count = null)
     {
         return $this->serviceRequestRepository->getChildSrs(
@@ -114,20 +103,6 @@ class SrService extends BaseService
         return $this->serviceRequestRepository->findOne();
     }
 
-    public function getRequestConfigByName(Provider $provider, Sr $serviceRequest, string $configItemName)
-    {
-        return $this->requestConfigRepo->getRequestConfigByName($serviceRequest, $configItemName);
-    }
-
-    public function getRequestParametersByRequestName(Provider $provider, string $serviceRequestName = null)
-    {
-        return $this->requestParametersRepo->getRequestParametersByRequestName($provider, $serviceRequestName);
-    }
-
-    public function getResponseKeysByRequest(Provider $provider, Sr $serviceRequest)
-    {
-        return $this->responseKeysRepo->getResponseKeysByRequest($provider, $serviceRequest);
-    }
 
 
     public function createServiceRequest(Provider $provider, array $data, ?bool $validateConfig = true)
@@ -138,13 +113,15 @@ class SrService extends BaseService
         if (empty($data["name"])) {
             $data['name'] = UtilHelpers::labelToName($data['label'], false, '-');
         }
+        $requestConfigService = App::make(SrConfigService::class);
         $saveServiceRequest = $this->serviceRequestRepository->createServiceRequest($provider, $data);
         if ($saveServiceRequest && $validateConfig) {
-            $this->requestConfigService->requestConfigValidator($this->serviceRequestRepository->getModel());
+            $requestConfigService->requestConfigValidator($this->serviceRequestRepository->getModel());
         }
         return $saveServiceRequest;
 
     }
+
     public function createChildSr(Provider $provider, Sr $sr, array $data)
     {
         $saveServiceRequest = $this->createServiceRequest(
@@ -223,20 +200,4 @@ class SrService extends BaseService
     {
         return $this->serviceRequestRepository;
     }
-
-    public function getSrScheduleRepository(): SrScheduleRepository
-    {
-        return $this->srScheduleRepository;
-    }
-
-    public function getRequestConfigService(): SrConfigService
-    {
-        return $this->requestConfigService;
-    }
-
-    public function getRequestParametersService(): SrParametersService
-    {
-        return $this->requestParametersService;
-    }
-
 }

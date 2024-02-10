@@ -13,6 +13,9 @@ use App\Services\ApiManager\Client\Entity\ApiRequest;
 use App\Services\ApiManager\Client\Oauth\Oauth;
 use App\Services\ApiManager\Response\Entity\ApiResponse;
 use App\Services\ApiManager\Response\ResponseManager;
+use App\Services\ApiServices\RateLimitService;
+use App\Services\ApiServices\ServiceRequests\SrConfigService;
+use App\Services\ApiServices\ServiceRequests\SrParametersService;
 use App\Services\Category\CategoryService;
 use App\Services\Tools\EventsService;
 use App\Services\Provider\ProviderService;
@@ -28,11 +31,14 @@ use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 class BaseOperations extends ApiBase
 {
     use UserTrait;
+
     private Oauth $oath;
     private ProviderService $providerService;
-    private SerializerService $serializerService;
     private EventsService $eventsService;
     private SrService $requestService;
+    private SrConfigService $srConfigService;
+    private SrParametersService $srParameterService;
+    private RateLimitService $rateLimitService;
     private Collection $requestConfig;
     private Collection $requestParameters;
 
@@ -48,12 +54,21 @@ class BaseOperations extends ApiBase
     protected string $category;
     protected string $timestamp;
 
-    public function __construct(ProviderService $providerService, SerializerService $serializerService, Oauth $oauth,
-                                ResponseManager $responseManager, CategoryService $categoryService, ApiClientHandler $apiClientHandler,
-                                ApiRequest      $apiRequest, EventsService $eventsService, SrService $requestService)
+    public function __construct(
+        ProviderService  $providerService,
+        Oauth            $oauth,
+        ResponseManager  $responseManager,
+        CategoryService  $categoryService,
+        ApiClientHandler $apiClientHandler,
+        ApiRequest       $apiRequest,
+        EventsService    $eventsService,
+        SrService        $requestService,
+        SrConfigService  $srConfigService,
+        SrParametersService $srParameterService,
+        RateLimitService $rateLimitService
+    )
     {
         $this->providerService = $providerService;
-        $this->serializerService = $serializerService;
         $this->oath = $oauth;
         $this->responseManager = $responseManager;
         $this->apiRequest = $apiRequest;
@@ -61,6 +76,9 @@ class BaseOperations extends ApiBase
         $this->eventsService = $eventsService;
         $this->apiClientHandler = $apiClientHandler;
         $this->requestService = $requestService;
+        $this->srConfigService = $srConfigService;
+        $this->srParameterService = $srParameterService;
+        $this->rateLimitService = $rateLimitService;
     }
 
     public function setRequestConfig(Collection $requestConfig): void
@@ -81,7 +99,8 @@ class BaseOperations extends ApiBase
         );
     }
 
-    private function responseHandler(string $requestType, $response) {
+    private function responseHandler(string $requestType, $response)
+    {
         $apiResponse = new ApiResponse();
         $apiResponse->setStatus("error");
         $apiResponse->setRequestService($this->apiService->name);
@@ -105,8 +124,12 @@ class BaseOperations extends ApiBase
         }
     }
 
-    private function requestHandler() {
-        $srRateLimit = $this->apiService->srRateLimit()->first();
+    private function requestHandler()
+    {
+        $srRateLimit = $this->rateLimitService->findParentOrChildRateLimitBySr($this->apiService);
+        if (!$srRateLimit) {
+            return $this->getRequest();
+        }
         $providerRateLimit = $this->provider->providerRateLimit()->first();
         $rateLimiterKey = null;
         $maxAttempts = null;
@@ -137,12 +160,13 @@ class BaseOperations extends ApiBase
         return RateLimiter::attempt(
             $rateLimiterKey,
             $maxAttempts,
-            function() {
+            function () {
                 return $this->getRequest();
             },
             $decaySeconds,
         );
     }
+
 
     public function runRequest(?string $providerName = null)
     {
@@ -157,8 +181,14 @@ class BaseOperations extends ApiBase
             $this->setApiService();
         }
 
-        $config = $this->requestService->getRequestConfigService()->findBySr($this->apiService);
-        $parameters = $this->requestService->getRequestParametersService()->findBySr($this->apiService);
+        $config = $this->srConfigService->findConfigForOperationBySr($this->apiService);
+        if (!$config) {
+            throw new BadRequestHttpException("Request config not found for operation.");
+        }
+        $parameters = $this->srParameterService->findParametersForOperationBySr($this->apiService);
+        if (!$parameters) {
+            throw new BadRequestHttpException("Request parameters not found for operation.");
+        }
         $this->setRequestConfig($config);
         $this->setRequestParameters($parameters);
         $getRequest = $this->requestHandler();
@@ -218,12 +248,13 @@ class BaseOperations extends ApiBase
         }
     }
 
-    private function getBasicAuthentication() {
+    private function getBasicAuthentication()
+    {
         $usernameConfig = $this->getRequestConfig("username");
         $passwordConfig = $this->getRequestConfig("password");
         $username = null;
         $password = null;
-        if ($usernameConfig  instanceof SrConfig) {
+        if ($usernameConfig instanceof SrConfig) {
             $username = $usernameConfig->value;
         }
         if ($passwordConfig instanceof SrConfig) {
@@ -243,7 +274,9 @@ class BaseOperations extends ApiBase
             $password
         );
     }
-    private function getAuthBearerAuthentication() {
+
+    private function getAuthBearerAuthentication()
+    {
         $bearerToken = $this->getRequestConfig("bearer_token");
         if (!$bearerToken instanceof SrConfig) {
             throw new BadRequestHttpException("Request config bearer token not found.");
@@ -256,7 +289,8 @@ class BaseOperations extends ApiBase
         );
     }
 
-    private function setRequestData() {
+    private function setRequestData()
+    {
         switch ($this->providerService->getProviderPropertyValue($this->provider, self::API_TYPE)) {
             case "query_string":
                 $requestQueryArray = $this->buildRequestQuery($this->requestParameters);
@@ -273,7 +307,8 @@ class BaseOperations extends ApiBase
         }
     }
 
-    private function getRequestBody($providerServiceParams) {
+    private function getRequestBody($providerServiceParams)
+    {
         $queryArray = [];
         foreach ($providerServiceParams as $requestParameter) {
             array_push($queryArray, $this->filterParameterValue($requestParameter->value));
@@ -281,7 +316,8 @@ class BaseOperations extends ApiBase
         return implode(" ", $queryArray);
     }
 
-    private function runAmazonRequest() {
+    private function runAmazonRequest()
+    {
 //        $providerServiceParams = $this->requestService->getRequestParametersByRequestName(
 //            $this->provider,
 //            $this->apiRequestName);
@@ -353,7 +389,7 @@ class BaseOperations extends ApiBase
     private function getRequestConfig(string $parameterName)
     {
         $config = $this->requestConfig->where('name', $parameterName)->first();
-        if (!$config instanceof  SrConfig) {
+        if (!$config instanceof SrConfig) {
             return null;
         }
         return $config;

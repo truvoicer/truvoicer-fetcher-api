@@ -10,15 +10,29 @@ use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 class SrParametersService extends BaseService
 {
     private SrParameterRepository $requestParametersRepo;
+    private SrService $srService;
 
-    public function __construct()
+    public function __construct(
+        SrService $srService
+    )
     {
         parent::__construct();
         $this->requestParametersRepo = new SrParameterRepository();
+        $this->srService = $srService;
     }
 
     public function findBySr(Sr $serviceRequest) {
         return $this->requestParametersRepo->findBySr($serviceRequest);
+    }
+    public function findParametersForOperationBySr(Sr $serviceRequest) {
+        $parentServiceRequest = $this->srService->findParentSr($serviceRequest);
+        if (!$parentServiceRequest instanceof Sr) {
+            return $this->findBySr($serviceRequest);
+        }
+        if (empty($serviceRequest->pivot) || empty($serviceRequest->pivot->parameter_override)) {
+            return $this->findBySr($parentServiceRequest);
+        }
+        return $this->findBySr($serviceRequest);
     }
     public function findByParams(Sr $serviceRequest, string $sort, string $order, ?int $count = null) {
         return $this->requestParametersRepo->findByParams($serviceRequest, $sort, $order, $count);

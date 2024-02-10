@@ -28,6 +28,10 @@ class SrRepository extends BaseRepository
         return $this->findByLabelOrName($query);
     }
 
+    public function findBySr(Sr $serviceRequest)
+    {
+        return $serviceRequest->srParameter()->get();
+    }
     public function getServiceRequestByProvider(Provider $provider, string $sort, string $order, ?int $count = null) {
         $srs = $provider->serviceRequest()->orderBy($sort, $order)->get();
         return $srs->filter(function (Sr $sr) {
@@ -71,13 +75,13 @@ class SrRepository extends BaseRepository
         if (!empty($data['query_parameters']) && !is_array($data['query_parameters'])) {
             unset($saveData['query_parameters']);
         }
-        if (empty($data['service']) && $serviceRequest instanceof Sr) {
+        if ($serviceRequest instanceof Sr) {
             $service = $serviceRequest->s()->first();
             if ($service instanceof S) {
                 $saveData['service'] = $service->id;
             }
         }
-        if (empty($data['category']) && $serviceRequest instanceof Sr) {
+        if ($serviceRequest instanceof Sr) {
             $category = $serviceRequest->category()->first();
             if ($category instanceof Category) {
                 $saveData['category'] = $category->id;
@@ -86,7 +90,10 @@ class SrRepository extends BaseRepository
         return $saveData;
     }
     public function createServiceRequest(Provider $provider, array $data) {
-        if (!UtilHelpers::isArrayItemNumeric('service', $data)) {
+        if (
+            !UtilHelpers::isArrayItemNumeric('service', $data) &&
+            !(!empty($data['service']) && !$data['service'] instanceof S)
+        ) {
             throw new BadRequestHttpException('Service id is required');
         }
         $create = $provider->serviceRequest()->create($this->buildSaveData($data));

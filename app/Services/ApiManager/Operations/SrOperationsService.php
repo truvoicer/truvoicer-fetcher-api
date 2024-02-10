@@ -12,6 +12,7 @@ use App\Repositories\SrRepository;
 use App\Repositories\SrResponseKeyRepository;
 use App\Services\ApiManager\Client\Entity\ApiRequest;
 use App\Services\ApiManager\Response\Entity\ApiResponse;
+use App\Services\ApiServices\ServiceRequests\SrScheduleService;
 use App\Services\ApiServices\ServiceRequests\SrService;
 use App\Services\ApiServices\SResponseKeysService;
 use App\Services\Provider\ProviderService;
@@ -40,6 +41,7 @@ class SrOperationsService
     private MongoDBRepository $mongoDBRepository;
     private SrService $srService;
     private ProviderService $providerService;
+    private SrScheduleService $srScheduleService;
     private RequestOperation $requestOperation;
     private int $offset = 0;
     private int $pageNumber = 1;
@@ -51,11 +53,13 @@ class SrOperationsService
         SrService        $srService,
         ProviderService  $providerService,
         RequestOperation $requestOperation,
+        SrScheduleService $srScheduleService
     )
     {
         $this->srService = $srService;
         $this->providerService = $providerService;
         $this->requestOperation = $requestOperation;
+        $this->srScheduleService = $srScheduleService;
         $this->mongoDBRepository = new MongoDBRepository();
     }
 
@@ -75,7 +79,7 @@ class SrOperationsService
         if (!in_array($interval, SrSchedule::FIELDS)) {
             return false;
         }
-        return $this->srService->getSrScheduleRepository()->fetchSrsByScheduleInterval($provider, $interval, $executeImmediately);
+        return $this->srScheduleService->getSrScheduleRepository()->fetchSrsByScheduleInterval($provider, $interval, $executeImmediately);
     }
 
     public function runSrOperationsByInterval(Provider $provider, string $interval, ?bool $executeImmediately = false)
@@ -223,7 +227,7 @@ class SrOperationsService
             $queryData[$pageSizeResponseKey] = $this->pageSize;
         }
         $operationData = $this->requestOperation->runOperation($queryData);
-        dd($operationData->toArray());
+
         if ($operationData->getStatus() !== 'success') {
             Log::channel(self::LOGGING_NAME)->error(
                 sprintf(

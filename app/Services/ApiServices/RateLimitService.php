@@ -8,6 +8,7 @@ use App\Models\Sr;
 use App\Models\SrRateLimit;
 use App\Repositories\ProviderRateLimitRepository;
 use App\Repositories\SrRateLimitRepository;
+use App\Services\ApiServices\ServiceRequests\SrService;
 use App\Services\BaseService;
 use Illuminate\Database\Schema\Blueprint;
 
@@ -15,12 +16,16 @@ class RateLimitService extends BaseService
 {
     private SrRateLimitRepository $srRateLimitRepository;
     private ProviderRateLimitRepository $providerRateLimitRepository;
+    private SrService $srService;
 
-    public function __construct()
+    public function __construct(
+        SrService $srService
+    )
     {
         parent::__construct();
         $this->srRateLimitRepository = new SrRateLimitRepository();
         $this->providerRateLimitRepository = new ProviderRateLimitRepository();
+        $this->srService = $srService;
     }
 
     public function findBySr(Sr $serviceRequest)
@@ -28,6 +33,16 @@ class RateLimitService extends BaseService
         return $this->srRateLimitRepository->findRateLimitBySr($serviceRequest);
     }
 
+    public function findParentOrChildRateLimitBySr(Sr $serviceRequest) {
+        $parentServiceRequest = $this->srService->findParentSr($serviceRequest);
+        if (!$parentServiceRequest instanceof Sr) {
+            return $this->findBySr($serviceRequest);
+        }
+        if (empty($serviceRequest->pivot) || empty($serviceRequest->pivot->rate_limits_override)) {
+            return $this->findBySr($parentServiceRequest);
+        }
+        return $this->findBySr($serviceRequest);
+    }
     public function createSrRateLimit(Sr $serviceRequest, array $data)
     {
         return $this->srRateLimitRepository->createSrRateLimit($serviceRequest, $data);

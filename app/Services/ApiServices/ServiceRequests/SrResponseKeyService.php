@@ -25,7 +25,7 @@ use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 
 class SrResponseKeyService extends BaseService
 {
-    private SRepository $serviceRepository;
+    private SrService $srService;
     private SrRepository $srRepository;
     private SrResponseKeyRepository $srResponseKeyRepository;
     private SrResponseKeySrRepository $srResponseKeySrRepository;
@@ -34,18 +34,18 @@ class SrResponseKeyService extends BaseService
     private AccessControlService $accessControlService;
 
     public function __construct(
-        AccessControlService $accessControlService
+        AccessControlService $accessControlService,
+        SrService $srService
     )
     {
         parent::__construct();
-        $this->serviceRepository = new SRepository();
+        $this->srService = $srService;
         $this->srRepository = new SrRepository();
         $this->SResponseKeyRepository = new SResponseKeyRepository();
         $this->srResponseKeyRepository = new SrResponseKeyRepository();
         $this->srConfigRepository = new SrConfigRepository();
         $this->srResponseKeySrRepository = new SrResponseKeySrRepository();
         $this->accessControlService = $accessControlService;
-//        $this->responseKeyRequestItemRepo = $this->entityManager->getRepository(ResponseKeyRequestItem::class);
     }
 
     public function findByParams(string $sort, string $order, int $count = -1)
@@ -56,54 +56,19 @@ class SrResponseKeyService extends BaseService
         return $this->SResponseKeyRepository->findMany();
     }
 
-    public function getResponseKeyById(int $responseKeyId)
-    {
-        $responseKey = $this->SResponseKeyRepository->findById($responseKeyId);
-        if ($responseKey === null) {
-            throw new BadRequestHttpException(sprintf("Response key id:%s not found in database.",
-                $responseKeyId
-            ));
+    public function findConfigForOperationBySr(Sr $serviceRequest) {
+        $parentServiceRequest = $this->srService->findParentSr($serviceRequest);
+        if (!$parentServiceRequest instanceof Sr) {
+            return $this->srResponseKeyRepository->findSrResponseKeysWithRelation($serviceRequest);
         }
-        return $responseKey;
-    }
-
-    public function getRequestResponseKeyById(int $requestResponseKeyId)
-    {
-        $requestResponseKey = $this->srResponseKeyRepository->findById($requestResponseKeyId);
-        if ($requestResponseKey === null) {
-            throw new BadRequestHttpException(sprintf("Request response key id:%s not found in database.",
-                $requestResponseKeyId
-            ));
+        if (empty($serviceRequest->pivot) || empty($serviceRequest->pivot->config_override)) {
+            return $this->srResponseKeyRepository->findSrResponseKeysWithRelation($parentServiceRequest);
         }
-        return $requestResponseKey;
+        return $this->srResponseKeyRepository->findSrResponseKeysWithRelation($serviceRequest);
     }
-
-    private function getServiceResponseKeysObject(S $service, array $data)
+    public function getResponseKeysByRequest(Provider $provider, Sr $serviceRequest)
     {
-        $responseKeyData = [];
-        $responseKeyData['service_id'] = $service->id;
-        $responseKeyData['name'] = $data['name'];
-        $responseKeyData['value'] = $data['value'];
-        return $responseKeyData;
-    }
-//    private function getResponseKeyRequestItemObject(ResponseKeyRequestItem $responseKeyRequestItem,
-//                                                     ServiceRequestResponseKey $requestResponseKey, $serviceRequestId)
-//    {
-//        $serviceRequest = $this->serviceRequestRepository->findById($serviceRequestId);
-//        $responseKeyRequestItem->setServiceRequest(
-//            $serviceRequest
-//        );
-//        $responseKeyRequestItem->setServiceRequestResponseKey($requestResponseKey);
-//        return $responseKeyRequestItem;
-//    }
-
-    public function getResponseKeysByServiceId(int $serviceId)
-    {
-        $service = $this->serviceRepository->findById($serviceId);
-        if ($service === null) {
-            throw new BadRequestHttpException(sprintf("Service id:%s not found.", $serviceId));
-        }
-        return $this->SResponseKeyRepository->findById($service->id);
+        return $this->SResponseKeyRepository->getResponseKeysByRequest($provider, $serviceRequest);
     }
 
     public function validateSrResponseKeys(Sr $sr, ?bool $requiredOnly = false)
@@ -123,47 +88,6 @@ class SrResponseKeyService extends BaseService
         );
     }
 
-    public function createDefaultServiceResponseKeys(S $service)
-    {
-        foreach (DefaultData::getServiceResponseKeys() as $keyName => $keyValue) {
-            $this->createServiceResponseKeys([
-                "service_id" => $service->id,
-                "key_name" => $keyName,
-                "key_value" => $keyValue
-            ]);
-        }
-    }
-
-    public function createServiceResponseKeys(array $data)
-    {
-        $service = $this->serviceRepository->findById($data["service_id"]);
-        $responseKey = $this->getServiceResponseKeysObject($service, $data);
-        return $this->SResponseKeyRepository->save($responseKey);
-    }
-
-    public function updateServiceResponseKeys(array $data)
-    {
-        $getResponseKey = $this->SResponseKeyRepository->findById($data["id"]);
-        $service = $this->serviceRepository->findById($data["service_id"]);
-        $responseKey = $this->getServiceResponseKeysObject($service, $data);
-        $responseKey['id'] = $getResponseKey->id;
-        return $this->SResponseKeyRepository->save($responseKey);
-    }
-
-    public function deleteServiceResponseKey(int $id)
-    {
-        $responseKey = $this->SResponseKeyRepository->findById($id);
-        if ($responseKey === null) {
-            throw new BadRequestHttpException(sprintf("Service response key id: %s not found in database.", $id));
-        }
-        $this->SResponseKeyRepository->setModel($responseKey);
-        return $this->SResponseKeyRepository->delete();
-    }
-
-    public function getRequestResponseKeyObjectById(Sr $serviceRequest, SResponseKey $serviceResponseKey)
-    {
-        return $this->getRequestResponseKeyByResponseKey($serviceRequest, $serviceResponseKey);
-    }
 
     public function getRequestResponseKeyByResponseKey(Sr $serviceRequest, SResponseKey $responseKey)
     {
@@ -180,17 +104,6 @@ class SrResponseKeyService extends BaseService
     public function getRequestResponseKeys(Sr $serviceRequest, string $sort = "name", string $order = "asc", ?int $count = null)
     {
         return $this->srResponseKeyRepository->findSrResponseKeysWithRelation($serviceRequest, $sort, $order, $count);
-    }
-
-
-    public function getServiceResponseKeyByName(S $service, string $responseKeyName)
-    {
-        return $this->SResponseKeyRepository->getServiceResponseKeyByName($service, $responseKeyName);
-    }
-
-    public function getRequestResponseKeyByName(Provider $provider, Sr $serviceRequest, string $configItemName)
-    {
-        return $this->srResponseKeyRepository::getRequestResponseKeyByName($provider, $serviceRequest, $configItemName);
     }
 
     private function getResponseKeySrsFromRequest($requestData)
@@ -265,9 +178,6 @@ class SrResponseKeyService extends BaseService
             $srIds
         );
         return true;
-    }
-    public function saveSrResponseKeySr(User $user, Sr $serviceRequest, SrResponseKey $srResponseKey)
-    {
     }
 
     public function createSrResponseKey(User $user, Sr $serviceRequest, string $sResponseKeyName, array $data)

@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Services\ApiManager\Response\Handlers;
 
 
@@ -7,6 +8,7 @@ use App\Models\Sr;
 use App\Models\SResponseKey;
 use App\Models\SrResponseKey;
 use App\Services\ApiManager\ApiBase;
+use App\Services\ApiServices\ServiceRequests\SrResponseKeyService;
 use App\Services\Provider\ProviderService;
 use App\Services\ApiServices\ServiceRequests\SrService;
 use App\Services\ApiServices\SResponseKeysService;
@@ -18,7 +20,8 @@ class ResponseHandler extends ApiBase
 {
     protected ProviderService $providerService;
     protected SrService $requestService;
-    protected SResponseKeysService $responseKeysService;
+    protected SResponseKeysService $sResponseKeysService;
+    protected SrResponseKeyService $srResponseKeyService;
     protected Provider $provider;
     protected Sr $apiService;
     protected XmlService $xmlService;
@@ -28,13 +31,19 @@ class ResponseHandler extends ApiBase
     private string $needleMatchArrayValue = "=";
     private string $needleMatchArrayKey = ".";
 
-    public function __construct(ProviderService $providerService, SrService $requestService,
-                                XmlService      $xmlService, SResponseKeysService $responseKeysService)
+    public function __construct(
+        ProviderService      $providerService,
+        SrService            $requestService,
+        XmlService           $xmlService,
+        SResponseKeysService $responseKeysService,
+        SrResponseKeyService $srResponseKeyService
+    )
     {
         $this->providerService = $providerService;
         $this->requestService = $requestService;
         $this->xmlService = $xmlService;
-        $this->responseKeysService = $responseKeysService;
+        $this->sResponseKeysService = $responseKeysService;
+        $this->srResponseKeyService = $srResponseKeyService;
     }
 
     protected function findSrResponseKeyValueInArray(string $name)
@@ -134,18 +143,19 @@ class ResponseHandler extends ApiBase
         }, $itemList);
     }
 
-    protected function buildList($itemList, SrResponseKey $requestResponseKey) {
+    protected function buildList($itemList, SrResponseKey $requestResponseKey)
+    {
         $keyArray = explode(".", $requestResponseKey->value);
         $getItemValue = $this->getArrayItems($itemList, $keyArray);
         if ($requestResponseKey->is_service_request) {
             return $this->buildResponseKeyRequestItem($getItemValue, $requestResponseKey);
-        }
-        else {
+        } else {
             return $this->getReturnDataType($requestResponseKey, $getItemValue);
         }
     }
 
-    protected function buildResponseKeyRequestItem($itemValue, SrResponseKey $requestResponseKey) {
+    protected function buildResponseKeyRequestItem($itemValue, SrResponseKey $requestResponseKey)
+    {
         if ($requestResponseKey->srResponseKeySrs()->get()->count() === 0) {
             return null;
         }
@@ -153,7 +163,7 @@ class ResponseHandler extends ApiBase
 
         $serviceRequest = $requestResponseKey->srResponseKeySrs()->first()->sr()->first();
         return [
-            "data"      => $data,
+            "data" => $data,
             "request_item" => [
                 "request_name" => $serviceRequest->label,
                 "request_operation" => $serviceRequest->name,
@@ -162,7 +172,8 @@ class ResponseHandler extends ApiBase
         ];
     }
 
-    private function getServiceRequestParameters(Sr $serviceRequest) {
+    private function getServiceRequestParameters(Sr $serviceRequest)
+    {
         $array = [];
         $parameters = $serviceRequest->srParameter()->get();
         foreach ($parameters as $parameter) {
@@ -181,7 +192,7 @@ class ResponseHandler extends ApiBase
         if (!empty($requestResponseKey->prepend_extra_data_value)) {
             $responseKeyValue = $requestResponseKey->prepend_extra_data_value . $responseKeyValue;
         }
-        if (!empty( $requestResponseKey->append_extra_data_value)) {
+        if (!empty($requestResponseKey->append_extra_data_value)) {
             $responseKeyValue = $responseKeyValue . $requestResponseKey->append_extra_data_value;
         }
 
@@ -392,15 +403,9 @@ class ResponseHandler extends ApiBase
         }
         return $buildArray;
     }
+
     public function setResponseKeysArray(): void
     {
-        $buildArray = [];
-//        foreach ($this->requestService->getResponseKeysByRequest($this->provider, $this->apiService) as $key => $responseKey) {
-//            if (!$responseKey->srResponseKey instanceof SrResponseKey) {
-//                continue;
-//            }
-//            $buildArray[$responseKey->name] = $responseKey->srResponseKey->value;
-//        }
-        $this->responseKeysArray = $this->requestService->getResponseKeysByRequest($this->provider, $this->apiService);
+        $this->responseKeysArray = $this->srResponseKeyService->findConfigForOperationBySr($this->apiService);
     }
 }

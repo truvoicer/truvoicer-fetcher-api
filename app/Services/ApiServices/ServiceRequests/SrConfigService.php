@@ -27,29 +27,33 @@ class SrConfigService extends BaseService
     const REQUEST_CONFIG_ITEM_ARRAY_VALUE = "array_value";
     const REQUEST_CONFIG_ITEM_VALUE_CHOICES = "value_choices";
 
-    private SRepository $serviceRepository;
     private PropertyRepository $propertyRepository;
-    private ProviderService $providerService;
-    private SrRepository $serviceRequestRepository;
-    private SrParameterRepository $requestParametersRepo;
     private SrConfigRepository $requestConfigRepo;
-    private SResponseKeyRepository $responseKeysRepo;
+    private SrService $srService;
 
-    public function __construct(ProviderService $providerService)
+    public function __construct(SrService $srService)
     {
         parent::__construct();
-        $this->providerService = $providerService;
+        $this->srService = $srService;
         $this->propertyRepository = new PropertyRepository();
-        $this->serviceRepository = new SRepository();
-        $this->serviceRequestRepository = new SrRepository();
-        $this->requestParametersRepo = new SrParameterRepository();
         $this->requestConfigRepo = new SrConfigRepository();
-        $this->responseKeysRepo = new SResponseKeyRepository();
     }
 
     public function findBySr(Sr $serviceRequest) {
         return $this->requestConfigRepo->findBySr($serviceRequest);
     }
+
+    public function findConfigForOperationBySr(Sr $serviceRequest) {
+        $parentServiceRequest = $this->srService->findParentSr($serviceRequest);
+        if (!$parentServiceRequest instanceof Sr) {
+            return $this->findBySr($serviceRequest);
+        }
+        if (empty($serviceRequest->pivot) || empty($serviceRequest->pivot->config_override)) {
+            return $this->findBySr($parentServiceRequest);
+        }
+        return $this->findBySr($serviceRequest);
+    }
+
     public function findByParams(Sr $serviceRequest, string $sort, string $order, ?int $count = null) {
         return $this->requestConfigRepo->findByParams($serviceRequest, $sort, $order, $count);
     }
