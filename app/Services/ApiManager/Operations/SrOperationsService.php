@@ -18,6 +18,7 @@ use App\Services\ApiServices\SResponseKeysService;
 use App\Services\Provider\ProviderService;
 use App\Services\Task\ScheduleService;
 use App\Traits\Error\ErrorTrait;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Log;
 
 class SrOperationsService
@@ -133,7 +134,6 @@ class SrOperationsService
 
     private function runResponseKeySrItem(Sr $parentSr, array $data)
     {
-        Log::channel(self::LOGGING_NAME)->info('Running nested service requests!');
         $provider = $parentSr->provider()->first();
         if (!$provider instanceof Provider) {
             return false;
@@ -143,41 +143,44 @@ class SrOperationsService
             if (!is_array($item)) {
                 continue;
             }
-            if (!array_key_exists('request_item', $item)) {
-                continue;
-            }
-            if (!is_array($item['request_item'])) {
-                continue;
-            }
-            if (empty($item['data'])) {
-                continue;
-            }
+            foreach ($item as $nested) {
+                if (!is_array($nested)) {
+                    continue;
+                }
+                if (
+                    !Arr::exists($nested, 'data') &&
+                    !Arr::exists($nested, 'request_item')
+                ) {
+                    continue;
+                }
+                if (!array_key_exists('request_item', $nested)) {
+                    continue;
+                }
+                if (!is_array($nested['request_item'])) {
+                    continue;
+                }
+                if (empty($nested['data'])) {
+                    continue;
+                }
 
-            $requestItem = $item['request_item'];
-            if (empty($requestItem['request_name'])) {
-                continue;
+                $requestItem = $nested['request_item'];
+                if (empty($requestItem['request_name'])) {
+                    continue;
+                }
+                if (empty($requestItem['request_operation'])) {
+                    continue;
+                }
+                $sr = SrRepository::getSrByName($provider, $requestItem['request_operation']);
+                if (!$sr instanceof Sr) {
+                    continue;
+                }
+                $this->runOperationForSr(
+                    $sr,
+                    [
+                        'query' => $nested['data'],
+                    ]
+                );
             }
-            if (empty($requestItem['request_operation'])) {
-                continue;
-            }
-            Log::channel(self::LOGGING_NAME)->info(
-                sprintf(
-                    'Nested Item Request name: %s | Request Operation: %s | Request data: %s |',
-                    $requestItem['request_name'],
-                    $requestItem['request_operation'],
-                    $item['data']
-                )
-            );
-            $sr = SrRepository::getSrByName($provider, $requestItem['request_operation']);
-            if (!$sr instanceof Sr) {
-                continue;
-            }
-            $this->runOperationForSr(
-                $sr,
-                [
-                    'query' => $item['data'],
-                ]
-            );
         }
         return true;
     }
@@ -297,12 +300,18 @@ class SrOperationsService
         }
         $this->runSrPagination($sr, $operationData);
 
+        $this->runChildSrRequests($sr);
 
         return true;
     }
 
     private function runChildSrRequests(Sr $sr)
     {
+        Log::channel(self::LOGGING_NAME)->info(
+            sprintf(
+                'Running child service requests for service request: %s',
+                $sr->label)
+        );
         $childSrs = $sr->childSrs()->get();
         if ($childSrs->count() === 0) {
             return;

@@ -161,15 +161,19 @@ class ResponseHandler extends ApiBase
         }
         $data = $this->getReturnDataType($requestResponseKey, $itemValue);
 
-        $serviceRequest = $requestResponseKey->srResponseKeySrs()->first()->sr()->first();
-        return [
-            "data" => $data,
-            "request_item" => [
-                "request_name" => $serviceRequest->label,
-                "request_operation" => $serviceRequest->name,
-                "request_parameters" => $this->getServiceRequestParameters($serviceRequest)
-            ]
-        ];
+        $srs = $requestResponseKey->srResponseKeySrs()->get();
+        $items = [];
+        foreach ($srs as $sr) {
+            $items[] = [
+                "data" => $data,
+                "request_item" => [
+                    "request_name" => $sr->label,
+                    "request_operation" => $sr->name,
+                    "request_parameters" => $this->getServiceRequestParameters($sr)
+                ]
+            ];
+        }
+        return $items;
     }
 
     private function getServiceRequestParameters(Sr $serviceRequest)
