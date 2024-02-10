@@ -413,7 +413,44 @@ class ServiceRequestController extends Controller
         }
         return $this->sendSuccessResponse(
             "Service request duplicated",
-            new ServiceRequestResource($update)
+            new ServiceRequestResource(
+                $this->srService->getServiceRequestRepository()->getModel()
+            )
+        );
+    }
+    public function duplicateChildServiceRequest(
+        Provider $provider,
+        Sr       $serviceRequest,
+        Sr       $childSr,
+        Request  $request
+    ): \Illuminate\Http\JsonResponse
+    {
+        $this->setAccessControlUser($request->user());
+        if (
+            !$this->accessControlService->checkPermissionsForEntity(
+                $provider,
+                [
+                    PermissionService::PERMISSION_ADMIN,
+                    PermissionService::PERMISSION_WRITE,
+                    PermissionService::PERMISSION_UPDATE,
+                ],
+            )
+        ) {
+            return $this->sendErrorResponse("Access denied");
+        }
+        $update = $this->srService->duplicateServiceRequest(
+            $childSr,
+            $this->httpRequestService->getRequestData($request, true)
+        );
+
+        if (!$update) {
+            return $this->sendErrorResponse("Error duplicating service request");
+        }
+        return $this->sendSuccessResponse(
+            "Service request duplicated",
+            new ServiceRequestResource(
+                $this->srService->getServiceRequestRepository()->getModel()
+            )
         );
     }
 

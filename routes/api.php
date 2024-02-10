@@ -139,6 +139,7 @@ Route::middleware(['auth:sanctum', 'ability:api:admin,api:superuser,api:user'])-
                             Route::patch('/{childSr}/override', [ServiceRequestController::class, 'overrideChildServiceRequest'])->name('override');
                             Route::patch('/{childSr}/update', [ServiceRequestController::class, 'updateChildServiceRequest'])->name('update');
                             Route::delete('/{childSr}/delete', [ServiceRequestController::class, 'deleteChildServiceRequest'])->name('delete');
+                            Route::post('/{childSr}/duplicate', [ServiceRequestController::class, 'duplicateChildServiceRequest'])->name('duplicate');
                         });
                         Route::delete('/delete', [ServiceRequestController::class, 'deleteServiceRequest'])->name('delete');
                         Route::patch('/update', [ServiceRequestController::class, 'updateServiceRequest'])->name('update');

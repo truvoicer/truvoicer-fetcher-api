@@ -146,43 +146,36 @@ class SrRepository extends BaseRepository
     }
     public function duplicateServiceRequest(Sr $serviceRequest, array $data)
     {
-//        $requestResponseKeysRepo = $this->getEntityManager()->getRepository(ServiceRequestResponseKey::class);
-//
-//        $newServiceRequest = new ServiceRequest();
-//        $newServiceRequest->setServiceRequestName($data['item_name']);
-//        $newServiceRequest->setServiceRequestLabel($data['item_label']);
-//        if (!empty($data['item_pagination_type'])) {
-//            $newServiceRequest->setPaginationType($data['item_pagination_type']);
-//        }
-//        $newServiceRequest->setService($serviceRequest->getService());
-//        $newServiceRequest->setCategory($serviceRequest->getCategory());
-//        $newServiceRequest->setProvider($serviceRequest->getProvider());
-//
-//        $requestResponseKeysRepo->duplicateRequestResponseKeys($serviceRequest, $newServiceRequest);
-//
-//        $requestConfig = $serviceRequest->getServiceRequestConfigs();
-//        foreach ($requestConfig as $item) {
-//            $serviceRequestConfig = new ServiceRequestConfig();
-//            $serviceRequestConfig->setItemName($item->getItemName());
-//            $serviceRequestConfig->setItemValue($item->getItemValue());
-//            $serviceRequestConfig->setValueType($item->value_type);
-//            $serviceRequestConfig->setServiceRequest($newServiceRequest);
-//            $newServiceRequest->addServiceRequestConfig($serviceRequestConfig);
-//            $this->getEntityManager()->persist($serviceRequestConfig);
-//        }
-//
-//        $requestParams = $serviceRequest->getServiceRequestParameters();
-//        foreach ($requestParams as $item) {
-//            $serviceRequestParams = new ServiceRequestParameter();
-//            $serviceRequestParams->setParameterName($item->getParameterName());
-//            $serviceRequestParams->setParameterValue($item->getParameterValue());
-//            $serviceRequestParams->setServiceRequest($newServiceRequest);
-//            $newServiceRequest->addServiceRequestParameter($serviceRequestParams);
-//            $this->getEntityManager()->persist($serviceRequestParams);
-//        }
-//        $this->getEntityManager()->persist($newServiceRequest);
-//        $this->getEntityManager()->flush();
-//        return $serviceRequest;
-        return null;
+        $this->setModel($serviceRequest->replicate());
+        $clone = $this->getModel();
+        $clone->name = $data['name'];
+        $clone->label = $data['label'];
+        if (!$clone->save()) {
+            return false;
+        }
+
+        $assoc = [
+            'service' => $serviceRequest->s()->first()->id,
+            'category' => $serviceRequest->category()->first()->id
+        ];
+        $this->saveAssociations($clone, $assoc);
+
+        $serviceRequest->srResponseKey()->get()->each(function ($item) use ($clone) {
+            $newItem = $item->replicate();
+            $clone->srResponseKey()->save($newItem);
+        });
+        $serviceRequest->srConfig()->get()->each(function ($item) use ($clone) {
+            $newItem = $item->replicate();
+            $clone->srConfig()->save($newItem);
+        });
+        $serviceRequest->srParameter()->get()->each(function ($item) use ($clone) {
+            $newItem = $item->replicate();
+            $clone->srParameter()->save($newItem);
+        });
+        $serviceRequest->parentSr()->get()->each(function ($item) use ($clone) {
+            $newItem = $item->replicate();
+            $clone->parentSr()->save($newItem);
+        });
+        return true;
     }
 }
