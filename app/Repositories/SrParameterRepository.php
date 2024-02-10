@@ -18,6 +18,10 @@ class SrParameterRepository extends BaseRepository
         return parent::getModel();
     }
 
+    public function findBySr(Sr $serviceRequest)
+    {
+        return $serviceRequest->srParameter()->get();
+    }
     public function findByParams(Sr $serviceRequest, string $sort, string $order, ?int $count = null)
     {
         return $serviceRequest->srParameter()

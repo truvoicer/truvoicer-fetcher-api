@@ -47,33 +47,13 @@ class SrConfigService extends BaseService
         $this->responseKeysRepo = new SResponseKeyRepository();
     }
 
-    public function getResponseKeysRequestsConfigList(int $serviceRequestId, int $providerId, string $sort, string $order, ?int $count = null) {
-        $serviceRequest = $this->serviceRequestRepository->findById($serviceRequestId);
-        $provider = $this->providerService->getProviderById($providerId);
-
-        $this->responseKeysRepo->addWhere("service", $serviceRequest->s()->id);
-        $responseKeys = $serviceRequest->s()->get()->responseKey()->get()->toArray();
-
-        $list = array_map(function ($item) use($provider, $serviceRequest) {
-            $listObject = new \stdClass();
-            $listObject->key_name = $item->id;
-            $listObject->key_name = $item->getKeyName();
-            $listObject->key_value = $item->getKeyValue();
-            $listObject->item_value = "";
-            $listObject->item_array_value = "";
-            $getConfig = $this->requestConfigRepo->getRequestConfigByName($serviceRequest, $item->getKeyName());
-            if ($getConfig !== null) {
-                $listObject->item_value = $getConfig->getItemValue();
-                $listObject->item_array_value = $getConfig->getItemArrayValue();
-                $listObject->item_value_choices = $getConfig->getItemValueChoices();
-            }
-            return $listObject;
-        }, $responseKeys);
+    public function findBySr(Sr $serviceRequest) {
+        return $this->requestConfigRepo->findBySr($serviceRequest);
     }
-
     public function findByParams(Sr $serviceRequest, string $sort, string $order, ?int $count = null) {
         return $this->requestConfigRepo->findByParams($serviceRequest, $sort, $order, $count);
     }
+
 
     public function requestConfigValidator(Sr $serviceRequest, ?bool $requiredOnly = false) {
         $provider = $serviceRequest->provider()->first();

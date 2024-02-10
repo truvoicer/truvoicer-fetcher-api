@@ -33,6 +33,9 @@ class BaseOperations extends ApiBase
     private SerializerService $serializerService;
     private EventsService $eventsService;
     private SrService $requestService;
+    private Collection $requestConfig;
+    private Collection $requestParameters;
+
     protected Provider $provider;
     protected string $apiRequestName;
     protected Sr $apiService;
@@ -58,6 +61,16 @@ class BaseOperations extends ApiBase
         $this->eventsService = $eventsService;
         $this->apiClientHandler = $apiClientHandler;
         $this->requestService = $requestService;
+    }
+
+    public function setRequestConfig(Collection $requestConfig): void
+    {
+        $this->requestConfig = $requestConfig;
+    }
+
+    public function setRequestParameters(Collection $requestParameters): void
+    {
+        $this->requestParameters = $requestParameters;
     }
 
     public function getOperationResponse(string $requestType, ?string $providerName = null)
@@ -143,6 +156,11 @@ class BaseOperations extends ApiBase
         ) {
             $this->setApiService();
         }
+
+        $config = $this->requestService->getRequestConfigService()->findBySr($this->apiService);
+        $parameters = $this->requestService->getRequestParametersService()->findBySr($this->apiService);
+        $this->setRequestConfig($config);
+        $this->setRequestParameters($parameters);
         $getRequest = $this->requestHandler();
         return $getRequest;
     }
@@ -239,17 +257,13 @@ class BaseOperations extends ApiBase
     }
 
     private function setRequestData() {
-        $providerServiceParams = $this->requestService->getRequestParametersByRequestName(
-            $this->provider,
-            $this->apiRequestName
-        );
         switch ($this->providerService->getProviderPropertyValue($this->provider, self::API_TYPE)) {
             case "query_string":
-                $requestQueryArray = $this->buildRequestQuery($providerServiceParams);
+                $requestQueryArray = $this->buildRequestQuery($this->requestParameters);
                 $this->apiRequest->setQuery($requestQueryArray);
                 break;
             case "query_schema":
-                $this->apiRequest->setBody($this->getRequestBody($providerServiceParams));
+                $this->apiRequest->setBody($this->getRequestBody($this->requestParameters));
                 break;
             default:
                 throw new BadRequestHttpException(
@@ -338,7 +352,7 @@ class BaseOperations extends ApiBase
 
     private function getRequestConfig(string $parameterName)
     {
-        $config = $this->requestService->getRequestConfigByName($this->provider, $this->apiService, $parameterName);
+        $config = $this->requestConfig->where('name', $parameterName)->first();
         if (!$config instanceof  SrConfig) {
             return null;
         }

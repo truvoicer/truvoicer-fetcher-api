@@ -192,9 +192,6 @@ class SrOperationsService
     }
     public function runOperationForSr(Sr $sr, ?array $queryData = ['query' => ''])
     {
-        var_dump($queryData);
-        $this->runChildSrRequests($sr);
-        die;
         Log::channel(self::LOGGING_NAME)->info(
             sprintf(
                 'Running operation for service request: %s | Request name: %s',
@@ -226,6 +223,7 @@ class SrOperationsService
             $queryData[$pageSizeResponseKey] = $this->pageSize;
         }
         $operationData = $this->requestOperation->runOperation($queryData);
+        dd($operationData->toArray());
         if ($operationData->getStatus() !== 'success') {
             Log::channel(self::LOGGING_NAME)->error(
                 sprintf(

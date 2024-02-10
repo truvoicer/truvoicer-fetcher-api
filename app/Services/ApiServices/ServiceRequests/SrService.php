@@ -79,22 +79,13 @@ class SrService extends BaseService
         return $this->serviceRequestRepository::getSrByName($provider, $serviceRequestName);
     }
 
-    public function getServiceRequest(Sr $serviceRequest)
-    {
-        return $this->castServiceRequest($getServiceRequest);
-    }
     public function getServiceRequestById($id)
     {
         $getServiceRequest = $this->serviceRequestRepository->findById($id);
         if ($getServiceRequest === null) {
             throw new BadRequestHttpException("Service request does not exist in database.");
         }
-        return $this->castServiceRequest($getServiceRequest);
-    }
-
-    public function castServiceRequest(Sr $serviceRequest)
-    {
-        return $serviceRequest;
+        return $getServiceRequest;
     }
 
     public function getUserServiceRequestByProvider(Provider $provider, string $sort, string $order, ?int $count = null)
@@ -236,6 +227,16 @@ class SrService extends BaseService
     public function getSrScheduleRepository(): SrScheduleRepository
     {
         return $this->srScheduleRepository;
+    }
+
+    public function getRequestConfigService(): SrConfigService
+    {
+        return $this->requestConfigService;
+    }
+
+    public function getRequestParametersService(): SrParametersService
+    {
+        return $this->requestParametersService;
     }
 
 }
