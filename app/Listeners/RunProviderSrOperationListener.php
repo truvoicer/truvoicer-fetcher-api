@@ -31,6 +31,7 @@ class RunProviderSrOperationListener implements ShouldQueue
         Log::log('info', 'RunSrOperationListener');
         $provider = $event->provider;
         $interval = $event->interval;
+        $executeImmediately = $event->executeImmediately;
         if (!$provider instanceof Provider) {
             Log::log('error', 'RunSrOperationListener: $provider is not instance of Provider');
             return;
@@ -39,6 +40,6 @@ class RunProviderSrOperationListener implements ShouldQueue
             Log::log('error', 'RunSrOperationListener: $interval is not string');
             return;
         }
-        $this->srOperationsService->runSrOperationsByInterval($provider, $interval);
+        $this->srOperationsService->runSrOperationsByInterval($provider, $interval, $executeImmediately);
     }
 }

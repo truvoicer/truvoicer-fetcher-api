@@ -26,18 +26,20 @@ class SrScheduleRepository extends BaseRepository
         return $serviceRequest->srSchedule()->first();
     }
 
-    public function fetchSrsByScheduleInterval(Provider $provider, string $interval)
+    public function fetchSrsByScheduleInterval(Provider $provider, string $interval, ?bool $executeImmediately = false)
     {
         $today = now()->toDateString();
         $serviceRequests = $provider->sr()
-            ->whereHas('srSchedule', function (Builder $query) use ($interval, $today) {
-                $query->where($interval, '=', true)
-                    ->where('disabled', false)
-                    ->where('locked', false)
-                    ->whereNull('end_date')
-                    ->orWhereDate('end_date', '<=', $today)
-                    ->whereNull('start_date')
-                    ->orWhereDate('start_date', '>=', $today);
+            ->whereHas('srSchedule', function (Builder $query) use ($interval, $today, $executeImmediately) {
+                if (!$executeImmediately) {
+                    $query->where($interval, '=', true)
+                        ->whereNull('end_date')
+                        ->orWhereDate('end_date', '<=', $today)
+                        ->whereNull('start_date')
+                        ->orWhereDate('start_date', '>=', $today);
+                }
+                $query->where('disabled', false)
+                ->where('locked', false);
             })
             ->get();
         return $serviceRequests;

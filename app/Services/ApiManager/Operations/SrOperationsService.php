@@ -67,7 +67,7 @@ class SrOperationsService
         }
     }
 
-    public function getSrsByScheduleInterval(Provider $provider, string $interval)
+    public function getSrsByScheduleInterval(Provider $provider, string $interval, bool $executeImmediately = false)
     {
         if (!array_key_exists($interval, ScheduleService::SCHEDULE_INTERVALS)) {
             return false;
@@ -75,12 +75,12 @@ class SrOperationsService
         if (!in_array($interval, SrSchedule::FIELDS)) {
             return false;
         }
-        return $this->srService->getSrScheduleRepository()->fetchSrsByScheduleInterval($provider, $interval);
+        return $this->srService->getSrScheduleRepository()->fetchSrsByScheduleInterval($provider, $interval, $executeImmediately);
     }
 
-    public function runSrOperationsByInterval(Provider $provider, string $interval)
+    public function runSrOperationsByInterval(Provider $provider, string $interval, ?bool $executeImmediately = false)
     {
-        $srs = $this->getSrsByScheduleInterval($provider, $interval);
+        $srs = $this->getSrsByScheduleInterval($provider, $interval, $executeImmediately);
         if ($srs->count() === 0) {
             return;
         }
@@ -127,7 +127,7 @@ class SrOperationsService
         return false;
     }
 
-    private function runNestedServiceRequests(Sr $parentSr, array $data)
+    private function runResponseKeySrItem(Sr $parentSr, array $data)
     {
         Log::channel(self::LOGGING_NAME)->info('Running nested service requests!');
         $provider = $parentSr->provider()->first();
@@ -192,6 +192,9 @@ class SrOperationsService
     }
     public function runOperationForSr(Sr $sr, ?array $queryData = ['query' => ''])
     {
+        var_dump($queryData);
+        $this->runChildSrRequests($sr);
+        die;
         Log::channel(self::LOGGING_NAME)->info(
             sprintf(
                 'Running operation for service request: %s | Request name: %s',
@@ -285,13 +288,37 @@ class SrOperationsService
             if (!$this->mongoDBRepository->insert($insertData)) {
                 $this->addError('error', 'Error inserting data into mongoDB');
             }
-            $insertData = $this->runNestedServiceRequests($sr, $item);
+            $insertData = $this->runResponseKeySrItem($sr, $item);
             if (!$insertData) {
                 continue;
             }
         }
         $this->runSrPagination($sr, $operationData);
+
+
         return true;
+    }
+
+    private function runChildSrRequests(Sr $sr)
+    {
+        $childSrs = $sr->childSrs()->get();
+        if ($childSrs->count() === 0) {
+            return;
+        }
+        foreach ($childSrs as $childSr) {
+            if (
+                is_array($childSr->query_parameters) &&
+                count($childSr->query_parameters)
+            ) {
+                $queryParameters = array_combine(
+                    array_column($childSr->query_parameters, 'key'),
+                    array_column($childSr->query_parameters, 'value')
+                );
+                $this->runOperationForSr($childSr, $queryParameters);
+            } else {
+                $this->runOperationForSr($childSr);
+            }
+        }
     }
 
     private function runSrPagination(Sr $sr, ApiResponse $apiResponse)

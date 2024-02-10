@@ -14,9 +14,9 @@ class ProviderEventService
     }
 
 
-    public function dispatchProviderSrOperationEvent(Provider $provider, string $interval)
+    public function dispatchProviderSrOperationEvent(Provider $provider, string $interval, ?bool $executeImmediately = false)
     {
-        return RunProviderSrOperationEvent::dispatch($provider, $interval);
+        return RunProviderSrOperationEvent::dispatch($provider, $interval, $executeImmediately);
     }
     public function dispatchSrOperationEvent(Sr $sr, ?array $queryData = ['query' => ''])
     {
