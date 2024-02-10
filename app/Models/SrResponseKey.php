@@ -33,11 +33,15 @@ class SrResponseKey extends Model
     {
         return $this->hasMany(SResponseKey::class);
     }
+    public function sResponseKeySr()
+    {
+        return $this->hasMany(SResponseKey::class);
+    }
 
     public function srResponseKeySrs()
     {
         return $this->belongsToMany(
-            SrResponseKey::class,
+            Sr::class,
             SrResponseKeySr::TABLE_NAME,
             'sr_response_key_id',
             'sr_id'

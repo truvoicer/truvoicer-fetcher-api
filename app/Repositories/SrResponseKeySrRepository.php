@@ -25,6 +25,7 @@ class SrResponseKeySrRepository extends BaseRepository
         if (!$srResponseKey->exists) {
             return false;
         }
+        $srResponseKey->srResponseKeySrs()->whereNotIn('sr_id', $srIds)->detach();
         $srResponseKey->srResponseKeySrs()->sync($srIds);
         return true;
     }

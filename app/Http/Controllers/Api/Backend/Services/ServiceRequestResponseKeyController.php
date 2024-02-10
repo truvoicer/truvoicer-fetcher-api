@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\Backend\Services;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Service\Request\ResponseKey\CreateServiceRequestResponseKeyRequest;
 use App\Http\Requests\Service\Request\ResponseKey\DeleteBatchSrResponseKeyRequest;
+use App\Http\Requests\Service\Request\ResponseKey\UpdateServiceRequestResponseKeyRequest;
 use App\Http\Resources\Service\ServiceRequest\ServiceRequestResponseKeyResource;
 use App\Models\Provider;
 use App\Models\Sr;
@@ -248,7 +249,7 @@ class ServiceRequestResponseKeyController extends Controller
         Provider      $provider,
         Sr            $serviceRequest,
         SrResponseKey $srResponseKey,
-        Request       $request
+        UpdateServiceRequestResponseKeyRequest       $request
     ) {
         $this->setAccessControlUser($request->user());
         if (
@@ -264,8 +265,9 @@ class ServiceRequestResponseKeyController extends Controller
         }
         $update = $this->srResponseKeyService->updateRequestResponseKey(
             $request->user(),
+            $serviceRequest,
             $srResponseKey,
-            $request->all()
+            $request->validated()
         );
 
         if (!$update) {

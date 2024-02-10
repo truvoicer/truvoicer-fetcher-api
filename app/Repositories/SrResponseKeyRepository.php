@@ -107,7 +107,9 @@ class SrResponseKeyRepository extends BaseRepository
     public function findServiceRequestResponseKeyByResponseKey(Sr $serviceRequest, SResponseKey $serviceResponseKey) {
         $query = SResponseKey::with(['srResponseKey' => function ($query) use ($serviceRequest) {
                 $query->where('sr_id', '=', $serviceRequest->id);
-                $query->with('srResponseKeySrs');
+                $query->with('srResponseKeySrs', function ($query)  {
+//                   $query->with('sr');
+                });
             }])
             ->where('id', '=', $serviceResponseKey->id)
             ->first();
@@ -144,12 +146,14 @@ class SrResponseKeyRepository extends BaseRepository
     public function saveServiceRequestResponseKey(Sr $serviceRequest, SResponseKey $serviceResponseKey, array $data) {
         $find = $this->findServiceRequestResponseKeyByResponseKey($serviceRequest, $serviceResponseKey);
         if (!$find->srResponseKey instanceof SrResponseKey) {
-            return $this->dbHelpers->validateToggle(
+            $toggle = $this->dbHelpers->validateToggle(
                 $serviceRequest->srResponseKeys()->toggle([$serviceResponseKey->id => $data]),
                 [$serviceResponseKey->id]
             );
+            $find = $this->findServiceRequestResponseKeyByResponseKey($serviceRequest, $serviceResponseKey);
+            $this->setModel($find->srResponseKey);
         }
-
+        $this->setModel($find->srResponseKey);
         $update = $serviceRequest->srResponseKeys()->updateExistingPivot($serviceResponseKey->id, $data);
         return true;
     }

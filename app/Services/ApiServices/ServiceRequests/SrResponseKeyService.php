@@ -193,15 +193,20 @@ class SrResponseKeyService extends BaseService
         return $this->srResponseKeyRepository::getRequestResponseKeyByName($provider, $serviceRequest, $configItemName);
     }
 
-    private function getServiceRequestIdFromRequest($requestData)
+    private function getResponseKeySrsFromRequest($requestData)
     {
-        if (!array_key_exists("response_key_request_item", $requestData)) {
+        if (!array_key_exists("response_key_srs", $requestData)) {
             return false;
         }
-        if (array_key_exists("value", $requestData["response_key_request_item"])) {
-            return $requestData['response_key_request_item']["value"];
+        if (!is_array($requestData["response_key_srs"])) {
+            return false;
         }
-        return false;
+        $filter = array_filter($requestData["response_key_srs"], function ($item) {
+            return (!empty($item["id"]) && is_numeric($item["id"]));
+        });
+        return array_map(function ($item) {
+            return $item["id"];
+        }, $filter);
     }
 
     public function setRequestResponseKeyObject(array $data)
@@ -230,33 +235,39 @@ class SrResponseKeyService extends BaseService
         return $requestResponseKeyData;
     }
 
-    public function saveSrResponseKeySrValue(User $user, SrResponseKey $srResponseKey, array $data)
+    public function saveSrResponseKeySrs(User $user, Sr $serviceRequest, SrResponseKey $srResponseKey, array $data)
     {
-        $serviceRequestId = $this->getServiceRequestIdFromRequest($data);
-        if (!$serviceRequestId) {
-            return false;
-        }
-        $serviceRequest = $this->srRepository->findById($serviceRequestId);
-        if (!$serviceRequest instanceof Sr) {
-            return false;
-        }
+        $provider = $serviceRequest->provider()->first();
 
-        $this->accessControlService->setUser($user);
-        if (
-            !$this->accessControlService->checkPermissionsForEntity(
-                $serviceRequest->provider()->first(),
-                [
-                    PermissionService::PERMISSION_ADMIN,
-                    PermissionService::PERMISSION_READ,
-                ],
-            )
-        ) {
+        $srIds = $this->getResponseKeySrsFromRequest($data);
+        if (!count($srIds)) {
             return false;
         }
-        return $this->srResponseKeySrRepository->saveResponseKeySr(
+        $this->accessControlService->setUser($user);
+        $srs = $provider->sr()->whereIn('id', $srIds)->get()->filter(function (Sr $sr) {
+            return (
+                $this->accessControlService->checkPermissionsForEntity(
+                    $sr->provider()->first(),
+                    [
+                        PermissionService::PERMISSION_ADMIN,
+                        PermissionService::PERMISSION_READ,
+                    ],
+                )
+            );
+        });
+
+        $srIds = $srs->map(function (Sr $sr) {
+            return $sr->id;
+        })->toArray();
+
+        $this->srResponseKeySrRepository->saveResponseKeySr(
             $srResponseKey,
-            [$serviceRequestId]
+            $srIds
         );
+        return true;
+    }
+    public function saveSrResponseKeySr(User $user, Sr $serviceRequest, SrResponseKey $srResponseKey)
+    {
     }
 
     public function createSrResponseKey(User $user, Sr $serviceRequest, string $sResponseKeyName, array $data)
@@ -269,11 +280,12 @@ class SrResponseKeyService extends BaseService
         if (!$createResponseKey) {
             return false;
         }
-
-        if (!empty($data['is_service_request']) && $data['is_service_request'] === true) {
-            $createResponseKey = $this->saveSrResponseKeySrValue(
+        $srResponseKey = $this->srResponseKeyRepository->getModel();
+        if ($srResponseKey->is_service_request) {
+            $createResponseKey = $this->saveSrResponseKeySrs(
                 $user,
-                $this->srResponseKeyRepository->getModel(),
+                $serviceRequest,
+                $srResponseKey,
                 $data
             );
         }
@@ -291,17 +303,19 @@ class SrResponseKeyService extends BaseService
             return false;
         }
 
-        if (!empty($data['is_service_request']) && $data['is_service_request'] === true) {
-            $save = $this->saveSrResponseKeySrValue(
+        $srResponseKey = $this->srResponseKeyRepository->getModel();
+        if ($srResponseKey->is_service_request) {
+            $save = $this->saveSrResponseKeySrs(
                 $user,
-                $this->srResponseKeyRepository->getModel(),
+                $serviceRequest,
+                $srResponseKey,
                 $data
             );
         }
         return $save;
     }
 
-    public function updateRequestResponseKey(User $user, SrResponseKey $serviceResponseKey, array $data)
+    public function updateRequestResponseKey(User $user, Sr $serviceRequest, SrResponseKey $serviceResponseKey, array $data)
     {
         $save = $this->srResponseKeyRepository->updateSrResponseKey(
             $serviceResponseKey,
@@ -310,10 +324,12 @@ class SrResponseKeyService extends BaseService
         if (!$save) {
             return false;
         }
-        if (!empty($data['is_service_request']) && $data['is_service_request'] === true) {
-            $save = $this->saveSrResponseKeySrValue(
+        $srResponseKey = $this->srResponseKeyRepository->getModel();
+        if ($srResponseKey->is_service_request) {
+            $save = $this->saveSrResponseKeySrs(
                 $user,
-                $this->srResponseKeyRepository->getModel(),
+                $serviceRequest,
+                $srResponseKey,
                 $data
             );
         }

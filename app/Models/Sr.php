@@ -77,7 +77,7 @@ class Sr extends Model
     public function srResponseKeySrs()
     {
         return $this->belongsToMany(
-            Sr::class,
+            SrResponseKey::class,
             SrResponseKeySr::TABLE_NAME,
             'sr_id',
             'sr_response_key_id'
