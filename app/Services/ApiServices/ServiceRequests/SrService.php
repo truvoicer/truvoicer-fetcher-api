@@ -188,6 +188,12 @@ class SrService extends BaseService
 
     public function duplicateServiceRequest(Sr $serviceRequest, array $data)
     {
+        if (empty($data["label"])) {
+            throw new BadRequestHttpException("Service request label is not set.");
+        }
+        if (empty($data["name"])) {
+            $data['name'] = UtilHelpers::labelToName($data['label'], false, '-');
+        }
         return $this->serviceRequestRepository->duplicateServiceRequest($serviceRequest, $data);
     }
 

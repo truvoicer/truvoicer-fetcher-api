@@ -84,6 +84,14 @@ class Sr extends Model
         );
     }
 
+    public function parentSr()
+    {
+        return $this->hasMany(
+            SrChildSr::class,
+            'sr_id',
+            'id'
+        );
+    }
     public function parentSrs()
     {
         return $this->belongsToMany(
