@@ -9,6 +9,7 @@ use App\Models\S;
 use App\Models\Sr;
 use App\Models\SrChildSr;
 use App\Services\Category\CategoryService;
+use Illuminate\Database\Eloquent\Collection;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 
 class SrRepository extends BaseRepository
@@ -26,6 +27,21 @@ class SrRepository extends BaseRepository
     public function findByQuery($query)
     {
         return $this->findByLabelOrName($query);
+    }
+    public function findSrsWithSchedule(Provider $provider): Collection {
+        $today = now()->toDateString();
+        return $provider->sr()
+            ->whereHas('srSchedule', function ($query) use ($today){
+                $query
+                    ->where('disabled', false)
+                    ->where('locked', false)
+                    ->whereNull('end_date')
+                    ->orWhereDate('end_date', '<=', $today)
+                    ->whereNull('start_date')
+                    ->orWhereDate('start_date', '>=', $today);
+
+            })
+            ->get();
     }
 
     public function findBySr(Sr $serviceRequest)

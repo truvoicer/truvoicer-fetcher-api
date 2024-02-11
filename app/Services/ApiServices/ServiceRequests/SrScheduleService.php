@@ -28,7 +28,8 @@ class SrScheduleService extends BaseService
 {
     private SrScheduleRepository $srScheduleRepository;
     public function __construct(
-        private ProviderEventService $providerEventService
+        private ProviderEventService $providerEventService,
+        private SrService $srService
     )
     {
         parent::__construct();
@@ -43,6 +44,16 @@ class SrScheduleService extends BaseService
         return $this->srScheduleRepository->findMany();
     }
 
+    public function findScheduleForOperationBySr(Sr $serviceRequest) {
+        $parentServiceRequest = $this->srService->findParentSr($serviceRequest);
+        if (!$parentServiceRequest instanceof Sr) {
+            return $this->findBySr($serviceRequest);
+        }
+        if (empty($serviceRequest->pivot) || empty($serviceRequest->pivot->scheduler_override)) {
+            return $this->findBySr($parentServiceRequest);
+        }
+        return $this->findBySr($serviceRequest);
+    }
     public function findBySr(Sr $serviceRequest)
     {
         return $this->srScheduleRepository->findBySr($serviceRequest);

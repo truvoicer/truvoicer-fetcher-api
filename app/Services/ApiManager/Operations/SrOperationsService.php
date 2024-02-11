@@ -300,8 +300,6 @@ class SrOperationsService
         }
         $this->runSrPagination($sr, $operationData);
 
-        $this->runChildSrRequests($sr);
-
         return true;
     }
 

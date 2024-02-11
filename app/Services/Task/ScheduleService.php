@@ -3,6 +3,7 @@
 namespace App\Services\Task;
 
 use App\Services\Provider\ProviderEventService;
+use App\Services\Provider\ProviderScheduleService;
 use Illuminate\Console\Scheduling\Schedule;
 
 class ScheduleService
@@ -37,24 +38,17 @@ class ScheduleService
     ];
 
     private Schedule $schedule;
-    private ProviderEventService $providerEventsService;
 
-    public function __construct(ProviderEventService $providerEventsService)
+    public function __construct(
+        private ProviderScheduleService $providerScheduleService
+    )
     {
-        $this->providerEventsService = $providerEventsService;
     }
 
     public function run(): void
     {
-        foreach (self::SCHEDULE_INTERVALS as $interval) {
-            $method = $interval['method'];
-            $this->schedule->call(
-                function () use ($interval){
-                    $this->providerEventsService->dispatchProviderBatchSrOpEvent($interval['field']);
-                },
-            )
-                ->{$method}();
-        }
+        $this->providerScheduleService->setSchedule($this->schedule);
+        $this->providerScheduleService->run();
     }
 
     public function setSchedule(Schedule $schedule): void

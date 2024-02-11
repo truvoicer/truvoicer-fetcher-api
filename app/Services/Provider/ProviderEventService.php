@@ -8,6 +8,7 @@ use App\Models\Provider;
 use App\Models\Sr;
 use App\Services\ApiManager\Operations\SrOperationsService;
 use Illuminate\Support\Facades\App;
+use Illuminate\Support\Facades\Log;
 
 class ProviderEventService
 {
@@ -37,7 +38,14 @@ class ProviderEventService
     }
     public function dispatchSrOperationEvent(Sr $sr, ?array $queryData = ['query' => ''])
     {
-        return RunSrOperationEvent::dispatch($sr, $queryData);
+        Log::info(
+            sprintf(
+                'Dispatching SrOperationEvent for Sr %s',
+                $sr->label
+            ),
+            $sr->srSchedule->toArray()
+        );
+//        return RunSrOperationEvent::dispatch($sr, $queryData);
     }
 
 }
