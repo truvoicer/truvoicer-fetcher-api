@@ -64,11 +64,11 @@ class SrOperationsService
         $this->mongoDBRepository = new MongoDBRepository();
     }
 
-    public function providerSrSchedule(array $interval)
+    public function providerSrSchedule(string $interval)
     {
         $providers = $this->providerService->getProviderRepository()->findAll();
         foreach ($providers as $provider) {
-            $this->runSrOperationsByInterval($provider, $interval['field']);
+            $this->runSrOperationsByInterval($provider, $interval);
         }
     }
 

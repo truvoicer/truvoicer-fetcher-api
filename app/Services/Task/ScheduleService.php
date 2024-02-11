@@ -2,7 +2,7 @@
 
 namespace App\Services\Task;
 
-use App\Services\ApiManager\Operations\SrOperationsService;
+use App\Services\Provider\ProviderEventService;
 use Illuminate\Console\Scheduling\Schedule;
 
 class ScheduleService
@@ -37,9 +37,9 @@ class ScheduleService
     ];
 
     private Schedule $schedule;
-    private SrOperationsService $providerEventsService;
+    private ProviderEventService $providerEventsService;
 
-    public function __construct(SrOperationsService $providerEventsService)
+    public function __construct(ProviderEventService $providerEventsService)
     {
         $this->providerEventsService = $providerEventsService;
     }
@@ -50,7 +50,7 @@ class ScheduleService
             $method = $interval['method'];
             $this->schedule->call(
                 function () use ($interval){
-                    $this->providerEventsService->providerSrSchedule($interval);
+                    $this->providerEventsService->dispatchProviderBatchSrOpEvent($interval['field']);
                 },
             )
                 ->{$method}();
