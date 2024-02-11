@@ -82,17 +82,20 @@ class ProviderScheduleService
         }
         if ($schedule->every_minute) {
             $this->getSrScheduleCall($sr)->everyMinute();
+            $this->runChildSrSchedule($sr);
         }
         if ($schedule->every_hour) {
             $scheduleCall = $this->getSrScheduleCall($sr);
-            if ($schedule->minute) {
-                $scheduleCall->hourlyAt($schedule->minute);
-            } else {
-                $scheduleCall->hourly();
+            $minute = $schedule->minute;
+            if (empty($minute)) {
+                $minute = 0;
             }
+            $scheduleCall->hourlyAt($minute);
+            $this->runChildSrSchedule($sr);
         } else if ($schedule->every_day) {
             $this->getSrScheduleCall($sr)
                 ->dailyAt($this->getHourMinutes($schedule));
+            $this->runChildSrSchedule($sr);
         } else if ($schedule->every_weekday) {
             $hourMinutes = $this->getHourMinutes($schedule);
             $weekday = $schedule->weekday;
@@ -100,6 +103,7 @@ class ProviderScheduleService
                 $weekday = 1;
             }
             $this->getSrScheduleCall($sr)->weeklyOn($weekday, $hourMinutes);
+            $this->runChildSrSchedule($sr);
         } else if ($schedule->every_month) {
             $hourMinutes = $this->getHourMinutes($schedule);
             $day = $schedule->day;
@@ -107,8 +111,13 @@ class ProviderScheduleService
                 $day = 1;
             }
             $this->getSrScheduleCall($sr)->monthlyOn($day, $hourMinutes);
+            $this->runChildSrSchedule($sr);
         }
 
+    }
+
+    private function runChildSrSchedule(Sr $sr)
+    {
         $childSrs = $sr->childSrs()->get();
         if ($childSrs->count() === 0) {
             return;
