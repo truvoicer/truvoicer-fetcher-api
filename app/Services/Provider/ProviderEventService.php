@@ -6,15 +6,20 @@ use App\Events\RunProviderSrOperationEvent;
 use App\Events\RunSrOperationEvent;
 use App\Models\Provider;
 use App\Models\Sr;
+use App\Models\SrSchedule;
 use App\Services\ApiManager\Operations\SrOperationsService;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Log;
 
 class ProviderEventService
 {
+    const LOGGING_NAME = 'ProviderEventService';
+    const LOGGING_PATH = 'logs/provider_events_service/log.log';
+
     public function __construct(
         private ProviderService $providerService
-    ) {
+    )
+    {
     }
 
 
@@ -32,20 +37,35 @@ class ProviderEventService
             }
         }
     }
+
     public function dispatchProviderSrOperationEvent(Provider $provider, string $interval, ?bool $executeImmediately = false)
     {
         return RunProviderSrOperationEvent::dispatch($provider, $interval, $executeImmediately);
     }
-    public function dispatchSrOperationEvent(Sr $sr, ?array $queryData = ['query' => ''])
+
+    public function dispatchSrOperationEvent(
+        Sr     $sr,
+        ?array $queryData = SrOperationsService::DEFAULT_QUERY_DATA,
+    )
+    {
+        return RunSrOperationEvent::dispatch($sr, $queryData);
+    }
+    public function dispatchSrScheduleOperationEvent(
+        Sr     $sr,
+        SrSchedule $srSchedule,
+        string $method,
+        ?array $queryData = SrOperationsService::DEFAULT_QUERY_DATA,
+    )
     {
         Log::info(
             sprintf(
-                'Dispatching SrOperationEvent for Sr %s',
-                $sr->label
+                'Dispatching SrOperationEvent for Sr %s | method: ',
+                $sr->label,
+                $method
             ),
-            $sr->srSchedule->toArray()
+            $srSchedule->toArray()
         );
-//        return RunSrOperationEvent::dispatch($sr, $queryData);
+        return RunSrOperationEvent::dispatch($sr, $queryData);
     }
 
 }

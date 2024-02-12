@@ -39,6 +39,9 @@ class SrOperationsService
         'apiRequest',
         'response',
     ];
+    public const DEFAULT_QUERY_DATA = [
+        'query' => '',
+    ];
     private MongoDBRepository $mongoDBRepository;
     private SrService $srService;
     private ProviderService $providerService;
