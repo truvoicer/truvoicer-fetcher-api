@@ -4,12 +4,10 @@ namespace App\Listeners;
 
 use App\Events\RunProviderSrOperationEvent;
 use App\Models\Provider;
-use App\Models\Sr;
-use App\Services\ApiManager\Operations\SrOperationsService;
+use App\Services\ApiServices\ServiceRequests\SrOperationsService;
 use App\Services\Provider\ProviderService;
 use App\Services\Task\ScheduleService;
 use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Support\Facades\Log;
 
 class RunProviderSrOperationListener implements ShouldQueue

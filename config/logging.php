@@ -1,6 +1,6 @@
 <?php
 
-use App\Services\ApiManager\Operations\SrOperationsService;
+use App\Services\ApiServices\ServiceRequests\SrOperationsService;
 use App\Services\Provider\ProviderEventService;
 use Monolog\Handler\NullHandler;
 use Monolog\Handler\StreamHandler;

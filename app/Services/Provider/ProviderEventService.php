@@ -7,7 +7,7 @@ use App\Events\RunSrOperationEvent;
 use App\Models\Provider;
 use App\Models\Sr;
 use App\Models\SrSchedule;
-use App\Services\ApiManager\Operations\SrOperationsService;
+use App\Services\ApiServices\ServiceRequests\SrOperationsService;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Log;
 

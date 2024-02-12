@@ -2,27 +2,11 @@
 
 namespace App\Services\ApiServices\ServiceRequests;
 
-use App\Models\S;
-use App\Models\Provider;
 use App\Models\Sr;
 use App\Models\SrSchedule;
-use App\Repositories\CategoryRepository;
-use App\Repositories\SRepository;
-use App\Repositories\SrConfigRepository;
-use App\Repositories\SrParameterRepository;
-use App\Repositories\SrRepository;
-use App\Repositories\SrResponseKeyRepository;
-use App\Repositories\SResponseKeyRepository;
 use App\Repositories\SrScheduleRepository;
-use App\Services\ApiManager\Operations\SrOperationsService;
-use App\Services\ApiServices\ApiService;
 use App\Services\BaseService;
 use App\Services\Provider\ProviderEventService;
-use App\Services\Provider\ProviderService;
-use App\Services\Tools\HttpRequestService;
-use App\Helpers\Tools\UtilHelpers;
-use Illuminate\Support\Facades\App;
-use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 
 class SrScheduleService extends BaseService
 {

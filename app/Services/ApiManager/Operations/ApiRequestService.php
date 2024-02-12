@@ -5,7 +5,7 @@ use App\Services\ApiManager\Response\Entity\ApiResponse;
 use App\Traits\User\UserTrait;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 
-class RequestOperation extends BaseOperations
+class ApiRequestService extends BaseOperations
 {
     private string $providerName;
 

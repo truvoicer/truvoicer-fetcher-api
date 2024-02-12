@@ -3,9 +3,8 @@
 namespace App\Console\Commands;
 
 use App\Models\Provider;
-use App\Services\ApiManager\Operations\SrOperationsService;
+use App\Services\ApiServices\ServiceRequests\SrOperationsService;
 use App\Services\Provider\ProviderEventService;
-use App\Services\Task\ScheduleService;
 use Illuminate\Console\Command;
 use Symfony\Component\Console\Command\Command as CommandAlias;
 

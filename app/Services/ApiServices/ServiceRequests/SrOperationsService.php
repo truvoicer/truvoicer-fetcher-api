@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Services\ApiManager\Operations;
+namespace App\Services\ApiServices\ServiceRequests;
 
 use App\Library\Defaults\DefaultData;
 use App\Models\Provider;
@@ -10,10 +10,8 @@ use App\Models\SrSchedule;
 use App\Repositories\MongoDB\MongoDBRepository;
 use App\Repositories\SrRepository;
 use App\Repositories\SrResponseKeyRepository;
-use App\Services\ApiManager\Client\Entity\ApiRequest;
+use App\Services\ApiManager\Operations\ApiRequestService;
 use App\Services\ApiManager\Response\Entity\ApiResponse;
-use App\Services\ApiServices\ServiceRequests\SrScheduleService;
-use App\Services\ApiServices\ServiceRequests\SrService;
 use App\Services\ApiServices\SResponseKeysService;
 use App\Services\Provider\ProviderService;
 use App\Services\Task\ScheduleService;
@@ -46,7 +44,7 @@ class SrOperationsService
     private SrService $srService;
     private ProviderService $providerService;
     private SrScheduleService $srScheduleService;
-    private RequestOperation $requestOperation;
+    private ApiRequestService $requestOperation;
     private int $offset = 0;
     private int $pageNumber = 1;
     private int $pageSize = 100;
@@ -54,9 +52,9 @@ class SrOperationsService
     private int $totalPages = 1000;
 
     public function __construct(
-        SrService        $srService,
-        ProviderService  $providerService,
-        RequestOperation $requestOperation,
+        SrService         $srService,
+        ProviderService   $providerService,
+        ApiRequestService $requestOperation,
         SrScheduleService $srScheduleService
     )
     {
@@ -450,7 +448,7 @@ class SrOperationsService
         ]);
     }
 
-    public function getRequestOperation(): RequestOperation
+    public function getRequestOperation(): ApiRequestService
     {
         return $this->requestOperation;
     }

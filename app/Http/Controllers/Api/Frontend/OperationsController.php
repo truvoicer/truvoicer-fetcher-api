@@ -3,7 +3,8 @@
 namespace App\Http\Controllers\Api\Frontend;
 
 use App\Http\Controllers\Controller;
-use App\Services\ApiManager\Operations\RequestOperation;
+use App\Services\ApiManager\Operations\ApiRequestDataHandler;
+use App\Services\ApiManager\Operations\ApiRequestService;
 use App\Services\Permission\AccessControlService;
 use App\Services\Tools\HttpRequestService;
 use App\Services\Tools\SerializerService;
@@ -24,7 +25,7 @@ class OperationsController extends Controller
         parent::__construct($accessControlService, $httpRequestService, $serializerService);
     }
 
-    public function searchOperation(string $name, RequestOperation $requestOperation, Request $request)
+    public function searchOperation(string $name, ApiRequestDataHandler $apiRequestDataHandler, Request $request)
     {
         $data = $request->query->all();
 //        $appEnv = $this->getParameter("app.env");
@@ -38,17 +39,17 @@ class OperationsController extends Controller
 //                $requestOperation->setApiRequestName($name);
 //                return $requestOperation->runOperation($data);
 //            });
-//        } else {
-//            $requestOperation->setProviderName($data['provider']);
-//            $requestOperation->setApiRequestName($name);
-//            $operationData = $requestOperation->runOperation($data);
 //        }
-//        return new JsonResponse(
-//            is_array($operationData) ?
-//                $this->serializerService->entityArrayToArray($operationData)
-//                :
-//                $this->serializerService->entityToArray($operationData),
-//            Response::HTTP_OK);
+
+        $apiRequestDataHandler->setProviderName($data['provider']);
+        $apiRequestDataHandler->setSrName($name);
+        $operationData = $apiRequestDataHandler->runSearch($data);
+        return new JsonResponse(
+            is_array($operationData) ?
+                $this->serializerService->entityArrayToArray($operationData)
+                :
+                $this->serializerService->entityToArray($operationData),
+            Response::HTTP_OK);
         return $this->sendSuccessResponse('Success');
     }
 }

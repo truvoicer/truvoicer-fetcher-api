@@ -4,14 +4,11 @@ namespace App\Services\Provider;
 
 use App\Models\Sr;
 use App\Models\SrSchedule;
-use App\Services\ApiManager\Operations\SrOperationsService;
 use App\Services\ApiServices\ServiceRequests\SrScheduleService;
 use App\Services\ApiServices\ServiceRequests\SrService;
-use App\Services\Provider\ProviderEventService;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Carbon;
-use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Log;
 
 class ProviderScheduleService

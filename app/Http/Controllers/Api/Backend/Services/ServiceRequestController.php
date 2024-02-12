@@ -13,7 +13,7 @@ use App\Http\Resources\Service\ServiceRequest\ServiceRequestResource;
 use App\Models\Provider;
 use App\Models\S;
 use App\Models\Sr;
-use App\Services\ApiManager\Operations\RequestOperation;
+use App\Services\ApiManager\Operations\ApiRequestService;
 use App\Services\ApiServices\ApiService;
 use App\Services\ApiServices\ServiceRequests\SrService;
 use App\Services\Permission\AccessControlService;
@@ -339,9 +339,9 @@ class ServiceRequestController extends Controller
      *
      */
     public function runApiRequest(
-        Provider $provider,
-        RequestOperation $requestOperation,
-        Request $request
+        Provider          $provider,
+        ApiRequestService $requestOperation,
+        Request           $request
     ): JsonResponse|\Illuminate\Http\JsonResponse {
         $this->setAccessControlUser($request->user());
         if (

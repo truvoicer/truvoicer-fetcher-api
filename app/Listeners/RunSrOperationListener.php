@@ -5,10 +5,9 @@ namespace App\Listeners;
 use App\Events\RunSrOperationEvent;
 use App\Models\Provider;
 use App\Models\Sr;
-use App\Services\ApiManager\Operations\SrOperationsService;
+use App\Services\ApiServices\ServiceRequests\SrOperationsService;
 use App\Services\ApiServices\ServiceRequests\SrService;
 use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Support\Facades\Log;
 
 class RunSrOperationListener implements ShouldQueue
@@ -29,7 +28,7 @@ class RunSrOperationListener implements ShouldQueue
      */
     public function handle(RunSrOperationEvent $event): void
     {
-        Log::log('info', 'RunSrOperationListener');
+        Log::log('info', 'RunSsdsdsdsdrOperationListener');
         $srId = $event->srId;
         $queryData = $event->queryData;
         if (!is_int($srId)) {
