@@ -40,7 +40,7 @@ class ProviderEventService
 
     public function dispatchProviderSrOperationEvent(Provider $provider, string $interval, ?bool $executeImmediately = false)
     {
-        return RunProviderSrOperationEvent::dispatch($provider, $interval, $executeImmediately);
+        return RunProviderSrOperationEvent::dispatch($provider->id, $interval, $executeImmediately);
     }
 
     public function dispatchSrOperationEvent(
@@ -48,7 +48,7 @@ class ProviderEventService
         ?array $queryData = SrOperationsService::DEFAULT_QUERY_DATA,
     )
     {
-        return RunSrOperationEvent::dispatch($sr, $queryData);
+        return RunSrOperationEvent::dispatch($sr->id, $queryData);
     }
     public function dispatchSrScheduleOperationEvent(
         Sr     $sr,
@@ -59,13 +59,13 @@ class ProviderEventService
     {
         Log::info(
             sprintf(
-                'Dispatching SrOperationEvent for Sr %s | method: ',
+                'Dispatching SrOperationEvent for Sr %s | method: %s',
                 $sr->label,
                 $method
             ),
             $srSchedule->toArray()
         );
-        return RunSrOperationEvent::dispatch($sr, $queryData);
+        return RunSrOperationEvent::dispatch($sr->id, $queryData);
     }
 
 }
