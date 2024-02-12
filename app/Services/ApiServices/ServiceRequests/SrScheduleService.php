@@ -47,12 +47,21 @@ class SrScheduleService extends BaseService
     public function findScheduleForOperationBySr(Sr $serviceRequest) {
         $parentServiceRequest = $this->srService->findParentSr($serviceRequest);
         if (!$parentServiceRequest instanceof Sr) {
-            return $this->findBySr($serviceRequest);
+            return [
+                'is_parent' => false,
+                'schedule' => $this->findBySr($serviceRequest)
+            ];
         }
         if (empty($serviceRequest->pivot) || empty($serviceRequest->pivot->scheduler_override)) {
-            return $this->findBySr($parentServiceRequest);
+            return [
+                'is_parent' => true,
+                'schedule' => $this->findBySr($parentServiceRequest)
+            ];
         }
-        return $this->findBySr($serviceRequest);
+        return [
+            'is_parent' => false,
+            'schedule' => $this->findBySr($serviceRequest)
+        ];
     }
     public function findBySr(Sr $serviceRequest)
     {

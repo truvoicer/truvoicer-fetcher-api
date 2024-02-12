@@ -25,7 +25,7 @@ class CreateSrScheduleRequest extends FormRequest
             'execute_immediately' => 'boolean|nullable',
             'forever' => 'boolean|nullable',
             'disabled' => 'boolean|nullable',
-            'locked' => 'boolean|nullable',
+            'disable_child_srs' => 'boolean|nullable',
             'priority' => 'boolean|nullable',
             'start_date' => 'date|nullable',
             'end_date' => 'date|nullable',
@@ -41,7 +41,7 @@ class CreateSrScheduleRequest extends FormRequest
             'weekday' => 'integer|nullable',
             'every_month' => 'boolean|nullable',
             'month' => 'integer|nullable',
-            'arguments' => 'string|nullable',
+            'parameters' => 'array|nullable'
         ];
     }
 }

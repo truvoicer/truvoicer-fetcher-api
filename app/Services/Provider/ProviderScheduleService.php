@@ -10,6 +10,7 @@ use App\Services\ApiServices\ServiceRequests\SrService;
 use App\Services\Provider\ProviderEventService;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\App;
 
 class ProviderScheduleService
@@ -44,6 +45,7 @@ class ProviderScheduleService
     ];
 
     private Schedule $schedule;
+    private Carbon $today;
 
     public function __construct(
         private ProviderEventService $providerEventsService,
@@ -52,6 +54,7 @@ class ProviderScheduleService
         private SrScheduleService           $srScheduleService
     )
     {
+        $this->today = now();
     }
 
     public function run(): void
@@ -76,10 +79,25 @@ class ProviderScheduleService
     private function runScheduleForSr(Sr $sr)
     {
         $findParentChildSr = $this->srScheduleService->findScheduleForOperationBySr($sr);
-        $schedule = $findParentChildSr->srSchedule;
+        $isParentSr = $findParentChildSr['is_parent'];
+        $schedule = $findParentChildSr['schedule'];
+
         if (!$schedule instanceof SrSchedule) {
             return;
         }
+        if ($schedule->disabled && $schedule->disable_child_srs) {
+            return;
+        } elseif ($schedule->disabled && !$schedule->disable_child_srs) {
+            $this->runChildSrSchedule($sr);
+            return;
+        }
+        if (!empty($schedule->start_date) && $schedule->start_date <= $this->today->toDateString()) {
+            return;
+        }
+        if (!empty($schedule->end_date) && $schedule->end_date >= $this->today->toDateString()) {
+            return;
+        }
+
         if ($schedule->every_minute) {
             $this->getSrScheduleCall($sr)->everyMinute();
             $this->runChildSrSchedule($sr);

@@ -29,18 +29,8 @@ class SrRepository extends BaseRepository
         return $this->findByLabelOrName($query);
     }
     public function findSrsWithSchedule(Provider $provider): Collection {
-        $today = now()->toDateString();
         return $provider->sr()
-            ->whereHas('srSchedule', function ($query) use ($today){
-                $query
-                    ->where('disabled', false)
-                    ->where('locked', false)
-                    ->whereNull('end_date')
-                    ->orWhereDate('end_date', '<=', $today)
-                    ->whereNull('start_date')
-                    ->orWhereDate('start_date', '>=', $today);
-
-            })
+            ->whereHas('srSchedule')
             ->get();
     }
 

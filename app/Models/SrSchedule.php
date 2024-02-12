@@ -16,7 +16,7 @@ class SrSchedule extends Model
         'execute_immediately',
         'forever',
         'disabled',
-        'locked',
+        'disable_child_srs',
         'priority',
         'start_date',
         'end_date',
@@ -32,7 +32,7 @@ class SrSchedule extends Model
         'weekday',
         'every_month',
         'month',
-        'arguments',
+        'parameters',
     ];
 
     protected $fillable = self::FIELDS;
