@@ -76,20 +76,29 @@ class ProviderScheduleService
         }
     }
 
-    private function runScheduleForSr(Sr $sr)
+    private function runScheduleForSr(Sr $sr, ?bool $isChild = false)
     {
         $findParentChildSr = $this->srScheduleService->findScheduleForOperationBySr($sr);
-        $isParentSr = $findParentChildSr['is_parent'];
+        $isParentSrSchedule = $findParentChildSr['is_parent'];
         $schedule = $findParentChildSr['schedule'];
 
         if (!$schedule instanceof SrSchedule) {
             return;
         }
-        if ($schedule->disabled && $schedule->disable_child_srs) {
-            return;
-        } elseif ($schedule->disabled && !$schedule->disable_child_srs) {
-            $this->runChildSrSchedule($sr);
-            return;
+        if (!$isChild) {
+            if ($schedule->disabled && $schedule->disable_child_srs) {
+                return;
+            } elseif ($schedule->disabled && !$schedule->disable_child_srs) {
+                $this->runChildSrSchedule($sr);
+                return;
+            }
+        } else {
+            if ($schedule->disabled && $schedule->disable_child_srs) {
+                return;
+            } elseif ($schedule->disabled && !$schedule->disable_child_srs) {
+                $this->runChildSrSchedule($sr);
+                return;
+            }
         }
         if (!empty($schedule->start_date) && $schedule->start_date <= $this->today->toDateString()) {
             return;
@@ -140,7 +149,7 @@ class ProviderScheduleService
         if ($childSrs->count() === 0) {
             return;
         }
-        $this->runBatchSrs($childSrs);
+        $this->runBatchSrs($childSrs, true);
     }
 
     private function getHourMinutes(SrSchedule $schedule)
