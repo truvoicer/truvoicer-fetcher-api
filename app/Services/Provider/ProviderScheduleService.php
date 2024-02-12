@@ -12,6 +12,7 @@ use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\App;
+use Illuminate\Support\Facades\Log;
 
 class ProviderScheduleService
 {
@@ -59,6 +60,7 @@ class ProviderScheduleService
 
     public function run(): void
     {
+        Log::log('info', 'Running provider schedule');
         $providers = $this->providerService->getProviderRepository()->findAll();
         foreach ($providers as $provider) {
             $srs = $this->srService->getServiceRequestRepository()->findSrsWithSchedule($provider);
@@ -71,6 +73,7 @@ class ProviderScheduleService
 
     private function runBatchSrs(Collection $srs, ?bool $isChild = false)
     {
+        Log::log('info', 'Running batch schedule for SRs');
         foreach ($srs as $serviceRequest) {
             $this->runScheduleForSr($serviceRequest, $isChild);
         }
@@ -78,6 +81,7 @@ class ProviderScheduleService
 
     private function runScheduleForSr(Sr $sr, ?bool $isChild = false)
     {
+        Log::log('info', 'Running schedule for SR: ' . $sr->label);
         $findParentChildSr = $this->srScheduleService->findScheduleForOperationBySr($sr);
         $isParentSrSchedule = $findParentChildSr['is_parent'];
         $schedule = $findParentChildSr['schedule'];
