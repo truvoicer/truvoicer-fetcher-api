@@ -306,33 +306,6 @@ class SrOperationsService
         return true;
     }
 
-    private function runChildSrRequests(Sr $sr)
-    {
-        Log::channel(self::LOGGING_NAME)->info(
-            sprintf(
-                'Running child service requests for service request: %s',
-                $sr->label)
-        );
-        $childSrs = $sr->childSrs()->get();
-        if ($childSrs->count() === 0) {
-            return;
-        }
-        foreach ($childSrs as $childSr) {
-            if (
-                is_array($childSr->query_parameters) &&
-                count($childSr->query_parameters)
-            ) {
-                $queryParameters = array_combine(
-                    array_column($childSr->query_parameters, 'key'),
-                    array_column($childSr->query_parameters, 'value')
-                );
-                $this->runOperationForSr($childSr, $queryParameters);
-            } else {
-                $this->runOperationForSr($childSr);
-            }
-        }
-    }
-
     private function runSrPagination(Sr $sr, ApiResponse $apiResponse)
     {
         Log::channel(self::LOGGING_NAME)->info('Starting pagination!');
