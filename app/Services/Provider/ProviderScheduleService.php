@@ -87,18 +87,16 @@ class ProviderScheduleService
         $schedule = $findParentChildSr['schedule'];
 
         if (!$schedule instanceof SrSchedule) {
+            Log::log('info', 'No schedule found for SR: ' . $sr->label);
             return;
         }
         if (!$isChild) {
             if ($schedule->disabled && $schedule->disable_child_srs) {
+                Log::log('info', 'Schedule is disabled for SR: ' . $sr->label);
                 return;
             } elseif ($schedule->disabled && !$schedule->disable_child_srs) {
+                Log::log('info', 'Schedule is disabled for SR: Running child srs' . $sr->label);
                 $this->runChildSrSchedule($sr);
-                return;
-            } elseif (!$schedule->disabled && !$schedule->disable_child_srs) {
-                $this->runChildSrSchedule($sr);
-                return;
-            } elseif (!$schedule->disabled && $schedule->disable_child_srs) {
                 return;
             }
         } else {
@@ -147,7 +145,9 @@ class ProviderScheduleService
             }
             $this->getSrScheduleCall($sr, $schedule, "monthlyOn({$day} '{$hourMinutes}')")
                 ->monthlyOn($day, $hourMinutes);
-            $this->runChildSrSchedule($sr);
+            if (!$schedule->disable_child_srs) {
+                $this->runChildSrSchedule($sr);
+            }
         }
 
     }
