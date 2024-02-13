@@ -113,11 +113,14 @@ class BaseOperations extends ApiBase
             $apiResponse->setMessage('Too many requests, please try again later.');
             return $apiResponse;
         }
+        $this->responseManager->setServiceRequest($this->apiService);
+        $this->responseManager->setProvider($this->provider);
+        $this->responseManager->setRequestType($requestType);
         switch ($requestType) {
             case "json":
-                return $this->responseManager->processResponse($this->apiService, $this->provider, $response, $this->apiRequest);
+                return $this->responseManager->processResponse($response, $this->apiRequest);
             case "raw":
-                return $this->responseManager->getRequestContent($this->apiService, $this->provider, $response, $this->apiRequest);
+                return $this->responseManager->getRequestContent($response, $this->apiRequest);
             default:
                 $apiResponse->setMessage('Invalid request type.');
                 return $apiResponse;

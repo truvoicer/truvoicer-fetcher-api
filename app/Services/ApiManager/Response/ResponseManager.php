@@ -26,6 +26,7 @@ class ResponseManager extends BaseService
 
     private Sr $serviceRequest;
     private Provider $provider;
+    public string $requestType;
 
     public function __construct(JsonResponseHandler $jsonResponseHandler, XmlResponseHandler $xmlResponseHandler)
     {
@@ -41,10 +42,8 @@ class ResponseManager extends BaseService
         }
         return [];
     }
-    public function getRequestContent(Sr $serviceRequest, Provider $provider, Response $response, ApiRequest $apiRequest)
+    public function getRequestContent(Response $response, ApiRequest $apiRequest)
     {
-        $this->setProvider($provider);
-        $this->setServiceRequest($serviceRequest);
         try {
             $contentType = null;
             switch ($this->getContentType($response)) {
@@ -55,7 +54,7 @@ class ResponseManager extends BaseService
                 case self::CONTENT_TYPES['XML']:
                 case self::CONTENT_TYPES['RSS_XML']:
                     $contentType = "xml";
-                    $content = $response->body();
+                    $content = [$response->body()];
                     break;
             }
             return $this->successResponse(
@@ -69,10 +68,8 @@ class ResponseManager extends BaseService
         }
     }
 
-    public function  processResponse(Sr $serviceRequest, Provider $provider, Response $response, ApiRequest $apiRequest)
+    public function  processResponse(Response $response, ApiRequest $apiRequest)
     {
-        $this->setProvider($provider);
-        $this->setServiceRequest($serviceRequest);
         try {
             $listItems = [];
             $listData = [];
@@ -80,9 +77,9 @@ class ResponseManager extends BaseService
             switch ($this->getContentType($response)) {
                 case self::CONTENT_TYPES['JSON']:
                     $contentType = "json";
-                    $this->jsonResponseHandler->setApiService($serviceRequest);
+                    $this->jsonResponseHandler->setApiService($this->serviceRequest);
                     $this->jsonResponseHandler->setResponseArray($response->json());
-                    $this->jsonResponseHandler->setProvider($provider);
+                    $this->jsonResponseHandler->setProvider($this->provider);
                     $listItems = $this->jsonResponseHandler->getListItems();
                     $listData = $this->jsonResponseHandler->getListData();
 //                    dd($listData);
@@ -90,8 +87,8 @@ class ResponseManager extends BaseService
                 case self::CONTENT_TYPES['XML']:
                 case self::CONTENT_TYPES['RSS_XML']:
                     $contentType = "xml";
-                    $this->xmlResponseHandler->setApiService($serviceRequest);
-                    $this->xmlResponseHandler->setProvider($provider);
+                    $this->xmlResponseHandler->setApiService($this->serviceRequest);
+                    $this->xmlResponseHandler->setProvider($this->provider);
                     $this->xmlResponseHandler->setResponseKeysArray();
                     $this->xmlResponseHandler->setResponseArray($response->body());
                     $listItems = $this->xmlResponseHandler->getListItems();
@@ -112,6 +109,7 @@ class ResponseManager extends BaseService
     private function errorResponse(string $message, ApiRequest $apiRequest, Response $response) {
         $apiResponse = new ApiResponse();
         $apiResponse->setStatus("error");
+        $apiResponse->setRequestType($this->requestType);
         $apiResponse->setMessage($message);
         $apiResponse->setRequestService($this->serviceRequest->name);
         if (is_array($this->serviceRequest->pagination_type) && isset($this->serviceRequest->pagination_type['value'])) {
@@ -127,6 +125,7 @@ class ResponseManager extends BaseService
     private function successResponse(string $contentType, array $requestData, array $extraData, ApiRequest $apiRequest, Response $response) {
 //        dd($requestData);
         $apiResponse = new ApiResponse();
+        $apiResponse->setRequestType($this->requestType);
         $apiResponse->setContentType($contentType);
         if (is_array($this->serviceRequest->pagination_type) && isset($this->serviceRequest->pagination_type['value'])) {
             $apiResponse->setPaginationType($this->serviceRequest->pagination_type['value']);
@@ -201,4 +200,10 @@ class ResponseManager extends BaseService
     {
         $this->provider = $provider;
     }
+
+    public function setRequestType(string $requestType): void
+    {
+        $this->requestType = $requestType;
+    }
+
 }

@@ -10,6 +10,8 @@ class ApiResponse
 {
     use ObjectTrait;
     public string $status;
+    public string $requestType;
+
     public string $message;
 
     public string $contentType;
@@ -27,6 +29,16 @@ class ApiResponse
     private ?string $paginationType = null;
     private ?ApiRequest $apiRequest = null;
     private ?Response $response = null;
+
+    public function getRequestType(): string
+    {
+        return $this->requestType;
+    }
+
+    public function setRequestType(string $requestType): void
+    {
+        $this->requestType = $requestType;
+    }
 
     public function getApiRequest(): ?ApiRequest
     {
