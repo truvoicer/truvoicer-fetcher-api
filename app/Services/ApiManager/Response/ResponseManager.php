@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Services\ApiManager\Response;
 
 use App\Models\Provider;
@@ -14,11 +15,11 @@ use Illuminate\Http\Client\Response;
 
 class ResponseManager extends BaseService
 {
-
+    const CONTENT_TYPE_JSON = "json";
+    const CONTENT_TYPE_XML = "xml";
     const CONTENT_TYPES = [
-        "JSON" => "application/json",
-        "XML" => "text/xml",
-        "RSS_XML" => "application/rss+xml"
+        self::CONTENT_TYPE_JSON => ["application/json"],
+        self::CONTENT_TYPE_XML => ["text/xml", "application/xml", "application/rss+xml"],
     ];
 
     private JsonResponseHandler $jsonResponseHandler;
@@ -35,24 +36,26 @@ class ResponseManager extends BaseService
         $this->xmlResponseHandler = $xmlResponseHandler;
     }
 
-    private function getContentTypesFromHeaders(Response $response) {
+    private function getContentTypesFromHeaders(Response $response)
+    {
         $headers = $response->headers();
         if (isset($headers['Content-Type']) && is_array($headers['Content-Type'])) {
             return $headers['Content-Type'];
         }
         return [];
     }
+
     public function getRequestContent(Response $response, ApiRequest $apiRequest)
     {
         try {
             $contentType = null;
+            $content = null;
             switch ($this->getContentType($response)) {
-                case self::CONTENT_TYPES['JSON']:
+                case self::CONTENT_TYPE_JSON:
                     $contentType = "json";
                     $content = $response->json();
                     break;
-                case self::CONTENT_TYPES['XML']:
-                case self::CONTENT_TYPES['RSS_XML']:
+                case self::CONTENT_TYPE_XML:
                     $contentType = "xml";
                     $content = [$response->body()];
                     break;
@@ -68,14 +71,14 @@ class ResponseManager extends BaseService
         }
     }
 
-    public function  processResponse(Response $response, ApiRequest $apiRequest)
+    public function processResponse(Response $response, ApiRequest $apiRequest)
     {
         try {
             $listItems = [];
             $listData = [];
             $contentType = "na";
             switch ($this->getContentType($response)) {
-                case self::CONTENT_TYPES['JSON']:
+                case self::CONTENT_TYPE_JSON:
                     $contentType = "json";
                     $this->jsonResponseHandler->setApiService($this->serviceRequest);
                     $this->jsonResponseHandler->setResponseArray($response->json());
@@ -83,8 +86,7 @@ class ResponseManager extends BaseService
                     $listItems = $this->jsonResponseHandler->getListItems();
                     $listData = $this->jsonResponseHandler->getListData();
                     break;
-                case self::CONTENT_TYPES['XML']:
-                case self::CONTENT_TYPES['RSS_XML']:
+                case self::CONTENT_TYPE_XML:
                     $contentType = "xml";
                     $this->xmlResponseHandler->setApiService($this->serviceRequest);
                     $this->xmlResponseHandler->setProvider($this->provider);
@@ -105,7 +107,8 @@ class ResponseManager extends BaseService
         }
     }
 
-    private function errorResponse(string $message, ApiRequest $apiRequest, Response $response) {
+    private function errorResponse(string $message, ApiRequest $apiRequest, Response $response)
+    {
         $apiResponse = new ApiResponse();
         $apiResponse->setStatus("error");
         $apiResponse->setRequestType($this->requestType);
@@ -121,7 +124,8 @@ class ResponseManager extends BaseService
         return $apiResponse;
     }
 
-    private function successResponse(string $contentType, array $requestData, array $extraData, ApiRequest $apiRequest, Response $response) {
+    private function successResponse(string $contentType, array $requestData, array $extraData, ApiRequest $apiRequest, Response $response)
+    {
 //        dd($requestData);
         $apiResponse = new ApiResponse();
         $apiResponse->setRequestType($this->requestType);
@@ -153,17 +157,22 @@ class ResponseManager extends BaseService
     {
         $contentTypeArray = [];
         $headers = $response->headers();
-        if (isset($headers['Content-Type']) && is_array($headers['Content-Type'])) {
-            $contentTypeArray = $headers['Content-Type'];
+        foreach ($headers as $key => $item) {
+            if (strtolower($key) === "content-type") {
+                $contentTypeArray = $item;
+            }
         }
-        $step = 0;
-        foreach (self::CONTENT_TYPES as $key => $item) {
-            foreach ($contentTypeArray as $contentType) {
-                if (str_contains($contentType, $item)) {
-                    return $item;
+        foreach ($contentTypeArray as $contentType) {
+            $contentType = strtolower($contentType);
+
+            foreach (self::CONTENT_TYPES as $key => $item) {
+                foreach ($item as $contentTypeMatch) {
+                    $contentTypeMatch = strtolower($contentTypeMatch);
+                    if (str_contains($contentType, $contentTypeMatch)) {
+                        return $key;
+                    }
                 }
             }
-            $step++;
         }
         return false;
     }
