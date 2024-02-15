@@ -69,7 +69,7 @@ class SRepository extends BaseRepository
         if (!$providerUser) {
             return null;
         }
-        return $providerUser->permissions()->get();
+        return $this->getResults($providerUser->permissions());
     }
 
     public function getPermissionsListByUser(User $user, string $sort, string $order, ?int $count) {

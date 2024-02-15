@@ -35,6 +35,7 @@ class SrParametersService extends BaseService
         return $this->findBySr($serviceRequest);
     }
     public function findByParams(Sr $serviceRequest, string $sort, string $order, ?int $count = null) {
+        $this->requestParametersRepo->setPagination(true);
         return $this->requestParametersRepo->findByParams($serviceRequest, $sort, $order, $count);
     }
 

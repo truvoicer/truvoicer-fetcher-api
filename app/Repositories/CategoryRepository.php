@@ -72,7 +72,7 @@ class CategoryRepository extends BaseRepository
         if (!$catUser) {
             return null;
         }
-        return $catUser->permissions()->get();
+        return $this->getResults($catUser->permissions());
     }
 
     public function getPermissionsListByUser(User $user, string $sort, string $order, ?int $count) {

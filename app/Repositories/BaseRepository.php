@@ -3,15 +3,17 @@
 namespace App\Repositories;
 
 use App\Helpers\Db\DbHelpers;
+use App\Traits\Database\PaginationTrait;
 use App\Traits\Database\PermissionsTrait;
 use App\Traits\Error\ErrorTrait;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Query\Builder;
+use Illuminate\Pagination\LengthAwarePaginator;
 
 class BaseRepository
 {
-    use ErrorTrait, PermissionsTrait;
+    use ErrorTrait, PermissionsTrait, PaginationTrait;
 
     const DEFAULT_WHERE = [];
     const AVAILABLE_ORDER_DIRECTIONS = ['asc', 'desc'];
@@ -131,9 +133,9 @@ class BaseRepository
         $this->reset();
         return $find;
     }
-    public function findMany(): Collection
+    public function findMany()
     {
-        $find = $this->getQuery()->get();
+        $find = $this->getResults($this->getQuery());
         $this->reset();
         return $find;
     }
@@ -154,6 +156,13 @@ class BaseRepository
         return $this->findMany();
     }
 
+    protected function getResults($query): Collection|LengthAwarePaginator
+    {
+        if ($this->paginate) {
+            return $query->paginate($this->perPage);
+        }
+        return $query->get();
+    }
 
     public function applyConditionsToQuery(array $conditions, $query) {
         foreach ($conditions as $condition) {

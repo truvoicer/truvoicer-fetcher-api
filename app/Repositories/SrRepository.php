@@ -28,25 +28,31 @@ class SrRepository extends BaseRepository
     {
         return $this->findByLabelOrName($query);
     }
-    public function findSrsWithSchedule(Provider $provider): Collection {
-        return $provider->sr()
-            ->whereHas('srSchedule')
-            ->get();
+    public function findSrsWithSchedule(Provider $provider) {
+        return $this->getResults(
+            $provider->sr()
+                ->whereHas('srSchedule')
+        );
     }
 
     public function findBySr(Sr $serviceRequest)
     {
-        return $serviceRequest->srParameter()->get();
+        return $this->getResults(
+            $serviceRequest->srParameter()
+        );
     }
     public function getServiceRequestByProvider(Provider $provider, string $sort, string $order, ?int $count = null) {
-        $srs = $provider->serviceRequest()->orderBy($sort, $order)->get();
-        return $srs->filter(function (Sr $sr) {
-            return $sr->parentSrs()->count() === 0;
-        });
+        return $this->getResults(
+            $provider->serviceRequest()
+                ->whereDoesntHave('parentSrs')
+                ->orderBy($sort, $order)
+        );
     }
     public function getChildSrs(Sr $sr, string $sort, string $order, ?int $count = null) {
-        return $sr->childSrs()
-            ->orderBy($sort, $order)->get();
+        return $this->getResults(
+            $sr->childSrs()
+                ->orderBy($sort, $order)
+        );
     }
 
     public static function getSrByName(Provider $provider, string $serviceRequestName) {

@@ -40,9 +40,10 @@ class SrScheduleRepository extends BaseRepository
                 }
                 $query->where('disabled', false)
                 ->where('locked', false);
-            })
-            ->get();
-        return $serviceRequests;
+            });
+        return $this->getResults(
+            $serviceRequests
+        );
     }
 
     public function buildSaveData(array $data)

@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Provider\CreateProviderRequest;
 use App\Http\Requests\Provider\DeleteBatchProvidersRequest;
 use App\Http\Requests\Provider\UpdateProviderRequest;
+use App\Http\Resources\ProviderCollection;
 use App\Http\Resources\ProviderResource;
 use App\Models\Provider;
 use App\Services\Auth\AuthService;
@@ -47,20 +48,21 @@ class ProviderController extends Controller
      * Gets a list of providers from the database based on the get request query parameters
      *
      */
-    public function getProviderList(Request $request): \Illuminate\Http\JsonResponse
+    public function getProviderList(Request $request)
     {
         $user = $request->user();
+        $this->providerService->getProviderRepository()->setPagination(true);
         if (
             $user->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_SUPERUSER)) ||
             $user->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_ADMIN))
         ) {
-            $providers = $this->providerService->getProviderList(
+            $providers = $this->providerService->getProviderRepository()->getProviderList(
                 $request->get('sort', "name"),
                 $request->get('order', "asc"),
                 $request->get('count', -1)
             );
         } else {
-            $providers = $this->providerService->findUserProviders(
+            $providers = $this->providerService->getProviderRepository()->findUserProviders(
                 $user,
                 $request->get('sort', "name"),
                 $request->get('order', "asc"),
@@ -69,7 +71,7 @@ class ProviderController extends Controller
         }
         return $this->sendSuccessResponse(
             "success",
-            ProviderResource::collection($providers)
+            new ProviderCollection($providers)
         );
     }
 

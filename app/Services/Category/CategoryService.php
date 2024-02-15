@@ -50,23 +50,16 @@ class CategoryService extends BaseService
 
     public function findByParams(string $sort, string $order, int $count = -1)
     {
+        $this->categoryRepository->setPagination(true);
         $this->categoryRepository->setOrderDir($order);
         $this->categoryRepository->setSortField($sort);
         $this->categoryRepository->setLimit($count);
         return $this->categoryRepository->findMany();
     }
 
-    public function getCategoryList(string $sort, string $order, ?int $count)
-    {
-        return $this->findByParams(
-            $sort,
-            $order,
-            $count
-        );
-    }
-
     public function findUserCategories(User $user, string $sort, string $order, ?int $count)
     {
+        $this->userCategoryRepository->setPagination(true);
         $this->userCategoryRepository->setPermissions([
             PermissionService::PERMISSION_ADMIN,
             PermissionService::PERMISSION_READ,

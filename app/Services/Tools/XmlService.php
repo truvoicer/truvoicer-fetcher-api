@@ -30,7 +30,7 @@ class XmlService
     public function convertXmlToArray(string $xmlContent, string $childKey, bool $parentItemArray, string $itemRepeaterKey)
     {
         $simpleXMLIterator = new SimpleXmlIterator($xmlContent, null, false);
-        $xmlarray =  $this->getXmlArray($simpleXMLIterator, $childKey, $parentItemArray, $itemRepeaterKey);
+        $xmlarray = $this->getXmlArray($simpleXMLIterator, $childKey, $parentItemArray, $itemRepeaterKey);
         return $xmlarray;
     }
 
@@ -47,6 +47,7 @@ class XmlService
         $extra = [];
         $rootItem = false;
         $i = 0;
+
         for ($xmlIterator->rewind(); $xmlIterator->valid(); $xmlIterator->next()) {
             if ($xmlIterator->getName() === $childKey) {
                 $items[$i] = $xmlIterator;
@@ -67,7 +68,7 @@ class XmlService
                 $extra[$xmlIterator->key()] = strval($xmlIterator->current());
             }
         }
-        $items = array_map(function ($iterator) use($itemRepeaterKey) {
+        $items = array_map(function ($iterator) use ($itemRepeaterKey) {
             return $this->xmlToArrayIterator($iterator, $itemRepeaterKey);
         }, $items);
 
@@ -75,8 +76,7 @@ class XmlService
 
         if ($rootItem || $parentItemArray) {
             $xmlArray[$childKey] = $items;
-        }
-        elseif (is_array($items) && count($items) === 1 && array_key_exists(0, $items) && is_array($items[0])) {
+        } elseif (is_array($items) && count($items) === 1 && array_key_exists(0, $items) && is_array($items[0])) {
             $xmlArray[$childKey] = $items[0];
         }
         return $xmlArray;
@@ -108,12 +108,14 @@ class XmlService
                     );
                 }
             } else {
-                if ($xmlIterator->attributes()) {
-                    foreach ($xmlIterator->attributes() as $key => $value) {
-                        $a["attributes"][$key] = strval($value);
+                if ($xmlIterator->current()->attributes()) {
+                    $a[$xmlIterator->key()] = [];
+                    foreach ($xmlIterator->current()->attributes() as $key => $value) {
+                        $a[$xmlIterator->key()][$key] = strval($value);
                     }
+                } else {
+                    $a[$xmlIterator->key()] = strval($xmlIterator->current());
                 }
-                $a[$xmlIterator->key()] = strval($xmlIterator->current());
             }
             $i++;
         }
@@ -126,12 +128,28 @@ class XmlService
      * @param $data
      * @return mixed
      */
-    private function getNamespacedNodes(SimpleXMLIterator $xmlIterator, $data) {
+    private function getNamespacedNodes(SimpleXMLIterator $xmlIterator, $data)
+    {
         $namespaces = $xmlIterator->getNamespaces(true);
         foreach ($namespaces as $key => $namespace) {
-            $contentValue = strval($xmlIterator->children($key, true));
-            if (isset($contentValue) && $contentValue !== "") {
-                $data[$key] = $contentValue;
+            $data[$key] = $this->xmlToArrayIterator($xmlIterator, $key);
+            foreach ($xmlIterator->children($key, true) as $childKey => $child) {
+                if ($child->attributes()) {
+                    $data[$key][$childKey] = [];
+                    foreach ($child->attributes() as $attKey => $value) {
+                        $data[$key][$childKey][$attKey] = strval($value);
+                    }
+                    $contentValue = strval($child);
+                    if (isset($contentValue) && $contentValue !== "") {
+                        $data[$key][$childKey]['value'] = $contentValue;
+                    }
+                } else {
+                    $contentValue = strval($child);
+                    if (isset($contentValue) && $contentValue !== "") {
+                        $data[$key][$childKey] = $contentValue;
+                    }
+                }
+
             }
         }
         return $data;

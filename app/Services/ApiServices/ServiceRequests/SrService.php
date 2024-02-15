@@ -78,6 +78,7 @@ class SrService extends BaseService
 
     public function getUserServiceRequestByProvider(Provider $provider, string $sort, string $order, ?int $count = null)
     {
+        $this->serviceRequestRepository->setPagination(true);
         return $this->serviceRequestRepository->getServiceRequestByProvider(
             $provider,
             $sort,
@@ -88,6 +89,7 @@ class SrService extends BaseService
 
     public function getUserChildSrsByProvider(Provider $provider, Sr $sr, string $sort, string $order, ?int $count = null)
     {
+        $this->serviceRequestRepository->setPagination(true);
         return $this->serviceRequestRepository->getChildSrs(
             $sr,
             $sort,

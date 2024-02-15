@@ -7,6 +7,7 @@ use App\Models\Category;
 use App\Models\Property;
 use App\Models\Provider;
 use App\Models\User;
+use App\Services\Permission\PermissionService;
 
 class ProviderRepository extends BaseRepository
 {
@@ -20,7 +21,32 @@ class ProviderRepository extends BaseRepository
         return parent::getModel();
     }
 
-    public function getAllProvidersArray() {
+    public function getProviderList(?string $sort = "name", ?string $order = "asc", ?int $count = -1)
+    {
+        $this->setOrderDir($order);
+        $this->setSortField($sort);
+        $this->setLimit($count);
+        return $this->getResults(
+            $this->getQuery()
+        );
+    }
+
+    public function findUserProviders(User $user, ?string $sort = "name", ?string $order = "asc", ?int $count = -1)
+    {
+        $this->setPermissions([
+            PermissionService::PERMISSION_ADMIN,
+            PermissionService::PERMISSION_READ,
+        ]);
+        return $this->getResults(
+            $this->getModelByUserQuery(
+                new Provider(),
+                $user
+            )
+        );
+    }
+
+    public function getAllProvidersArray()
+    {
         return $this->findAll();
     }
 
@@ -38,7 +64,7 @@ class ProviderRepository extends BaseRepository
         return $this->findById($providerId);
     }
 
-    public function findByParams(string $sort,  string $order, ?int $count)
+    public function findByParams(string $sort, string $order, ?int $count)
     {
         return $this->findAllWithParams($sort, $order, $count);
     }
@@ -55,20 +81,25 @@ class ProviderRepository extends BaseRepository
     }
 
 
-    public function getProviderProperty(Provider $provider, Property $property) {
+    public function getProviderProperty(Provider $provider, Property $property)
+    {
         return $provider->property()->where('property_id', $property->id)->first();
     }
 
-    public function getProviderPropsByProviderId(int $providerId) {
+    public function getProviderPropsByProviderId(int $providerId)
+    {
         $provider = $this->getProviderById($providerId);
-        return $provider->property()->get();
+        return $this->getResults($provider->property());
     }
 
-    public function deleteProvider(Provider $provider) {
+    public function deleteProvider(Provider $provider)
+    {
         $this->setModel($provider);
         return $this->delete();
     }
-    public function deleteProviderPropsByProvider(Provider $provider) {
+
+    public function deleteProviderPropsByProvider(Provider $provider)
+    {
         return $provider->property()->delete();
     }
 
@@ -98,17 +129,19 @@ class ProviderRepository extends BaseRepository
         if (!$providerUser) {
             return null;
         }
-        return $providerUser->permissions()->get();
+        return $this->getResults($providerUser->permissions());
     }
 
-    public function getPermissionsListByUser(User $user, int $id, string $sort, string $order, ?int $count) {
-        return $user
-            ->providerPermissions()
-            ->whereHas('providerUser', function ($query) use ($id) {
-                $query->where('provider_id', $id);
-            })
-            ->with('permission')
-            ->get();
+    public function getPermissionsListByUser(User $user, int $id, string $sort, string $order, ?int $count)
+    {
+        return $this->getResults(
+            $user
+                ->providerPermissions()
+                ->whereHas('providerUser', function ($query) use ($id) {
+                    $query->where('provider_id', $id);
+                })
+                ->with('permission')
+        );
     }
 
     public function deleteUserPermissions(User $user, Provider $provider)

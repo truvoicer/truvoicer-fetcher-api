@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Service\CreateSRequest;
 use App\Http\Requests\Service\DeleteBatchSRequest;
 use App\Http\Requests\Service\UpdateSRequest;
+use App\Http\Resources\Service\ServiceCollection;
 use App\Http\Resources\Service\ServiceResource;
 use App\Models\S;
 use App\Services\ApiServices\ApiService;
@@ -68,7 +69,7 @@ class ServiceController extends Controller
         }
         return $this->sendSuccessResponse(
             "success",
-            ServiceResource::collection($getServices)
+            new ServiceCollection($getServices)
         );
     }
 
@@ -95,7 +96,7 @@ class ServiceController extends Controller
         }
         return $this->sendSuccessResponse(
             "success",
-            $this->serializerService->entityToArray($service, ["single"])
+            $service
         );
     }
 

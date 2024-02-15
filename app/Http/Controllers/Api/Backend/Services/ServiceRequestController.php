@@ -9,6 +9,7 @@ use App\Http\Requests\Service\Request\DeleteBatchSrRequest;
 use App\Http\Requests\Service\Request\OverrideChildSrRequest;
 use App\Http\Requests\Service\Request\UpdateServiceRequest;
 use App\Http\Requests\Service\Request\UpdateSrRequest;
+use App\Http\Resources\Service\ServiceRequest\ServiceRequestCollection;
 use App\Http\Resources\Service\ServiceRequest\ServiceRequestResource;
 use App\Models\Provider;
 use App\Models\S;
@@ -92,7 +93,7 @@ class ServiceRequestController extends Controller
 
         return $this->sendSuccessResponse(
             "success",
-            ServiceRequestResource::collection($getServices)
+            new ServiceRequestCollection($getServices)
         );
     }
     /**
@@ -125,7 +126,7 @@ class ServiceRequestController extends Controller
 
         return $this->sendSuccessResponse(
             "success",
-            ServiceRequestResource::collection($getServices)
+            new ServiceRequestCollection($getServices)
         );
     }
 

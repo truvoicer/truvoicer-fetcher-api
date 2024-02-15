@@ -19,7 +19,7 @@ class SrConfigRepository extends BaseRepository
     }
     public function findBySr(Sr $serviceRequest)
     {
-        return $serviceRequest->srConfig()->get();
+        return $this->getResults($serviceRequest->srConfig());
     }
 
     public function findByParams(Sr $serviceRequest, string $sort, string $order, ?int $count = null)

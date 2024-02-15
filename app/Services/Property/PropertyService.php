@@ -20,6 +20,7 @@ class PropertyService extends BaseService {
     }
 
     public function findPropertiesByParams(string $sort = "name", ?string $order = "asc", ?int $count= -1) {
+        $this->propertyRepository->setPagination(true);
         $this->propertyRepository->setOrderDir($order);
         $this->propertyRepository->setSortField($sort);
         $this->propertyRepository->setLimit($count);

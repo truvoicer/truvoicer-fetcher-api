@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Property\CreatePropertyRequest;
 use App\Http\Requests\Property\DeleteBatchPropertyRequest;
 use App\Http\Requests\Property\UpdatePropertyRequest;
+use App\Http\Resources\PropertyCollection;
 use App\Http\Resources\PropertyResource;
 use App\Models\Property;
 use App\Repositories\PropertyRepository;
@@ -52,16 +53,16 @@ class PropertyController extends Controller
         if (!$this->accessControlService->inAdminGroup()) {
             return $this->sendErrorResponse("Access control: operation not permitted");
         }
-        $properties = $this->serializerService->entityArrayToArray(
-            $this->propertyService->findPropertiesByParams(
-                $request->get('sort', "name"),
-                $request->get('order', "asc"),
-                $request->get('count', -1)
-            )
-        );
+
         return $this->sendSuccessResponse(
             "success",
-            PropertyResource::collection($properties)
+            new PropertyCollection(
+                $this->propertyService->findPropertiesByParams(
+                    $request->get('sort', "name"),
+                    $request->get('order', "asc"),
+                    $request->get('count', -1)
+                )
+            )
         );
     }
 

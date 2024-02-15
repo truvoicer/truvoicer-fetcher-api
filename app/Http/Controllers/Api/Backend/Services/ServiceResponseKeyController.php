@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Service\ResponseKey\CreateSResponseKeyRequest;
 use App\Http\Requests\Service\ResponseKey\DeleteBatchSResponseKeyRequest;
 use App\Http\Requests\Service\ResponseKey\UpdateServiceResponseKeyRequest;
+use App\Http\Resources\Service\ServiceResponseKeyCollection;
 use App\Http\Resources\Service\ServiceResponseKeyResource;
 use App\Models\Provider;
 use App\Models\S;
@@ -80,7 +81,7 @@ class ServiceResponseKeyController extends Controller
         }
         return $this->sendSuccessResponse(
             "success",
-            ServiceResponseKeyResource::collection(
+            new ServiceResponseKeyCollection(
                 $this->responseKeysService->getResponseKeysByService($service)
             )
         );

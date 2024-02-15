@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Category\CreateCategoryRequest;
 use App\Http\Requests\Category\DeleteBatchCategoryRequest;
 use App\Http\Requests\Category\UpdateCategoryRequest;
+use App\Http\Resources\CategoryCollection;
 use App\Http\Resources\CategoryResource;
 use App\Models\Category;
 use App\Services\Auth\AuthService;
@@ -57,7 +58,7 @@ class CategoryController extends Controller
             $request->user()->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_SUPERUSER)) ||
             $request->user()->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_ADMIN))
         ) {
-            $categories = $this->categoryService->getCategoryList(
+            $categories = $this->categoryService->findByParams(
                 $request->get('sort', "name"),
                 $request->get('order', "asc"),
                 $request->get('count', -1)
@@ -71,7 +72,7 @@ class CategoryController extends Controller
             );
         }
         return $this->sendSuccessResponse("success",
-            CategoryResource::collection($categories)
+            new CategoryCollection($categories)
         );
     }
 
@@ -148,11 +149,10 @@ class CategoryController extends Controller
         ) {
             return $this->sendErrorResponse("Access control: operation not permitted");
         }
-        $delete = $this->categoryService->deleteCategory($category);
-        if (!$delete) {
-            return $this->sendErrorResponse("Error deleting category", $this->serializerService->entityToArray($delete, ['main']));
+        if (!$this->categoryService->deleteCategory($category)) {
+            return $this->sendErrorResponse("Error deleting category");
         }
-        return $this->sendSuccessResponse("Category deleted.", $this->serializerService->entityToArray($delete, ['main']));
+        return $this->sendSuccessResponse("Category deleted.");
     }
     public function deleteBatch(
         DeleteBatchCategoryRequest $request

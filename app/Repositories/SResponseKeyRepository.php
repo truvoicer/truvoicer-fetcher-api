@@ -64,10 +64,9 @@ class SResponseKeyRepository extends BaseRepository
         return count($errors) === 0;
     }
     public function findServiceResponseKeysByNameBatch(S $service, array $names) {
-        return $service->sResponseKey()->whereIn('name', $names)->get();
-    }
-    public function findServiceResponseKeysDiffByNameBatch(S $service, array $names) {
-        return $service->sResponseKey()->get()->diff(SResponseKey::whereIn('name', $names)->get());
+        return $this->getResults(
+            $service->sResponseKey()->whereIn('name', $names)
+        );
     }
     public function getServiceResponseKeyByName(S $service, string $name)
     {
@@ -75,7 +74,9 @@ class SResponseKeyRepository extends BaseRepository
     }
 
     public function findServiceResponseKeys(S $service) {
-        return $service->sResponseKey()->get();
+        return $this->getResults(
+            $service->sResponseKey()
+        );
     }
 
     public function createServiceResponseKey(S $service, array $data) {

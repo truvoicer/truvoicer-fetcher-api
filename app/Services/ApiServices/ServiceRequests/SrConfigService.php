@@ -55,6 +55,7 @@ class SrConfigService extends BaseService
     }
 
     public function findByParams(Sr $serviceRequest, string $sort, string $order, ?int $count = null) {
+        $this->requestConfigRepo->setPagination(true);
         return $this->requestConfigRepo->findByParams($serviceRequest, $sort, $order, $count);
     }
 

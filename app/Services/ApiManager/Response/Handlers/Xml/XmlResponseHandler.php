@@ -22,49 +22,6 @@ class XmlResponseHandler extends ResponseHandler
         return $this->buildParentListItems($this->getParentItemList());
     }
 
-    protected function buildListItems(array $itemList)
-    {
-        return array_map(function ($item) {
-            $itemList = [];
-            foreach ($this->responseKeysArray as $responseKey) {
-                if (!$responseKey->srResponseKey instanceof SrResponseKey) {
-                    continue;
-                }
-                if (!$responseKey->srResponseKey->list_item) {
-                    continue;
-                }
-                $name = $responseKey->name;
-                $srResponseKey = $responseKey->srResponseKey;
-                $getAttribute = $this->getAttribute($srResponseKey->value, $item);
-                if ($getAttribute && $srResponseKey->show_in_response) {
-                    $itemList[$name] = $getAttribute;
-                } elseif ($srResponseKey->show_in_response) {
-                    $itemList[$name] = $this->buildList($item, $srResponseKey);
-                }
-
-            }
-            $itemList["provider"] = $this->provider->name;
-            return $itemList;
-        }, $itemList);
-    }
-
-
-    private function getAttribute(string $keyValue, $itemArray = null)
-    {
-        if ($itemArray === null) {
-            return false;
-        }
-        if (strpos($keyValue, "attribute." === false)) {
-            return false;
-        }
-        $keyArray = explode(".", $keyValue);
-
-        if (isset($keyArray[2])) {
-            return $itemArray["attributes"][$keyArray[2]];
-        }
-        return false;
-    }
-
     /**
      * @param string $responseContent
      */

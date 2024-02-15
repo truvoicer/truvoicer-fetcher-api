@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Service\Request\Parameter\CreateServiceRequestParameterRequest;
 use App\Http\Requests\Service\Request\Parameter\DeleteBatchSrParameterRequest;
 use App\Http\Requests\Service\Request\Parameter\UpdateServiceRequestParameterRequest;
+use App\Http\Resources\Service\ServiceRequest\ServiceRequestParameterCollection;
 use App\Http\Resources\Service\ServiceRequest\ServiceRequestParameterResource;
 use App\Http\Resources\Service\ServiceRequest\ServiceRequestResource;
 use App\Models\Provider;
@@ -75,7 +76,7 @@ class ServiceRequestParameterController extends Controller
 
         return $this->sendSuccessResponse(
             "success",
-            ServiceRequestParameterResource::collection(
+            new ServiceRequestParameterCollection(
                 $findRequestParameters
             )
         );

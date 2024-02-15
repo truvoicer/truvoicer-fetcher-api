@@ -31,6 +31,7 @@ class UserAdminService extends BaseService
     }
 
     public function findByParams(string $sort, string $order, ?int $count = null) {
+        $this->userRepository->setPagination(true);
         return $this->userRepository->findAllWithParams($sort, $order, $count);
     }
     public function findUserRoles(string $sort, string $order, ?int $count = null) {
@@ -112,7 +113,7 @@ class UserAdminService extends BaseService
 
     public function findApiTokensByParams(User $user, string $sort, string $order, ?int $count = null)
     {
-        return $user->tokens()->orderBy($sort, $order)->limit($count)->get();
+        return $user->tokens()->orderBy($sort, $order)->limit($count)->paginate();
     }
 
     public function updateUser(User $user, array $data, ?array $roles = [])

@@ -5,13 +5,16 @@ namespace App\Http\Resources;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\ResourceCollection;
 
-class RouteCollection extends ResourceCollection
+class ServiceRequestResponseKeyCollection extends BaseCollection
 {
     /**
      * Transform the resource collection into an array.
      *
      * @return array<int|string, mixed>
      */
+
+    public static $wrap = 'service_request_response_keys';
+    public $collects = ServiceRequestResponseKeyResource::class;
     public function toArray(Request $request): array
     {
         return parent::toArray($request);

@@ -82,7 +82,6 @@ class ResponseManager extends BaseService
                     $this->jsonResponseHandler->setProvider($this->provider);
                     $listItems = $this->jsonResponseHandler->getListItems();
                     $listData = $this->jsonResponseHandler->getListData();
-//                    dd($listData);
                     break;
                 case self::CONTENT_TYPES['XML']:
                 case self::CONTENT_TYPES['RSS_XML']:

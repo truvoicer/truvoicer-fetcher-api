@@ -92,65 +92,12 @@ class ProviderService extends BaseService
         return $this->providerRepository->findByQuery($query);
     }
 
-    public function getProviderPropertyRelationById(int $id)
-    {
-        $providerProperty = $this->providerPropertyRepository->findById($id);
-        if ($providerProperty === null) {
-            throw new BadRequestHttpException(sprintf("ProviderProperty relation id:%s not found in database.",
-                $id
-            ));
-        }
-        return $providerProperty;
-    }
-
-    public function getProviderList(?string $sort = "name", ?string $order = "asc", ?int $count = -1)
-    {
-        $this->providerRepository->setOrderDir($order);
-        $this->providerRepository->setSortField($sort);
-        $this->providerRepository->setLimit($count);
-        return $this->providerRepository->getQuery()->get();
-    }
-
-    public function findUserProviders(User $user, ?string $sort = "name", ?string $order = "asc", ?int $count = -1) {
-        $this->providerRepository->setPermissions([
-            PermissionService::PERMISSION_ADMIN,
-            PermissionService::PERMISSION_READ,
-        ]);
-        return $this->providerRepository->getModelByUserQuery(
-            new Provider(),
-            $user
-        )->get();
-    }
-    public function getUserProviderList(User $user, Provider $provider)
-    {
-        $this->userProviderRepository->addWhere("user", $user->id);
-        $this->userProviderRepository->addWhere("provider", $provider->id);
-        return $this->userProviderRepository->findOne();
-    }
-
-    public function getProviderListByUser(string $sort = "name", string $order = "asc", ?int $count = null, $user = null)
-    {
-        $getProviders = $this->userProviderRepository->findProvidersByUser(
-            ($user === null) ? $this->user : $user,
-            $sort,
-            $order,
-            $count
-        );
-        return array_map(function ($userProvider) {
-            return $userProvider->getProvider();
-        }, $getProviders);
-    }
-
     public function getProviderPropertyObjectByName(Provider $provider, string $propertyName)
     {
         $property = $this->propertyService->getPropertyByName($propertyName);
         return $this->getProviderProperty($provider, $property);
     }
 
-    public function getProviderPropertyObjectById(Provider $provider, Property $property)
-    {
-        return $this->getProviderProperty($provider, $property);
-    }
 
     public function getProviderProperty(Provider $provider, Property $property)
     {
@@ -162,6 +109,7 @@ class ProviderService extends BaseService
 
     public function getProviderProperties(Provider $provider, string $sort = "name", string $order = "asc", int $count = -1)
     {
+        $this->providerPropertyRepository->setPagination(true);
         $this->providerPropertyRepository->setOrderDir($order);
         $this->providerPropertyRepository->setSortField($sort);
         $this->providerPropertyRepository->setLimit($count);

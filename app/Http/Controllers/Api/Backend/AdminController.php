@@ -6,8 +6,10 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\User\CreateUserRequest;
 use App\Http\Requests\Admin\User\DeleteBatchUserRequest;
 use App\Http\Requests\Auth\GenerateApiTokenRequest;
+use App\Http\Resources\PersonalAccessTokenCollection;
 use App\Http\Resources\PersonalAccessTokenResource;
 use App\Http\Resources\RoleResource;
+use App\Http\Resources\UserCollection;
 use App\Http\Resources\UserResource;
 use App\Models\User;
 use App\Services\Permission\AccessControlService;
@@ -65,7 +67,7 @@ class AdminController extends Controller
         );
         return $this->sendSuccessResponse(
             "success",
-            UserResource::collection($getUsers)
+            new UserCollection($getUsers)
         );
     }
     public function getUserRoleList(Request $request)
@@ -208,7 +210,7 @@ class AdminController extends Controller
         );
         return $this->sendSuccessResponse(
             "success",
-            PersonalAccessTokenResource::collection($getApiTokens)
+            new PersonalAccessTokenCollection($getApiTokens)
         );
     }
 

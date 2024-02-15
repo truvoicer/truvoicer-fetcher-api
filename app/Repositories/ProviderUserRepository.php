@@ -33,7 +33,7 @@ class ProviderUserRepository extends BaseRepository
         if ($count !== null && $count > 0) {
             $query->limit($count);
         }
-        return $query->get();
+        return $this->getResults($query);
 
     }
 

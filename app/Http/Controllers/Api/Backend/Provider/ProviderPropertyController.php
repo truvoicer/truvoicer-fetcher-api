@@ -5,7 +5,9 @@ namespace App\Http\Controllers\Api\Backend\Provider;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Property\DeleteBatchPropertyRequest;
 use App\Http\Requests\Provider\Property\SaveProviderPropertyRequest;
+use App\Http\Resources\PropertyCollection;
 use App\Http\Resources\PropertyResource;
+use App\Http\Resources\ProviderPropertyCollection;
 use App\Models\Property;
 use App\Models\Provider;
 use App\Repositories\ProviderRepository;
@@ -74,7 +76,7 @@ class ProviderPropertyController extends Controller
         );
         return $this->sendSuccessResponse(
             "success",
-            PropertyResource::collection($getProviderProps)
+            new ProviderPropertyCollection($getProviderProps)
         );
     }
 

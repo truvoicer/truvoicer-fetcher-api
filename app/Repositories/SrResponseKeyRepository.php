@@ -8,7 +8,9 @@ use App\Models\S;
 use App\Models\Sr;
 use App\Models\SrResponseKey;
 use App\Models\SResponseKey;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 
 class SrResponseKeyRepository extends BaseRepository
@@ -35,7 +37,7 @@ class SrResponseKeyRepository extends BaseRepository
             ->first();
     }
 
-    public static function getSrResponseKeyValueByName(Provider $provider, Sr $serviceRequest,  string $keyName)
+    public static function getSrResponseKeyValueByName(Provider $provider, Sr $serviceRequest, string $keyName)
     {
         $responseKey = self::getRequestResponseKeyByName($provider, $serviceRequest, $keyName);
         if (!$responseKey instanceof SResponseKey) {
@@ -48,12 +50,14 @@ class SrResponseKeyRepository extends BaseRepository
         return $value->value;
     }
 
-    public function removeAllServiceRequestResponseKeys(Sr $serviceRequest) {
+    public function removeAllServiceRequestResponseKeys(Sr $serviceRequest)
+    {
         return $serviceRequest->srResponseKey()->delete();
     }
 
     public function duplicateRequestResponseKeys(Sr $sourceServiceRequest,
-                                                 Sr $destinationServiceRequest) {
+                                                 Sr $destinationServiceRequest)
+    {
 //        $sourceResponseKeys = $sourceServiceRequest->getServiceRequestResponseKeys();
 //        foreach ($sourceResponseKeys as $item) {
 //            $responseKey = new ServiceRequestResponseKey();
@@ -79,43 +83,52 @@ class SrResponseKeyRepository extends BaseRepository
     }
 
     public function mergeRequestResponseKeys(Sr $sourceServiceRequest,
-                                             Sr $destinationServiceRequest) {
+                                             Sr $destinationServiceRequest)
+    {
 //        $this->removeAllServiceRequestResponseKeys($destinationServiceRequest);
 //        $this->duplicateRequestResponseKeys($sourceServiceRequest, $destinationServiceRequest);
         return true;
     }
 
-    public function updateSrResponseKey(SrResponseKey $serviceRequestResponseKey, array $data) {
+    public function updateSrResponseKey(SrResponseKey $serviceRequestResponseKey, array $data)
+    {
         $this->setModel($serviceRequestResponseKey);
         return $this->save($data);
     }
 
-    public function findSrResponseKeysWithRelation(Sr $serviceRequest)
+    public function findSrResponseKeysWithRelation(Sr $serviceRequest): LengthAwarePaginator|Collection
     {
         $service = $serviceRequest->s()->first()->sResponseKey();
-        return $service->with(['srResponseKey' => function ($query) use ($serviceRequest) {
-            $query->where('sr_id', '=', $serviceRequest->id);
-        }])
-            ->get();
+        return $this->getResults(
+            $service->with(['srResponseKey' => function ($query) use ($serviceRequest) {
+                $query->where('sr_id', '=', $serviceRequest->id);
+            }])
+        );
     }
-    public function findServiceRequestResponseKeys(Sr $serviceRequest, string $sort = "name", string $order = "asc", ?int $count = null) {
+
+    public function findServiceRequestResponseKeys(Sr $serviceRequest, string $sort = "name", string $order = "asc", ?int $count = null)
+    {
         return $serviceRequest->srResponseKeys()
             ->with('srResponseKey')
             ->orderBy($sort, $order)
             ->paginate();
     }
-    public function findServiceRequestResponseKeyByResponseKey(Sr $serviceRequest, SResponseKey $serviceResponseKey) {
+
+    public function findServiceRequestResponseKeyByResponseKey(Sr $serviceRequest, SResponseKey $serviceResponseKey)
+    {
         $query = SResponseKey::with(['srResponseKey' => function ($query) use ($serviceRequest) {
-                $query->where('sr_id', '=', $serviceRequest->id);
-                $query->with('srResponseKeySrs', function ($query)  {
+            $query->where('sr_id', '=', $serviceRequest->id);
+            $query->with('srResponseKeySrs', function ($query) {
 //                   $query->with('sr');
-                });
-            }])
+            });
+        }])
             ->where('id', '=', $serviceResponseKey->id)
             ->first();
         return $query;
     }
-    public function createServiceRequestResponseKey(Sr $serviceRequest, string $sResponseKeyName, array $data) {
+
+    public function createServiceRequestResponseKey(Sr $serviceRequest, string $sResponseKeyName, array $data)
+    {
         $sResponseKerRepo = new SResponseKeyRepository();
         $findSResponseKey = $sResponseKerRepo->getServiceResponseKeyByName(
             $serviceRequest->s()->first(),
@@ -143,7 +156,8 @@ class SrResponseKeyRepository extends BaseRepository
         );
     }
 
-    public function saveServiceRequestResponseKey(Sr $serviceRequest, SResponseKey $serviceResponseKey, array $data) {
+    public function saveServiceRequestResponseKey(Sr $serviceRequest, SResponseKey $serviceResponseKey, array $data)
+    {
         $find = $this->findServiceRequestResponseKeyByResponseKey($serviceRequest, $serviceResponseKey);
         if (!$find->srResponseKey instanceof SrResponseKey) {
             $toggle = $this->dbHelpers->validateToggle(
@@ -158,11 +172,13 @@ class SrResponseKeyRepository extends BaseRepository
         return true;
     }
 
-    public function deleteServiceRequestResponseKeyByResponseKey(Sr $serviceRequest, SResponseKey $serviceResponseKey) {
+    public function deleteServiceRequestResponseKeyByResponseKey(Sr $serviceRequest, SResponseKey $serviceResponseKey)
+    {
         return ($serviceRequest->srResponseKeys()->detach($serviceResponseKey->id) > 0);
     }
 
-    public function deleteRequestResponseKeys(SrResponseKey $requestResponseKey) {
+    public function deleteRequestResponseKeys(SrResponseKey $requestResponseKey)
+    {
         $this->setModel($requestResponseKey);
         return $this->delete();
     }

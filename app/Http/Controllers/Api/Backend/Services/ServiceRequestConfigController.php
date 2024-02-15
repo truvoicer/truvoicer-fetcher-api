@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Service\Request\Config\CreateServiceRequestConfigRequest;
 use App\Http\Requests\Service\Request\Config\DeleteBatchSrConfigRequest;
 use App\Http\Requests\Service\Request\Config\UpdateServiceRequestConfigRequest;
+use App\Http\Resources\Service\ServiceRequest\ServiceRequestConfigCollection;
 use App\Http\Resources\Service\ServiceRequest\ServiceRequestConfigResource;
 use App\Models\Provider;
 use App\Models\Sr;
@@ -78,7 +79,7 @@ class ServiceRequestConfigController extends Controller
             $request->get('count', -1)
         );
         return $this->sendSuccessResponse("success",
-            ServiceRequestConfigResource::collection(
+            new ServiceRequestConfigCollection(
                 $findRequestConfigs
             )
         );

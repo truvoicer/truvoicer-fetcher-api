@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\Backend;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\User\CreateUserRequest;
 use App\Http\Requests\Admin\User\UpdateUserRequest;
+use App\Http\Resources\PersonalAccessTokenCollection;
 use App\Http\Resources\PersonalAccessTokenResource;
 use App\Http\Resources\UserResource;
 use App\Services\ApiServices\ServiceRequests\SrService;
@@ -112,7 +113,7 @@ class UserController extends Controller
         );
         return $this->sendSuccessResponse(
             "success",
-            PersonalAccessTokenResource::collection($getApiTokens)
+            new PersonalAccessTokenCollection($getApiTokens)
         );
     }
 
