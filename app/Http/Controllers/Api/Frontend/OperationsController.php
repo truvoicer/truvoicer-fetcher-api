@@ -3,8 +3,7 @@
 namespace App\Http\Controllers\Api\Frontend;
 
 use App\Http\Controllers\Controller;
-use App\Services\ApiManager\Operations\ApiRequestDataHandler;
-use App\Services\ApiManager\Operations\ApiRequestService;
+use App\Services\ApiManager\Operations\DataHandler\ApiRequestDataHandler;
 use App\Services\Permission\AccessControlService;
 use App\Services\Tools\HttpRequestService;
 use App\Services\Tools\SerializerService;
@@ -41,15 +40,15 @@ class OperationsController extends Controller
 //            });
 //        }
 
-        $apiRequestDataHandler->setProviderName($data['provider']);
-        $apiRequestDataHandler->setSrName($name);
-        $operationData = $apiRequestDataHandler->runSearch($data);
-        return new JsonResponse(
-            is_array($operationData) ?
-                $this->serializerService->entityArrayToArray($operationData)
-                :
-                $this->serializerService->entityToArray($operationData),
-            Response::HTTP_OK);
-        return $this->sendSuccessResponse('Success');
+        $apiRequestDataHandler->setUser($request->user());
+
+        return $this->sendSuccessResponse(
+            'Success',
+            $apiRequestDataHandler->runSearch(
+                $request->query->get('provider'),
+                $name,
+                $data
+            )
+        );
     }
 }

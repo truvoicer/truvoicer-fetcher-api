@@ -3,15 +3,17 @@
 namespace App\Repositories\MongoDB;
 
 use App\Helpers\Db\DbHelpers;
+use App\Traits\Database\PaginationTrait;
 use App\Traits\Error\ErrorTrait;
 use Illuminate\Database\Connection;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\DB;
 
 class BaseRepository
 {
 
-    use ErrorTrait;
+    use ErrorTrait, PaginationTrait;
 
     const DEFAULT_WHERE = [];
     const AVAILABLE_ORDER_DIRECTIONS = ['asc', 'desc'];
@@ -45,12 +47,22 @@ class BaseRepository
 
     public function findAll()
     {
-        return $this->connection->collection($this->collection)->get();
+        return $this->getResults(
+            $this->connection->collection($this->collection)
+        );
     }
 
     public function findById(int $id): ?object
     {
         return $this->connection->collection($this->collection)->find($id);
+    }
+
+    protected function getResults($query): Collection|LengthAwarePaginator
+    {
+        if ($this->paginate) {
+            return $query->paginate($this->perPage);
+        }
+        return $query->get();
     }
 
     private function buildQuery() {
@@ -105,7 +117,9 @@ class BaseRepository
     }
     public function findMany(): Collection
     {
-        $find = $this->getQuery()->get();
+        $find = $this->getResults(
+            $this->getQuery()
+        );
         $this->reset();
         return $find;
     }

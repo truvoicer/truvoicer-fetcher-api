@@ -96,7 +96,7 @@ class SrOperationsService
         }
     }
 
-    private function buildSaveData(ApiResponse $requestResponse, array $data)
+    private function buildSaveData(ApiResponse $requestResponse, array $data, array $queryData = [])
     {
         $requestData = $requestResponse->toArray();
         foreach (self::REMOVE_SAVE_DATA_FIELDS as $field) {
@@ -104,6 +104,8 @@ class SrOperationsService
                 unset($requestData[$field]);
             }
         }
+
+        $data['query_params'] = $queryData;
         $insertData = array_merge(
             $requestData,
             $data
@@ -186,18 +188,6 @@ class SrOperationsService
         return true;
     }
 
-    private function getCollectionName(Sr $sr)
-    {
-        $service = $sr->s()->first();
-        if (!$service instanceof S) {
-            return false;
-        }
-        return sprintf(
-            '%s_%s',
-            $service->name,
-            $sr->name
-        );
-    }
     public function runOperationForSr(Sr $sr, ?array $queryData = ['query' => ''])
     {
         Log::channel(self::LOGGING_NAME)->info(
@@ -279,9 +269,9 @@ class SrOperationsService
             return false;
         }
         foreach ($requestData as $item) {
-            $collectionName = $this->getCollectionName($sr);
+            $collectionName = $this->mongoDBRepository->getCollectionName($sr);
             $this->mongoDBRepository->setCollection($collectionName);
-            $insertData = $this->buildSaveData($operationData, $item);
+            $insertData = $this->buildSaveData($operationData, $item, $queryData);
             if (!$insertData) {
                 continue;
             }
