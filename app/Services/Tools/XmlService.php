@@ -44,7 +44,7 @@ class XmlService
     public function getXmlArray(SimpleXMLIterator $xmlIterator, string $childKey, bool $parentItemArray, string $itemRepeaterKey)
     {
         $items = [];
-        $extra = [];
+        $xmlArray = [];
         $rootItem = false;
         $i = 0;
 
@@ -59,24 +59,15 @@ class XmlService
                     $items[$i] = $xmlIterator->current();
                     $i++;
                 }
-            } else {
-                if ($xmlIterator->attributes()) {
-                    foreach ($xmlIterator->attributes() as $key => $value) {
-                        $extra["attributes"][$key] = strval($value);
-                    }
-                }
-                $extra[$xmlIterator->key()] = strval($xmlIterator->current());
             }
         }
         $items = array_map(function ($iterator) use ($itemRepeaterKey) {
             return $this->xmlToArrayIterator($iterator, $itemRepeaterKey);
         }, $items);
 
-        $xmlArray = $extra;
-
         if ($rootItem || $parentItemArray) {
             $xmlArray[$childKey] = $items;
-        } elseif (is_array($items) && count($items) === 1 && array_key_exists(0, $items) && is_array($items[0])) {
+        } elseif (count($items) === 1 && array_key_exists(0, $items) && is_array($items[0])) {
             $xmlArray[$childKey] = $items[0];
         }
         return $xmlArray;
@@ -109,10 +100,28 @@ class XmlService
                 }
             } else {
                 if ($xmlIterator->current()->attributes()) {
-                    $a[$xmlIterator->key()] = [];
+                    $atts = [];
                     foreach ($xmlIterator->current()->attributes() as $key => $value) {
-                        $a[$xmlIterator->key()][$key] = strval($value);
+                        $att = [];
+                        $contentValue = strval($value);
+//                        $a[$xmlIterator->key()][$key] = $contentValue;
+                        $att[$key] = $contentValue;
+                        if (isset($contentValue) && $contentValue !== "") {
+//                            $a[$xmlIterator->key()]['value'] = strval($xmlIterator->current());
+                            $att['value'] = strval($xmlIterator->current());
+                        }
+                        $atts[] = $att;
                     }
+                    if (!array_key_exists($xmlIterator->key(), $a)) {
+                        $a[$xmlIterator->key()] = [];
+                    }
+                    if (count($atts) > 1) {
+                        $a[$xmlIterator->key()] = array_merge($a[$xmlIterator->key()], $atts);
+                    } else if (count($atts) === 1) {
+//                        dd($atts[array_key_first($atts)]);
+                        $a[$xmlIterator->key()] = array_merge($a[$xmlIterator->key()], $atts);
+                    }
+//                    dd($atts);
                 } else {
                     $a[$xmlIterator->key()] = strval($xmlIterator->current());
                 }

@@ -26,9 +26,10 @@ class SrParameterRepository extends BaseRepository
     }
     public function findByParams(Sr $serviceRequest, string $sort, string $order, ?int $count = null)
     {
-        return $serviceRequest->srParameter()
+        return $this->getResults(
+            $serviceRequest->srParameter()
             ->orderBy($sort, $order)
-            ->paginate($count);
+        );
     }
 
     public function getRequestParametersByRequestName(Provider $provider, string $serviceRequestName = null)

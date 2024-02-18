@@ -44,5 +44,6 @@ class XmlResponseHandler extends ResponseHandler
             $this->filterItemsArrayValue($responseKeyValue)["brackets"],
             $this->filterItemsArrayValue($itemRepeaterKeyValue)["value"]
         );
+//        dd($this->responseArray);
     }
 }
