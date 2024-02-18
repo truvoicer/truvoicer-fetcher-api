@@ -224,9 +224,31 @@ class ResponseHandler extends ApiBase
         return $this->getReturnDataType($requestResponseKey, $itemArrayValue);
     }
 
+    protected function hasAttributeValue(SrResponseKey $requestResponseKey, $itemArrayValue) {
+        if (!is_array($itemArrayValue)) {
+            return false;
+        }
+        $fields = ['xml_value_type', 'attributes', 'values'];
+        foreach ($fields as $field) {
+            if (!array_key_exists($field, $itemArrayValue)) {
+                return false;
+            }
+        }
+        return ($itemArrayValue['xml_value_type'] === 'attribute');
+    }
+    protected function buildAttributeValue(SrResponseKey $requestResponseKey, $itemArrayValue) {
+        $values = [];
+        if (array_key_exists('values', $itemArrayValue)) {
+            $values = $itemArrayValue['values'];
+        }
+        return $this->getReturnDataType($requestResponseKey, $values);
+    }
+
     private function getReturnDataType(SrResponseKey $requestResponseKey, $itemArrayValue)
     {
-        if (is_array($itemArrayValue)) {
+        if ($this->hasAttributeValue($requestResponseKey, $itemArrayValue)) {
+            return $this->buildAttributeValue($requestResponseKey, $itemArrayValue);
+        } else if (is_array($itemArrayValue)) {
             return $this->buildRequestKeyArrayValue($requestResponseKey, $itemArrayValue);
         } else if (is_object($itemArrayValue)) {
             return $this->buildRequestKeyObjectValue($requestResponseKey, $itemArrayValue);

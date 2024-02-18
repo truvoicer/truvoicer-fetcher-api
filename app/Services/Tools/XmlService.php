@@ -100,28 +100,51 @@ class XmlService
                 }
             } else {
                 if ($xmlIterator->current()->attributes()) {
-                    $atts = [];
+                    $attributes = [];
                     foreach ($xmlIterator->current()->attributes() as $key => $value) {
-                        $att = [];
+                        $attrib = [];
                         $contentValue = strval($value);
-//                        $a[$xmlIterator->key()][$key] = $contentValue;
-                        $att[$key] = $contentValue;
+                        $attrib[] = [
+                            'key' => $key,
+                            'value' => $contentValue
+                        ];
                         if (isset($contentValue) && $contentValue !== "") {
-//                            $a[$xmlIterator->key()]['value'] = strval($xmlIterator->current());
-                            $att['value'] = strval($xmlIterator->current());
+                            $attrib[] = [
+                                'key' => 'value',
+                                'value' => strval($xmlIterator->current())
+                            ];
                         }
-                        $atts[] = $att;
+                        $attributes[] = $attrib;
                     }
+                    $buildAttribute = $this->buildAttributes($attributes);
                     if (!array_key_exists($xmlIterator->key(), $a)) {
-                        $a[$xmlIterator->key()] = [];
+                        $a[$xmlIterator->key()] = [
+                            'xml_value_type' => 'attribute'
+                        ];
                     }
-                    if (count($atts) > 1) {
-                        $a[$xmlIterator->key()] = array_merge($a[$xmlIterator->key()], $atts);
-                    } else if (count($atts) === 1) {
-//                        dd($atts[array_key_first($atts)]);
-                        $a[$xmlIterator->key()] = array_merge($a[$xmlIterator->key()], $atts);
+                    if (!array_key_exists('attributes', $a[$xmlIterator->key()])) {
+                        $a[$xmlIterator->key()]['attributes'] = [];
                     }
-//                    dd($atts);
+                    if (!array_key_exists('values', $a[$xmlIterator->key()])) {
+                        $a[$xmlIterator->key()]['values'] = [];
+                        if (count($buildAttribute['values']) === 1) {
+                            $a[$xmlIterator->key()]['values'] = $buildAttribute['values'][array_key_first($buildAttribute['values'])];
+                        }
+                    } else {
+                        $getExistingValue = $a[$xmlIterator->key()]['values'];
+                        if (is_array($getExistingValue)) {
+                            $a[$xmlIterator->key()]['values'] = array_merge(
+                                $a[$xmlIterator->key()]['values'],
+                                $buildAttribute['values']
+                            );
+                        } else {
+                            $a[$xmlIterator->key()]['values'] = $buildAttribute['values'];
+                        }
+                    }
+                    $a[$xmlIterator->key()]['attributes'] = array_merge(
+                        $a[$xmlIterator->key()]['attributes'],
+                        $buildAttribute['attributes']
+                    );
                 } else {
                     $a[$xmlIterator->key()] = strval($xmlIterator->current());
                 }
@@ -129,6 +152,40 @@ class XmlService
             $i++;
         }
         return $a;
+    }
+
+    private function buildAttributes(array $data)
+    {
+        $nonValueAtts = [];
+        $valueAtts = [];
+        foreach ($data as $attribute) {
+            $nonValueAtts = array_merge(
+                $nonValueAtts,
+                array_filter($attribute, function ($att) {
+                    return $att['key'] !== 'value';
+                })
+            );
+            $valueAtts = array_merge(
+                $valueAtts,
+                array_filter($attribute, function ($att) {
+                    return $att['key'] === 'value';
+                })
+            );
+        }
+        $atts = [ 'attributes' => array_combine(
+            array_column($nonValueAtts, 'key'),
+            array_column($nonValueAtts, 'value')
+        ), 'values' => []];
+        if (count($valueAtts) === 1) {
+            $atts['values'] = array_map(function ($att) {
+                return $att['value'];
+            }, $valueAtts);
+        } else if (count($valueAtts) > 1) {
+            $atts['values'] = array_map(function ($att) {
+                return $att['value'];
+            }, $valueAtts);
+        }
+        return $atts;
     }
 
     /**
