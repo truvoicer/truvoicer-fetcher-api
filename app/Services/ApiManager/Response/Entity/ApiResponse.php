@@ -26,9 +26,9 @@ class ApiResponse
 
     public array $extraData = [];
 
-    private ?string $paginationType = null;
-    private ?ApiRequest $apiRequest = null;
-    private ?Response $response = null;
+    public ?string $paginationType = null;
+    public ?ApiRequest $apiRequest = null;
+    public ?Response $response = null;
 
     public function getRequestType(): string
     {

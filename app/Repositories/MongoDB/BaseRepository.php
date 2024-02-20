@@ -6,8 +6,8 @@ use App\Helpers\Db\DbHelpers;
 use App\Traits\Database\PaginationTrait;
 use App\Traits\Error\ErrorTrait;
 use Illuminate\Database\Connection;
-use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
 class BaseRepository
@@ -115,7 +115,7 @@ class BaseRepository
         $this->reset();
         return $find;
     }
-    public function findMany(): Collection
+    public function findMany(): Collection|LengthAwarePaginator
     {
         $find = $this->getResults(
             $this->getQuery()

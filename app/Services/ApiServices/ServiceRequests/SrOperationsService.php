@@ -99,6 +99,7 @@ class SrOperationsService
     private function buildSaveData(ApiResponse $requestResponse, array $data, array $queryData = [])
     {
         $requestData = $requestResponse->toArray();
+
         foreach (self::REMOVE_SAVE_DATA_FIELDS as $field) {
             if (isset($requestData[$field])) {
                 unset($requestData[$field]);
