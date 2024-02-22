@@ -11,7 +11,7 @@ class BaseCollection extends ResourceCollection
 {
     use CollectionPaginateTrait;
 
-    private function hasPagination(): bool
+    protected function hasPagination(): bool
     {
         return (
             $this->resource instanceof AbstractPaginator

@@ -38,9 +38,9 @@ class ApiRequestSearchService
     {
     }
 
-    public function runSearch(?array $query = []): SupportCollection|LengthAwarePaginator
+    public function searchInit(): void
     {
-        $this->requestOperation->setQueryArray($query);
+//        $this->requestOperation->setQueryArray($query);
         $collectionName = $this->mongoDBRepository->getCollectionName($this->sr);
 
         $this->mongoDBRepository->setPagination(true);
@@ -49,15 +49,33 @@ class ApiRequestSearchService
 
         $this->mongoDBRepository->setCollection($collectionName);
 
-        $this->buildSearchData($query);
-        return $this->mongoDBRepository->findMany();
     }
 
-    private function buildSearchData(array $query): void
+    public function runSingleItemSearch(string|int $itemId): array|null
     {
-        $searchData = [];
+        $this->searchInit();
+        $this->mongoDBRepository->addWhere(
+            'item_id',
+            $itemId,
+            '='
+        );
+        $find = $this->mongoDBRepository->findOne();
+        if ($find) {
+            return $find;
+        }
+
+        $this->mongoDBRepository->addWhere(
+            'item_id',
+            (int)$itemId,
+            '='
+        );
+        return $this->mongoDBRepository->findOne();
+    }
+    public function runListSearch(array $query): Collection|LengthAwarePaginator
+    {
+        $this->searchInit();
         if (empty($query['query'])) {
-            return;
+            return $this->mongoDBRepository->findMany();
         }
         $query = $query['query'];
         $this->mongoDBRepository->addWhere(
@@ -79,6 +97,7 @@ class ApiRequestSearchService
                 'OR'
             );
         });
+        return $this->mongoDBRepository->findMany();
     }
     public function setProvider(Provider $provider): void
     {

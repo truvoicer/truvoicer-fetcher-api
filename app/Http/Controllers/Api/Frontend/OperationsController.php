@@ -3,6 +3,10 @@
 namespace App\Http\Controllers\Api\Frontend;
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\ApiSearchItemResource;
+use App\Http\Resources\ApiSearchListResourceCollection;
+use App\Http\Resources\ApiSearchResource;
+use App\Http\Resources\ApiSearchResourceCollection;
 use App\Services\ApiManager\Operations\DataHandler\ApiRequestDataHandler;
 use App\Services\Permission\AccessControlService;
 use App\Services\Tools\HttpRequestService;
@@ -42,13 +46,24 @@ class OperationsController extends Controller
 
         $apiRequestDataHandler->setUser($request->user());
 
-        return $this->sendSuccessResponse(
-            'Success',
-            $apiRequestDataHandler->runSearch(
+        if (!empty($data['item_id'])) {
+            $results = $apiRequestDataHandler->runItemSearch(
+                $request->query->get('provider'),
+                $name,
+                $data['item_id']
+            );
+            $responseData = new ApiSearchItemResource($results);
+        } else {
+            $results = $apiRequestDataHandler->runListSearch(
                 $request->query->get('provider'),
                 $name,
                 $data
-            )
+            );
+            $responseData = new ApiSearchListResourceCollection($results);
+        }
+        return $this->sendSuccessResponse(
+            'Success',
+            $responseData
         );
     }
 }

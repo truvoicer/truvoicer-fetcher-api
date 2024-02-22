@@ -17,13 +17,6 @@ use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 
 class ApiRequestDataHandler
 {
-    const RESPONSE_PROPERTIES = [
-        'status',
-        'contentType',
-        'provider',
-        'requestService',
-        'category',
-    ];
     private ApiResponse $apiResponse;
 
     public function __construct(
@@ -40,69 +33,34 @@ class ApiRequestDataHandler
         $this->apiResponse = new ApiResponse();
     }
 
-    public function runSearch(string $providerName, string $srName, ?array $query = []): ApiResponse|false
+    public function searchInit(string $providerName, string $srName, ?array $query = []): void
     {
         $findProvider = $this->findProviderByName($providerName);
         if (!$findProvider instanceof Provider) {
-            return false;
+            throw new BadRequestHttpException("Provider not found");
         }
         $this->setProvider($findProvider);
         $this->apiRequestSearchService->setProvider($findProvider);
         $sr = $this->findSrByName($srName);
         if (!$sr instanceof Sr) {
-            return false;
+            throw new BadRequestHttpException("Provider not found");
         }
         $this->setSr($sr);
 
         $this->apiRequestSearchService->setSr($this->sr);
 
-        return $this->buildResponse(
-            $this->apiRequestSearchService->runSearch($query)
-        );
     }
 
-    private function buildResponse(LengthAwarePaginator|Collection $results)
+    public function runListSearch(string $providerName, string $srName, ?array $query = []): Collection|LengthAwarePaginator
     {
-        if ($results->isEmpty()) {
-            $this->apiResponse->setStatus('error');
-            $this->apiResponse->setMessage('No results found');
-            return $this->apiResponse;
-        }
-        $rc = new \ReflectionClass(ApiResponse::class);
-        $responseVars = array_map(function ($var) {
-            return $var->getName();
-        }, $rc->getProperties(\ReflectionProperty::IS_PUBLIC));
-
-        $filterResults = $results->map(function ($result, $index) use ($responseVars) {
-            return array_filter($result, function ($value, $key) use ($responseVars) {
-                return !in_array($key, $responseVars);
-            }, ARRAY_FILTER_USE_BOTH);
-        });
-        $filterResponseProps = [];
-        foreach ($results as $item) {
-            $filter = array_filter($item, function ($value, $key) {
-                return in_array($key, self::RESPONSE_PROPERTIES);
-            }, ARRAY_FILTER_USE_BOTH);
-
-            if (count($filter) === count(self::RESPONSE_PROPERTIES)) {
-                $filterResponseProps = $item;
-                break;
-            }
-        }
-
-        $this->apiResponse->setRequestType('search');
-        $this->apiResponse->setCategory($filterResponseProps['category']);
-        $this->apiResponse->setProvider($filterResponseProps['provider']);
-        $this->apiResponse->setMessage('Search Results');
-        $this->apiResponse->setContentType($filterResponseProps['contentType']);
-        $this->apiResponse->setRequestService($filterResponseProps['requestService']);
-        $this->apiResponse->setExtraData([]);
-        $this->apiResponse->setStatus('success');
-        $this->apiResponse->setRequestData($filterResults->toArray());
-        return $this->apiResponse;
+        $this->searchInit($providerName, $srName, $query);
+        return $this->apiRequestSearchService->runListSearch($query);
     }
-
-
+    public function runItemSearch(string $providerName, string $srName, int|string $itemId): array|null
+    {
+        $this->searchInit($providerName, $srName);
+        return $this->apiRequestSearchService->runSingleItemSearch($itemId);
+    }
     private function findProviderByName(string $providerName): Provider|bool
     {
         $provider = $this->providerService->getUserProviderByName($this->user, $providerName);
