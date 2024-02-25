@@ -81,8 +81,8 @@ class SResponseKeysService extends BaseService
 //        return $responseKeyRequestItem;
 //    }
 
-    public function getResponseKeysByService(S $service) {
-        $this->responseKeyRepository->setPagination(true);
+    public function getResponseKeysByService(S $service, ?bool $pagination = true) {
+        $this->responseKeyRepository->setPagination($pagination);
         return $this->responseKeyRepository->findServiceResponseKeys($service);
     }
     public function getResponseKeysByServiceId(int $serviceId) {

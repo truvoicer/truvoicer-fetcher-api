@@ -29,9 +29,15 @@ class Category extends Model
             'user_id'
         );
     }
-    public function provider()
+
+    public function providers()
     {
-        return $this->belongsTo(Provider::class);
+        return $this->belongsToMany(
+            Provider::class,
+            ProviderCategory::TABLE_NAME,
+            'category_id',
+            'provider_id',
+        );
     }
 
     public function permissions() {

@@ -2,9 +2,16 @@
 
 namespace App\Helpers\Db;
 
+use Illuminate\Database\Eloquent\Collection;
+
 class DbHelpers
 {
     private array $errorIds = [];
+
+    public static function pluckByColumn(Collection $collection, string $key): array
+    {
+        return $collection->pluck($key)->toArray();
+    }
     public static function getModelClassName(string $modelClass): string
     {
         return str_replace('App\\Models\\', '', $modelClass);

@@ -41,19 +41,18 @@ Route::prefix('auth')->name('auth.')->group(function () {
     Route::post('/login', [AuthController::class, 'login'])->name('login');
 });
 
-Route::middleware(['auth:sanctum', 'ability:api:admin,api:superuser,api:user'])->group(function () {
+Route::middleware(['auth:sanctum', 'ability:api:app_user'])->group(function () {
     Route::prefix('front')->name('front.')->group(function () {
-        Route::get('/category/{name}/providers', [ListController::class, 'getCategoryProviderList'])->name('category.providers.list');
+        Route::get('/category/{category:name}/providers', [ListController::class, 'getCategoryProviderList'])->name('category.providers.list');
         Route::get('/service/list', [ListController::class, 'frontendServiceList'])->name('service.list');
         Route::get('/service/response-key/list', [ListController::class, 'frontendServiceResponseKeyList'])->name('service.response-key.list');
         Route::prefix('operation')->name('operation.')->group(function () {
             Route::get('/{service_request_name}', [OperationsController::class, 'searchOperation'])->name('search');
         });
     });
+});
+Route::middleware(['auth:sanctum', 'ability:api:admin,api:superuser,api:super_admin,api:user,api:app_user'])->group(function () {
     Route::prefix('backend')->name('backend.')->group(function () {
-        Route::prefix('validation')->name('validation.')->group(function () {
-            Route::get('/all', [ValidationController::class, 'validateAll'])->name('all');
-        });
         Route::prefix('auth')->name('auth.')->group(function () {
             Route::prefix('account')->name('account.')->group(function () {
                 Route::post('/details', [AuthController::class, 'getAccountDetails'])->name('details');
@@ -64,12 +63,6 @@ Route::middleware(['auth:sanctum', 'ability:api:admin,api:superuser,api:user'])-
                 Route::get('/user', [AuthController::class, 'getSingleUserByApiToken'])->name('user');
             });
         });
-        Route::prefix('admin')->name('admin.')->group(function () {
-            Route::prefix('search')->name('search.')->group(function () {
-                Route::get('/{query}', [SearchController::class, 'search'])->name('query');
-            });
-        });
-        Route::get('/permission/entity/list', [UserController::class, 'getProtectedEntitiesList'])->name('entity.list');
 
         Route::prefix('session')->name('session.')->group(function () {
             Route::prefix('user')->name('user.')->group(function () {
@@ -78,7 +71,7 @@ Route::middleware(['auth:sanctum', 'ability:api:admin,api:superuser,api:user'])-
                 Route::prefix('permission')->name('permission.')->group(function () {
                     Route::get('/entity/{entity}/{id}', [UserController::class, 'getUserEntityPermissionList'])->name('entity');
                 });
-                Route::get('/api-token', [UserController::class, 'getSessionUserApiToken'])->name('detail');
+                Route::get('/api-token', [UserController::class, 'getSessionUserApiToken'])->name('api-token.detail');
                 Route::prefix('api-token')->name('api-token.')->group(function () {
                     Route::get('/list', [UserController::class, 'getSessionUserApiTokenList'])->name('list');
                     Route::get('/generate', [UserController::class, 'generateSessionUserApiToken'])->name('generate');
@@ -86,6 +79,20 @@ Route::middleware(['auth:sanctum', 'ability:api:admin,api:superuser,api:user'])-
                 });
             });
         });
+    });
+});
+Route::middleware(['auth:sanctum', 'ability:api:admin,api:superuser,api:super_admin,api:user'])->group(function () {
+    Route::prefix('backend')->name('backend.')->group(function () {
+        Route::prefix('validation')->name('validation.')->group(function () {
+            Route::get('/all', [ValidationController::class, 'validateAll'])->name('all');
+        });
+        Route::prefix('admin')->name('admin.')->group(function () {
+            Route::prefix('search')->name('search.')->group(function () {
+                Route::get('/{query}', [SearchController::class, 'search'])->name('query');
+            });
+        });
+        Route::get('/permission/entity/list', [UserController::class, 'getProtectedEntitiesList'])->name('entity.list');
+
         Route::prefix('category')->name('category.')->group(function () {
             Route::get('/list', [CategoryController::class, 'getCategories'])->name('list');
             Route::post('/create', [CategoryController::class, 'createCategory'])->name('create');
@@ -241,7 +248,7 @@ Route::middleware(['auth:sanctum', 'ability:api:admin,api:superuser,api:user'])-
     });
 });
 
-Route::middleware(['auth:sanctum', 'ability:api:superuser'])->group(function () {
+Route::middleware(['auth:sanctum', 'ability:api:superuser,'])->group(function () {
     Route::prefix('backend')->name('backend.')->group(function () {
         Route::prefix('admin')->name('admin.')->group(function () {
             Route::prefix('user')->name('user.')->group(function () {
@@ -269,7 +276,7 @@ Route::middleware(['auth:sanctum', 'ability:api:superuser'])->group(function () 
     });
 });
 
-Route::middleware(['auth:sanctum', 'ability:api:admin,api:superuser'])->group(function () {
+Route::middleware(['auth:sanctum', 'ability:api:admin,api:superuser,api:super_admin'])->group(function () {
     Route::prefix('backend')->name('backend.')->group(function () {
         Route::prefix('admin')->name('admin.')->group(function () {
             Route::prefix('user')->name('user.')->group(function () {
@@ -285,7 +292,7 @@ Route::middleware(['auth:sanctum', 'ability:api:admin,api:superuser'])->group(fu
                     Route::prefix('api-token')->name('api-token.')->group(function () {
                         Route::get('/list', [AdminController::class, 'getUserApiTokens'])->name('list');
                         Route::post('/generate', [AdminController::class, 'generateNewApiToken'])->name('generate');
-                        Route::post('/delete', [AdminController::class, 'deleteSessionUserApiToken'])->name('delete');
+                        Route::post('/delete', [AdminController::class, 'deleteSessionUserApiToken'])->name('session.delete');
                         Route::get('/{personalAccessToken}', [AdminController::class, 'getApiToken'])->name('detail');
                         Route::patch('/{personalAccessToken}/update', [AdminController::class, 'updateApiTokenExpiry'])->name('update');
                         Route::delete('/{personalAccessToken}/delete', [AdminController::class, 'deleteApiToken'])->name('delete');

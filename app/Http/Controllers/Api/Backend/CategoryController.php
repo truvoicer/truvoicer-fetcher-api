@@ -54,6 +54,7 @@ class CategoryController extends Controller
      */
     public function getCategories(Request $request)
     {
+        $pagination = $request->query->filter('pagination', true, FILTER_VALIDATE_BOOLEAN);
         if (
             $request->user()->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_SUPERUSER)) ||
             $request->user()->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_ADMIN))
@@ -61,14 +62,13 @@ class CategoryController extends Controller
             $categories = $this->categoryService->findByParams(
                 $request->get('sort', "name"),
                 $request->get('order', "asc"),
-                $request->get('count', -1)
+                $request->get('count', -1),
+                $pagination
             );
         } else {
             $categories = $this->categoryService->findUserCategories(
                 $request->user(),
-                $request->get('sort', "name"),
-                $request->get('order', "asc"),
-                $request->get('count', -1)
+                $pagination
             );
         }
         return $this->sendSuccessResponse("success",

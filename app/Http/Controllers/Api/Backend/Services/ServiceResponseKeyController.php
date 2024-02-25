@@ -82,7 +82,10 @@ class ServiceResponseKeyController extends Controller
         return $this->sendSuccessResponse(
             "success",
             new ServiceResponseKeyCollection(
-                $this->responseKeysService->getResponseKeysByService($service)
+                $this->responseKeysService->getResponseKeysByService(
+                    $service,
+                    $request->query->filter('pagination', true, FILTER_VALIDATE_BOOLEAN)
+                )
             )
         );
     }

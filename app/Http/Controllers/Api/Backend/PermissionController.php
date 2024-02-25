@@ -49,13 +49,13 @@ class PermissionController extends Controller
 
     public function getProviderList(Request $request, ProviderService $providerService)
     {
-        $providerService->getProviderRepository()->setPagination(true);
         return $this->sendSuccessResponse("success",
             new ProviderCollection(
                 $providerService->getProviderRepository()->getProviderList(
+                    true,
                     $request->get('sort', "name"),
                     $request->get('order', "asc"),
-                    $request->get('count', -1)
+                    $request->get('count', -1),
                 )
             )
         );

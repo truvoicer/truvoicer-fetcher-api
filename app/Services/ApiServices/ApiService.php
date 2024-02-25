@@ -36,16 +36,16 @@ class ApiService extends BaseService
     {
         return $this->serviceRepository->findByQuery($query);
     }
-    public function findByParams(string $sort = "name", ?string $order = "asc", int $count= -1) {
-        $this->serviceRepository->setPagination(true);
+    public function findByParams(string $sort = "name", ?string $order = "asc", int $count= -1, ?bool $pagination = true) {
+        $this->serviceRepository->setPagination($pagination);
         $this->serviceRepository->setOrderDir($order);
         $this->serviceRepository->setSortField($sort);
         $this->serviceRepository->setLimit($count);
         return $this->serviceRepository->findMany();
     }
 
-    public function findUserServices(User $user, string $sort, string $order, ?int $count) {
-        $this->serviceRepository->setPagination(true);
+    public function findUserServices(User $user, string $sort, string $order, ?int $count, ?bool $pagination = true) {
+        $this->serviceRepository->setPagination($pagination);
         $this->serviceRepository->setPermissions([
             PermissionService::PERMISSION_ADMIN,
             PermissionService::PERMISSION_READ,

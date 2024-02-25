@@ -2,6 +2,7 @@
 
 namespace App\Services\User;
 
+use App\Helpers\Db\DbHelpers;
 use App\Models\Role;
 use App\Models\User;
 use App\Repositories\PersonalAccessTokenRepository;
@@ -18,7 +19,9 @@ class UserAdminService extends BaseService
     const NO_TOKEN_EXPIRY = 'NO_TOKEN_EXPIRY';
     private PersonalAccessTokenRepository $personalAccessTokenRepository;
     private RoleRepository $roleRepository;
-    public function __construct()
+    public function __construct(
+        private AuthService $authService
+    )
     {
         parent::__construct();
         $this->setUserRepository(new UserRepository());
@@ -44,7 +47,8 @@ class UserAdminService extends BaseService
     }
     public function createUser(array $userData, array $roles)
     {
-        return $this->userRepository->createUser($userData, $roles);
+        $roleIds = $this->authService->getRoleIds($roles);
+        return $this->userRepository->createUser($userData, $roleIds);
     }
 
     public function getUserToken(User $user) {
@@ -55,6 +59,10 @@ class UserAdminService extends BaseService
         return $this->createUserToken($user);
     }
 
+    public function getUserRoles(User $user) {
+        $appUserRoleData = AuthService::getApiAbilityData(AuthService::ABILITY_APP_USER);
+        return $this->roleRepository->fetchUserRoles($user, [$appUserRoleData['name']]);
+    }
     /**
      * @throws \Exception
      */
@@ -71,7 +79,17 @@ class UserAdminService extends BaseService
     }
     public function createUserToken(User $user, ?string $expiry = self::DEFAULT_TOKEN_EXPIRY)
     {
-        $role = $user->roles()->first();
+        $roles = $user->roles()->get();
+        $roles = $roles->sort(function ($a, $b) {
+            $availableRoles = AuthService::DEFAULT_ROLES;
+            $aRole = array_search($a->name, array_column($availableRoles, 'name'));
+            $bRole = array_search($b->name, array_column($availableRoles, 'name'));
+            if ($aRole === $bRole) {
+                return 0;
+            }
+            return ($aRole < $bRole) ? -1 : 1;
+        });
+        $role = $roles->first();
         if (!$role instanceof Role) {
             return false;
         }
@@ -93,16 +111,6 @@ class UserAdminService extends BaseService
         return $this->userRepository->getUserByEmail($email);
     }
 
-    public function apiTokenBelongsToUser(User $user, PersonalAccessToken $apiToken)
-    {
-        return $apiToken->user()->id === $user->id;
-    }
-
-    public function getApiTokenById(int $id)
-    {
-        return PersonalAccessToken::where('id', $id)->first();
-    }
-
     public function updateApiTokenExpiry(PersonalAccessToken $apiToken, array $data)
     {
         return $this->personalAccessTokenRepository->updateTokenExpiry(
@@ -118,7 +126,8 @@ class UserAdminService extends BaseService
 
     public function updateUser(User $user, array $data, ?array $roles = [])
     {
-        return $this->userRepository->updateUser($user, $data, $roles);
+        $roleIds = $this->authService->getRoleIds($roles);
+        return $this->userRepository->updateUser($user, $data, $roleIds);
     }
 
     public function deleteUser(User $user)

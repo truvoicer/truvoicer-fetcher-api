@@ -48,18 +48,18 @@ class CategoryService extends BaseService
         return $this->categoryRepository->findMany();
     }
 
-    public function findByParams(string $sort, string $order, int $count = -1)
+    public function findByParams(string $sort, string $order, int $count = -1, ?bool $pagination = true)
     {
-        $this->categoryRepository->setPagination(true);
+        $this->categoryRepository->setPagination($pagination);
         $this->categoryRepository->setOrderDir($order);
         $this->categoryRepository->setSortField($sort);
         $this->categoryRepository->setLimit($count);
         return $this->categoryRepository->findMany();
     }
 
-    public function findUserCategories(User $user, string $sort, string $order, ?int $count)
+    public function findUserCategories(User $user, ?bool $pagination = true)
     {
-        $this->userCategoryRepository->setPagination(true);
+        $this->userCategoryRepository->setPagination($pagination);
         $this->userCategoryRepository->setPermissions([
             PermissionService::PERMISSION_ADMIN,
             PermissionService::PERMISSION_READ,
@@ -104,8 +104,7 @@ class CategoryService extends BaseService
         $providerArray = [];
         $i = 0;
         $this->accessControlService->setUser($user);
-        foreach ($category->provider()->get() as $provider) {
-
+        foreach ($category->providers()->get() as $provider) {
             $checkPermission = $this->accessControlService->checkPermissionsForEntity(
                 $provider,
                 [

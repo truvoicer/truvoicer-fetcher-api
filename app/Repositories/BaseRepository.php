@@ -3,12 +3,14 @@
 namespace App\Repositories;
 
 use App\Helpers\Db\DbHelpers;
+use App\Models\User;
 use App\Traits\Database\PaginationTrait;
 use App\Traits\Database\PermissionsTrait;
 use App\Traits\Error\ErrorTrait;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Query\Builder;
+use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
 use Illuminate\Pagination\LengthAwarePaginator;
 
 class BaseRepository
@@ -40,6 +42,13 @@ class BaseRepository
             $this->model = $this->getModelInstance();
         }
         $this->dbHelpers = new DbHelpers();
+    }
+
+    public function findModelsByUser(Model $model, User $user, ?bool $checkPermissions = true)
+    {
+        return $this->getResults(
+            $this->getModelByUserQuery($model, $user, $checkPermissions)
+        );
     }
 
     public function getModelInstance(?array $data = null): object {
@@ -83,21 +92,37 @@ class BaseRepository
         return $this->findOne();
     }
 
+    private function buildWhereQuery(Builder|EloquentBuilder $query, array $whereData, ?string $operation = null): Builder|EloquentBuilder
+    {
+        switch ($operation) {
+            case 'OR':
+                switch (strtoupper($whereData['compare'])) {
+                    case 'IN':
+                        return $query->orWhereIn($whereData['field'], $whereData['value']);
+                    case 'NOT IN':
+                        return $query->orWhereNotIn($whereData['field'], $whereData['value']);
+                    default:
+                        return $query->orWhere($whereData['field'], $whereData['compare'], $whereData['value']);
+                }
+            default:
+                switch (strtoupper($whereData['compare'])) {
+                    case 'IN':
+                        return $query->whereIn($whereData['field'], $whereData['value']);
+                    case 'NOT IN':
+                        return $query->whereNotIn($whereData['field'], $whereData['value']);
+                    default:
+                        return $query->where($whereData['field'], $whereData['compare'], $whereData['value']);
+                }
+        }
+    }
     private function buildQuery() {
         $query = $this->modelClassName::query();
         foreach ($this->where as $index => $where) {
             if ($index === 0) {
-                $query->where($where['field'], $where['compare'], $where['value']);
+                $query = $this->buildWhereQuery($query, $where);
                 continue;
             }
-            switch ($where['op']) {
-                case 'OR':
-                    $query->orWhere($where['field'], $where['compare'], $where['value']);
-                    break;
-                default:
-                    $query->where($where['field'], $where['compare'], $where['value']);
-                    break;
-            }
+            $query = $this->buildWhereQuery($query, $where, $where['op']);
         }
         if (!in_array($this->orderDir, self::AVAILABLE_ORDER_DIRECTIONS)) {
             $this->orderDir = self::DEFAULT_ORDER_DIR;
@@ -266,8 +291,11 @@ class BaseRepository
         );
     }
 
-    public function addWhere(string $field, string $value, ?string $compare = '=', ?string $op = 'AND'): self
+    public function addWhere(string $field, string|array $value, ?string $compare = '=', ?string $op = 'AND'): self
     {
+        if (is_array($value) &&  !in_array(strtoupper($compare), ['IN', 'NOT IN'])) {
+            return $this;
+        }
         $this->where[] = [
             'field' => $field,
             'value' => $value,

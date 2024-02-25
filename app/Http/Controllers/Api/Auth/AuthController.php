@@ -5,9 +5,11 @@ namespace App\Http\Controllers\Api\Auth;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginRequest;
 use App\Http\Resources\AccessTokenResource;
+use App\Http\Resources\RoleResource;
 use App\Http\Resources\UserResource;
 use App\Models\Mongo\Recruitment;
 use App\Models\User;
+use App\Services\Auth\AuthService;
 use App\Services\Permission\AccessControlService;
 use App\Services\Tools\HttpRequestService;
 use App\Services\Tools\SerializerService;
@@ -66,6 +68,16 @@ class AuthController extends Controller
     {
         return $this->sendSuccessResponse(
             'Authenticated'
+        );
+    }
+
+    public function getRoleList(Request $request): \Illuminate\Http\JsonResponse
+    {
+        return $this->sendSuccessResponse(
+            'Authenticated',
+            RoleResource::collection(
+                $this->userAdminService->getUserRoles($request->user())
+            )
         );
     }
 

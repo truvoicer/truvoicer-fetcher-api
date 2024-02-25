@@ -67,10 +67,6 @@ public function getModelByUserQuery(Model $model, User $user, ?bool $checkPermis
         return $query;
     }
 
-    public function findModelsByUser(Model $model, User $user, ?bool $checkPermissions = true)
-    {
-        return $this->getModelByUserQuery($model, $user, $checkPermissions)->get();
-    }
 
     public function findUserModelBy(Model $model, User $user, array $params, ?bool $checkPermissions = true)
     {

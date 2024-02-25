@@ -21,8 +21,9 @@ class ProviderRepository extends BaseRepository
         return parent::getModel();
     }
 
-    public function getProviderList(?string $sort = "name", ?string $order = "asc", ?int $count = -1)
+    public function getProviderList(?bool $pagination = true, ?string $sort = "name", ?string $order = "asc", ?int $count = -1)
     {
+        $this->setPagination($pagination);
         $this->setOrderDir($order);
         $this->setSortField($sort);
         $this->setLimit($count);
@@ -31,12 +32,13 @@ class ProviderRepository extends BaseRepository
         );
     }
 
-    public function findUserProviders(User $user, ?string $sort = "name", ?string $order = "asc", ?int $count = -1)
+    public function findUserProviders(User $user, ?bool $pagination = true, ?string $sort = "name", ?string $order = "asc", ?int $count = -1)
     {
         $this->setPermissions([
             PermissionService::PERMISSION_ADMIN,
             PermissionService::PERMISSION_READ,
         ]);
+        $this->setPagination($pagination);
         return $this->getResults(
             $this->getModelByUserQuery(
                 new Provider(),

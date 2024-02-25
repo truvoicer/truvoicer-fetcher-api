@@ -51,12 +51,13 @@ class ProviderController extends Controller
     public function getProviderList(Request $request)
     {
         $user = $request->user();
-        $this->providerService->getProviderRepository()->setPagination(true);
+        $pagination = $request->query->filter('pagination', true, FILTER_VALIDATE_BOOLEAN);
         if (
             $user->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_SUPERUSER)) ||
             $user->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_ADMIN))
         ) {
             $providers = $this->providerService->getProviderRepository()->getProviderList(
+                $pagination,
                 $request->get('sort', "name"),
                 $request->get('order', "asc"),
                 $request->get('count', -1)
@@ -64,6 +65,7 @@ class ProviderController extends Controller
         } else {
             $providers = $this->providerService->getProviderRepository()->findUserProviders(
                 $user,
+                $pagination,
                 $request->get('sort', "name"),
                 $request->get('order', "asc"),
                 $request->get('count', -1)

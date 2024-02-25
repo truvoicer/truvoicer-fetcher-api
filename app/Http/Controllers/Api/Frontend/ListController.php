@@ -38,9 +38,6 @@ class ListController extends Controller
 
     public function getCategoryProviderList(Category $category, Request $request)
     {
-        if ($category === null) {
-            throw new BadRequestHttpException("Category doesn't exist");
-        }
         if (!$request->query->has("filter") ||
             $request->query->get("filter") === null ||
             $request->query->get("filter") === ""

@@ -225,14 +225,20 @@ class AdminController extends Controller
         if (!$this->accessControlService->inAdminGroup()) {
             return $this->sendErrorResponse("Access control: operation not permitted");
         }
+        $generateToken = $this->userService->createUserTokenByRoleId(
+            $user,
+            $request->get('role_id'),
+            $request->get('expires_at', null),
+        );
+        if (!$generateToken) {
+            return $this->sendErrorResponse(
+                "Error generating api token",
+            );
+        }
         return $this->sendSuccessResponse(
             "success",
             new PersonalAccessTokenResource (
-                $this->userService->createUserTokenByRoleId(
-                    $user,
-                    $request->get('role_id'),
-                    $request->get('expires_at', null),
-                )
+                $generateToken
             )
         );
     }

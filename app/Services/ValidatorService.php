@@ -38,14 +38,13 @@ class ValidatorService extends BaseService
      */
     public function validateAllProviderData(User $user): bool
     {
-        $this->providerService->getProviderRepository()->setPagination(false);
         if (
             $user->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_SUPERUSER)) ||
             $user->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_ADMIN))
         ) {
-            $providers = $this->providerService->getProviderRepository()->getProviderList();
+            $providers = $this->providerService->getProviderRepository()->getProviderList(false);
         } else {
-            $providers = $this->providerService->getProviderRepository()->findUserProviders($user);
+            $providers = $this->providerService->getProviderRepository()->findUserProviders($user, false);
         }
 
         foreach ($providers as $provider) {
