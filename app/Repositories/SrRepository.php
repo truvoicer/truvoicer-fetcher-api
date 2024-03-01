@@ -14,6 +14,12 @@ use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 
 class SrRepository extends BaseRepository
 {
+    public const SR_TYPE_LIST = 'list';
+    public const SR_TYPE_SINGLE = 'single';
+    public const SR_TYPES = [
+        self::SR_TYPE_LIST,
+        self::SR_TYPE_SINGLE
+    ];
     public function __construct()
     {
         parent::__construct(Sr::class);
@@ -67,7 +73,8 @@ class SrRepository extends BaseRepository
             'name',
             'label',
             'pagination_type',
-            'query_parameters'
+            'query_parameters',
+            'type'
         ];
         $saveData = [];
         $attributes = null;

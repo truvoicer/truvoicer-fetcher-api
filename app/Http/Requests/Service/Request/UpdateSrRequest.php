@@ -23,6 +23,7 @@ class UpdateSrRequest extends FormRequest
     public function rules(): array
     {
         return [
+            'type' => 'string|nullable',
             'name' => 'string|nullable',
             'label' => 'string|nullable',
             'service' => 'integer|nullable',

@@ -274,7 +274,7 @@ class SrOperationsService
             $this->mongoDBRepository->setCollection($collectionName);
             $insertData = $this->buildSaveData($operationData, $item, $queryData);
             if (!$insertData) {
-                Log::channel(self::LOGGING_NAME)->info(
+                Log::channel(self::LOGGING_NAME)->error(
                     sprintf(
                         'Error building save data for service request: %s | Provider: %s',
                         $sr->label,
@@ -284,7 +284,7 @@ class SrOperationsService
                 continue;
             }
             if (!$this->validateRequiredFields($insertData)) {
-                Log::channel(self::LOGGING_NAME)->info(
+                Log::channel(self::LOGGING_NAME)->error(
                     sprintf(
                         'Error validating required fields for service request: %s | Provider: %s',
                         $sr->label,
@@ -298,7 +298,7 @@ class SrOperationsService
                 continue;
             }
             if (!$this->mongoDBRepository->insert($insertData)) {
-                Log::channel(self::LOGGING_NAME)->info(
+                Log::channel(self::LOGGING_NAME)->error(
                     sprintf(
                         'Error inserting data for service request: %s | Provider: %s',
                         $sr->label,

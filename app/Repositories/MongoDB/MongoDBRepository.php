@@ -17,7 +17,7 @@ class MongoDBRepository extends BaseRepository
         return sprintf(
             '%s_%s',
             $service->name,
-            $sr->name
+            $sr->type
         );
     }
 }

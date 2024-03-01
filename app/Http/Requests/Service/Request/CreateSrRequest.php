@@ -23,6 +23,7 @@ class CreateSrRequest extends FormRequest
     public function rules(): array
     {
         return [
+            'type' => 'string|required',
             'name' => 'string|nullable',
             'label' => 'required|string',
             'service' => 'required|integer',

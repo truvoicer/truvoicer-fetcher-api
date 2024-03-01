@@ -64,6 +64,14 @@ class ServiceRequestController extends Controller
         $this->srService = $requestService;
     }
 
+    public function getTypeList(): \Illuminate\Http\JsonResponse
+    {
+        return $this->sendSuccessResponse(
+            "success",
+            $this->srService->getServiceRequestRepository()::SR_TYPES
+        );
+    }
+
     /**
      * Get list of service requests function
      * Returns a list of service requests based on the request query parameters
