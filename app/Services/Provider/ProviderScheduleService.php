@@ -115,7 +115,7 @@ class ProviderScheduleService
         if ($schedule->every_hour) {
             $minute = $schedule->minute;
             if (empty($minute)) {
-                $minute = 0;
+                $minute = '00';
             }
             $scheduleCall = $this->getSrScheduleCall($sr, $schedule, "hourlyAt({$minute})");
             $scheduleCall->hourlyAt($minute);
