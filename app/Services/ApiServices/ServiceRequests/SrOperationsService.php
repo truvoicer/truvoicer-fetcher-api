@@ -274,16 +274,43 @@ class SrOperationsService
             $this->mongoDBRepository->setCollection($collectionName);
             $insertData = $this->buildSaveData($operationData, $item, $queryData);
             if (!$insertData) {
+                Log::channel(self::LOGGING_NAME)->info(
+                    sprintf(
+                        'Error building save data for service request: %s | Provider: %s',
+                        $sr->label,
+                        $provider->name,
+                    ),
+                );
                 continue;
             }
             if (!$this->validateRequiredFields($insertData)) {
+                Log::channel(self::LOGGING_NAME)->info(
+                    sprintf(
+                        'Error validating required fields for service request: %s | Provider: %s',
+                        $sr->label,
+                        $provider->name,
+                    ),
+                );
                 continue;
             }
             if ($this->doesDataExistInDb($operationData, $insertData)) {
+                Log::channel(self::LOGGING_NAME)->info(
+                    sprintf(
+                        'Data already exists in db for service request: %s | Provider: %s',
+                        $sr->label,
+                        $provider->name,
+                    ),
+                );
                 continue;
             }
             if (!$this->mongoDBRepository->insert($insertData)) {
-                $this->addError('error', 'Error inserting data into mongoDB');
+                Log::channel(self::LOGGING_NAME)->info(
+                    sprintf(
+                        'Error inserting data for service request: %s | Provider: %s',
+                        $sr->label,
+                        $provider->name,
+                    ),
+                );
             }
             $insertData = $this->runResponseKeySrItem($sr, $item);
             if (!$insertData) {
