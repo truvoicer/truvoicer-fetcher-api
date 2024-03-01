@@ -23,6 +23,7 @@ class UpdateSrScheduleRequest extends FormRequest
     {
         return [
             'execute_immediately' => 'boolean|nullable',
+            'execute_immediately_choice' => 'required_if:execute_immediately,true|string',
             'forever' => 'boolean|nullable',
             'disabled' => 'boolean|nullable',
             'disable_child_srs' => 'boolean|nullable',
