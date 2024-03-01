@@ -290,17 +290,11 @@ class SrOperationsService
                         $sr->label,
                         $provider->name,
                     ),
+                    $insertData
                 );
                 continue;
             }
             if ($this->doesDataExistInDb($operationData, $insertData)) {
-                Log::channel(self::LOGGING_NAME)->info(
-                    sprintf(
-                        'Data already exists in db for service request: %s | Provider: %s',
-                        $sr->label,
-                        $provider->name,
-                    ),
-                );
                 continue;
             }
             if (!$this->mongoDBRepository->insert($insertData)) {
@@ -310,7 +304,9 @@ class SrOperationsService
                         $sr->label,
                         $provider->name,
                     ),
+                    $insertData
                 );
+                continue;
             }
             $insertData = $this->runResponseKeySrItem($sr, $item);
             if (!$insertData) {
