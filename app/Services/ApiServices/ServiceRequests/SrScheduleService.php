@@ -7,6 +7,8 @@ use App\Models\SrSchedule;
 use App\Repositories\SrScheduleRepository;
 use App\Services\BaseService;
 use App\Services\Provider\ProviderEventService;
+use Illuminate\Support\Arr;
+use Illuminate\Support\Facades\App;
 
 class SrScheduleService extends BaseService
 {
@@ -58,7 +60,8 @@ class SrScheduleService extends BaseService
             return false;
         }
         return $this->runServiceRequest(
-            $this->srScheduleRepository->getModel()
+            $this->srScheduleRepository->getModel(),
+            Arr::get($data, 'execute_immediately_choice')
         );
     }
     public function saveSrSchedule(SrSchedule $srSchedule, array $data)
@@ -68,11 +71,12 @@ class SrScheduleService extends BaseService
             return false;
         }
         return $this->runServiceRequest(
-            $this->srScheduleRepository->getModel()
+            $this->srScheduleRepository->getModel(),
+            Arr::get($data, 'execute_immediately_choice')
         );
     }
 
-    public function runServiceRequest(SrSchedule $srSchedule) {
+    public function runServiceRequest(SrSchedule $srSchedule, ?string $executeImmediatelyOp = null) {
         if (!$srSchedule->execute_immediately) {
             return true;
         }
@@ -80,7 +84,18 @@ class SrScheduleService extends BaseService
         if (!$sr instanceof Sr || !$sr->exists) {
             return false;
         }
-        $this->providerEventService->dispatchSrOperationEvent($sr);
+
+        switch ($executeImmediatelyOp) {
+            case 'execute':
+                $srOperationsService = App::make(SrOperationsService::class);
+                $srOperationsService->getRequestOperation()->setProvider($sr->provider()->first());
+                $srOperationsService->runOperationForSr($sr);
+                break;
+            default:
+                $this->providerEventService->dispatchSrOperationEvent($sr);
+                break;
+
+        }
         return true;
     }
 
