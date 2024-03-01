@@ -67,7 +67,7 @@ class ResponseManager extends BaseService
                 $apiRequest, $response
             );
         } catch (Exception $exception) {
-            return $this->errorResponse($exception->getMessage(), $apiRequest, $response);
+            return $this->errorResponse($exception, $apiRequest, $response);
         }
     }
 
@@ -103,16 +103,16 @@ class ResponseManager extends BaseService
                 $apiRequest, $response
             );
         } catch (Exception $exception) {
-            return $this->errorResponse($exception->getMessage(), $apiRequest, $response);
+            return $this->errorResponse($exception, $apiRequest, $response);
         }
     }
 
-    private function errorResponse(string $message, ApiRequest $apiRequest, Response $response)
+    private function errorResponse(Exception $exception, ApiRequest $apiRequest, Response $response)
     {
         $apiResponse = new ApiResponse();
         $apiResponse->setStatus("error");
         $apiResponse->setRequestType($this->requestType);
-        $apiResponse->setMessage($message);
+        $apiResponse->setMessage($exception->getMessage());
         $apiResponse->setRequestService($this->serviceRequest->name);
         if (is_array($this->serviceRequest->pagination_type) && isset($this->serviceRequest->pagination_type['value'])) {
             $apiResponse->setPaginationType($this->serviceRequest->pagination_type['value']);
@@ -120,7 +120,13 @@ class ResponseManager extends BaseService
         $apiResponse->setCategory($this->serviceRequest->category()->first()->name);
         $apiResponse->setProvider($this->provider->name);
         $apiResponse->setApiRequest($apiRequest);
-        $apiResponse->setResponse($response);
+        $apiResponse->setRequestData([
+            "error" => $exception->getMessage(),
+            'code' => $exception->getCode(),
+            'line' => $exception->getLine(),
+            'trace' => $exception->getTrace()
+        ]);
+//        $apiResponse->setResponse($response);
         return $apiResponse;
     }
 
