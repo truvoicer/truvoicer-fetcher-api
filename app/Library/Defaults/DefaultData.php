@@ -13,37 +13,47 @@ class DefaultData
         'email' => 'test@user.com',
         'password' => 'password',
     ];
-    public const REQUEST_KEYS = [
-        "POST_PER_PAGE" => "posts_per_page",
-    ];
+
+    public const ITEMS_ARRAY = 'items_array';
+    public const TOTAL_ITEMS = 'total_items';
+    public const TOTAL_PAGES = 'total_pages';
+    public const PAGE_SIZE = 'page_size';
+    public const PAGE_NUMBER = 'page_number';
+    public const OFFSET = 'offset';
+    public const ITEM_ID = 'item_id';
+    public const PREV_PAGE = 'prev_page';
+    public const NEXT_PAGE = 'next_page';
+    public const LAST_PAGE = 'last_page';
+    public const PAGINATION_TYPE = 'pagination_type';
+
     public const SERVICE_RESPONSE_KEYS = [
         "ITEMS_ARRAY" => [
             SResponseKeysService::RESPONSE_KEY_REQUIRED => true,
-            SResponseKeysService::RESPONSE_KEY_NAME => "items_array",
+            SResponseKeysService::RESPONSE_KEY_NAME => self::ITEMS_ARRAY,
         ],
         "TOTAL_ITEMS" => [
             SResponseKeysService::RESPONSE_KEY_REQUIRED => true,
-            SResponseKeysService::RESPONSE_KEY_NAME => "total_items"
+            SResponseKeysService::RESPONSE_KEY_NAME => self::TOTAL_ITEMS,
         ],
         "TOTAL_PAGES" => [
             SResponseKeysService::RESPONSE_KEY_REQUIRED => true,
-            SResponseKeysService::RESPONSE_KEY_NAME => "total_pages"
+            SResponseKeysService::RESPONSE_KEY_NAME => self::TOTAL_PAGES,
         ],
         "PAGE_SIZE" => [
             SResponseKeysService::RESPONSE_KEY_REQUIRED => true,
-            SResponseKeysService::RESPONSE_KEY_NAME => "page_size"
+            SResponseKeysService::RESPONSE_KEY_NAME => self::PAGE_SIZE,
         ],
         "PAGE_NUMBER" => [
             SResponseKeysService::RESPONSE_KEY_REQUIRED => true,
-            SResponseKeysService::RESPONSE_KEY_NAME => "page_number"
+            SResponseKeysService::RESPONSE_KEY_NAME => self::PAGE_NUMBER,
         ],
         "OFFSET" => [
             SResponseKeysService::RESPONSE_KEY_REQUIRED => true,
-            SResponseKeysService::RESPONSE_KEY_NAME => "offset"
+            SResponseKeysService::RESPONSE_KEY_NAME => self::OFFSET,
         ],
         "ITEM_ID" => [
             SResponseKeysService::RESPONSE_KEY_REQUIRED => true,
-            SResponseKeysService::RESPONSE_KEY_NAME => "item_id"
+            SResponseKeysService::RESPONSE_KEY_NAME => self::ITEM_ID,
         ],
     ];
     public const XML_SERVICE_RESPONSE_KEYS = [

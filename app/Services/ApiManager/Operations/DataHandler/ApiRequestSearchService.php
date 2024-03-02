@@ -40,10 +40,7 @@ class ApiRequestSearchService
 
     public function searchInit(): void
     {
-//        $this->requestOperation->setQueryArray($query);
         $collectionName = $this->mongoDBRepository->getCollectionName($this->sr);
-
-        $this->mongoDBRepository->setPagination(true);
 
         $this->srResponseKeys = $this->srResponseKeyService->findConfigForOperationBySr($this->sr);
 
@@ -74,6 +71,17 @@ class ApiRequestSearchService
     public function runListSearch(array $query): Collection|LengthAwarePaginator
     {
         $this->searchInit();
+
+        $pageSizeKey = DefaultData::SERVICE_RESPONSE_KEYS['PAGE_SIZE'][SResponseKeysService::RESPONSE_KEY_NAME];
+        if (!empty($query[$pageSizeKey])) {
+            $this->mongoDBRepository->setPagination(
+                true,
+                (int)$query[$pageSizeKey]
+            );
+        } else {
+            $this->mongoDBRepository->setPagination(true);
+        }
+
         if (empty($query['query'])) {
             return $this->mongoDBRepository->findMany();
         }
