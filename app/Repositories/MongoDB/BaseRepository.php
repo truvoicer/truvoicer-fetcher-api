@@ -60,7 +60,7 @@ class BaseRepository
     protected function getResults($query): Collection|LengthAwarePaginator
     {
         if ($this->paginate) {
-            return $query->paginate($this->perPage);
+            return $query->paginate($this->perPage, ['*'], 'page', $this->page);
         }
         return $query->get();
     }

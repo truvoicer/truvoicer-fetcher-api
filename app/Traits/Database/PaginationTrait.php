@@ -16,10 +16,24 @@ trait PaginationTrait
     public int $page = 1;
     public int $total = 0;
 
-    public function setPagination(bool $paginate = false, int $perPage = 10, int $page = 1): void
+    public function setPagination(bool $paginate = false): void
     {
         $this->paginate = $paginate;
+    }
+
+    public function setPerPage(int $perPage): void
+    {
         $this->perPage = $perPage;
+    }
+
+    public function setPage(int $page): void
+    {
         $this->page = $page;
     }
+
+    public function setTotal(int $total): void
+    {
+        $this->total = $total;
+    }
+
 }

@@ -72,14 +72,13 @@ class ApiRequestSearchService
     {
         $this->searchInit();
 
-        $pageSizeKey = DefaultData::SERVICE_RESPONSE_KEYS['PAGE_SIZE'][SResponseKeysService::RESPONSE_KEY_NAME];
-        if (!empty($query[$pageSizeKey])) {
-            $this->mongoDBRepository->setPagination(
-                true,
-                (int)$query[$pageSizeKey]
-            );
-        } else {
-            $this->mongoDBRepository->setPagination(true);
+        $this->mongoDBRepository->setPagination(true);
+        if (!empty($query[DefaultData::PAGE_SIZE])) {
+            $this->mongoDBRepository->setPerPage((int)$query[DefaultData::PAGE_SIZE]);
+        }
+
+        if (!empty($query[DefaultData::PAGE_NUMBER])) {
+            $this->mongoDBRepository->setPage((int)$query[DefaultData::PAGE_NUMBER]);
         }
 
         if (empty($query['query'])) {
