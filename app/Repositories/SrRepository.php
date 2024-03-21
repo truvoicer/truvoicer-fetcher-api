@@ -198,9 +198,9 @@ class SrRepository extends BaseRepository
             $newItem = $item->replicate();
             $clone->srParameter()->save($newItem);
         });
-        $serviceRequest->parentSr()->get()->each(function ($item) use ($clone) {
+        $serviceRequest->childSrs()->get()->each(function ($item) use ($clone) {
             $newItem = $item->replicate();
-            $clone->parentSr()->save($newItem);
+            $clone->childSrs()->save($newItem);
         });
         return true;
     }
