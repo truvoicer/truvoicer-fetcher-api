@@ -12,7 +12,7 @@ class ResourceHelpers
         'status',
         'contentType',
         'provider',
-        'category',
+        'requestCategory',
     ];
     const COLLECTION_INCLUDE = [
         'provider',

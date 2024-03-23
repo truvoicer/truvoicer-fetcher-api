@@ -121,7 +121,7 @@ class ResponseManager extends BaseService
         if (is_array($this->serviceRequest->pagination_type) && isset($this->serviceRequest->pagination_type['value'])) {
             $apiResponse->setPaginationType($this->serviceRequest->pagination_type['value']);
         }
-        $apiResponse->setCategory($this->serviceRequest->category()->first()->name);
+        $apiResponse->setRequestCategory($this->serviceRequest->category()->first()->name);
         $apiResponse->setProvider($this->provider->name);
         return $apiResponse;
     }

@@ -24,7 +24,7 @@ class ApiResponse
 
     public array $service;
 
-    public string $category;
+    public string $requestCategory;
 
     public array $requestData;
 
@@ -133,17 +133,17 @@ class ApiResponse
     /**
      * @return mixed
      */
-    public function getCategory()
+    public function getRequestCategory()
     {
-        return $this->category;
+        return $this->requestCategory;
     }
 
     /**
-     * @param mixed $category
+     * @param mixed $requestCategory
      */
-    public function setCategory(string $category): void
+    public function setRequestCategory(string $requestCategory): void
     {
-        $this->category = $category;
+        $this->requestCategory = $requestCategory;
     }
 
     /**

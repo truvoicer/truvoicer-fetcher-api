@@ -31,7 +31,7 @@ class SrOperationsService
         'provider',
         'serviceRequest',
         'service',
-        'category',
+        'requestCategory',
     ];
     const REMOVE_SAVE_DATA_FIELDS = [
         'requestData',
