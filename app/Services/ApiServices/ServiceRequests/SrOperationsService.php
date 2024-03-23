@@ -29,7 +29,8 @@ class SrOperationsService
         'item_id',
         'contentType',
         'provider',
-        'requestService',
+        'serviceRequest',
+        'service',
         'category',
     ];
     const REMOVE_SAVE_DATA_FIELDS = [

@@ -18,7 +18,11 @@ class ApiResponse
 
     public string $provider;
 
-    public string $requestService;
+    public string $request;
+
+    public array $serviceRequest;
+
+    public array $service;
 
     public string $category;
 
@@ -33,6 +37,26 @@ class ApiResponse
     public function getRequestType(): string
     {
         return $this->requestType;
+    }
+
+    public function getServiceRequest(): array
+    {
+        return $this->serviceRequest;
+    }
+
+    public function setServiceRequest(array $serviceRequest): void
+    {
+        $this->serviceRequest = $serviceRequest;
+    }
+
+    public function getService(): array
+    {
+        return $this->service;
+    }
+
+    public function setService(array $service): void
+    {
+        $this->service = $service;
     }
 
     public function setRequestType(string $requestType): void
@@ -105,21 +129,6 @@ class ApiResponse
         $this->contentType = $contentType;
     }
 
-    /**
-     * @return mixed
-     */
-    public function getRequestService()
-    {
-        return $this->requestService;
-    }
-
-    /**
-     * @param mixed $requestService
-     */
-    public function setRequestService(string $requestService): void
-    {
-        $this->requestService = $requestService;
-    }
 
     /**
      * @return mixed

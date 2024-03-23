@@ -107,18 +107,29 @@ class ResponseManager extends BaseService
         }
     }
 
-    private function errorResponse(Exception $exception, ApiRequest $apiRequest, Response $response)
+    public function setResponseDefaults(ApiResponse $apiResponse)
     {
-        $apiResponse = new ApiResponse();
-        $apiResponse->setStatus("error");
         $apiResponse->setRequestType($this->requestType);
-        $apiResponse->setMessage($exception->getMessage());
-        $apiResponse->setRequestService($this->serviceRequest->name);
+        $apiResponse->setServiceRequest([
+            'id' => $this->serviceRequest->id,
+            'name' => $this->serviceRequest->name,
+        ]);
+        $apiResponse->setService([
+            'id' => $this->serviceRequest->s()->first()?->id,
+            'name' => $this->serviceRequest->s()->first()?->name,
+        ]);
         if (is_array($this->serviceRequest->pagination_type) && isset($this->serviceRequest->pagination_type['value'])) {
             $apiResponse->setPaginationType($this->serviceRequest->pagination_type['value']);
         }
         $apiResponse->setCategory($this->serviceRequest->category()->first()->name);
         $apiResponse->setProvider($this->provider->name);
+        return $apiResponse;
+    }
+    private function errorResponse(Exception $exception, ApiRequest $apiRequest, Response $response)
+    {
+        $apiResponse = new ApiResponse();
+        $apiResponse->setStatus("error");
+        $apiResponse->setMessage($exception->getMessage());
         $apiResponse->setApiRequest($apiRequest);
         $apiResponse->setRequestData([
             "error" => $exception->getMessage(),
@@ -127,27 +138,19 @@ class ResponseManager extends BaseService
             'trace' => $exception->getTrace()
         ]);
 //        $apiResponse->setResponse($response);
-        return $apiResponse;
+        return $this->setResponseDefaults($apiResponse);
     }
 
     private function successResponse(string $contentType, array $requestData, array $extraData, ApiRequest $apiRequest, Response $response)
     {
-//        dd($requestData);
         $apiResponse = new ApiResponse();
-        $apiResponse->setRequestType($this->requestType);
         $apiResponse->setContentType($contentType);
-        if (is_array($this->serviceRequest->pagination_type) && isset($this->serviceRequest->pagination_type['value'])) {
-            $apiResponse->setPaginationType($this->serviceRequest->pagination_type['value']);
-        }
-        $apiResponse->setRequestService($this->serviceRequest->name);
-        $apiResponse->setCategory($this->serviceRequest->category()->first()->name);
         $apiResponse->setStatus("success");
-        $apiResponse->setProvider($this->provider->name);
         $apiResponse->setRequestData($requestData);
         $apiResponse->setExtraData($extraData);
         $apiResponse->setApiRequest($apiRequest);
         $apiResponse->setResponse($response);
-        return $apiResponse;
+        return $this->setResponseDefaults($apiResponse);
     }
 
     private function buildArray(array $array)

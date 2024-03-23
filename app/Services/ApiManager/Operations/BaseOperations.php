@@ -101,21 +101,16 @@ class BaseOperations extends ApiBase
 
     private function responseHandler(string $requestType, $response)
     {
+        $this->responseManager->setServiceRequest($this->apiService);
+        $this->responseManager->setProvider($this->provider);
+        $this->responseManager->setRequestType($requestType);
         $apiResponse = new ApiResponse();
         $apiResponse->setStatus("error");
-        $apiResponse->setRequestService($this->apiService->name);
-        if (is_array($this->apiService->pagination_type) && isset($this->apiService->pagination_type['value'])) {
-            $apiResponse->setPaginationType($this->apiService->pagination_type['value']);
-        }
-        $apiResponse->setCategory($this->apiService->category()->first()->name);
-        $apiResponse->setProvider($this->provider->name);
+        $apiResponse = $this->responseManager->setResponseDefaults($apiResponse);
         if (!$response) {
             $apiResponse->setMessage('Too many requests, please try again later.');
             return $apiResponse;
         }
-        $this->responseManager->setServiceRequest($this->apiService);
-        $this->responseManager->setProvider($this->provider);
-        $this->responseManager->setRequestType($requestType);
         switch ($requestType) {
             case "json":
                 return $this->responseManager->processResponse($response, $this->apiRequest);
