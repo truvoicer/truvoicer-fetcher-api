@@ -13,11 +13,11 @@ class ResourceHelpers
         'contentType',
         'provider',
         'requestCategory',
-    ];
-    const COLLECTION_INCLUDE = [
-        'provider',
         'serviceRequest',
         'service',
+    ];
+    const INCLUDE_IN_COLLECTION_ITEMS = [
+        'provider',
     ];
 
     public static function buildResponseProperties(array $data)
@@ -34,7 +34,7 @@ class ResourceHelpers
         }, $rc->getProperties(\ReflectionProperty::IS_PUBLIC));
         $results->transform(function ($result, $index) use ($responseVars) {
             return array_filter($result, function ($value, $key) use ($responseVars) {
-                if (in_array($key, self::COLLECTION_INCLUDE)) {
+                if (in_array($key, self::INCLUDE_IN_COLLECTION_ITEMS)) {
                     return true;
                 }
                 return !in_array($key, $responseVars) ;
