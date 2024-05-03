@@ -36,6 +36,7 @@ class ApiRequestDataHandler
     public function searchInit(string $providerName, string $srName, ?array $query = []): void
     {
         $findProvider = $this->findProviderByName($providerName);
+
         if (!$findProvider instanceof Provider) {
             throw new BadRequestHttpException("Provider not found");
         }
@@ -43,7 +44,7 @@ class ApiRequestDataHandler
         $this->apiRequestSearchService->setProvider($findProvider);
         $sr = $this->findSrByName($srName);
         if (!$sr instanceof Sr) {
-            throw new BadRequestHttpException("Provider not found");
+            throw new BadRequestHttpException("Service request {$sr->name} not found");
         }
         $this->setSr($sr);
 
