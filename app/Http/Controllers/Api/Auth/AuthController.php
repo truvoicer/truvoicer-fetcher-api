@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\Auth;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginRequest;
 use App\Http\Resources\AccessTokenResource;
+use App\Http\Resources\PersonalAccessTokenResource;
 use App\Http\Resources\RoleResource;
 use App\Http\Resources\UserResource;
 use App\Models\Mongo\Recruitment;
@@ -113,20 +114,22 @@ class AuthController extends Controller
 
     public function newToken(Request $request): \Illuminate\Http\JsonResponse
     {
-        $user = $this->userAdminService->getUserByEmail($request->get("email"));
-        $token = $user->createToken('admin', ['api:superuser'])->plainTextToken;
-        if (!$token) {
+        $generateToken = $this->userAdminService->createUserTokenByRoleId(
+            $request->user(),
+            $request->get('role_id'),
+            $request->get('expires_at', null),
+        );
+
+        if (!$generateToken) {
             return $this->sendErrorResponse(
-                'Error generating token',
-                [],
-                [],
-                Response::HTTP_UNPROCESSABLE_ENTITY
+                "Error generating api token",
             );
         }
-        return $this->sendSuccessResponse("Api token", [
-            "token: " => $token,
-//            "expiresAt" => $setApiToken->getExpiresAt()->format("Y-m-d H:i:s"),
-            "email" => $user->email
-        ]);
+        return $this->sendSuccessResponse(
+            "success",
+            new PersonalAccessTokenResource (
+                $generateToken
+            )
+        );
     }
 }

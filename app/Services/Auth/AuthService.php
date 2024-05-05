@@ -9,8 +9,6 @@ use Illuminate\Database\Eloquent\Collection;
 class AuthService
 {
     const ABILITY_SUPERUSER = 'superuser';
-    const ABILITY_SUPER_ADMIN = 'super_admin';
-    const ABILITY_PUBLIC = 'public';
     const ABILITY_ADMIN = 'admin';
     const ABILITY_APP_USER = 'app_user';
     const ABILITY_USER = 'user';
@@ -20,22 +18,9 @@ class AuthService
             'label' => 'Super User',
             'ability' => 'api:superuser',
             'available_roles' => [
-                self::ABILITY_SUPER_ADMIN,
                 self::ABILITY_ADMIN,
                 self::ABILITY_USER,
-                self::ABILITY_APP_USER,
-                self::ABILITY_PUBLIC
-            ]
-        ],
-        [
-            'name' => self::ABILITY_SUPER_ADMIN,
-            'label' => 'Super Admin',
-            'ability' => 'api:super_admin',
-            'available_roles' => [
-                self::ABILITY_ADMIN,
-                self::ABILITY_USER,
-                self::ABILITY_APP_USER,
-                self::ABILITY_PUBLIC
+                self::ABILITY_APP_USER
             ]
         ],
         [
@@ -44,8 +29,7 @@ class AuthService
             'ability' => 'api:admin',
             'available_roles' => [
                 self::ABILITY_USER,
-                self::ABILITY_APP_USER,
-                self::ABILITY_PUBLIC
+                self::ABILITY_APP_USER
             ]
         ],
         [
@@ -53,8 +37,7 @@ class AuthService
             'label' => 'User',
             'ability' => 'api:user',
             'available_roles' => [
-                self::ABILITY_APP_USER,
-                self::ABILITY_PUBLIC
+                self::ABILITY_APP_USER
             ]
         ],
         [
@@ -63,12 +46,6 @@ class AuthService
             'ability' => 'api:app_user',
             'available_roles' => []
         ],
-        [
-            'name' => self::ABILITY_PUBLIC,
-            'label' => 'Public',
-            'ability' => 'api:public',
-            'available_roles' => []
-        ]
     ];
 
     public function __construct(

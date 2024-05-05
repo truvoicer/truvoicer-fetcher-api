@@ -54,9 +54,9 @@ Route::middleware(['auth:sanctum', 'ability:api:app_user'])->group(function () {
 Route::middleware(['auth:sanctum', 'ability:api:admin,api:superuser,api:super_admin,api:user,api:app_user'])->group(function () {
     Route::prefix('backend')->name('backend.')->group(function () {
         Route::prefix('auth')->name('auth.')->group(function () {
+            Route::post('/api-token/generate', [AuthController::class, 'newToken'])->name('token.generate');
             Route::prefix('account')->name('account.')->group(function () {
                 Route::post('/details', [AuthController::class, 'getAccountDetails'])->name('details');
-                Route::post('/token/generate', [AuthController::class, 'newToken'])->name('token.generate');
             });
             Route::prefix('token')->name('token.')->group(function () {
                 Route::get('/validate', [AuthController::class, 'validateToken'])->name('validate');

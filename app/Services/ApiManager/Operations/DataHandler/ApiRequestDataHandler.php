@@ -44,7 +44,7 @@ class ApiRequestDataHandler
         $this->apiRequestSearchService->setProvider($findProvider);
         $sr = $this->findSrByName($srName);
         if (!$sr instanceof Sr) {
-            throw new BadRequestHttpException("Service request {$sr->name} not found");
+            throw new BadRequestHttpException("Service request {$srName} not found");
         }
         $this->setSr($sr);
 

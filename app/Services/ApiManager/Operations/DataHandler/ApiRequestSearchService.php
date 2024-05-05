@@ -93,6 +93,10 @@ class ApiRequestSearchService
         );
         $reservedKeys = array_column(DefaultData::SERVICE_RESPONSE_KEYS, SResponseKeysService::RESPONSE_KEY_NAME);
         $reservedKeys = array_merge($reservedKeys, self::RESERVED_SEARCH_RESPONSE_KEYS);
+        $dateKeys = $this->srResponseKeys->filter(function ($srResponseKey) {
+            return str_contains($srResponseKey->name, 'date');
+        });
+
         $this->srResponseKeys->each(function ($srResponseKey) use ($query, $reservedKeys) {
             if (in_array($srResponseKey->name, $reservedKeys)) {
                 return;
