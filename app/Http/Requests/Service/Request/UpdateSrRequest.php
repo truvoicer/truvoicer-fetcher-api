@@ -24,6 +24,7 @@ class UpdateSrRequest extends FormRequest
     {
         return [
             'type' => 'string|nullable',
+            'default_sr' => 'boolean|nullable',
             'name' => 'string|nullable',
             'label' => 'string|nullable',
             'service' => 'integer|nullable',

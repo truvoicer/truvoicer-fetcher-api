@@ -44,4 +44,13 @@ class S extends Model
             SUser::class
         );
     }
+    public function providers()
+    {
+        return $this->belongsToMany(
+            Provider::class,
+            Sr::class,
+            's_id',
+            'provider_id'
+        );
+    }
 }

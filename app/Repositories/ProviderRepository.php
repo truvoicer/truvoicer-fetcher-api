@@ -29,6 +29,7 @@ class ProviderRepository extends BaseRepository
         $this->setLimit($count);
         return $this->getResults(
             $this->getQuery()
+                ->with(['categories', 'providerRateLimit'])
         );
     }
 
@@ -44,6 +45,7 @@ class ProviderRepository extends BaseRepository
                 new Provider(),
                 $user
             )
+            ->with(['categories', 'providerRateLimit'])
         );
     }
 

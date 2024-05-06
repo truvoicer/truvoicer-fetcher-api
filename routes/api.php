@@ -47,7 +47,7 @@ Route::middleware(['auth:sanctum', 'ability:api:app_user'])->group(function () {
         Route::get('/service/list', [ListController::class, 'frontendServiceList'])->name('service.list');
         Route::get('/service/response-key/list', [ListController::class, 'frontendServiceResponseKeyList'])->name('service.response-key.list');
         Route::prefix('operation')->name('operation.')->group(function () {
-            Route::get('/{service_request_name}', [OperationsController::class, 'searchOperation'])->name('search');
+            Route::get('/search/{type}', [OperationsController::class, 'searchOperation'])->name('search');
         });
     });
 });
@@ -213,6 +213,7 @@ Route::middleware(['auth:sanctum', 'ability:api:admin,api:superuser,api:super_ad
             });
             Route::get('/{service}', [ServiceController::class, 'getService'])->name('detail');
             Route::prefix('{service}')->name('single.')->group(function () {
+                Route::get('/provider/list', [ServiceController::class, 'getServiceProviders'])->name('provider.list');
                 Route::patch('/update', [ServiceController::class, 'updateService'])->name('update');
                 Route::delete('/delete', [ServiceController::class, 'deleteService'])->name('delete');
                 Route::prefix('response-key')->name('response-key.')->group(function () {

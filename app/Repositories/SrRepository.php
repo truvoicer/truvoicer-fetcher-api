@@ -52,12 +52,14 @@ class SrRepository extends BaseRepository
             $provider->serviceRequest()
                 ->whereDoesntHave('parentSrs')
                 ->orderBy($sort, $order)
+                ->with(['category', 's', 'srSchedule', 'srRateLimit', 'childSrs'])
         );
     }
     public function getChildSrs(Sr $sr, string $sort, string $order, ?int $count = null) {
         return $this->getResults(
             $sr->childSrs()
                 ->orderBy($sort, $order)
+                ->with(['category', 's', 'srSchedule', 'srRateLimit', 'childSrs'])
         );
     }
 
@@ -74,7 +76,8 @@ class SrRepository extends BaseRepository
             'label',
             'pagination_type',
             'query_parameters',
-            'type'
+            'type',
+            'default_sr'
         ];
         $saveData = [];
         $attributes = null;

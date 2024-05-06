@@ -53,6 +53,13 @@ class SrService extends BaseService
     {
         return $this->serviceRequestRepository::getSrByName($provider, $serviceRequestName);
     }
+    public function getDefaultSr(Provider $provider, string $type)
+    {
+        return  $provider->sr()
+            ->where('default_sr', true)
+            ->where('type', $type)
+            ->first();
+    }
 
     public function getServiceRequestById($id)
     {
@@ -102,9 +109,21 @@ class SrService extends BaseService
         if (empty($data["name"])) {
             $data['name'] = UtilHelpers::labelToName($data['label'], false, '-');
         }
-        $requestConfigService = App::make(SrConfigService::class);
+        if (!empty($data['default_sr'])) {
+            $providerSrs = $provider->sr()
+                ->where('default_sr', true)
+                ->where('type', $data['type'])
+                ->get();
+            if ($providerSrs->count() > 0) {
+                foreach ($providerSrs as $providerSr) {
+                    $providerSr->default_sr = false;
+                    $providerSr->save();
+                }
+            }
+        }
         $saveServiceRequest = $this->serviceRequestRepository->createServiceRequest($provider, $data);
         if ($saveServiceRequest && $validateConfig) {
+            $requestConfigService = App::make(SrConfigService::class);
             $requestConfigService->requestConfigValidator($this->serviceRequestRepository->getModel());
         }
         return $saveServiceRequest;
@@ -132,6 +151,20 @@ class SrService extends BaseService
 
     public function updateServiceRequest(Sr $serviceRequest, array $data)
     {
+        if (!empty($data['default_sr'])) {
+            $provider = $serviceRequest->provider;
+            $providerSrs = $provider->sr()
+                ->where('default_sr', true)
+                ->where('type', $serviceRequest->type)
+                ->where('id', '!=', $serviceRequest->id)
+                ->get();
+            if ($providerSrs->count() > 0) {
+                foreach ($providerSrs as $providerSr) {
+                    $providerSr->default_sr = false;
+                    $providerSr->save();
+                }
+            }
+        }
         return $this->serviceRequestRepository->saveServiceRequest($serviceRequest, $data);
     }
 

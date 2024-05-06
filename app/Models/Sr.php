@@ -12,17 +12,19 @@ class Sr extends Model
 
     public const TABLE_NAME = 'srs';
     public const REPOSITORY = SrRepository::class;
-    protected $with = ['category', 's', 'srSchedule', 'srRateLimit', 'childSrs'];
+//    protected $with = ['category', 's', 'srSchedule', 'srRateLimit', 'childSrs'];
     protected $fillable = [
         'name',
         'label',
         'pagination_type',
         'query_parameters',
-        'type'
+        'type',
+        'default_sr'
     ];
     protected $casts = [
         'pagination_type' => 'json',
         'query_parameters' => 'json',
+        'default_sr' => 'boolean'
     ];
 
     public function s()

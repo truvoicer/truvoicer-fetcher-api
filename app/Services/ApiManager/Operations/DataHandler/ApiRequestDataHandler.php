@@ -33,7 +33,7 @@ class ApiRequestDataHandler
         $this->apiResponse = new ApiResponse();
     }
 
-    public function searchInit(string $providerName, string $srName, ?array $query = []): void
+    public function searchInit(string $type, string $providerName, ?string $srName, ?array $query = []): void
     {
         $findProvider = $this->findProviderByName($providerName);
 
@@ -42,7 +42,12 @@ class ApiRequestDataHandler
         }
         $this->setProvider($findProvider);
         $this->apiRequestSearchService->setProvider($findProvider);
-        $sr = $this->findSrByName($srName);
+        if (empty($srName)) {
+            $srName =  'default';
+            $sr = $this->srService->getDefaultSr($this->provider, $type);
+        } else {
+            $sr = $this->findSrByName($srName);
+        }
         if (!$sr instanceof Sr) {
             throw new BadRequestHttpException("Service request {$srName} not found");
         }
@@ -52,14 +57,14 @@ class ApiRequestDataHandler
 
     }
 
-    public function runListSearch(string $providerName, string $srName, ?array $query = []): Collection|LengthAwarePaginator
+    public function runListSearch(string $providerName, ?string $srName, ?array $query = []): Collection|LengthAwarePaginator
     {
-        $this->searchInit($providerName, $srName, $query);
+        $this->searchInit('list', $providerName, $srName, $query);
         return $this->apiRequestSearchService->runListSearch($query);
     }
-    public function runItemSearch(string $providerName, string $srName, int|string $itemId): array|null
+    public function runItemSearch(string $providerName, ?string $srName, int|string $itemId): array|null
     {
-        $this->searchInit($providerName, $srName);
+        $this->searchInit('item', $providerName, $srName);
         return $this->apiRequestSearchService->runSingleItemSearch($itemId);
     }
     private function findProviderByName(string $providerName): Provider|bool

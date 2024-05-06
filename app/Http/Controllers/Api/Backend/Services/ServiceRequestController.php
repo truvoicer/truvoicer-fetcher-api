@@ -289,6 +289,7 @@ class ServiceRequestController extends Controller
         ) {
             return $this->sendErrorResponse("Access denied");
         }
+
         $update = $this->srService->updateServiceRequest($serviceRequest, $request->all());
 
         if (!$update) {
@@ -602,10 +603,11 @@ class ServiceRequestController extends Controller
         ) {
             return $this->sendErrorResponse("Access denied");
         }
+
         return $this->sendSuccessResponse(
             "success",
             new ServiceRequestResource(
-                $serviceRequest
+                $serviceRequest->with(['category', 's'])->where('id', $serviceRequest->id)->first()
             )
         );
     }

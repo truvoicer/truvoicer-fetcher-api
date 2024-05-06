@@ -14,7 +14,7 @@ class Provider extends Model
     public const REPOSITORY = ProviderRepository::class;
     public const RELATED_USER_REPOSITORY = ProviderUserRepository::class;
 
-    protected $with = ['categories', 'serviceRequest', 'providerRateLimit'];
+//    protected $with = ['categories', 'serviceRequest', 'providerRateLimit'];
     protected $fillable = [
         'name',
         'label',

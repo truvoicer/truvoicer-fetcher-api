@@ -28,7 +28,7 @@ class OperationsController extends Controller
         parent::__construct($accessControlService, $httpRequestService, $serializerService);
     }
 
-    public function searchOperation(string $name, ApiRequestDataHandler $apiRequestDataHandler, Request $request)
+    public function searchOperation(string $type, ApiRequestDataHandler $apiRequestDataHandler, Request $request)
     {
         $data = $request->query->all();
 //        $appEnv = $this->getParameter("app.env");
@@ -45,21 +45,27 @@ class OperationsController extends Controller
 //        }
 
         $apiRequestDataHandler->setUser($request->user());
-
-        if (!empty($data['item_id'])) {
-            $results = $apiRequestDataHandler->runItemSearch(
-                $request->query->get('provider'),
-                $name,
-                $data['item_id']
-            );
-            $responseData = new ApiSearchItemResource($results);
-        } else {
-            $results = $apiRequestDataHandler->runListSearch(
-                $request->query->get('provider'),
-                $name,
-                $data
-            );
-            $responseData = new ApiSearchListResourceCollection($results);
+        switch ($type) {
+            case 'list':
+                $results = $apiRequestDataHandler->runListSearch(
+                    $request->query->get('provider'),
+                    $request->query->get('service_request_name'),
+                    $data
+                );
+                $responseData = new ApiSearchListResourceCollection($results);
+                break;
+            case 'item':
+                $results = $apiRequestDataHandler->runItemSearch(
+                    $request->query->get('provider'),
+                    $request->query->get('service_request_name'),
+                    $data['item_id']
+                );
+                $responseData = new ApiSearchItemResource($results);
+                break;
+            default:
+                $this->sendErrorResponse(
+                    'Invalid search type',
+                );
         }
         return $this->sendSuccessResponse(
             'Success',

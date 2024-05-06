@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Service\CreateSRequest;
 use App\Http\Requests\Service\DeleteBatchSRequest;
 use App\Http\Requests\Service\UpdateSRequest;
+use App\Http\Resources\ProviderCollection;
 use App\Http\Resources\Service\ServiceCollection;
 use App\Http\Resources\Service\ServiceResource;
 use App\Models\S;
@@ -72,6 +73,27 @@ class ServiceController extends Controller
         return $this->sendSuccessResponse(
             "success",
             new ServiceCollection($getServices)
+        );
+    }
+    public function getServiceProviders(S $service, Request $request): \Illuminate\Http\JsonResponse
+    {
+        $this->setAccessControlUser($request->user());
+        if (
+            !$this->accessControlService->checkPermissionsForEntity(
+                $service,
+                [
+                    PermissionService::PERMISSION_ADMIN,
+                    PermissionService::PERMISSION_READ,
+                ]
+            )
+        ) {
+            return $this->sendErrorResponse(
+                "You do not have permission to view this service",
+            );
+        }
+        return $this->sendSuccessResponse(
+            "success",
+            new ProviderCollection($service->providers()->with('serviceRequest')->get())
         );
     }
 

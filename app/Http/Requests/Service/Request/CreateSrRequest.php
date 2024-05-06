@@ -24,6 +24,7 @@ class CreateSrRequest extends FormRequest
     {
         return [
             'type' => 'string|required',
+            'default_sr' => 'boolean|nullable',
             'name' => 'string|nullable',
             'label' => 'required|string',
             'service' => 'required|integer',
