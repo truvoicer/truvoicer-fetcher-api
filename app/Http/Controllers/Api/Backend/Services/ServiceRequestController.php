@@ -8,6 +8,7 @@ use App\Http\Requests\Service\Request\CreateSrRequest;
 use App\Http\Requests\Service\Request\DeleteBatchSrRequest;
 use App\Http\Requests\Service\Request\OverrideChildSrRequest;
 use App\Http\Requests\Service\Request\UpdateServiceRequest;
+use App\Http\Requests\Service\Request\UpdateSrDefaultsRequest;
 use App\Http\Requests\Service\Request\UpdateSrRequest;
 use App\Http\Resources\Service\ServiceRequest\ServiceRequestCollection;
 use App\Http\Resources\Service\ServiceRequest\ServiceRequestResource;
@@ -297,6 +298,42 @@ class ServiceRequestController extends Controller
         }
         return $this->sendSuccessResponse(
             "Service request updated",
+            new  ServiceRequestResource(
+                $this->srService->getServiceRequestRepository()->getModel()
+            )
+        );
+    }
+    /**
+     * Update an api service request based on request POST data
+     * Returns json success message and api service request data on successful update
+     * Returns error response and message on fail
+     *
+     */
+    public function updateSrDefaults(
+        Provider $provider,
+        Sr       $serviceRequest,
+        UpdateSrDefaultsRequest  $request
+    ): \Illuminate\Http\JsonResponse {
+        $this->setAccessControlUser($request->user());
+        if (
+            !$this->accessControlService->checkPermissionsForEntity(
+                $provider,
+                [
+                    PermissionService::PERMISSION_ADMIN,
+                    PermissionService::PERMISSION_UPDATE,
+                ],
+            )
+        ) {
+            return $this->sendErrorResponse("Access denied");
+        }
+
+        $update = $this->srService->updateSrDefaults($serviceRequest, $request->validated());
+
+        if (!$update) {
+            return $this->sendErrorResponse("Error updating sr default data");
+        }
+        return $this->sendSuccessResponse(
+            "Sr default data updated",
             new  ServiceRequestResource(
                 $this->srService->getServiceRequestRepository()->getModel()
             )

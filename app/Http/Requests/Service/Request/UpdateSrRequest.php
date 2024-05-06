@@ -34,7 +34,8 @@ class UpdateSrRequest extends FormRequest
                 'string',
                 Rule::in(['page', 'offset'])
             ],
-            'query_parameters' => 'array|nullable'
+            'query_parameters' => 'array|nullable',
+            'default_data' => 'array|nullable'
         ];
     }
 }

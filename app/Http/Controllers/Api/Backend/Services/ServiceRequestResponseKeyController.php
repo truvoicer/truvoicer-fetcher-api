@@ -78,7 +78,8 @@ class ServiceRequestResponseKeyController extends Controller
                 $serviceRequest,
                 $request->get('sort', "name"),
                 $request->get('order', "asc"),
-                $request->get('count', -1)
+                $request->get('count', -1),
+                $request->query->filter('pagination', true, FILTER_VALIDATE_BOOLEAN)
             );
 
         return $this->sendSuccessResponse(

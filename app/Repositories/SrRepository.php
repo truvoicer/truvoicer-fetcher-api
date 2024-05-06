@@ -77,7 +77,8 @@ class SrRepository extends BaseRepository
             'pagination_type',
             'query_parameters',
             'type',
-            'default_sr'
+            'default_sr',
+            'default_data',
         ];
         $saveData = [];
         $attributes = null;

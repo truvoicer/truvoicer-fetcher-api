@@ -47,7 +47,7 @@ Route::middleware(['auth:sanctum', 'ability:api:app_user'])->group(function () {
         Route::get('/service/list', [ListController::class, 'frontendServiceList'])->name('service.list');
         Route::get('/service/response-key/list', [ListController::class, 'frontendServiceResponseKeyList'])->name('service.response-key.list');
         Route::prefix('operation')->name('operation.')->group(function () {
-            Route::get('/search/{type}', [OperationsController::class, 'searchOperation'])->name('search');
+            Route::post('/search/{type}', [OperationsController::class, 'searchOperation'])->name('search');
         });
     });
 });
@@ -150,6 +150,7 @@ Route::middleware(['auth:sanctum', 'ability:api:admin,api:superuser,api:super_ad
                             Route::post('/{childSr}/duplicate', [ServiceRequestController::class, 'duplicateChildServiceRequest'])->name('duplicate');
                         });
                         Route::delete('/delete', [ServiceRequestController::class, 'deleteServiceRequest'])->name('delete');
+                        Route::patch('/defaults/update', [ServiceRequestController::class, 'updateSrDefaults'])->name('defaults.update');
                         Route::patch('/update', [ServiceRequestController::class, 'updateServiceRequest'])->name('update');
                         Route::post('/duplicate', [ServiceRequestController::class, 'duplicateServiceRequest'])->name('duplicate');
                         Route::prefix('schedule')->name('schedule.')->group(function () {

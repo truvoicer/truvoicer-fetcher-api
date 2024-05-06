@@ -36,7 +36,6 @@ class ApiRequestDataHandler
     public function searchInit(string $type, string $providerName, ?string $srName, ?array $query = []): void
     {
         $findProvider = $this->findProviderByName($providerName);
-
         if (!$findProvider instanceof Provider) {
             throw new BadRequestHttpException("Provider not found");
         }

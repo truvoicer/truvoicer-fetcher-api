@@ -81,6 +81,15 @@ class ApiRequestSearchService
             $this->mongoDBRepository->setPage((int)$query[DefaultData::PAGE_NUMBER]);
         }
 
+        $this->mongoDBRepository->addWhere(
+            'provider',
+            $this->provider->name,
+        );
+        $this->mongoDBRepository->addWhere(
+            'serviceRequest.name',
+            $this->sr->name,
+        );
+
         if (empty($query['query'])) {
             return $this->mongoDBRepository->findMany();
         }
@@ -96,7 +105,6 @@ class ApiRequestSearchService
         $dateKeys = $this->srResponseKeys->filter(function ($srResponseKey) {
             return str_contains($srResponseKey->name, 'date');
         });
-
         $this->srResponseKeys->each(function ($srResponseKey) use ($query, $reservedKeys) {
             if (in_array($srResponseKey->name, $reservedKeys)) {
                 return;

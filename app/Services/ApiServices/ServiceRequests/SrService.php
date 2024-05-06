@@ -149,6 +149,16 @@ class SrService extends BaseService
         );
     }
 
+    public function updateSrDefaults(Sr $serviceRequest, array $data)
+    {
+        $defaultData = $serviceRequest?->default_data ?? [];
+        return $this->updateServiceRequest($serviceRequest, [
+            'default_data' => [
+                ...$defaultData,
+                ...$data
+            ]
+        ]);
+    }
     public function updateServiceRequest(Sr $serviceRequest, array $data)
     {
         if (!empty($data['default_sr'])) {

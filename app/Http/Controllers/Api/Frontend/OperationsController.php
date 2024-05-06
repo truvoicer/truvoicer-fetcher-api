@@ -30,7 +30,7 @@ class OperationsController extends Controller
 
     public function searchOperation(string $type, ApiRequestDataHandler $apiRequestDataHandler, Request $request)
     {
-        $data = $request->query->all();
+        $data = $request->all();
 //        $appEnv = $this->getParameter("app.env");
 //        if ($appEnv === "prod") {
 //            $cacheKey = preg_replace('/[^a-zA-Z0-9\']/', '', $request->getRequestUri());
@@ -43,21 +43,31 @@ class OperationsController extends Controller
 //                return $requestOperation->runOperation($data);
 //            });
 //        }
+        $provider = $request->get('provider');
+        if (empty($provider['name'])) {
+            return $this->sendErrorResponse(
+                'Provider is required',
+            );
+        }
+        $serviceRequestName = null;
+        if (!empty($provider['service_request_name'])) {
+            $serviceRequestName = $provider['service_request_name'];
+        }
 
         $apiRequestDataHandler->setUser($request->user());
         switch ($type) {
             case 'list':
                 $results = $apiRequestDataHandler->runListSearch(
-                    $request->query->get('provider'),
-                    $request->query->get('service_request_name'),
+                    $provider['name'],
+                    $serviceRequestName,
                     $data
                 );
                 $responseData = new ApiSearchListResourceCollection($results);
                 break;
             case 'item':
                 $results = $apiRequestDataHandler->runItemSearch(
-                    $request->query->get('provider'),
-                    $request->query->get('service_request_name'),
+                    $provider['name'],
+                    $serviceRequestName,
                     $data['item_id']
                 );
                 $responseData = new ApiSearchItemResource($results);

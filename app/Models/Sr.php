@@ -19,12 +19,14 @@ class Sr extends Model
         'pagination_type',
         'query_parameters',
         'type',
-        'default_sr'
+        'default_sr',
+        'default_data',
     ];
     protected $casts = [
         'pagination_type' => 'json',
         'query_parameters' => 'json',
-        'default_sr' => 'boolean'
+        'default_sr' => 'boolean',
+        'default_data' => 'json',
     ];
 
     public function s()

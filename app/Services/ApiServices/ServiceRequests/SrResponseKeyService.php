@@ -21,6 +21,7 @@ use App\Services\ApiServices\SResponseKeysService;
 use App\Services\BaseService;
 use App\Services\Permission\AccessControlService;
 use App\Services\Permission\PermissionService;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 
@@ -102,9 +103,15 @@ class SrResponseKeyService extends BaseService
         return $getRequestResponseKey;
     }
 
-    public function getRequestResponseKeys(Sr $serviceRequest, string $sort = "name", string $order = "asc", ?int $count = null): LengthAwarePaginator
+    public function getRequestResponseKeys(
+        Sr $serviceRequest,
+        string $sort = "name",
+        string $order = "asc",
+        ?int $count = null,
+        bool $pagination = true
+    ): LengthAwarePaginator|Collection
     {
-        $this->srResponseKeyRepository->setPagination(true);
+        $this->srResponseKeyRepository->setPagination($pagination);
         return $this->srResponseKeyRepository->findSrResponseKeysWithRelation($serviceRequest, $sort, $order, $count);
     }
 
