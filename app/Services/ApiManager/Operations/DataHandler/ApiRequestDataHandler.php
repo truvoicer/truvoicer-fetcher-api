@@ -122,12 +122,12 @@ class ApiRequestDataHandler
         }
         return $data;
     }
-    public function searchOperation(string $type, array $providers, int $serviceId, ?array $data = [])
+    public function searchOperation(string $type, array $providers, string $serviceName, ?array $data = [])
     {
         if (!count($providers)) {
             return false;
         }
-        $getService = $this->findService($serviceId);
+        $getService = $this->findService($serviceName);
         if (!$getService instanceof S) {
             return false;
         }
@@ -164,9 +164,9 @@ class ApiRequestDataHandler
         }
         return $sr;
     }
-    private function findService(int $serviceId): S|false
+    private function findService(string $serviceName): S|false
     {
-        $sr = $this->apiService->getServiceById($serviceId);
+        $sr = $this->apiService->getServiceRepository()->findByName($serviceName);
         if (!$sr instanceof S) {
             return false;
         }
