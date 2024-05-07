@@ -14,10 +14,14 @@ class MongoDBRepository extends BaseRepository
         if (!$service instanceof S) {
             return false;
         }
+        return $this->getCollectionNameByService($service, $sr->type);
+    }
+    public function getCollectionNameByService(S $service, string $type)
+    {
         return sprintf(
             '%s_%s',
             $service->name,
-            $sr->type
+            $type
         );
     }
 }

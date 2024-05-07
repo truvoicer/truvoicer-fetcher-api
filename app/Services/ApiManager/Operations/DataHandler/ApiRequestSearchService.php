@@ -6,18 +6,11 @@ use App\Library\Defaults\DefaultData;
 use App\Models\Provider;
 use App\Models\S;
 use App\Models\Sr;
-use App\Models\User;
 use App\Repositories\MongoDB\MongoDBRepository;
-use App\Services\ApiManager\Operations\ApiRequestService;
-use App\Services\ApiManager\Response\Entity\ApiResponse;
 use App\Services\ApiServices\ServiceRequests\SrResponseKeyService;
-use App\Services\ApiServices\ServiceRequests\SrService;
 use App\Services\ApiServices\SResponseKeysService;
-use App\Services\Provider\ProviderService;
 use Illuminate\Database\Eloquent\Collection;
-use Illuminate\Support\Collection as SupportCollection;
 use Illuminate\Pagination\LengthAwarePaginator;
-use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 
 class ApiRequestSearchService
 {
@@ -25,24 +18,23 @@ class ApiRequestSearchService
         'items_array',
     ];
     private Collection $srResponseKeys;
+    private string $type;
 
     public function __construct(
-        private ApiRequestService $requestOperation,
-        private MongoDBRepository $mongoDBRepository,
-        private ProviderService $providerService,
+        private Collection           $providers,
+        private MongoDBRepository    $mongoDBRepository,
         private SrResponseKeyService $srResponseKeyService,
-        private SrService $srService,
-        private Provider $provider,
-        private Sr $sr
+        private S                    $service,
     )
     {
     }
 
     public function searchInit(): void
     {
-        $collectionName = $this->mongoDBRepository->getCollectionName($this->sr);
-
-        $this->srResponseKeys = $this->srResponseKeyService->findConfigForOperationBySr($this->sr);
+        $collectionName = $this->mongoDBRepository->getCollectionNameByService(
+            $this->service,
+            $this->type
+        );
 
         $this->mongoDBRepository->setCollection($collectionName);
 
@@ -54,7 +46,6 @@ class ApiRequestSearchService
         $this->mongoDBRepository->addWhere(
             'item_id',
             $itemId,
-            '='
         );
         $find = $this->mongoDBRepository->findOne();
         if ($find) {
@@ -68,10 +59,11 @@ class ApiRequestSearchService
         );
         return $this->mongoDBRepository->findOne();
     }
+
     public function runListSearch(array $query): Collection|LengthAwarePaginator
     {
         $this->searchInit();
-
+//
         $this->mongoDBRepository->setPagination(true);
         if (!empty($query[DefaultData::PAGE_SIZE])) {
             $this->mongoDBRepository->setPerPage((int)$query[DefaultData::PAGE_SIZE]);
@@ -81,43 +73,54 @@ class ApiRequestSearchService
             $this->mongoDBRepository->setPage((int)$query[DefaultData::PAGE_NUMBER]);
         }
 
-        $this->mongoDBRepository->addWhere(
-            'provider',
-            $this->provider->name,
-        );
-        $this->mongoDBRepository->addWhere(
-            'serviceRequest.name',
-            $this->sr->name,
-        );
-
-        if (empty($query['query'])) {
-            return $this->mongoDBRepository->findMany();
-        }
-        $query = $query['query'];
-        $this->mongoDBRepository->addWhere(
-            'query_params.query',
-            "%{$query}%",
-            'like',
-            'OR'
-        );
         $reservedKeys = array_column(DefaultData::SERVICE_RESPONSE_KEYS, SResponseKeysService::RESPONSE_KEY_NAME);
         $reservedKeys = array_merge($reservedKeys, self::RESERVED_SEARCH_RESPONSE_KEYS);
-        $dateKeys = $this->srResponseKeys->filter(function ($srResponseKey) {
-            return str_contains($srResponseKey->name, 'date');
-        });
-        $this->srResponseKeys->each(function ($srResponseKey) use ($query, $reservedKeys) {
-            if (in_array($srResponseKey->name, $reservedKeys)) {
-                return;
-            }
-            $this->mongoDBRepository->addWhere(
-                $srResponseKey->name,
-                "%{$query}%",
-                'like',
-                'OR'
+
+        $whereGroup = [];
+        foreach ($this->providers as $provider) {
+            $whereGroup[] = $this->mongoDBRepository->buildWhereData(
+                'provider',
+                $provider->name,
             );
-        });
+            foreach ($provider->sr as $sr) {
+                $whereGroup[] = $this->mongoDBRepository->buildWhereData(
+                    'serviceRequest.name',
+                    $sr->name,
+                );
+                if (empty($query['query'])) {
+                    continue;
+                }
+                $query = $query['query'];
+
+                $srResponseKeys = $this->srResponseKeyService->findConfigForOperationBySr($sr);
+
+                $whereGroup[] = $this->mongoDBRepository->buildWhereData(
+                    'query_params.query',
+                    "%{$query}%",
+                    'like',
+                    'OR'
+                );
+//                $dateKeys = $this->srResponseKeys->filter(function ($srResponseKey) {
+//                    return str_contains($srResponseKey->name, 'date');
+//                });
+                foreach ($srResponseKeys as $srResponseKey) {
+                    if (in_array($srResponseKey->name, $reservedKeys)) {
+                        continue;
+                    }
+                    $whereGroup[] = $this->mongoDBRepository->buildWhereData(
+                        $srResponseKey->name,
+                        "%{$query}%",
+                        'like',
+                        'OR'
+                    );
+                }
+            }
+        }
+        $this->mongoDBRepository->addWhereGroup($whereGroup, 'OR');
+
         return $this->mongoDBRepository->findMany();
     }
+
     public function setProvider(Provider $provider): void
     {
         $this->provider = $provider;
@@ -128,4 +131,18 @@ class ApiRequestSearchService
         $this->sr = $sr;
     }
 
+    public function setProviders(Collection $providers): void
+    {
+        $this->providers = $providers;
+    }
+
+    public function setService(S $service): void
+    {
+        $this->service = $service;
+    }
+
+    public function setType(string $type): void
+    {
+        $this->type = $type;
+    }
 }

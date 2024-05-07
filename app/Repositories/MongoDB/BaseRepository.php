@@ -23,6 +23,7 @@ class BaseRepository
     const DEFAULT_OFFSET = 0;
     protected DbHelpers $dbHelpers;
     private array $where = self::DEFAULT_WHERE;
+    private array $whereGroups = [];
     private string $sortField = self::DEFAULT_SORT_FIELD;
     private string $orderDir = self::DEFAULT_ORDER_DIR;
     private int $limit = self::DEFAULT_LIMIT;
@@ -65,22 +66,57 @@ class BaseRepository
         return $query->get();
     }
 
+    private function getWhereQuery(int $index, $where, $query) {
+
+        if ($index === 0) {
+            $query->where($where['field'], $where['compare'], $where['value']);
+            return;
+        }
+        switch ($where['op']) {
+            case 'OR':
+                $query->orWhere($where['field'], $where['compare'], $where['value']);
+                break;
+            default:
+                $query->where($where['field'], $where['compare'], $where['value']);
+                break;
+        }
+    }
     private function buildQuery() {
         $query = $this->connection->collection($this->collection);
-        foreach ($this->where as $index => $where) {
-            if ($index === 0) {
-                $query->where($where['field'], $where['compare'], $where['value']);
-                continue;
+        $query->where(function ($query) {
+            foreach ($this->where as $index => $where) {
+                $this->getWhereQuery($index, $where, $query);
             }
-            switch ($where['op']) {
-                case 'OR':
-                    $query->orWhere($where['field'], $where['compare'], $where['value']);
-                    break;
-                default:
-                    $query->where($where['field'], $where['compare'], $where['value']);
-                    break;
+        });
+        if (count($this->whereGroups)) {
+            foreach ($this->whereGroups as $index => $whereGroup) {
+                if ($index === 0) {
+                    $query->where(function ($query) use ($whereGroup) {
+                        foreach ($whereGroup['where'] as $index => $where) {
+                            $this->getWhereQuery($index, $where, $query);
+                        }
+                    });
+                    continue;
+                }
+                switch ($whereGroup['op']) {
+                    case 'OR':
+                        $query->orWhere(function ($query) use ($whereGroup) {
+                            foreach ($whereGroup['where'] as $index => $where) {
+                                $this->getWhereQuery($index, $where, $query);
+                            }
+                        });
+                        break;
+                    default:
+                        $query->where(function ($query) use ($whereGroup) {
+                            foreach ($whereGroup['where'] as $index => $where) {
+                                $this->getWhereQuery($index, $where, $query);
+                            }
+                        });
+                        break;
+                }
             }
         }
+
         if (!in_array($this->orderDir, self::AVAILABLE_ORDER_DIRECTIONS)) {
             $this->orderDir = self::DEFAULT_ORDER_DIR;
         }
@@ -193,10 +229,23 @@ class BaseRepository
     }
     public function addWhere(string $field, $value, ?string $compare = '=', ?string $op = 'AND'): self
     {
-        $this->where[] = [
+        $this->where[] = $this->buildWhereData($field, $value, $compare, $op);
+        return $this;
+    }
+
+    public function buildWhereData(string $field, $value, ?string $compare = '=', ?string $op = 'AND'): array
+    {
+        return [
             'field' => $field,
             'value' => $value,
             'compare' => $compare,
+            'op' => $op
+        ];
+    }
+    public function addWhereGroup(array $whereData, ?string $op = 'AND'): self
+    {
+        $this->whereGroups[] = [
+            'where' => $whereData,
             'op' => $op
         ];
         return $this;

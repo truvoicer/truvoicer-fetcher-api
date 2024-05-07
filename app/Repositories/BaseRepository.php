@@ -115,6 +115,10 @@ class BaseRepository
                 }
         }
     }
+    public function newQuery(): Builder|EloquentBuilder
+    {
+        return $this->modelClassName::query();
+    }
     private function buildQuery() {
         $query = $this->modelClassName::query();
         foreach ($this->where as $index => $where) {

@@ -44,42 +44,18 @@ class OperationsController extends Controller
 //            });
 //        }
         $provider = $request->get('provider');
-        if (empty($provider['name'])) {
-            return $this->sendErrorResponse(
-                'Provider is required',
-            );
-        }
-        $serviceRequestName = null;
-        if (!empty($provider['service_request_name'])) {
-            $serviceRequestName = $provider['service_request_name'];
-        }
-
+        $service = $request->get('service');
         $apiRequestDataHandler->setUser($request->user());
-        switch ($type) {
-            case 'list':
-                $results = $apiRequestDataHandler->runListSearch(
-                    $provider['name'],
-                    $serviceRequestName,
-                    $data
-                );
-                $responseData = new ApiSearchListResourceCollection($results);
-                break;
-            case 'item':
-                $results = $apiRequestDataHandler->runItemSearch(
-                    $provider['name'],
-                    $serviceRequestName,
-                    $data['item_id']
-                );
-                $responseData = new ApiSearchItemResource($results);
-                break;
-            default:
-                $this->sendErrorResponse(
-                    'Invalid search type',
-                );
+        $results = $apiRequestDataHandler->searchOperation($type, $provider, $service, $data);
+        if (!$results) {
+            $this->sendErrorResponse(
+                'Invalid search type',
+            );
         }
         return $this->sendSuccessResponse(
             'Success',
-            $responseData
+            $results
         );
     }
+
 }
