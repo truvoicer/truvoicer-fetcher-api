@@ -212,6 +212,7 @@ Route::middleware(['auth:sanctum', 'ability:api:admin,api:superuser,api:super_ad
             Route::prefix('batch')->name('batch.')->group(function () {
                 Route::delete('/delete', [ServiceController::class, 'deleteBatch'])->name('delete');
             });
+            Route::get('/{service:name}/providers', [ServiceController::class, 'getServiceProviders'])->name('detail.name.provider.list');
             Route::get('/{service}', [ServiceController::class, 'getService'])->name('detail');
             Route::prefix('{service}')->name('single.')->group(function () {
                 Route::get('/provider/list', [ServiceController::class, 'getServiceProviders'])->name('provider.list');
