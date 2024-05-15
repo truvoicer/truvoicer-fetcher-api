@@ -117,9 +117,8 @@ class ApiRequestSearchService
                 );
             }
 
+            $this->mongoDBRepository->addWhereGroup($whereGroup, 'OR');
         }
-
-        $this->mongoDBRepository->addWhereGroup($whereGroup, 'OR');
 
         return $this->mongoDBRepository->findMany();
     }
