@@ -25,15 +25,15 @@ class ApiRequestDataHandler
     private ApiResponse $apiResponse;
 
     public function __construct(
-        private EloquentCollection $providers,
+        private EloquentCollection      $srs,
         private ProviderService         $providerService,
         private ApiRequestSearchService $apiRequestSearchService,
         private SrService               $srService,
-        private ApiService               $apiService,
+        private ApiService              $apiService,
         private Provider                $provider,
         private Sr                      $sr,
         private User                    $user,
-        private S $service
+        private S                       $service
     )
     {
         $this->apiResponse = new ApiResponse();
@@ -41,12 +41,11 @@ class ApiRequestDataHandler
 
     public function searchInit(string $type, array $providers, ?string $srName, ?array $query = []): void
     {
-        $findProvider = $this->findProviders($providers);
-        if ($findProvider->isEmpty()) {
+        $this->buildServiceRequests($providers, $type);
+        if ($this->srs->count() === 0) {
             throw new BadRequestHttpException("Providers not found");
         }
-        $this->providers = $findProvider;
-        $this->apiRequestSearchService->setProviders($findProvider);
+        $this->apiRequestSearchService->setSrs($this->srs);
         $this->apiRequestSearchService->setService($this->service);
         $this->apiRequestSearchService->setType($type);
         switch ($type) {
@@ -54,7 +53,7 @@ class ApiRequestDataHandler
                 break;
             case 'single':
                 if (empty($srName)) {
-                    $srName =  'default';
+                    $srName = 'default';
                     $sr = $this->srService->getDefaultSr($this->provider, $type);
                 } else {
                     $sr = $this->findSrByName($srName);
@@ -77,28 +76,62 @@ class ApiRequestDataHandler
         $this->searchInit('list', $providers, $srName, $query);
         return $this->apiRequestSearchService->runListSearch($query);
     }
+
     public function runItemSearch(array $providers, ?string $srName, int|string $itemId): array|null
     {
         $this->searchInit('single', $providers, $srName);
         return $this->apiRequestSearchService->runSingleItemSearch($itemId);
     }
-    private function findProviders(array $providers): EloquentCollection
+
+    private function buildServiceRequests(array $providers, string $type): void
     {
         $providerNames = array_column($providers, 'name');
         $getProviders = $this->providerService->getProviderRepository()->newQuery()
             ->whereIn('name', $providerNames)
             ->with('sr')->get();
-
-        return $getProviders->transform(function (Provider $provider) use ($providers) {
+        foreach ($getProviders as $provider) {
             $providerData = collect($providers)->firstWhere('name', $provider->name);
-            $provider->setAttribute('sr', $provider->sr->filter(function (Sr $sr) use ($providerData) {
-                return ($sr->name === $providerData['service_request_name']);
-            }));
+            $this->srs = $this->srs->merge(
+                $provider->sr->filter(function ($sr) use ($providerData, $type) {
+                    switch ($type) {
+                        case 'list':
+                            if ($sr->type !== 'list') {
+                                return false;
+                            }
+                            break;
+                        case 'single':
+                            if ($sr->type !== 'single') {
+                                return false;
+                            }
+                            break;
+                    }
 
-
-            return $provider;
-        });
+                    if (
+                        empty($providerData['service_request_name']) &&
+                        $sr->default_sr === true
+                    ) {
+                        return true;
+                    } else if ($sr->name === $providerData['service_request_name']) {
+                        return true;
+                    }
+                    return false;
+                })
+            );
+        }
     }
+
+    private function findServiceRequests(Sr $sr, array $providerData)
+    {
+        if (
+            empty($providerData['service_request_name']) &&
+            $sr->default_sr === true
+        ) {
+            $this->srs[] = $sr;
+        } else if ($sr->name === $providerData['service_request_name']) {
+            $this->srs[] = $sr;
+        }
+    }
+
     private function findProviderByName(string $providerName): Provider|bool
     {
         $provider = $this->providerService->getUserProviderByName($this->user, $providerName);
@@ -115,6 +148,7 @@ class ApiRequestDataHandler
         }
         return (!is_array($data[array_key_first($data)]));
     }
+
     private function buildProviderData(array $data): array
     {
         if ($this->isSingleProvider($data)) {
@@ -122,6 +156,7 @@ class ApiRequestDataHandler
         }
         return $data;
     }
+
     public function searchOperation(string $type, array $providers, string $serviceName, ?array $data = [])
     {
         if (!count($providers)) {
@@ -156,6 +191,7 @@ class ApiRequestDataHandler
                 return false;
         }
     }
+
     private function findSrByName(string $srName): Sr|false
     {
         $sr = $this->srService->getRequestByName($this->provider, $srName);
@@ -164,6 +200,7 @@ class ApiRequestDataHandler
         }
         return $sr;
     }
+
     private function findService(string $serviceName): S|false
     {
         $sr = $this->apiService->getServiceRepository()->findByName($serviceName);

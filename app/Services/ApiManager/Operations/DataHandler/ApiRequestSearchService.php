@@ -21,7 +21,7 @@ class ApiRequestSearchService
     private string $type;
 
     public function __construct(
-        private Collection           $providers,
+        private Collection           $srs,
         private MongoDBRepository    $mongoDBRepository,
         private SrResponseKeyService $srResponseKeyService,
         private S                    $service,
@@ -77,63 +77,56 @@ class ApiRequestSearchService
         $reservedKeys = array_merge($reservedKeys, self::RESERVED_SEARCH_RESPONSE_KEYS);
 
         $whereGroup = [];
-        foreach ($this->providers as $provider) {
+        foreach ($this->srs as $sr) {
+            $provider = $sr->provider;
             $whereGroup[] = $this->mongoDBRepository->buildWhereData(
                 'provider',
                 $provider->name,
             );
-            foreach ($provider->sr as $sr) {
-                $whereGroup[] = $this->mongoDBRepository->buildWhereData(
-                    'serviceRequest.name',
-                    $sr->name,
-                );
-                if (empty($query['query'])) {
+
+            $whereGroup[] = $this->mongoDBRepository->buildWhereData(
+                'serviceRequest.name',
+                $sr->name,
+            );
+
+            if (empty($query['query'])) {
+                continue;
+            }
+            $query = $query['query'];
+
+            $srResponseKeys = $this->srResponseKeyService->findConfigForOperationBySr($sr);
+
+            $whereGroup[] = $this->mongoDBRepository->buildWhereData(
+                'query_params.query',
+                "%{$query}%",
+                'like',
+                'OR'
+            );
+//                $dateKeys = $this->srResponseKeys->filter(function ($srResponseKey) {
+//                    return str_contains($srResponseKey->name, 'date');
+//                });
+            foreach ($srResponseKeys as $srResponseKey) {
+                if (in_array($srResponseKey->name, $reservedKeys)) {
                     continue;
                 }
-                $query = $query['query'];
-
-                $srResponseKeys = $this->srResponseKeyService->findConfigForOperationBySr($sr);
-
                 $whereGroup[] = $this->mongoDBRepository->buildWhereData(
-                    'query_params.query',
+                    $srResponseKey->name,
                     "%{$query}%",
                     'like',
                     'OR'
                 );
-//                $dateKeys = $this->srResponseKeys->filter(function ($srResponseKey) {
-//                    return str_contains($srResponseKey->name, 'date');
-//                });
-                foreach ($srResponseKeys as $srResponseKey) {
-                    if (in_array($srResponseKey->name, $reservedKeys)) {
-                        continue;
-                    }
-                    $whereGroup[] = $this->mongoDBRepository->buildWhereData(
-                        $srResponseKey->name,
-                        "%{$query}%",
-                        'like',
-                        'OR'
-                    );
-                }
             }
+
         }
+
         $this->mongoDBRepository->addWhereGroup($whereGroup, 'OR');
 
         return $this->mongoDBRepository->findMany();
     }
 
-    public function setProvider(Provider $provider): void
+    public function setSrs(Collection $srs): void
     {
-        $this->provider = $provider;
-    }
-
-    public function setSr(Sr $sr): void
-    {
-        $this->sr = $sr;
-    }
-
-    public function setProviders(Collection $providers): void
-    {
-        $this->providers = $providers;
+        $this->srs = $srs;
     }
 
     public function setService(S $service): void
