@@ -111,7 +111,11 @@ class ApiRequestDataHandler
                         $sr->default_sr === true
                     ) {
                         return true;
-                    } else if ($sr->name === $providerData['service_request_name']) {
+                    }
+                    if (
+                        !empty($providerData['service_request_name']) &&
+                        $sr->name === $providerData['service_request_name']
+                    ) {
                         return true;
                     }
                     return false;
