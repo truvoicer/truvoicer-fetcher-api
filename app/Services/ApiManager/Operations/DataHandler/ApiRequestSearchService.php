@@ -60,6 +60,34 @@ class ApiRequestSearchService
         return $this->mongoDBRepository->findOne();
     }
 
+    private function getOrderByFromResponseKeys(Sr $sr): string
+    {
+        $orderBy = null;
+        $srResponseKeys = $this->srResponseKeyService->findConfigForOperationBySr($sr);
+        $dateKeys = $srResponseKeys->filter(function ($srResponseKey) {
+            return str_contains($srResponseKey->name, 'date');
+        });
+        if ($dateKeys->count() > 0) {
+            $orderBy = $dateKeys->first()->name;
+        }
+        return $orderBy;
+    }
+    private function getOrderBy(Sr $sr): array
+    {
+        $sortOrder = 'desc';
+        $defaultData = $sr->default_data;
+        if (!is_array($defaultData) || empty($defaultData['sort_by'])) {
+            $orderBy = $this->getOrderByFromResponseKeys($sr);
+        } else {
+            $orderBy = $defaultData['sort_by'];
+        }
+        if (!empty($defaultData['sort_order'])) {
+            $sortOrder = $defaultData['sort_order'];
+        }
+
+        return [$orderBy, $sortOrder];
+
+    }
     public function runListSearch(array $query): Collection|LengthAwarePaginator
     {
         $this->searchInit();
@@ -88,7 +116,11 @@ class ApiRequestSearchService
                 'serviceRequest.name',
                 $sr->name,
             );
-
+            list($orderBy, $sortOrder) = $this->getOrderBy($sr);
+            if (empty($orderBy)) {
+                continue;
+            }
+            $this->mongoDBRepository->setSortField($orderBy);
             if (empty($query['query'])) {
                 continue;
             }
@@ -102,9 +134,6 @@ class ApiRequestSearchService
                 'like',
                 'OR'
             );
-//                $dateKeys = $this->srResponseKeys->filter(function ($srResponseKey) {
-//                    return str_contains($srResponseKey->name, 'date');
-//                });
             foreach ($srResponseKeys as $srResponseKey) {
                 if (in_array($srResponseKey->name, $reservedKeys)) {
                     continue;

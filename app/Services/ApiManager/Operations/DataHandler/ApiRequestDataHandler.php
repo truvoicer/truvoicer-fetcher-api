@@ -28,18 +28,14 @@ class ApiRequestDataHandler
         private EloquentCollection      $srs,
         private ProviderService         $providerService,
         private ApiRequestSearchService $apiRequestSearchService,
-        private SrService               $srService,
         private ApiService              $apiService,
-        private Provider                $provider,
-        private Sr                      $sr,
-        private User                    $user,
         private S                       $service
     )
     {
         $this->apiResponse = new ApiResponse();
     }
 
-    public function searchInit(string $type, array $providers, ?string $srName, ?array $query = []): void
+    public function searchInit(string $type, array $providers): void
     {
         $this->buildServiceRequests($providers, $type);
         if ($this->srs->count() === 0) {
@@ -51,15 +47,15 @@ class ApiRequestDataHandler
 
     }
 
-    public function runListSearch(array $providers, ?string $srName, ?array $query = []): Collection|LengthAwarePaginator
+    public function runListSearch(array $providers, ?array $query = []): Collection|LengthAwarePaginator
     {
-        $this->searchInit('list', $providers, $srName, $query);
+        $this->searchInit('list', $providers);
         return $this->apiRequestSearchService->runListSearch($query);
     }
 
-    public function runItemSearch(array $providers, ?string $srName, int|string $itemId): array|null
+    public function runItemSearch(array $providers, int|string $itemId): array|null
     {
-        $this->searchInit('single', $providers, $srName);
+        $this->searchInit('single', $providers);
         return $this->apiRequestSearchService->runSingleItemSearch($itemId);
     }
 
@@ -104,27 +100,6 @@ class ApiRequestDataHandler
         }
     }
 
-    private function findServiceRequests(Sr $sr, array $providerData)
-    {
-        if (
-            empty($providerData['service_request_name']) &&
-            $sr->default_sr === true
-        ) {
-            $this->srs[] = $sr;
-        } else if ($sr->name === $providerData['service_request_name']) {
-            $this->srs[] = $sr;
-        }
-    }
-
-    private function findProviderByName(string $providerName): Provider|bool
-    {
-        $provider = $this->providerService->getUserProviderByName($this->user, $providerName);
-        if (!$provider instanceof Provider) {
-            return false;
-        }
-        return $provider;
-    }
-
     private function isSingleProvider(array $data): bool
     {
         if (!count($data)) {
@@ -151,23 +126,17 @@ class ApiRequestDataHandler
             return false;
         }
         $this->setService($getService);
-        $serviceRequestName = null;
-        if (!empty($providerData['service_request_name'])) {
-            $serviceRequestName = $providerData['service_request_name'];
-        }
         $providerData = $this->buildProviderData($providers);
         switch ($type) {
             case 'list':
                 $results = $this->runListSearch(
                     $providerData,
-                    $serviceRequestName,
                     $data
                 );
                 return new ApiSearchListResourceCollection($results);
             case 'single':
                 $results = $this->runItemSearch(
                     $providerData,
-                    $serviceRequestName,
                     $data['item_id']
                 );
                 return new ApiSearchItemResource($results);
@@ -176,14 +145,6 @@ class ApiRequestDataHandler
         }
     }
 
-    private function findSrByName(string $srName): Sr|false
-    {
-        $sr = $this->srService->getRequestByName($this->provider, $srName);
-        if (!$sr instanceof Sr) {
-            return false;
-        }
-        return $sr;
-    }
 
     private function findService(string $serviceName): S|false
     {
@@ -194,15 +155,6 @@ class ApiRequestDataHandler
         return $sr;
     }
 
-    public function setProvider(Provider $provider): void
-    {
-        $this->provider = $provider;
-    }
-
-    public function setSr(Sr $sr): void
-    {
-        $this->sr = $sr;
-    }
 
     public function setUser(User $user): void
     {
