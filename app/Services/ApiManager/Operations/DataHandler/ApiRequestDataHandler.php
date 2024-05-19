@@ -14,6 +14,7 @@ use App\Services\ApiManager\Response\Entity\ApiResponse;
 use App\Services\ApiServices\ApiService;
 use App\Services\ApiServices\ServiceRequests\SrService;
 use App\Services\Provider\ProviderService;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
@@ -59,16 +60,57 @@ class ApiRequestDataHandler
         return $this->apiRequestSearchService->runSingleItemSearch($itemId);
     }
 
+    private function buildServiceRequestQuery(Builder $query, array $data) {
+
+        if (!empty($data['include_children']) && $data['include_children'] === true) {
+
+        } else if (!empty($data['children']) && is_array($data['children'])) {
+            $query->whereHas('childSrs', function ($query) use ($data) {
+                foreach ($data['children'] as $child) {
+                    $query = $this->buildServiceRequestQuery($query, $child);
+                }
+            });
+        }
+        if (!empty($data['name'])) {
+            $query->where('name', $data['name']);
+        }
+        return $query;
+    }
     private function buildServiceRequests(array $providers, string $type): void
     {
         $providerNames = array_column($providers, 'name');
         $getProviders = $this->providerService->getProviderRepository()->newQuery()
             ->whereIn('name', $providerNames)
-            ->with('sr')->get();
+            ->with(['sr' => function ($query) use ($type) {
+                $query->whereDoesntHave('parentSrs');
+            }])
+
+            ->get();
+
         foreach ($getProviders as $provider) {
             $providerData = collect($providers)->firstWhere('name', $provider->name);
+            $srs = $provider->sr;
+//            if (
+//                empty($providerData['service_request']) ||
+//                !is_array($providerData['service_request']) ||
+//                !count($providerData['service_request'])
+//            ) {
+//                $srs = $provider->sr()->get();
+//            }
+
+            if (empty($providerData['service_request']['name'])) {
+
+            }
+            if (!empty($providerData['service_request']['children']) && is_array($providerData['service_request']['children'])) {
+                $query = $provider->sr()->whereHas('childSrs', function ($query) use ($providerData) {
+                    foreach ($providerData['service_request']['children'] as $child) {
+                        $query = $this->buildServiceRequestQuery($query, $child);
+                    }
+                })->get();
+            }
+            $srs = $provider->sr()->where('name', $providerData['service_request']['name'])->get();
             $this->srs = $this->srs->merge(
-                $provider->sr->filter(function ($sr) use ($providerData, $type) {
+                $srs->filter(function ($sr) use ($providerData, $type) {
                     switch ($type) {
                         case 'list':
                             if ($sr->type !== 'list') {
@@ -83,14 +125,14 @@ class ApiRequestDataHandler
                     }
 
                     if (
-                        empty($providerData['service_request_name']) &&
+                        empty($providerData['service_request']['name']) &&
                         $sr->default_sr === true
                     ) {
                         return true;
                     }
                     if (
-                        !empty($providerData['service_request_name']) &&
-                        $sr->name === $providerData['service_request_name']
+                        !empty($providerData['service_request']['name']) &&
+                        $sr->name === $providerData['service_request']['name']
                     ) {
                         return true;
                     }
