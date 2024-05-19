@@ -58,7 +58,7 @@ class BaseRepository
         return $this->connection->collection($this->collection)->find($id);
     }
 
-    protected function getResults($query): Collection|LengthAwarePaginator
+    public function getResults($query): Collection|LengthAwarePaginator
     {
         if ($this->paginate) {
             return $query->paginate($this->perPage, ['*'], 'page', $this->page);

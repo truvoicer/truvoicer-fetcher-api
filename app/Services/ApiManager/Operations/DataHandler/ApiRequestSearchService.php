@@ -105,6 +105,7 @@ class ApiRequestSearchService
         $reservedKeys = array_merge($reservedKeys, self::RESERVED_SEARCH_RESPONSE_KEYS);
 
         $whereGroup = [];
+        $sort = [];
         foreach ($this->srs as $sr) {
             $provider = $sr->provider;
             $whereGroup[] = $this->mongoDBRepository->buildWhereData(
@@ -117,10 +118,10 @@ class ApiRequestSearchService
                 $sr->name,
             );
             list($orderBy, $sortOrder) = $this->getOrderBy($sr);
-            if (empty($orderBy)) {
-                continue;
+            if (!empty($orderBy) && in_array($sortOrder, $this->mongoDBRepository::AVAILABLE_ORDER_DIRECTIONS)) {
+                $sort[] = [$orderBy, $sortOrder];
             }
-            $this->mongoDBRepository->setSortField($orderBy);
+
             if (empty($query['query'])) {
                 continue;
             }
@@ -149,7 +150,13 @@ class ApiRequestSearchService
             $this->mongoDBRepository->addWhereGroup($whereGroup, 'OR');
         }
 
-        return $this->mongoDBRepository->findMany();
+        $query = $this->mongoDBRepository->getQuery();
+        foreach ($sort as $sortData) {
+            $query->orderBy($sortData[0], $sortData[1]);
+        }
+        return $this->mongoDBRepository->getResults(
+            $query
+        );
     }
 
     public function setSrs(Collection $srs): void
