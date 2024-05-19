@@ -48,26 +48,6 @@ class ApiRequestDataHandler
         $this->apiRequestSearchService->setSrs($this->srs);
         $this->apiRequestSearchService->setService($this->service);
         $this->apiRequestSearchService->setType($type);
-        switch ($type) {
-            case 'list':
-                break;
-            case 'single':
-                if (empty($srName)) {
-                    $srName = 'default';
-                    $sr = $this->srService->getDefaultSr($this->provider, $type);
-                } else {
-                    $sr = $this->findSrByName($srName);
-                }
-                if (!$sr instanceof Sr) {
-                    throw new BadRequestHttpException("Service request {$srName} not found");
-                }
-                $this->setSr($sr);
-                $this->apiRequestSearchService->setSr($this->sr);
-                break;
-            default:
-                throw new BadRequestHttpException("Invalid search type");
-        }
-
 
     }
 
