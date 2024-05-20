@@ -15,6 +15,8 @@ use App\Services\ApiServices\ApiService;
 use App\Services\ApiServices\ServiceRequests\SrService;
 use App\Services\Provider\ProviderService;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Http\Request;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
@@ -60,22 +62,35 @@ class ApiRequestDataHandler
         return $this->apiRequestSearchService->runSingleItemSearch($itemId);
     }
 
-    private function buildServiceRequestQuery(Builder $query, array $data) {
-
+    private function buildServiceRequestQuery(HasMany|BelongsToMany|Builder $query, array $data, ?bool $initial = false): HasMany|BelongsToMany|Builder
+    {
         if (!empty($data['include_children']) && $data['include_children'] === true) {
-
+            $query->with('childSrs');
         } else if (!empty($data['children']) && is_array($data['children'])) {
-            $query->whereHas('childSrs', function ($query) use ($data) {
-                foreach ($data['children'] as $child) {
-                    $query = $this->buildServiceRequestQuery($query, $child);
+            $query->with('childSrs', function ($query) use ($data) {
+                foreach ($data['children'] as $index => $child) {
+                    $query->where(function ($query) use ($child, $index) {
+                        if ($index === 0) {
+                            $query = $this->buildServiceRequestQuery($query, $child, true);
+                        } else {
+                            $query->orWhere(function ($query) use ($child, $index) {
+                                $query = $this->buildServiceRequestQuery($query, $child, true);
+                            });
+                        }
+                    });
                 }
             });
         }
         if (!empty($data['name'])) {
-            $query->where('name', $data['name']);
+            if ($initial) {
+                $query->where('name', $data['name']);
+            } else {
+                $query->orWhere('name', $data['name']);
+            }
         }
         return $query;
     }
+
     private function buildServiceRequests(array $providers, string $type): void
     {
         $providerNames = array_column($providers, 'name');
@@ -84,62 +99,85 @@ class ApiRequestDataHandler
             ->with(['sr' => function ($query) use ($type) {
                 $query->whereDoesntHave('parentSrs');
             }])
-
+            ->orderBy('name', 'asc')
             ->get();
 
         foreach ($getProviders as $provider) {
             $providerData = collect($providers)->firstWhere('name', $provider->name);
             $srs = $provider->sr;
-//            if (
-//                empty($providerData['service_request']) ||
-//                !is_array($providerData['service_request']) ||
-//                !count($providerData['service_request'])
-//            ) {
-//                $srs = $provider->sr()->get();
-//            }
+            if (
+                empty($providerData['service_request']) ||
+                !is_array($providerData['service_request']) ||
+                !count($providerData['service_request'])
+            ) {
+                $srs = $provider->sr()->get();
+                $this->setServiceRequests($type, $srs);
+                return;
+            } else if (empty($providerData['service_request']['name'])) {
+                throw new BadRequestHttpException("Service request name is not set.");
+            } else if (empty($providerData['service_request']['children']) || !is_array($providerData['service_request']['children'])) {
 
-            if (empty($providerData['service_request']['name'])) {
+                $query = $this->buildServiceRequestQuery(
+                    $provider->sr()->whereDoesntHave('parentSrs'),
+                    $providerData['service_request'],
+                    true
+                )->get();
 
-            }
-            if (!empty($providerData['service_request']['children']) && is_array($providerData['service_request']['children'])) {
-                $query = $provider->sr()->whereHas('childSrs', function ($query) use ($providerData) {
-                    foreach ($providerData['service_request']['children'] as $child) {
-                        $query = $this->buildServiceRequestQuery($query, $child);
-                    }
-                })->get();
-            }
-            $srs = $provider->sr()->where('name', $providerData['service_request']['name'])->get();
-            $this->srs = $this->srs->merge(
-                $srs->filter(function ($sr) use ($providerData, $type) {
-                    switch ($type) {
-                        case 'list':
-                            if ($sr->type !== 'list') {
-                                return false;
+            } else {
+                $query = $provider->sr()
+                    ->whereDoesntHave('parentSrs')
+                    ->where('name', $providerData['service_request']['name'])
+                    ->with('childSrs', function ($query) use ($providerData) {
+                        foreach ($providerData['service_request']['children'] as $index => $child) {
+                            if ($index === 0) {
+                                $query->where(function ($query) use ($child, $index) {
+                                    $query = $this->buildServiceRequestQuery($query, $child, true);
+                                });
+                            } else {
+                                $query->orWhere(function ($query) use ($child, $index) {
+                                    $query = $this->buildServiceRequestQuery($query, $child, true);
+                                });
                             }
-                            break;
-                        case 'single':
-                            if ($sr->type !== 'single') {
-                                return false;
-                            }
-                            break;
-                    }
-
-                    if (
-                        empty($providerData['service_request']['name']) &&
-                        $sr->default_sr === true
-                    ) {
-                        return true;
-                    }
-                    if (
-                        !empty($providerData['service_request']['name']) &&
-                        $sr->name === $providerData['service_request']['name']
-                    ) {
-                        return true;
-                    }
-                    return false;
-                })
-            );
+                        }
+                    })->get();
+            }
+            dd($query);
+            $this->setServiceRequests($type, $srs);
         }
+    }
+
+    private function setServiceRequests(string $type, Collection $srs)
+    {
+        $this->srs = $this->srs->merge(
+            $srs->filter(function ($sr) use ($type) {
+                switch ($type) {
+                    case 'list':
+                        if ($sr->type !== 'list') {
+                            return false;
+                        }
+                        break;
+                    case 'single':
+                        if ($sr->type !== 'single') {
+                            return false;
+                        }
+                        break;
+                }
+
+//                if (
+//                    empty($providerData['service_request']['name']) &&
+//                    $sr->default_sr === true
+//                ) {
+//                    return true;
+//                }
+//                if (
+//                    !empty($providerData['service_request']['name']) &&
+//                    $sr->name === $providerData['service_request']['name']
+//                ) {
+//                    return true;
+//                }
+                return true;
+            })
+        );
     }
 
     private function isSingleProvider(array $data): bool

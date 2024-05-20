@@ -12,7 +12,7 @@ class Sr extends Model
 
     public const TABLE_NAME = 'srs';
     public const REPOSITORY = SrRepository::class;
-    protected $with = ['childSrs'];
+//    protected $with = ['childSrs'];
     protected $fillable = [
         'name',
         'label',
