@@ -116,6 +116,29 @@ class ApiRequestDataHandler
                 )->get();
 
             } else {
+                $data = [
+                    [
+                        'name' => $providerData['service_request']['name'],
+                    ]
+                ];
+                for ($i = 1; $i <= count($providerData['service_request']['children']); $i++) {
+                    $data[$i] = [];
+                    $data[$i]['name'] = [];
+                    foreach ($providerData['service_request']['children'] as $index => $child) {
+
+                        if (!empty($child['name'])) {
+                            $data[$i]['name'][] = $child['name'];
+                        }
+                        if (!empty($child['children']) && is_array($child['children'])) {
+                            foreach ($child['children'] as $index => $subChild) {
+                                if (!empty($subChild['name'])) {
+                                    $data[$i]['name'][] = $subChild['name'];
+                                }
+                            }
+                        }
+                    }
+                }
+                dd($data);
                 $query = $provider->sr()
                     ->whereDoesntHave('parentSrs')
                     ->where('name', $providerData['service_request']['name'])
