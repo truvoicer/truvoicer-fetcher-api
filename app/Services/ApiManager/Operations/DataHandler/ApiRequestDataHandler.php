@@ -83,6 +83,19 @@ class ApiRequestDataHandler
         return $query;
     }
 
+    private function buildQueryData(array $children, array $data = [], int $i = 0)
+    {
+        foreach ($children as $index => $child) {
+            if (!empty($child['name'])) {
+                $data[$i]['name'][] = $child['name'];
+            }
+            if (!empty($child['children']) && is_array($child['children'])) {
+                $data = $this->buildQueryData($child['children'], $data, ($index + 1) + $i);
+            }
+        }
+        return $data;
+    }
+
     private function buildServiceRequests(array $providers, string $type): void
     {
         $providerNames = array_column($providers, 'name');
@@ -116,35 +129,23 @@ class ApiRequestDataHandler
                 )->get();
 
             } else {
-                $data = [
-                    [
-                        'name' => $providerData['service_request']['name'],
-                    ]
-                ];
-                for ($i = 1; $i <= count($providerData['service_request']['children']); $i++) {
-                    $data[$i] = [];
-                    $data[$i]['name'] = [];
-                    foreach ($providerData['service_request']['children'] as $index => $child) {
+                $data = $this->buildQueryData($providerData['service_request']['children']);
 
-                        if (!empty($child['name'])) {
-                            $data[$i]['name'][] = $child['name'];
-                        }
-                        if (!empty($child['children']) && is_array($child['children'])) {
-                            foreach ($child['children'] as $index => $subChild) {
-                                if (!empty($subChild['name'])) {
-                                    $data[$i]['name'][] = $subChild['name'];
-                                }
-                            }
-                        }
-                    }
-                }
-                dd($data);
                 $query = $provider->sr()
                     ->whereDoesntHave('parentSrs')
                     ->where('name', $providerData['service_request']['name'])
-                    ->with('childSrs', function ($query) use ($providerData) {
-                        foreach ($providerData['service_request']['children'] as $index => $child) {
-                            $query = $this->buildServiceRequestQuery($query, $child, true);
+                    ->with('childSrs', function ($query) use ($data) {
+                        foreach ($data as $index => $child) {
+                            if (!empty($data['name'])) {
+                                foreach ($data['name'] as $nameIndex => $name) {
+                                    if ($nameIndex === 0) {
+                                        $query->where('name', $name);
+                                    } else {
+                                        $query->orWhere('name', $name);
+                                    }
+                                }
+                            }
+
                         }
                     })->get();
             }
