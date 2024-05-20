@@ -69,15 +69,7 @@ class ApiRequestDataHandler
         } else if (!empty($data['children']) && is_array($data['children'])) {
             $query->with('childSrs', function ($query) use ($data) {
                 foreach ($data['children'] as $index => $child) {
-                    $query->where(function ($query) use ($child, $index) {
-                        if ($index === 0) {
-                            $query = $this->buildServiceRequestQuery($query, $child, true);
-                        } else {
-                            $query->orWhere(function ($query) use ($child, $index) {
-                                $query = $this->buildServiceRequestQuery($query, $child, true);
-                            });
-                        }
-                    });
+                    $query = $this->buildServiceRequestQuery($query, $child, true);
                 }
             });
         }
@@ -129,15 +121,7 @@ class ApiRequestDataHandler
                     ->where('name', $providerData['service_request']['name'])
                     ->with('childSrs', function ($query) use ($providerData) {
                         foreach ($providerData['service_request']['children'] as $index => $child) {
-                            if ($index === 0) {
-                                $query->where(function ($query) use ($child, $index) {
-                                    $query = $this->buildServiceRequestQuery($query, $child, true);
-                                });
-                            } else {
-                                $query->orWhere(function ($query) use ($child, $index) {
-                                    $query = $this->buildServiceRequestQuery($query, $child, true);
-                                });
-                            }
+                            $query = $this->buildServiceRequestQuery($query, $child, true);
                         }
                     })->get();
             }
