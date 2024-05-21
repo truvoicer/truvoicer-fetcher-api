@@ -93,7 +93,7 @@ class ServiceController extends Controller
         }
         return $this->sendSuccessResponse(
             "success",
-            new ProviderCollection($service->providers()->with('serviceRequest')->get())
+            new ProviderCollection($service->providers()->distinct()->get())
         );
     }
 
