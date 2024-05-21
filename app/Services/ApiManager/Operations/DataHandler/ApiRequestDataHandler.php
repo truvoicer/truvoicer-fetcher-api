@@ -62,38 +62,80 @@ class ApiRequestDataHandler
         return $this->apiRequestSearchService->runSingleItemSearch($itemId);
     }
 
-    private function buildServiceRequestQuery(HasMany|BelongsToMany|Builder $query, array $data, ?bool $initial = false): HasMany|BelongsToMany|Builder
+    private function buildServiceRequestQuery(string $type, HasMany|BelongsToMany|Builder $query, array $data, ?array $excludeChildren = [], ?array $includeChildren = []): HasMany|BelongsToMany|Builder
     {
-        if (!empty($data['include_children']) && $data['include_children'] === true) {
-            $query->with('childSrs');
-        } else if (!empty($data['children']) && is_array($data['children'])) {
-            $query->with('childSrs', function ($query) use ($data) {
-                foreach ($data['children'] as $index => $child) {
-                    $query = $this->buildServiceRequestQuery($query, $child, true);
-                }
-            });
-        }
-        if (!empty($data['name'])) {
-            if ($initial) {
-                $query->where('name', $data['name']);
-            } else {
-                $query->orWhere('name', $data['name']);
+        $query->where('type', $type);
+        if (count($excludeChildren)) {
+            foreach ($excludeChildren as $index => $name) {
+                $query->where('name', '<>', $name);
             }
+        }
+        $names = $includeChildren;
+        if (!empty($data['name']) && is_array($data['name'])) {
+            $names = array_merge($names, $data['name']);
+        }
+        foreach ($names as $index => $name) {
+            if ($index === 0) {
+                $query->where('name', $name);
+            } else {
+                $query->orWhere('name', $name);
+            }
+        }
+        if (!empty($data['children']) && is_array($data['children'])) {
+            $query->with('childSrs', function ($query) use ($type, $data, $excludeChildren, $includeChildren) {
+                $query = $this->buildServiceRequestQuery(
+                    $type,
+                    $query,
+                    $data['children'],
+                    (!empty($data['not_include_children']) && is_array($data['not_include_children']))
+                        ? array_merge($data['not_include_children'], $excludeChildren)
+                        : $excludeChildren,
+                    (!empty($data['include_children']) && is_array($data['include_children']))
+                        ? array_merge($data['include_children'], $includeChildren)
+                        : $includeChildren
+                );
+            });
         }
         return $query;
     }
 
-    private function buildQueryData(array $children, array $data = [], int $i = 0)
+
+    private function flattenServiceRequestData(array $children, array $data = [], int $i = 0)
     {
         foreach ($children as $index => $child) {
             if (!empty($child['name'])) {
                 $data[$i]['name'][] = $child['name'];
             }
+            if (!empty($child['include_children']) && $child['include_children'] === true) {
+                $data[$i]['include_children'][] = $child['name'];
+            }
+            if (isset($child['include_children']) && $child['include_children'] === false) {
+                $data[$i]['not_include_children'][] = $child['name'];
+            }
             if (!empty($child['children']) && is_array($child['children'])) {
-                $data = $this->buildQueryData($child['children'], $data, ($index + 1) + $i);
+                $data = $this->flattenServiceRequestData($child['children'], $data, ($i + 1));
             }
         }
         return $data;
+    }
+
+    private function buildQueryData(array $origData, array $data, ?int $step = 0): array
+    {
+        $buildData = [];
+        $child = $origData[$step];
+        $buildData['name'] = $child['name'];
+        if (!empty($child['include_children'])) {
+            $buildData['include_children'] = $child['include_children'];
+        }
+        if (!empty($child['not_include_children'])) {
+            $buildData['not_include_children'] = $child['not_include_children'];
+        }
+        if ($step === count($origData) - 1) {
+            return $buildData;
+        }
+        $buildData['children'] = $this->buildQueryData($origData, [$origData[$step]], $step + 1);
+
+        return $buildData;
     }
 
     private function buildServiceRequests(array $providers, string $type): void
@@ -109,7 +151,6 @@ class ApiRequestDataHandler
 
         foreach ($getProviders as $provider) {
             $providerData = collect($providers)->firstWhere('name', $provider->name);
-            $srs = $provider->sr;
             if (
                 empty($providerData['service_request']) ||
                 !is_array($providerData['service_request']) ||
@@ -122,70 +163,59 @@ class ApiRequestDataHandler
                 throw new BadRequestHttpException("Service request name is not set.");
             } else if (empty($providerData['service_request']['children']) || !is_array($providerData['service_request']['children'])) {
 
+                $data = $this->flattenServiceRequestData([$providerData['service_request']]);
+                $data = $this->buildQueryData($data, $data);
                 $query = $this->buildServiceRequestQuery(
+                    $type,
                     $provider->sr()->whereDoesntHave('parentSrs'),
-                    $providerData['service_request'],
-                    true
-                )->get();
+                    $data,
+                     [],
+                    (!empty($data['include_children']) && is_array($data['include_children']))
+                        ? $data['include_children']
+                        : []
+                );
+                if (!empty($data['not_include_children']) && is_array($data['not_include_children'])) {
+                    $query->without('childSrs');
+                }
 
             } else {
-                $data = $this->buildQueryData($providerData['service_request']['children']);
+                $data = $this->flattenServiceRequestData($providerData['service_request']['children']);
+                $data = $this->buildQueryData($data, $data);
 
                 $query = $provider->sr()
                     ->whereDoesntHave('parentSrs')
                     ->where('name', $providerData['service_request']['name'])
-                    ->with('childSrs', function ($query) use ($data) {
-                        foreach ($data as $index => $child) {
-                            if (!empty($data['name'])) {
-                                foreach ($data['name'] as $nameIndex => $name) {
-                                    if ($nameIndex === 0) {
-                                        $query->where('name', $name);
-                                    } else {
-                                        $query->orWhere('name', $name);
-                                    }
-                                }
-                            }
-
-                        }
-                    })->get();
+                    ->with('childSrs', function ($query) use ($data, $type) {
+                        $query = $this->buildServiceRequestQuery(
+                            $type,
+                            $query,
+                            $data
+                        );
+                    });
             }
-            dd($query);
-            $this->setServiceRequests($type, $srs);
+            $this->setServiceRequests($type, $query->get());
         }
     }
 
+    private function flattenSrCollection(string $type, Collection $srs)
+    {
+        foreach ($srs as $sr) {
+            if ($sr->type === $type) {
+                $this->srs->push($sr);
+            }
+            if ($sr->childSrs->count() > 0) {
+                $this->flattenSrCollection($type, $sr->childSrs);
+            }
+        }
+    }
     private function setServiceRequests(string $type, Collection $srs)
     {
-        $this->srs = $this->srs->merge(
-            $srs->filter(function ($sr) use ($type) {
-                switch ($type) {
-                    case 'list':
-                        if ($sr->type !== 'list') {
-                            return false;
-                        }
-                        break;
-                    case 'single':
-                        if ($sr->type !== 'single') {
-                            return false;
-                        }
-                        break;
-                }
-
-//                if (
-//                    empty($providerData['service_request']['name']) &&
-//                    $sr->default_sr === true
-//                ) {
-//                    return true;
-//                }
-//                if (
-//                    !empty($providerData['service_request']['name']) &&
-//                    $sr->name === $providerData['service_request']['name']
-//                ) {
-//                    return true;
-//                }
-                return true;
-            })
-        );
+        foreach ($srs as $sr) {
+            $this->srs->push($sr);
+            if ($sr->childSrs->count() > 0) {
+                $this->flattenSrCollection($type, $sr->childSrs);
+            }
+        }
     }
 
     private function isSingleProvider(array $data): bool
