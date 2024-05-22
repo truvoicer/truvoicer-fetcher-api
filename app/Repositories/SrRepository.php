@@ -52,14 +52,16 @@ class SrRepository extends BaseRepository
             $provider->serviceRequest()
                 ->whereDoesntHave('parentSrs')
                 ->orderBy($sort, $order)
-                ->with(['category', 's', 'srSchedule', 'srRateLimit', 'childSrs'])
+                ->with(['category', 's', 'srSchedule', 'srRateLimit'])
+                ->without(['childSrs'])
         );
     }
     public function getChildSrs(Sr $sr, string $sort, string $order, ?int $count = null) {
         return $this->getResults(
             $sr->childSrs()
                 ->orderBy($sort, $order)
-                ->with(['category', 's', 'srSchedule', 'srRateLimit', 'childSrs'])
+                ->with(['category', 's', 'srSchedule', 'srRateLimit'])
+                ->without(['childSrs'])
         );
     }
 

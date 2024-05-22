@@ -159,39 +159,15 @@ class ApiRequestDataHandler
                 $srs = $provider->sr()->get();
                 $this->setServiceRequests($type, $srs);
                 return;
-            } else if (empty($providerData['service_request']['name'])) {
-                throw new BadRequestHttpException("Service request name is not set.");
-            } else if (empty($providerData['service_request']['children']) || !is_array($providerData['service_request']['children'])) {
-
-                $data = $this->flattenServiceRequestData([$providerData['service_request']]);
+            } else {
+                $data = $this->flattenServiceRequestData($providerData['service_request']);
                 $data = $this->buildQueryData($data, $data);
                 $query = $this->buildServiceRequestQuery(
                     $type,
-                    $provider->sr()->whereDoesntHave('parentSrs'),
-                    $data,
-                     [],
-                    (!empty($data['include_children']) && is_array($data['include_children']))
-                        ? $data['include_children']
-                        : []
+                    $provider->sr()
+                        ->whereDoesntHave('parentSrs'),
+                    $data
                 );
-                if (!empty($data['not_include_children']) && is_array($data['not_include_children'])) {
-                    $query->without('childSrs');
-                }
-
-            } else {
-                $data = $this->flattenServiceRequestData($providerData['service_request']['children']);
-                $data = $this->buildQueryData($data, $data);
-
-                $query = $provider->sr()
-                    ->whereDoesntHave('parentSrs')
-                    ->where('name', $providerData['service_request']['name'])
-                    ->with('childSrs', function ($query) use ($data, $type) {
-                        $query = $this->buildServiceRequestQuery(
-                            $type,
-                            $query,
-                            $data
-                        );
-                    });
             }
             $this->setServiceRequests($type, $query->get());
         }
@@ -208,6 +184,7 @@ class ApiRequestDataHandler
             }
         }
     }
+
     private function setServiceRequests(string $type, Collection $srs)
     {
         foreach ($srs as $sr) {

@@ -30,7 +30,7 @@ class RouteServiceProvider extends ServiceProvider
         Route::model('user', User::class);
         Route::model('provider', Provider::class);
 
-        Route::bind('serviceRequest', function (int $value, RoutingRoute $ssd) {
+        Route::bind('serviceRequest', function ($value, RoutingRoute $ssd) {
             $provider = $ssd->parameter('provider');
             return $provider->serviceRequest()->where('id', $value)->firstOrFail();
         });
