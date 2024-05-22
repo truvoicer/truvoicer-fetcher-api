@@ -70,14 +70,11 @@ class SrService extends BaseService
         return $getServiceRequest;
     }
 
-    public function getUserServiceRequestByProvider(Provider $provider, string $sort, string $order, ?int $count = null)
+    public function getUserServiceRequestByProvider(Provider $provider)
     {
         $this->serviceRequestRepository->setPagination(true);
         return $this->serviceRequestRepository->getServiceRequestByProvider(
-            $provider,
-            $sort,
-            $order,
-            $count
+            $provider
         );
     }
 

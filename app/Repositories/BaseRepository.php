@@ -9,6 +9,8 @@ use App\Traits\Database\PermissionsTrait;
 use App\Traits\Error\ErrorTrait;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
 use Illuminate\Pagination\LengthAwarePaginator;
@@ -32,6 +34,10 @@ class BaseRepository
     private int $limit = self::DEFAULT_LIMIT;
     private int $offset = self::DEFAULT_OFFSET;
 
+    private array $whereDoesntHave = [];
+    private array $whereHas = [];
+    private array $with = [];
+
     /**
      * @throws \Exception
      */
@@ -44,6 +50,51 @@ class BaseRepository
         $this->dbHelpers = new DbHelpers();
     }
 
+    public function getWhereDoesntHave(): array
+    {
+        return $this->whereDoesntHave;
+    }
+
+    public function setWhereDoesntHave(array $whereDoesntHave): self
+    {
+        $this->whereDoesntHave = $whereDoesntHave;
+        return $this;
+    }
+
+    public function getWhereHas(): array
+    {
+        return $this->whereHas;
+    }
+
+    public function setWhereHas(array $whereHas): self
+    {
+        $this->whereHas = $whereHas;
+        return $this;
+    }
+
+    public function getWith(): array
+    {
+        return $this->with;
+    }
+
+    public function setWith(array $with): self
+    {
+        $this->with = $with;
+        return $this;
+    }
+
+    protected function addWhereDoesntHaveToQuery(Builder|HasMany|BelongsToMany $query): Builder|HasMany|BelongsToMany
+    {
+        $whereDoesntHave = $this->getWhereDoesntHave();
+        foreach ($whereDoesntHave as $key => $value) {
+            if ($value instanceof \Closure && is_string($key)) {
+                $query->whereDoesntHave($key, $value);
+            } else if (is_string($value)) {
+                $query->whereDoesntHave($value);
+            }
+        }
+        return $query;
+    }
     public function findModelsByUser(Model $model, User $user, ?bool $checkPermissions = true)
     {
         return $this->getResults(
@@ -187,6 +238,7 @@ class BaseRepository
 
     protected function getResults($query): Collection|LengthAwarePaginator
     {
+        $query = $this->addWhereDoesntHaveToQuery($query);
         if ($this->paginate) {
             return $query->paginate($this->perPage);
         }

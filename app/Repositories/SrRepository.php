@@ -47,11 +47,10 @@ class SrRepository extends BaseRepository
             $serviceRequest->srParameter()
         );
     }
-    public function getServiceRequestByProvider(Provider $provider, string $sort, string $order, ?int $count = null) {
+    public function getServiceRequestByProvider(Provider $provider) {
         return $this->getResults(
             $provider->serviceRequest()
-                ->whereDoesntHave('parentSrs')
-                ->orderBy($sort, $order)
+                ->orderBy($this->getSortField(), $this->getOrderDir())
                 ->with(['category', 's', 'srSchedule', 'srRateLimit'])
                 ->without(['childSrs'])
         );

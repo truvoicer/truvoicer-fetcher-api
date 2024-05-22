@@ -58,7 +58,8 @@ class ServiceRequestController extends Controller
         ApiService           $apiServicesService,
         SrService            $requestService,
         AccessControlService $accessControlService
-    ) {
+    )
+    {
         parent::__construct($accessControlService, $httpRequestService, $serializerService);
         $this->providerService = $providerService;
         $this->apiServicesService = $apiServicesService;
@@ -93,11 +94,15 @@ class ServiceRequestController extends Controller
             return $this->sendErrorResponse("Access denied");
         }
 
+        $this->srService->getServiceRequestRepository()
+            ->setSortField($request->get('sort', "name"))
+            ->setOrderDir($request->get('order', "asc"))
+            ->setLimit($request->get('count', -1));
+        if (!$request->query->getBoolean('include_children', false)) {
+            $this->srService->getServiceRequestRepository()->setWhereDoesntHave(['parentSrs']);
+        }
         $getServices = $this->srService->getUserServiceRequestByProvider(
             $provider,
-            $request->get('sort', "name"),
-            $request->get('order', "asc"),
-            $request->get('count', -1)
         );
 
         return $this->sendSuccessResponse(
@@ -105,6 +110,7 @@ class ServiceRequestController extends Controller
             new ServiceRequestCollection($getServices)
         );
     }
+
     /**
      * Get list of service requests function
      * Returns a list of service requests based on the request query parameters
@@ -241,6 +247,7 @@ class ServiceRequestController extends Controller
             )
         );
     }
+
     public function overrideChildServiceRequest(Provider $provider, Sr $serviceRequest, Sr $childSr, OverrideChildSrRequest $request): JsonResponse
     {
         $this->setAccessControlUser($request->user());
@@ -274,10 +281,11 @@ class ServiceRequestController extends Controller
      *
      */
     public function updateServiceRequest(
-        Provider $provider,
-        Sr       $serviceRequest,
-        UpdateSrRequest  $request
-    ): \Illuminate\Http\JsonResponse {
+        Provider        $provider,
+        Sr              $serviceRequest,
+        UpdateSrRequest $request
+    ): \Illuminate\Http\JsonResponse
+    {
         $this->setAccessControlUser($request->user());
         if (
             !$this->accessControlService->checkPermissionsForEntity(
@@ -303,6 +311,7 @@ class ServiceRequestController extends Controller
             )
         );
     }
+
     /**
      * Update an api service request based on request POST data
      * Returns json success message and api service request data on successful update
@@ -310,10 +319,11 @@ class ServiceRequestController extends Controller
      *
      */
     public function updateSrDefaults(
-        Provider $provider,
-        Sr       $serviceRequest,
-        UpdateSrDefaultsRequest  $request
-    ): \Illuminate\Http\JsonResponse {
+        Provider                $provider,
+        Sr                      $serviceRequest,
+        UpdateSrDefaultsRequest $request
+    ): \Illuminate\Http\JsonResponse
+    {
         $this->setAccessControlUser($request->user());
         if (
             !$this->accessControlService->checkPermissionsForEntity(
@@ -339,6 +349,7 @@ class ServiceRequestController extends Controller
             )
         );
     }
+
     /**
      * Update an api service request based on request POST data
      * Returns json success message and api service request data on successful update
@@ -346,11 +357,12 @@ class ServiceRequestController extends Controller
      *
      */
     public function updateChildServiceRequest(
-        Provider $provider,
-        Sr       $serviceRequest,
-        Sr       $childSr,
-        UpdateSrRequest  $request
-    ): \Illuminate\Http\JsonResponse {
+        Provider        $provider,
+        Sr              $serviceRequest,
+        Sr              $childSr,
+        UpdateSrRequest $request
+    ): \Illuminate\Http\JsonResponse
+    {
         $this->setAccessControlUser($request->user());
         if (
             !$this->accessControlService->checkPermissionsForEntity(
@@ -389,7 +401,8 @@ class ServiceRequestController extends Controller
         Provider          $provider,
         ApiRequestService $requestOperation,
         Request           $request
-    ): JsonResponse|\Illuminate\Http\JsonResponse {
+    ): JsonResponse|\Illuminate\Http\JsonResponse
+    {
         $this->setAccessControlUser($request->user());
         if (
             !$this->accessControlService->checkPermissionsForEntity(
@@ -465,6 +478,7 @@ class ServiceRequestController extends Controller
             )
         );
     }
+
     public function duplicateChildServiceRequest(
         Provider $provider,
         Sr       $serviceRequest,
@@ -562,6 +576,7 @@ class ServiceRequestController extends Controller
             "Service request deleted.",
         );
     }
+
     public function deleteChildServiceRequest(
         Provider $provider,
         Sr       $serviceRequest,
@@ -590,8 +605,9 @@ class ServiceRequestController extends Controller
             "Child service request deleted.",
         );
     }
+
     public function deleteBatchServiceRequest(
-        Provider $provider,
+        Provider             $provider,
         DeleteBatchSrRequest $request
     ): \Illuminate\Http\JsonResponse
     {
@@ -627,7 +643,8 @@ class ServiceRequestController extends Controller
         Provider $provider,
         Sr       $serviceRequest,
         Request  $request
-    ): \Illuminate\Http\JsonResponse {
+    ): \Illuminate\Http\JsonResponse
+    {
         $this->setAccessControlUser($request->user());
         if (
             !$this->accessControlService->checkPermissionsForEntity(
@@ -648,12 +665,14 @@ class ServiceRequestController extends Controller
             )
         );
     }
+
     public function getChildServiceRequest(
         Provider $provider,
         Sr       $serviceRequest,
         Sr       $childSr,
         Request  $request
-    ): \Illuminate\Http\JsonResponse {
+    ): \Illuminate\Http\JsonResponse
+    {
         $this->setAccessControlUser($request->user());
         if (
             !$this->accessControlService->checkPermissionsForEntity(
