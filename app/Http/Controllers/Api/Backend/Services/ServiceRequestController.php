@@ -12,6 +12,7 @@ use App\Http\Requests\Service\Request\UpdateSrDefaultsRequest;
 use App\Http\Requests\Service\Request\UpdateSrRequest;
 use App\Http\Resources\Service\ServiceRequest\ServiceRequestCollection;
 use App\Http\Resources\Service\ServiceRequest\ServiceRequestResource;
+use App\Http\Resources\Service\ServiceRequest\SrTreeViewCollection;
 use App\Models\Provider;
 use App\Models\S;
 use App\Models\Sr;
@@ -101,10 +102,19 @@ class ServiceRequestController extends Controller
         if (!$request->query->getBoolean('include_children', false)) {
             $this->srService->getServiceRequestRepository()->setWhereDoesntHave(['parentSrs']);
         }
+        if ($request->query->getBoolean('show_nested_children', false)) {
+            $this->srService->getServiceRequestRepository()->setWith(['childSrs']);
+        }
         $getServices = $this->srService->getUserServiceRequestByProvider(
             $provider,
         );
 
+        if ($request->query->getBoolean('tree_view', false)) {
+            return $this->sendSuccessResponse(
+                "success",
+                new SrTreeViewCollection($getServices)
+            );
+        }
         return $this->sendSuccessResponse(
             "success",
             new ServiceRequestCollection($getServices)

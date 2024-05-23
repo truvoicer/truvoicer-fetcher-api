@@ -95,6 +95,11 @@ class BaseRepository
         }
         return $query;
     }
+    protected function addWithToQuery(Builder|HasMany|BelongsToMany $query): Builder|HasMany|BelongsToMany
+    {
+        $query->with($this->getWith());
+        return $query;
+    }
     public function findModelsByUser(Model $model, User $user, ?bool $checkPermissions = true)
     {
         return $this->getResults(
@@ -239,6 +244,7 @@ class BaseRepository
     protected function getResults($query): Collection|LengthAwarePaginator
     {
         $query = $this->addWhereDoesntHaveToQuery($query);
+        $query = $this->addWithToQuery($query);
         if ($this->paginate) {
             return $query->paginate($this->perPage);
         }
