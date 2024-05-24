@@ -140,7 +140,8 @@ class ApiRequestDataHandler
 
     private function buildServiceRequests(array $providers, string $type): void
     {
-        $providerNames = array_column($providers, 'name');
+        $providerNames = array_column($providers, 'provider_name');
+
         $getProviders = $this->providerService->getProviderRepository()->newQuery()
             ->whereIn('name', $providerNames)
             ->with(['sr' => function ($query) use ($type) {

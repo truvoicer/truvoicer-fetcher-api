@@ -68,11 +68,20 @@ public function getModelByUserQuery(Model $model, User $user, ?bool $checkPermis
     }
 
 
-    public function findUserModelBy(Model $model, User $user, array $params, ?bool $checkPermissions = true)
+    public function findUserModelQuery(Model $model, User $user, array $params, ?bool $checkPermissions = true)
     {
         $query = $this->getModelByUserQuery($model, $user, $checkPermissions);
         $query = $this->applyConditionsToQuery($params, $query);
         return $query->first();
+    }
+    public function findUserModelBy(Model $model, User $user, array $params, ?bool $checkPermissions = true)
+    {
+        return $this->findUserModelQuery($model, $user, $params, $checkPermissions)->first();
+    }
+
+    public function findUserModelsBy(Model $model, User $user, array $params, ?bool $checkPermissions = true)
+    {
+        return $this->findUserModelQuery($model, $user, $params, $checkPermissions)->get();
     }
 
 

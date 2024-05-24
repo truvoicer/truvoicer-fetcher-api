@@ -43,7 +43,7 @@ Route::prefix('auth')->name('auth.')->group(function () {
 
 Route::middleware(['auth:sanctum', 'ability:api:app_user'])->group(function () {
     Route::prefix('front')->name('front.')->group(function () {
-        Route::get('/category/{category:name}/providers', [ListController::class, 'getCategoryProviderList'])->name('category.providers.list');
+        Route::get('/service/{service:name}/providers', [ListController::class, 'getCategoryProviderList'])->name('category.providers.list');
         Route::get('/service/list', [ListController::class, 'frontendServiceList'])->name('service.list');
         Route::get('/service/response-key/list', [ListController::class, 'frontendServiceResponseKeyList'])->name('service.response-key.list');
         Route::prefix('operation')->name('operation.')->group(function () {

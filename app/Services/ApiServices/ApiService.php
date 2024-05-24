@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Services\ApiServices;
 
 use App\Models\S;
@@ -8,35 +9,37 @@ use App\Repositories\SrParameterRepository;
 use App\Repositories\SrRepository;
 use App\Services\BaseService;
 use App\Helpers\Tools\UtilHelpers;
+use App\Services\Permission\AccessControlService;
 use App\Services\Permission\PermissionService;
+use Illuminate\Database\Eloquent\Collection;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 
 class ApiService extends BaseService
 {
 
-    protected SRepository $serviceRepository;
-    protected SrRepository $serviceRequestRepository;
-    protected SrParameterRepository $requestParametersRepo;
-    protected SResponseKeysService $responseKeysService;
 
     /**
      * ApiServicesService constructor.
      * @param SResponseKeysService $responseKeysService
      */
-    public function __construct(SResponseKeysService $responseKeysService)
+    public function __construct(
+        protected SResponseKeysService  $responseKeysService,
+        protected AccessControlService  $accessControlService,
+        protected SRepository           $serviceRepository,
+        protected SrRepository          $serviceRequestRepository,
+        protected SrParameterRepository $requestParametersRepo,
+    )
     {
         parent::__construct();
-        $this->serviceRepository = new SRepository();
-        $this->serviceRequestRepository = new SrRepository();
-        $this->requestParametersRepo = new SrParameterRepository();
-        $this->responseKeysService = $responseKeysService;
     }
 
     public function findByQuery(string $query)
     {
         return $this->serviceRepository->findByQuery($query);
     }
-    public function findByParams(string $sort = "name", ?string $order = "asc", int $count= -1, ?bool $pagination = true) {
+
+    public function findByParams(string $sort = "name", ?string $order = "asc", int $count = -1, ?bool $pagination = true)
+    {
         $this->serviceRepository->setPagination($pagination);
         $this->serviceRepository->setOrderDir($order);
         $this->serviceRepository->setSortField($sort);
@@ -44,7 +47,8 @@ class ApiService extends BaseService
         return $this->serviceRepository->findMany();
     }
 
-    public function findUserServices(User $user, string $sort, string $order, ?int $count, ?bool $pagination = true) {
+    public function findUserServices(User $user, string $sort, string $order, ?int $count, ?bool $pagination = true)
+    {
         $this->serviceRepository->setPagination($pagination);
         $this->serviceRepository->setPermissions([
             PermissionService::PERMISSION_ADMIN,
@@ -55,11 +59,30 @@ class ApiService extends BaseService
             $user
         );
     }
-    public function getAllServicesArray() {
+
+    public function getServiceProviderList(S $service, $user): Collection
+    {
+        $this->accessControlService->setUser($user);
+        return $service->providers()->distinct()->get()->filter(function ($provider) {
+            return $this->accessControlService->checkPermissionsForEntity(
+                $provider,
+                [
+                    PermissionService::PERMISSION_ADMIN,
+                    PermissionService::PERMISSION_READ,
+                ],
+                false
+            );
+        });
+    }
+
+
+    public function getAllServicesArray()
+    {
         return $this->serviceRepository->findAll()->toArray();
     }
 
-    public function getServiceById($id) {
+    public function getServiceById($id)
+    {
         $getService = $this->serviceRepository->findById($id);
         if ($getService === null) {
             throw new BadRequestHttpException("Service does not exist in database.");
@@ -103,7 +126,8 @@ class ApiService extends BaseService
         return $this->serviceRepository->save($data);
     }
 
-    public function deleteServiceById(int $serviceId) {
+    public function deleteServiceById(int $serviceId)
+    {
         $service = $this->serviceRepository->findById($serviceId);
         if ($service === null) {
             throw new BadRequestHttpException(sprintf("Service id: %s not found in database.", $serviceId));
@@ -112,10 +136,12 @@ class ApiService extends BaseService
         return $this->serviceRepository->delete();
     }
 
-    public function deleteService(S $service) {
+    public function deleteService(S $service)
+    {
         $this->serviceRepository->setModel($service);
         return $this->serviceRepository->delete();
     }
+
     public function deleteBatch(array $ids)
     {
         if (!count($ids)) {

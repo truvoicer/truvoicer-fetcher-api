@@ -8,6 +8,7 @@ use App\Models\Property;
 use App\Models\Provider;
 use App\Models\User;
 use App\Services\Permission\PermissionService;
+use Illuminate\Database\Eloquent\Collection;
 
 class ProviderRepository extends BaseRepository
 {

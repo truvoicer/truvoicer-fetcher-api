@@ -3,7 +3,9 @@
 namespace App\Http\Controllers\Api\Frontend;
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\ProviderMinimalCollection;
 use App\Models\Category;
+use App\Models\S;
 use App\Services\ApiServices\ApiService;
 use App\Services\ApiServices\SResponseKeysService;
 use App\Services\ApiServices\ServiceRequests\SrConfigService;
@@ -29,6 +31,7 @@ class ListController extends Controller
         HttpRequestService $httpRequestService,
         SerializerService $serializerService,
         CategoryService $categoryService,
+        private ApiService $apiService,
         AccessControlService $accessControlService
     ) {
         parent::__construct($accessControlService, $httpRequestService, $serializerService);
@@ -36,7 +39,7 @@ class ListController extends Controller
         $this->categoryService = $categoryService;
     }
 
-    public function getCategoryProviderList(Category $category, Request $request)
+    public function getCategoryProviderList(S $service, Request $request)
     {
         if (!$request->query->has("filter") ||
             $request->query->get("filter") === null ||
@@ -44,7 +47,7 @@ class ListController extends Controller
         ) {
             return $this->sendSuccessResponse(
                 "success",
-                $this->categoryService->getCategoryProviderList($category, $request->user())
+                $this->apiService->getServiceProviderList($service, $request->user())
             );
         }
         return $this->sendSuccessResponse(
