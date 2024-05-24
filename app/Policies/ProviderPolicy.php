@@ -4,16 +4,28 @@ namespace App\Policies;
 
 use App\Models\Provider;
 use App\Models\User;
+use App\Services\Auth\AuthService;
+use App\Services\Permission\PermissionService;
 use Illuminate\Auth\Access\Response;
 
 class ProviderPolicy
 {
+    public function before(User $user, string $ability): bool|null
+    {
+        if (
+            $user->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_SUPERUSER)) ||
+            $user->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_ADMIN))
+        ) {
+            return true;
+        }
+        return null;
+    }
     /**
      * Determine whether the user can view any models.
      */
     public function viewAny(User $user): bool
     {
-        //
+        return true;
     }
 
     /**
@@ -21,15 +33,19 @@ class ProviderPolicy
      */
     public function view(User $user, Provider $provider): bool
     {
-        $user->providers()->whereHas($provider, function ($query) use ($checkPermissions) {
-            if ($checkPermissions) {
+        return $user->providers()
+            ->where('id', $provider->id)
+            ->whereHas($provider, function ($query) {
                 $query->whereHas('providerPermissions', function ($query) {
                     $query->whereHas('permission', function ($query) {
-                        $query->whereIn('name', $permissions);
+                        $query->whereIn('name', [
+                            PermissionService::PERMISSION_ADMIN,
+                            PermissionService::PERMISSION_READ,
+                        ]);
                     });
                 });
-            }
-        });
+            })
+            ->exists();
     }
 
     /**
@@ -37,7 +53,7 @@ class ProviderPolicy
      */
     public function create(User $user): bool
     {
-        //
+        return true;
     }
 
     /**
@@ -45,7 +61,19 @@ class ProviderPolicy
      */
     public function update(User $user, Provider $provider): bool
     {
-        //
+        return $user->providers()
+            ->where('id', $provider->id)
+            ->whereHas($provider, function ($query) {
+                $query->whereHas('providerPermissions', function ($query) {
+                    $query->whereHas('permission', function ($query) {
+                        $query->whereIn('name', [
+                            PermissionService::PERMISSION_ADMIN,
+                            PermissionService::PERMISSION_UPDATE,
+                        ]);
+                    });
+                });
+            })
+            ->exists();
     }
 
     /**
@@ -53,7 +81,19 @@ class ProviderPolicy
      */
     public function delete(User $user, Provider $provider): bool
     {
-        //
+        return $user->providers()
+            ->where('id', $provider->id)
+            ->whereHas($provider, function ($query) {
+                $query->whereHas('providerPermissions', function ($query) {
+                    $query->whereHas('permission', function ($query) {
+                        $query->whereIn('name', [
+                            PermissionService::PERMISSION_ADMIN,
+                            PermissionService::PERMISSION_DELETE,
+                        ]);
+                    });
+                });
+            })
+            ->exists();
     }
 
     /**
@@ -61,7 +101,7 @@ class ProviderPolicy
      */
     public function restore(User $user, Provider $provider): bool
     {
-        //
+        return true;
     }
 
     /**
@@ -69,6 +109,6 @@ class ProviderPolicy
      */
     public function forceDelete(User $user, Provider $provider): bool
     {
-        //
+        return true;
     }
 }
