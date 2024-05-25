@@ -24,19 +24,15 @@ use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 class ListController extends Controller
 {
     private ProviderService $providerService;
-    private CategoryService $categoryService;
 
     public function __construct(
         ProviderService $providerService,
         HttpRequestService $httpRequestService,
         SerializerService $serializerService,
-        CategoryService $categoryService,
-        private ApiService $apiService,
         AccessControlService $accessControlService
     ) {
         parent::__construct($accessControlService, $httpRequestService, $serializerService);
         $this->providerService = $providerService;
-        $this->categoryService = $categoryService;
     }
 
     public function getCategoryProviderList(S $service, Request $request)
@@ -47,12 +43,17 @@ class ListController extends Controller
         ) {
             return $this->sendSuccessResponse(
                 "success",
-                $this->apiService->getServiceProviderList($service, $request->user())
+                new ProviderMinimalCollection($this->providerService->findProvidersByService($service, $request->user()))
             );
         }
+
+        $selectedProvidersArray = explode(",", $request->query->get("filter"));
+        $this->providerService->getProviderRepository()->addWhere('id', $selectedProvidersArray, 'IN');
         return $this->sendSuccessResponse(
             "success",
-            $this->categoryService->getCategorySelectedProvidersList($request->query->get("filter"), $request->user())
+            new ProviderMinimalCollection(
+                $this->providerService->findProviders($request->user())
+            )
         );
     }
 

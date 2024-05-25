@@ -47,34 +47,6 @@ class PermissionController extends Controller
         $this->permissionService = $permissionService;
     }
 
-    public function getProviderList(Request $request, ProviderService $providerService)
-    {
-        return $this->sendSuccessResponse("success",
-            new ProviderCollection(
-                $providerService->getProviderRepository()->getProviderList(
-                    true,
-                    $request->get('sort', "name"),
-                    $request->get('order', "asc"),
-                    $request->get('count', -1),
-                )
-            )
-        );
-    }
-
-    public function getCategoryList(Request $request, CategoryService $categoryService)
-    {
-        return $this->sendSuccessResponse(
-            "success",
-            new CategoryCollection(
-                $categoryService->findByParams(
-                    $request->get('sort', "name"),
-                    $request->get('order', "asc"),
-                    $request->get('count', -1)
-                )
-            )
-        );
-    }
-
     public function getPermissions(Request $request)
     {
         $getPermissions = $this->permissionService->findByParams(

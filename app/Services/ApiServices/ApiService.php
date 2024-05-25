@@ -63,6 +63,7 @@ class ApiService extends BaseService
     public function getServiceProviderList(S $service, $user): Collection
     {
         $this->accessControlService->setUser($user);
+
         return $service->providers()->distinct()->get()->filter(function ($provider) {
             return $this->accessControlService->checkPermissionsForEntity(
                 $provider,

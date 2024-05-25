@@ -14,10 +14,6 @@ class ProviderMinimalCollection extends BaseCollection
     public static $wrap = 'providers';
     public function toArray(Request $request): array
     {
-        return [
-            'id' => $this->id,
-            'name' => $this->name,
-            'label' => $this->label,
-        ];
+        return parent::toArray($request);
     }
 }

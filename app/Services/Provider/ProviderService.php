@@ -6,6 +6,7 @@ use App\Models\Category;
 use App\Models\Property;
 use App\Models\Provider;
 use App\Models\ProviderProperty;
+use App\Models\S;
 use App\Models\User;
 use App\Repositories\PermissionRepository;
 use App\Repositories\PropertyRepository;
@@ -26,6 +27,7 @@ use App\Helpers\Tools\UtilHelpers;
 use App\Services\Task\ScheduleService;
 use App\Services\User\UserAdminService;
 use Illuminate\Console\Scheduling\Schedule;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Request;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
@@ -66,11 +68,25 @@ class ProviderService extends BaseService
         $this->accessControlService = $accessControlService;
     }
 
-    public function getProviderByName(string $providerName = null)
+    public function findProviders(User $user)
     {
-        return $this->providerRepository->findByName($providerName);
+        if (
+            $user->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_SUPERUSER)) ||
+            $user->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_ADMIN))
+        ) {
+            return  $this->providerRepository->getProviderList();
+        }
+        return $this->providerRepository->findUserProviders($user);
     }
 
+
+    public function findProvidersByService(S $service, $user): Collection
+    {
+        $this->providerRepository->setQuery(
+            $service->providers()->distinct()
+        );
+        return $this->findProviders($user);
+    }
     public function getUserProviderByName(User $user, string $providerName = null)
     {
         return $this->userProviderRepository->findUserProviderByName($user, $providerName);

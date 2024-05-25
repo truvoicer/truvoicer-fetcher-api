@@ -52,28 +52,17 @@ class ProviderController extends Controller
     {
         $user = $request->user();
         $pagination = $request->query->filter('pagination', true, FILTER_VALIDATE_BOOLEAN);
-        if (
-            $user->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_SUPERUSER)) ||
-            $user->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_ADMIN))
-        ) {
-            $providers = $this->providerService->getProviderRepository()->getProviderList(
-                $pagination,
-                $request->get('sort', "name"),
-                $request->get('order', "asc"),
-                $request->get('count', -1)
-            );
-        } else {
-            $providers = $this->providerService->getProviderRepository()->findUserProviders(
-                $user,
-                $pagination,
-                $request->get('sort', "name"),
-                $request->get('order', "asc"),
-                $request->get('count', -1)
-            );
-        }
+
+        $this->providerService->getProviderRepository()->setOrderDir($request->get('order', "asc"));
+        $this->providerService->getProviderRepository()->setSortField($request->get('sort', "name"));
+        $this->providerService->getProviderRepository()->setLimit($request->get('count', -1));
+        $this->providerService->getProviderRepository()->setWith(['categories', 'providerRateLimit']);
+
         return $this->sendSuccessResponse(
             "success",
-            new ProviderCollection($providers)
+            new ProviderCollection(
+                $this->providerService->findProviders($user)
+            )
         );
     }
 
@@ -84,17 +73,7 @@ class ProviderController extends Controller
     public function getProvider(Provider $provider, Request $request): \Illuminate\Http\JsonResponse
     {
         $this->setAccessControlUser($request->user());
-        if (
-            !$this->accessControlService->checkPermissionsForEntity(
-                $provider,
-                [
-                    PermissionService::PERMISSION_ADMIN,
-                    PermissionService::PERMISSION_READ,
-                ],
-            )
-        ) {
-            return $this->sendErrorResponse("Access control: operation not permitted");
-        }
+
         return $this->sendSuccessResponse(
             "success",
             new ProviderResource($provider)
@@ -128,18 +107,6 @@ class ProviderController extends Controller
      */
     public function updateProvider(Provider $provider, UpdateProviderRequest $request): \Illuminate\Http\JsonResponse
     {
-        $this->setAccessControlUser($request->user());
-        if (
-            !$this->accessControlService->checkPermissionsForEntity(
-                $provider,
-                [
-                    PermissionService::PERMISSION_ADMIN,
-                    PermissionService::PERMISSION_UPDATE,
-                ],
-            )
-        ) {
-            return $this->sendErrorResponse("Access control: operation not permitted");
-        }
         $updateProvider = $this->providerService->updateProvider(
             $request->user(),
             $provider,
@@ -155,26 +122,12 @@ class ProviderController extends Controller
         );
     }
 
-
     /**
      * Deletes a provider in the database based on the post request data
      *
      */
     public function deleteProvider(Provider $provider, Request $request): \Illuminate\Http\JsonResponse
     {
-        $this->setAccessControlUser($request->user());
-
-        if (
-            !$this->accessControlService->checkPermissionsForEntity(
-                $provider,
-                [
-                    PermissionService::PERMISSION_ADMIN,
-                    PermissionService::PERMISSION_DELETE,
-                ],
-            )
-        ) {
-            return $this->sendErrorResponse("Access control: operation not permitted");
-        }
         $delete = $this->providerService->deleteProvider($provider);
         if (!$delete) {
             return $this->sendErrorResponse(

@@ -20,6 +20,7 @@ class ProviderPolicy
         }
         return null;
     }
+
     /**
      * Determine whether the user can view any models.
      */
@@ -33,19 +34,10 @@ class ProviderPolicy
      */
     public function view(User $user, Provider $provider): bool
     {
-        return $user->providers()
-            ->where('id', $provider->id)
-            ->whereHas($provider, function ($query) {
-                $query->whereHas('providerPermissions', function ($query) {
-                    $query->whereHas('permission', function ($query) {
-                        $query->whereIn('name', [
-                            PermissionService::PERMISSION_ADMIN,
-                            PermissionService::PERMISSION_READ,
-                        ]);
-                    });
-                });
-            })
-            ->exists();
+        return $this->checkPermissions($user, $provider, [
+            PermissionService::PERMISSION_ADMIN,
+            PermissionService::PERMISSION_READ,
+        ]);
     }
 
     /**
@@ -61,19 +53,10 @@ class ProviderPolicy
      */
     public function update(User $user, Provider $provider): bool
     {
-        return $user->providers()
-            ->where('id', $provider->id)
-            ->whereHas($provider, function ($query) {
-                $query->whereHas('providerPermissions', function ($query) {
-                    $query->whereHas('permission', function ($query) {
-                        $query->whereIn('name', [
-                            PermissionService::PERMISSION_ADMIN,
-                            PermissionService::PERMISSION_UPDATE,
-                        ]);
-                    });
-                });
-            })
-            ->exists();
+        return $this->checkPermissions($user, $provider, [
+            PermissionService::PERMISSION_ADMIN,
+            PermissionService::PERMISSION_UPDATE,
+        ]);
     }
 
     /**
@@ -81,19 +64,10 @@ class ProviderPolicy
      */
     public function delete(User $user, Provider $provider): bool
     {
-        return $user->providers()
-            ->where('id', $provider->id)
-            ->whereHas($provider, function ($query) {
-                $query->whereHas('providerPermissions', function ($query) {
-                    $query->whereHas('permission', function ($query) {
-                        $query->whereIn('name', [
-                            PermissionService::PERMISSION_ADMIN,
-                            PermissionService::PERMISSION_DELETE,
-                        ]);
-                    });
-                });
-            })
-            ->exists();
+        return $this->checkPermissions($user, $provider, [
+            PermissionService::PERMISSION_ADMIN,
+            PermissionService::PERMISSION_DELETE,
+        ]);
     }
 
     /**
@@ -110,5 +84,17 @@ class ProviderPolicy
     public function forceDelete(User $user, Provider $provider): bool
     {
         return true;
+    }
+
+    private function checkPermissions(User $user, Provider $provider, array $permissions)
+    {
+        return $provider->providerUser()
+            ->where('user_id', $user->id)
+            ->whereHas('providerUserPermission', function ($query) use ($permissions) {
+                $query->whereHas('permission', function ($query) use ($permissions) {
+                    $query->whereIn('name', $permissions);
+                });
+            })
+            ->exists();
     }
 }

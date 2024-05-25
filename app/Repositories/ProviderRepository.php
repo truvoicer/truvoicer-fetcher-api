@@ -22,31 +22,36 @@ class ProviderRepository extends BaseRepository
         return parent::getModel();
     }
 
-    public function getProviderList(?bool $pagination = true, ?string $sort = "name", ?string $order = "asc", ?int $count = -1)
+    public function getProviderList()
     {
-        $this->setPagination($pagination);
-        $this->setOrderDir($order);
-        $this->setSortField($sort);
-        $this->setLimit($count);
+        if (is_null($this->query)) {
+            $this->setQuery($this->buildQuery());
+        }
         return $this->getResults(
             $this->getQuery()
                 ->with(['categories', 'providerRateLimit'])
         );
     }
 
-    public function findUserProviders(User $user, ?bool $pagination = true, ?string $sort = "name", ?string $order = "asc", ?int $count = -1)
+    public function findUserProviders(User $user)
     {
         $this->setPermissions([
             PermissionService::PERMISSION_ADMIN,
             PermissionService::PERMISSION_READ,
         ]);
-        $this->setPagination($pagination);
+        if (is_null($this->query)) {
+            $this->setQuery($this->buildQuery());
+        }
         return $this->getResults(
-            $this->getModelByUserQuery(
-                new Provider(),
-                $user
-            )
-            ->with(['categories', 'providerRateLimit'])
+            $this->query
+                ->whereHas('providerUser', function ($query) use ($user) {
+                    $query->where('user_id', $user->id);
+                    $query->whereHas('providerUserPermission', function ($query) {
+                        $query->whereHas('permission', function ($query) {
+                            $query->whereIn('name', $this->permissions);
+                        });
+                    });
+                })
         );
     }
 

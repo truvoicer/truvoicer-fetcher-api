@@ -11,6 +11,7 @@ use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
 use Illuminate\Pagination\LengthAwarePaginator;
@@ -37,6 +38,8 @@ class BaseRepository
     private array $whereDoesntHave = [];
     private array $whereHas = [];
     private array $with = [];
+
+    protected Relation|Builder|EloquentBuilder|null $query = null;
 
     /**
      * @throws \Exception
@@ -83,7 +86,7 @@ class BaseRepository
         return $this;
     }
 
-    protected function addWhereDoesntHaveToQuery(Builder|HasMany|BelongsToMany $query): Builder|HasMany|BelongsToMany
+    protected function addWhereDoesntHaveToQuery(Relation $query): Relation
     {
         $whereDoesntHave = $this->getWhereDoesntHave();
         foreach ($whereDoesntHave as $key => $value) {
@@ -95,7 +98,7 @@ class BaseRepository
         }
         return $query;
     }
-    protected function addWithToQuery(Builder|HasMany|BelongsToMany $query): Builder|HasMany|BelongsToMany
+    protected function addWithToQuery(Relation $query): Relation
     {
         $query->with($this->getWith());
         return $query;
@@ -175,7 +178,7 @@ class BaseRepository
     {
         return $this->modelClassName::query();
     }
-    private function buildQuery() {
+    protected function buildQuery() {
         $query = $this->modelClassName::query();
         foreach ($this->where as $index => $where) {
             if ($index === 0) {
@@ -194,6 +197,7 @@ class BaseRepository
         if ($this->offset > 0) {
             $query->offset($this->offset);
         }
+        $this->reset();
         return $query;
     }
 
@@ -205,21 +209,27 @@ class BaseRepository
         $this->offset = self::DEFAULT_OFFSET;
     }
 
+    public function setQuery($query)
+    {
+        $this->query = $query;
+        return $this;
+    }
+
     public function getQuery()
     {
-        $query = $this->buildQuery();
-        $this->reset();
-        return $query;
+        return $this->query;
     }
 
     public function findOne(): ?Model
     {
+        $this->setQuery($this->buildQuery());
         $find = $this->getQuery()->first();
         $this->reset();
         return $find;
     }
     public function findMany()
     {
+        $this->setQuery($this->buildQuery());
         $find = $this->getResults($this->getQuery());
         $this->reset();
         return $find;
@@ -241,10 +251,12 @@ class BaseRepository
         return $this->findMany();
     }
 
-    protected function getResults($query): Collection|LengthAwarePaginator
+    protected function getResults(Relation|EloquentBuilder $query): Collection|LengthAwarePaginator
     {
-        $query = $this->addWhereDoesntHaveToQuery($query);
-        $query = $this->addWithToQuery($query);
+        if ($query instanceof Relation) {
+            $query = $this->addWhereDoesntHaveToQuery($query);
+            $query = $this->addWithToQuery($query);
+        }
         if ($this->paginate) {
             return $query->paginate($this->perPage);
         }
@@ -325,6 +337,7 @@ class BaseRepository
             }
             $this->addWhere('id', $id, '=', 'OR');
         }
+        $this->setQuery($this->buildQuery());
         return $this->getQuery()->delete();
     }
     public function delete() {

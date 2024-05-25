@@ -141,6 +141,9 @@ class ApiRequestDataHandler
     private function buildServiceRequests(array $providers, string $type): void
     {
         $providerNames = array_column($providers, 'provider_name');
+        if (!count($providerNames)) {
+            $providerNames = array_column($providers, 'name');
+        }
 
         $getProviders = $this->providerService->getProviderRepository()->newQuery()
             ->whereIn('name', $providerNames)

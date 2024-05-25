@@ -24,6 +24,7 @@ use App\Http\Controllers\Api\Backend\Tools\UtilsController;
 use App\Http\Controllers\Api\Backend\UserController;
 use App\Http\Controllers\Api\Frontend\ListController;
 use App\Http\Controllers\Api\Frontend\OperationsController;
+use App\Models\Provider;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -105,15 +106,15 @@ Route::middleware(['auth:sanctum', 'ability:api:admin,api:superuser,api:super_ad
             Route::delete('/{category}/delete', [CategoryController::class, 'deleteCategory'])->name('delete');
         });
         Route::prefix('provider')->name('provider.')->group(function () {
-            Route::get('/list', [ProviderController::class, 'getProviderList'])->name('list');
-            Route::post('/create', [ProviderController::class, 'createProvider'])->name('create');
-            Route::get('/{provider}', [ProviderController::class, 'getProvider'])->name('detail');
+            Route::get('/list', [ProviderController::class, 'getProviderList'])->name('list')->can('viewAny', Provider::class);
+            Route::post('/create', [ProviderController::class, 'createProvider'])->name('create')->can('create', 'provider');
+            Route::get('/{provider}', [ProviderController::class, 'getProvider'])->name('detail')->can('view', 'provider');
             Route::prefix('batch')->name('batch.')->group(function () {
                 Route::delete('/delete', [ProviderController::class, 'deleteBatchProviders'])->name('delete');
             });
             Route::prefix('{provider}')->name('single.')->group(function () {
-                Route::patch('/update', [ProviderController::class, 'updateProvider'])->name('update');
-                Route::delete('/delete', [ProviderController::class, 'deleteProvider'])->name('delete');
+                Route::patch('/update', [ProviderController::class, 'updateProvider'])->name('update')->can('update', 'provider');
+                Route::delete('/delete', [ProviderController::class, 'deleteProvider'])->name('delete')->can('delete', 'provider');
                 Route::prefix('rate-limits')->name('rate-limits.')->group(function () {
                     Route::post('/create', [ProviderRateLimitController::class, 'createProviderRateLimit'])->name('create');
                     Route::get('/{providerRateLimit}', [ProviderRateLimitController::class, 'getProviderRateLimit'])->name('detail');
@@ -266,8 +267,6 @@ Route::middleware(['auth:sanctum', 'ability:api:superuser,'])->group(function ()
             Route::get('/list', [PermissionController::class, 'getPermissions'])->name('list');
             Route::post('/create', [PermissionController::class, 'createPermission'])->name('create');
             Route::post('/delete', [PermissionController::class, 'deletePermission'])->name('delete');
-            Route::get('/provider/list', [PermissionController::class, 'getProviderList'])->name('provider.list');
-            Route::get('/category/list', [PermissionController::class, 'getCategoryList'])->name('category.list');
 
             Route::prefix('user')->name('user.')->group(function () {
                 Route::get('/{user}/entity/list', [PermissionController::class, 'getProtectedEntitiesList'])->name('entity.list');
