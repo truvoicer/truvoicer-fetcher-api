@@ -136,6 +136,36 @@ class DefaultData
                 ]
             ],
             [
+                'name' => "base_url",
+                'label' => "Base Url",
+                'value_type' => 'custom',
+                'value_choices' => null
+            ],
+            [
+                'name' => "user_id",
+                'label' => "User Id",
+                'value_type' => 'custom',
+                'value_choices' => null
+            ],
+            [
+                'name' => "access_token",
+                'label' => "Access Token",
+                'value_type' => 'custom',
+                'value_choices' => null
+            ],
+            [
+                'name' => "client_id",
+                'label' => "Client Id",
+                'value_type' => 'custom',
+                'value_choices' => null
+            ],
+            [
+                'name' => "client_secret",
+                'label' => "Client Secret",
+                'value_type' => 'custom',
+                'value_choices' => null
+            ],
+            [
                 'name' => "oauth_access_token_grant_type",
                 'label' => "Oauth Access Token Grant Type",
                 'value_type' => 'custom',

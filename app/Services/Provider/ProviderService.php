@@ -123,12 +123,8 @@ class ProviderService extends BaseService
         );
     }
 
-    public function getProviderProperties(Provider $provider, string $sort = "name", string $order = "asc", int $count = -1)
+    public function getProviderProperties(Provider $provider)
     {
-        $this->providerPropertyRepository->setPagination(true);
-        $this->providerPropertyRepository->setOrderDir($order);
-        $this->providerPropertyRepository->setSortField($sort);
-        $this->providerPropertyRepository->setLimit($count);
         return $this->providerPropertyRepository->findProviderProperties($provider);
     }
 
@@ -280,4 +276,10 @@ class ProviderService extends BaseService
     {
         return $this->providerRepository;
     }
+
+    public function getProviderPropertyRepository(): ProviderPropertyRepository
+    {
+        return $this->providerPropertyRepository;
+    }
+
 }

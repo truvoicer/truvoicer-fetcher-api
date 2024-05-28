@@ -68,11 +68,11 @@ class ProviderPropertyController extends Controller
         ) {
             return $this->sendErrorResponse("Access control: operation not permitted");
         }
+        $this->providerService->getProviderPropertyRepository()->setSortField($request->get('sort', "name"));
+        $this->providerService->getProviderPropertyRepository()->setOrderDir($request->get('order', "asc"));
+        $this->providerService->getProviderPropertyRepository()->setLimit((int)$request->get('count', -1));
         $getProviderProps = $this->providerService->getProviderProperties(
-            $provider,
-            $request->get('sort', "name"),
-            $request->get('order', "asc"),
-            $request->get('count', -1)
+            $provider
         );
         return $this->sendSuccessResponse(
             "success",

@@ -107,7 +107,7 @@ Route::middleware(['auth:sanctum', 'ability:api:admin,api:superuser,api:super_ad
         });
         Route::prefix('provider')->name('provider.')->group(function () {
             Route::get('/list', [ProviderController::class, 'getProviderList'])->name('list')->can('viewAny', Provider::class);
-            Route::post('/create', [ProviderController::class, 'createProvider'])->name('create')->can('create', 'provider');
+            Route::post('/create', [ProviderController::class, 'createProvider'])->name('create')->can('create', Provider::class);
             Route::get('/{provider}', [ProviderController::class, 'getProvider'])->name('detail')->can('view', 'provider');
             Route::prefix('batch')->name('batch.')->group(function () {
                 Route::delete('/delete', [ProviderController::class, 'deleteBatchProviders'])->name('delete');
@@ -302,16 +302,6 @@ Route::middleware(['auth:sanctum', 'ability:api:admin,api:superuser,api:super_ad
                     });
                 });
             });
-        });
-        Route::prefix('property')->name('property.')->group(function () {
-            Route::get('/list', [PropertyController::class, 'getPropertyList'])->name('list');
-            Route::post('/create', [PropertyController::class, 'createProperty'])->name('create');
-            Route::prefix('batch')->name('batch.')->group(function () {
-                Route::delete('/delete', [PropertyController::class, 'deleteBatch'])->name('delete');
-            });
-            Route::get('/{property}', [PropertyController::class, 'getProperty'])->name('detail');
-            Route::patch('/{property}/update', [PropertyController::class, 'updateProperty'])->name('update');
-            Route::delete('/{property}/delete', [PropertyController::class, 'deleteProperty'])->name('delete');
         });
     });
 });
