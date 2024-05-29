@@ -64,6 +64,8 @@ class Oauth extends ApiClientHandler
         $scopeValue = $this->getPropertyValue(self::OAUTH_SCOPE_FIELD_VALUE);
         $clientIdValue = $this->getPropertyValue(self::CLIENT_ID);
         $clientSecretValue = $this->getPropertyValue(self::CLIENT_SECRET);
+        $accessTokenValue = $this->getPropertyValue(self::ACCESS_TOKEN);
+        $secretKeyValue = $this->getPropertyValue(self::SECRET_KEY);
 
         $apiRequest->setMethod("POST");
         $apiRequest->setUrl($this->getPropertyValue(self::OAUTH_TOKEN_URL_KEY));
@@ -73,8 +75,8 @@ class Oauth extends ApiClientHandler
             case "oauth":
             case "oauth_basic":
                 $apiRequest->addBasicAuthentication(
-                    $this->provider->access_key,
-                    $this->provider->secret_key
+                    $accessTokenValue,
+                    $secretKeyValue
                 );
                 $apiRequest->setBody([
                     $grantTypeName => $grantTypeValue,

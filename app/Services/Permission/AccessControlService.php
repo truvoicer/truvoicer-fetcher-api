@@ -26,9 +26,9 @@ class AccessControlService
         array $allowedPermissions = [],
         bool $showException = true
     ) {
-//        if ($this->inAdminGroup()) {
-//            return true;
-//        }
+        if ($this->inAdminGroup()) {
+            return true;
+        }
 
         $permissions = $this->permissionEntities->userHasEntityPermissions($this->user, $entityObject, $allowedPermissions);
 

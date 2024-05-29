@@ -259,7 +259,7 @@ class BaseRepository
         }
 
         $query->limit($this->limit);
-        $query->offset($this->offset);
+//        $query->offset($this->offset);
         if ($this->sortField) {
             $query->orderBy($this->sortField, $this->orderDir);
         }

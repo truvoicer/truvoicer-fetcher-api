@@ -3,6 +3,7 @@
 namespace App\Http\Requests\Service\Request\Config;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class UpdateServiceRequestConfigRequest extends FormRequest
 {
@@ -22,10 +23,20 @@ class UpdateServiceRequestConfigRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => 'string',
+            'name' => 'nullable|string',
             'value' => [
-                'string'
+                'string',
+                'nullable',
+                Rule::requiredIf(fn () => in_array($this->get('value_type'), ['text', 'choice']))
             ],
+            "value_type" => [
+                Rule::in(['list', 'text', 'choice'])
+            ],
+            "array_value" => [
+                'array',
+                'nullable',
+                'required_if:value_type,list'
+            ]
         ];
     }
 }

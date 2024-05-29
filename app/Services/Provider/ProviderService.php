@@ -145,10 +145,6 @@ class ProviderService extends BaseService
         $fields = [
             'name',
             'label',
-            'api_base_url',
-            'access_key',
-            'secret_key',
-            'user_id',
         ];
         try {
             $data = [];

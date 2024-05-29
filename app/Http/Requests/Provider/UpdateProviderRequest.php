@@ -24,10 +24,6 @@ class UpdateProviderRequest extends FormRequest
         return [
             'name' => 'string|nullable',
             'label' => 'string|nullable',
-            'api_base_url' => 'string|nullable',
-            'access_key' => 'string|nullable',
-            'secret_key' => 'string|nullable',
-            'user_id' => 'string|nullable',
             'categories' => 'array|nullable',
         ];
     }

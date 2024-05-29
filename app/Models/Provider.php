@@ -18,10 +18,6 @@ class Provider extends Model
     protected $fillable = [
         'name',
         'label',
-        'api_base_url',
-        'access_key',
-        'secret_key',
-        'user_id',
     ];
 
     public function users()

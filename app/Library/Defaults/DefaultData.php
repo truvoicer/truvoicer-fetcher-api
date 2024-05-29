@@ -265,4 +265,30 @@ class DefaultData
             ]
         ];
     }
+    public static function getServiceRequestOauthConfig()
+    {
+        return [
+            [
+                SrConfigService::REQUEST_CONFIG_ITEM_REQUIRED => true,
+                SrConfigService::REQUEST_CONFIG_ITEM_NAME => 'token_request_headers',
+                SrConfigService::REQUEST_CONFIG_ITEM_SELECTED_VALUE_TYPE => "list",
+                SrConfigService::REQUEST_CONFIG_ITEM_VALUE => '',
+                SrConfigService::REQUEST_CONFIG_ITEM_ARRAY_VALUE => [],
+            ],
+            [
+                SrConfigService::REQUEST_CONFIG_ITEM_REQUIRED => true,
+                SrConfigService::REQUEST_CONFIG_ITEM_NAME => 'token_request_body',
+                SrConfigService::REQUEST_CONFIG_ITEM_SELECTED_VALUE_TYPE => "list",
+                SrConfigService::REQUEST_CONFIG_ITEM_VALUE => '',
+                SrConfigService::REQUEST_CONFIG_ITEM_ARRAY_VALUE => [],
+            ],
+            [
+                SrConfigService::REQUEST_CONFIG_ITEM_REQUIRED => true,
+                SrConfigService::REQUEST_CONFIG_ITEM_NAME => 'token_request_query',
+                SrConfigService::REQUEST_CONFIG_ITEM_SELECTED_VALUE_TYPE => "list",
+                SrConfigService::REQUEST_CONFIG_ITEM_VALUE => '',
+                SrConfigService::REQUEST_CONFIG_ITEM_ARRAY_VALUE => [],
+            ],
+        ];
+    }
 }

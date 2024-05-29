@@ -65,7 +65,6 @@ class SrConfigService extends BaseService
         $apiAuthTypeProviderProperty = $this->propertyRepository->getProviderPropertyByPropertyName(
             $provider, "api_authentication_type"
         );
-
         if (!($apiAuthTypeProviderProperty instanceof Property)) {
             throw new BadRequestHttpException("Provider api_authentication_type property not found");
         }
@@ -76,6 +75,12 @@ class SrConfigService extends BaseService
                 break;
             case ApiBase::AUTH_BEARER:
                 $config = DefaultData::getServiceRequestBearerAuthConfig();
+                break;
+            case ApiBase::OAUTH:
+            case ApiBase::OAUTH_BASIC:
+            case ApiBase::OAUTH_BEARER:
+            case ApiBase::OAUTH_BODY:
+                $config = DefaultData::getServiceRequestOauthConfig();
                 break;
         }
 

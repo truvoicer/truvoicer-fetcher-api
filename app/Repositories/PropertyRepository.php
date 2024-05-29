@@ -23,6 +23,12 @@ class PropertyRepository extends BaseRepository
     public function getProviderPropertyByPropertyName(Provider $provider, string $propertyName) {
         return $provider->properties()
             ->where('name', $propertyName)
+            ->whereHas('providerProperty', function ($query) use ($provider) {
+                $query->where('provider_id', $provider->id);
+            })
+            ->with('providerProperty', function ($query) use ($provider) {
+                $query->where('provider_id', $provider->id);
+            })
             ->first();
     }
     public function createProperty(array $data) {

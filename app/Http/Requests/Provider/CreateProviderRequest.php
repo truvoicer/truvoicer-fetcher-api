@@ -24,10 +24,6 @@ class CreateProviderRequest extends FormRequest
         return [
             'name' => 'string|nullable',
             'label' => 'required|string',
-            'api_base_url' => 'nullable|string',
-            'access_key' => 'nullable|string',
-            'secret_key' => 'nullable|string',
-            'user_id' => 'nullable|string',
             'categories' => 'array|nullable',
         ];
     }

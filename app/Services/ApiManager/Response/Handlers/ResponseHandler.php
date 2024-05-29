@@ -372,7 +372,8 @@ class ResponseHandler extends ApiBase
     {
         switch ($value) {
             case self::PARAM_FILTER_KEYS["API_BASE_URL"]['placeholder']:
-                return $this->provider->api_base_url;
+            case self::PARAM_FILTER_KEYS["BASE_URL"]['placeholder']:
+                return $this->providerService->getProviderPropertyValue($this->provider, ApiBase::BASE_URL);
             default:
                 return $value;
         }

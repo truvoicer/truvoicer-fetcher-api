@@ -28,10 +28,17 @@ class ApiBase
     const OAUTH_SCOPE_FIELD_VALUE = "oauth_scope_field_value";
     const CLIENT_ID = "client_id";
     const CLIENT_SECRET = "client_secret";
+    const SECRET_KEY = "secret_key";
+    const USER_ID = "user_id";
+    const BASE_URL = "base_url";
 
     const PARAM_FILTER_KEYS = [
         "API_BASE_URL" => [
             'placeholder' => "[API_BASE_URL]",
+            'keymap' => null
+        ],
+        "BASE_URL" => [
+            'placeholder' => "[BASE_URL]",
             'keymap' => null
         ],
         "PROVIDER_USER_ID" => [
@@ -44,6 +51,10 @@ class ApiBase
         ],
         "ACCESS_KEY" => [
             'placeholder' => "[ACCESS_KEY]",
+            'keymap' => null
+        ],
+        "ACCESS_TOKEN" => [
+            'placeholder' => "[ACCESS_TOKEN]",
             'keymap' => null
         ],
         "CATEGORY" => [

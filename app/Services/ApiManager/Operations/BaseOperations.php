@@ -195,6 +195,8 @@ class BaseOperations extends ApiBase
 
     private function getRequest()
     {
+        $baseUrl = $this->providerService->getProviderPropertyValue($this->provider, self::BASE_URL);
+        $accessTokenValue = $this->providerService->getProviderPropertyValue($this->provider, self::ACCESS_TOKEN);
         switch ($this->providerService->getProviderPropertyValue($this->provider, self::API_AUTH_TYPE)) {
             case parent::OAUTH:
             case parent::OAUTH_BODY:
@@ -205,10 +207,10 @@ class BaseOperations extends ApiBase
                 $endpoint = $this->getEndpoint();
                 $this->apiRequest->setHeaders([
                     "Authorization" => "Bearer " . $accessToken->getAccessToken(),
-                    "Client-ID" => $this->provider->access_key
+                    "Client-ID" => $accessTokenValue
                 ]);
                 $this->apiRequest->setMethod($this->getMethod());
-                $this->apiRequest->setUrl($this->provider->api_base_url . $endpoint);
+                $this->apiRequest->setUrl($baseUrl . $endpoint);
                 $this->setRequestData();
                 break;
 //            case "amazon-sdk":
@@ -218,7 +220,7 @@ class BaseOperations extends ApiBase
                 $this->apiRequest->setHeaders($this->getHeaders());
                 $this->getAuthBearerAuthentication();
                 $this->apiRequest->setMethod($this->getMethod());
-                $this->apiRequest->setUrl($this->provider->api_base_url . $endpoint);
+                $this->apiRequest->setUrl($baseUrl . $endpoint);
                 $this->setRequestData();
                 break;
             case parent::AUTH_BASIC:
@@ -226,7 +228,7 @@ class BaseOperations extends ApiBase
                 $this->apiRequest->setHeaders($this->getHeaders());
                 $this->getBasicAuthentication();
                 $this->apiRequest->setMethod($this->getMethod());
-                $this->apiRequest->setUrl($this->provider->api_base_url . $endpoint);
+                $this->apiRequest->setUrl($baseUrl . $endpoint);
                 $this->setRequestData();
                 break;
             case parent::ACCESS_TOKEN:
@@ -234,7 +236,7 @@ class BaseOperations extends ApiBase
                 $endpoint = $this->getEndpoint();
                 $this->apiRequest->setHeaders($this->getHeaders());
                 $this->apiRequest->setMethod($this->getMethod());
-                $this->apiRequest->setUrl($this->provider->api_base_url . $endpoint);
+                $this->apiRequest->setUrl($baseUrl . $endpoint);
                 $this->setRequestData();
                 break;
         }
@@ -316,17 +318,7 @@ class BaseOperations extends ApiBase
 
     private function runAmazonRequest()
     {
-//        $providerServiceParams = $this->requestService->getRequestParametersByRequestName(
-//            $this->provider,
-//            $this->apiRequestName);
-//        $requestQueryArray = $this->buildRequestQuery($providerServiceParams);
-//        $service = $this->amazonApiManager->getApiRequest($this->apiService);
-//        $service->setAccessKey($this->provider->access_key);
-//        $service->setSecretKey($this->provider->secret_key);
-//        $service->setRegion("eu-west-1");
-//        $service->setHost("webservices.amazon.co.uk");
-//        $service->setPartnerTag($this->provider->user_id);
-//        return $service->searchItems($this->query, $requestQueryArray['limit']);
+
     }
 
     private function getHeaders()
@@ -444,13 +436,14 @@ class BaseOperations extends ApiBase
         }
         switch ($paramValue) {
             case self::PARAM_FILTER_KEYS["PROVIDER_USER_ID"]['placeholder']:
-                return $this->provider->user_id;
+                return $this->providerService->getProviderPropertyValue($this->provider, ApiBase::USER_ID);
 
             case self::PARAM_FILTER_KEYS["SECRET_KEY"]['placeholder']:
-                return $this->provider->secret_key;
+                return $this->providerService->getProviderPropertyValue($this->provider, ApiBase::SECRET_KEY);
 
             case self::PARAM_FILTER_KEYS["ACCESS_KEY"]['placeholder']:
-                return $this->provider->access_key;
+            case self::PARAM_FILTER_KEYS["ACCESS_TOKEN"]['placeholder']:
+                return $this->providerService->getProviderPropertyValue($this->provider, ApiBase::ACCESS_TOKEN);
 
             case self::PARAM_FILTER_KEYS["QUERY"]['placeholder']:
                 return $this->query;
