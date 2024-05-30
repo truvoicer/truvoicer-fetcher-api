@@ -11,6 +11,7 @@ use App\Services\ApiManager\ApiBase;
 use App\Services\ApiManager\Client\ApiClientHandler;
 use App\Services\ApiManager\Client\Entity\ApiRequest;
 use App\Services\ApiManager\Client\Oauth\Oauth;
+use App\Services\ApiManager\Data\DataProcessor;
 use App\Services\ApiManager\Response\Entity\ApiResponse;
 use App\Services\ApiManager\Response\ResponseManager;
 use App\Services\ApiServices\RateLimitService;
@@ -32,63 +33,30 @@ class BaseOperations extends ApiBase
 {
     use UserTrait;
 
-    private Oauth $oath;
-    private ProviderService $providerService;
-    private EventsService $eventsService;
-    private SrService $requestService;
-    private SrConfigService $srConfigService;
-    private SrParametersService $srParameterService;
-    private RateLimitService $rateLimitService;
-    private Collection $requestConfig;
-    private Collection $requestParameters;
 
     protected Provider $provider;
     protected string $apiRequestName;
     protected Sr $apiService;
-    protected CategoryService $categoryService;
-    protected ResponseManager $responseManager;
-    protected ApiClientHandler $apiClientHandler;
-    protected ApiRequest $apiRequest;
     protected string $query;
     protected array $queryArray;
     protected string $category;
     protected string $timestamp;
 
     public function __construct(
-        ProviderService  $providerService,
-        Oauth            $oauth,
-        ResponseManager  $responseManager,
-        CategoryService  $categoryService,
-        ApiClientHandler $apiClientHandler,
-        ApiRequest       $apiRequest,
-        EventsService    $eventsService,
-        SrService        $requestService,
-        SrConfigService  $srConfigService,
-        SrParametersService $srParameterService,
-        RateLimitService $rateLimitService
+        private ProviderService     $providerService,
+        private Oauth               $oath,
+        private ResponseManager     $responseManager,
+        private CategoryService     $categoryService,
+        private ApiClientHandler    $apiClientHandler,
+        private ApiRequest          $apiRequest,
+        private EventsService       $eventsService,
+        private SrService           $requestService,
+        private SrConfigService     $srConfigService,
+        private SrParametersService $srParameterService,
+        private RateLimitService    $rateLimitService,
+        private DataProcessor       $dataProcessor
     )
     {
-        $this->providerService = $providerService;
-        $this->oath = $oauth;
-        $this->responseManager = $responseManager;
-        $this->apiRequest = $apiRequest;
-        $this->categoryService = $categoryService;
-        $this->eventsService = $eventsService;
-        $this->apiClientHandler = $apiClientHandler;
-        $this->requestService = $requestService;
-        $this->srConfigService = $srConfigService;
-        $this->srParameterService = $srParameterService;
-        $this->rateLimitService = $rateLimitService;
-    }
-
-    public function setRequestConfig(Collection $requestConfig): void
-    {
-        $this->requestConfig = $requestConfig;
-    }
-
-    public function setRequestParameters(Collection $requestParameters): void
-    {
-        $this->requestParameters = $requestParameters;
     }
 
     public function getOperationResponse(string $requestType, ?string $providerName = null)
@@ -187,22 +155,68 @@ class BaseOperations extends ApiBase
         if (!$parameters) {
             throw new BadRequestHttpException("Request parameters not found for operation.");
         }
-        $this->setRequestConfig($config);
-        $this->setRequestParameters($parameters);
+        $providerProperties = $this->providerService->getProviderProperties($this->provider);
+        if (!$providerProperties) {
+            throw new BadRequestHttpException("Provider properties not found for operation.");
+        }
+        $this->dataProcessor->setRequestConfigs($config);
+        $this->dataProcessor->setRequestParameters($parameters);
+        $this->dataProcessor->setProviderProperties($providerProperties);
+        $this->oath->setProvider($this->provider);
         $getRequest = $this->requestHandler();
         return $getRequest;
     }
 
+    private function buildListValues(array $listValues)
+    {
+        return array_combine(
+            array_column($listValues, 'name'),
+            array_map(
+                fn($value) => $this->dataProcessor->filterParameterValue($value),
+                array_column($listValues, 'value')
+            )
+        );
+    }
+
     private function getRequest()
     {
-        $baseUrl = $this->providerService->getProviderPropertyValue($this->provider, self::BASE_URL);
-        $accessTokenValue = $this->providerService->getProviderPropertyValue($this->provider, self::ACCESS_TOKEN);
-        switch ($this->providerService->getProviderPropertyValue($this->provider, self::API_AUTH_TYPE)) {
+        $baseUrl = $this->dataProcessor->getProviderPropertyValue(self::BASE_URL);
+        $accessTokenValue = $this->dataProcessor->getProviderPropertyValue(self::ACCESS_TOKEN);
+        switch ($this->dataProcessor->getProviderPropertyValue(self::API_AUTH_TYPE)) {
             case parent::OAUTH:
             case parent::OAUTH_BODY:
             case parent::OAUTH_BASIC:
             case parent::OAUTH_BEARER:
-                $this->oath->setProvider($this->provider);
+
+                $tokenRequestHeaders = $this->dataProcessor->getRequestConfig('token_request_headers');
+                $tokenRequestBody = $this->dataProcessor->getRequestConfig('token_request_body');
+                $tokenRequestQuery = $this->dataProcessor->getRequestConfig('token_request_query');
+
+                $headers = $body = $query = [];
+                if ($tokenRequestHeaders) {
+                    $headers = $this->buildListValues($tokenRequestHeaders->array_value);
+                }
+                if ($tokenRequestBody) {
+                    $body = $this->buildListValues($tokenRequestBody->array_value);
+                }
+                if ($tokenRequestQuery) {
+                    $query = $this->buildListValues($tokenRequestQuery->array_value);
+                }
+
+                $this->oath->setTokenRequestHeaders($headers);
+                $this->oath->setTokenRequestBody($body);
+                $this->oath->setTokenRequestQuery($query);
+                $tokenRequestAuthType = $this->dataProcessor->getRequestConfig(self::TOKEN_REQUEST_AUTH_TYPE);
+                switch ($tokenRequestAuthType) {
+                    case parent::AUTH_BASIC:
+                        $this->oath->addAuthentication(parent::AUTH_BASIC);
+                        break;
+                    case parent::AUTH_BEARER:
+                        $this->oath->setTokenRequestAuthType(parent::AUTH_BEARER);
+                        break;
+                    default:
+                        throw new BadRequestHttpException("Token request auth type not set or invalid.");
+                }
                 $accessToken = $this->oath->getAccessToken();
                 $endpoint = $this->getEndpoint();
                 $this->apiRequest->setHeaders([
@@ -250,8 +264,8 @@ class BaseOperations extends ApiBase
 
     private function getBasicAuthentication()
     {
-        $usernameConfig = $this->getRequestConfig("username");
-        $passwordConfig = $this->getRequestConfig("password");
+        $usernameConfig = $this->dataProcessor->getRequestConfig("username");
+        $passwordConfig = $this->dataProcessor->getRequestConfig("password");
         $username = null;
         $password = null;
         if ($usernameConfig instanceof SrConfig) {
@@ -266,18 +280,18 @@ class BaseOperations extends ApiBase
         }
         if ($password === null || $password === "") {
             $this->apiRequest->addBasicAuthentication(
-                $this->filterParameterValue($username)
+                $this->dataProcessor->filterParameterValue($username)
             );
         }
         $this->apiRequest->addBasicAuthentication(
-            $this->filterParameterValue($username),
+            $this->dataProcessor->filterParameterValue($username),
             $password
         );
     }
 
     private function getAuthBearerAuthentication()
     {
-        $bearerToken = $this->getRequestConfig("bearer_token");
+        $bearerToken = $this->dataProcessor->getRequestConfig("bearer_token");
         if (!$bearerToken instanceof SrConfig) {
             throw new BadRequestHttpException("Request config bearer token not found.");
         }
@@ -285,19 +299,19 @@ class BaseOperations extends ApiBase
             throw new BadRequestHttpException("Request config bearer token is invalid.");
         }
         $this->apiRequest->addTokenAuthentication(
-            $this->filterParameterValue($bearerToken->value)
+            $this->dataProcessor->filterParameterValue($bearerToken->value)
         );
     }
 
     private function setRequestData()
     {
-        switch ($this->providerService->getProviderPropertyValue($this->provider, self::API_TYPE)) {
+        switch ($this->dataProcessor->getProviderPropertyValue(self::API_TYPE)) {
             case "query_string":
-                $requestQueryArray = $this->buildRequestQuery($this->requestParameters);
+                $requestQueryArray = $this->dataProcessor->buildRequestQuery();
                 $this->apiRequest->setQuery($requestQueryArray);
                 break;
             case "query_schema":
-                $this->apiRequest->setBody($this->getRequestBody($this->requestParameters));
+                $this->apiRequest->setBody($this->dataProcessor->getRequestBody());
                 break;
             default:
                 throw new BadRequestHttpException(
@@ -307,14 +321,6 @@ class BaseOperations extends ApiBase
         }
     }
 
-    private function getRequestBody($providerServiceParams)
-    {
-        $queryArray = [];
-        foreach ($providerServiceParams as $requestParameter) {
-            array_push($queryArray, $this->filterParameterValue($requestParameter->value));
-        }
-        return implode(" ", $queryArray);
-    }
 
     private function runAmazonRequest()
     {
@@ -324,7 +330,7 @@ class BaseOperations extends ApiBase
     private function getHeaders()
     {
         $headers = ["Content-Type" => "application/json;charset=utf-8"];
-        $getHeaders = $this->getRequestConfig("headers");
+        $getHeaders = $this->dataProcessor->getRequestConfig("headers");
         if (!$getHeaders instanceof SrConfig) {
             return $headers;
         }
@@ -333,134 +339,33 @@ class BaseOperations extends ApiBase
         }
         $headerArray = $getHeaders->array_value;
         foreach ($headerArray as $item) {
-            $headers[$item["name"]] = $this->filterParameterValue($item["value"]);
+            $headers[$item["name"]] = $this->dataProcessor->filterParameterValue($item["value"]);
         }
         return $headers;
     }
 
     private function getEndpoint()
     {
-        $endpoint = $this->getRequestConfig("endpoint");
+        $endpoint = $this->dataProcessor->getRequestConfig("endpoint");
         if (!$endpoint instanceof SrConfig) {
             throw new BadRequestHttpException("Endpoint is not specified in request config");
         }
         if (empty($endpoint->value)) {
             throw new BadRequestHttpException("Endpoint is not valid");
         }
-        return $this->getQueryFilterValue($endpoint->value);
+        return $this->dataProcessor->getQueryFilterValue($endpoint->value);
     }
 
     private function getMethod()
     {
-        $method = $this->getRequestConfig("request_method");
+        $method = $this->dataProcessor->getRequestConfig("request_method");
         if (!$method instanceof SrConfig) {
             throw new BadRequestHttpException("Request method is not specified in request config");
         }
         if (empty($method->value)) {
             throw new BadRequestHttpException("Request method is invalid");
         }
-        return $this->getQueryFilterValue($method->value);
-    }
-
-    private function getQueryFilterValue($string)
-    {
-        if (preg_match_all('~\[(.*?)\]~', $string, $output)) {
-            foreach ($output[1] as $key => $value) {
-                if (array_key_exists($value, $this->queryArray)) {
-                    $string = str_replace($output[0][$key], $this->queryArray[$value], $string, $count);
-                } else {
-                    return false;
-                }
-            }
-        }
-        return $string;
-    }
-
-    private function getRequestConfig(string $parameterName)
-    {
-        $config = $this->requestConfig->where('name', $parameterName)->first();
-        if (!$config instanceof SrConfig) {
-            return null;
-        }
-        return $config;
-    }
-
-    public function buildRequestQuery(Collection $apiParamsArray)
-    {
-        $queryArray = [];
-        foreach ($apiParamsArray as $requestParameter) {
-            $paramValue = $this->filterParameterValue($requestParameter->value);
-            if (empty($paramValue)) {
-                continue;
-            }
-            $value = trim($paramValue);
-            if (!array_key_exists($requestParameter->name, $queryArray)) {
-                $queryArray[$requestParameter->name] = $value;
-                continue;
-            }
-            if (empty($queryArray[$requestParameter->name])) {
-                $queryArray[$requestParameter->name] = $value;
-                continue;
-            }
-            $queryArray[$requestParameter->name] = $queryArray[$requestParameter->name] . "," . $value;
-
-        }
-        return $queryArray;
-    }
-
-    private function filterParameterValue($paramValue)
-    {
-        if (preg_match_all('~\[(.*?)\]~', $paramValue, $output)) {
-            foreach ($output[1] as $key => $value) {
-                $filterReservedParam = $this->getReservedParamsValues($output[0][$key]);
-                $paramValue = str_replace($output[0][$key], $filterReservedParam, $paramValue, $count);
-            }
-        }
-        return $paramValue;
-    }
-
-    private function getReservedParamsValues($paramValue)
-    {
-        foreach (self::PARAM_FILTER_KEYS as $key => $value) {
-            if ($value['placeholder'] !== $paramValue) {
-                continue;
-            }
-            if (empty($value['keymap'])) {
-                continue;
-            }
-            if (!empty($this->queryArray[$value['keymap']])) {
-                return $this->formatValue($this->queryArray[$value['keymap']]);
-            } else {
-                return false;
-            }
-        }
-        switch ($paramValue) {
-            case self::PARAM_FILTER_KEYS["PROVIDER_USER_ID"]['placeholder']:
-                return $this->providerService->getProviderPropertyValue($this->provider, ApiBase::USER_ID);
-
-            case self::PARAM_FILTER_KEYS["SECRET_KEY"]['placeholder']:
-                return $this->providerService->getProviderPropertyValue($this->provider, ApiBase::SECRET_KEY);
-
-            case self::PARAM_FILTER_KEYS["ACCESS_KEY"]['placeholder']:
-            case self::PARAM_FILTER_KEYS["ACCESS_TOKEN"]['placeholder']:
-                return $this->providerService->getProviderPropertyValue($this->provider, ApiBase::ACCESS_TOKEN);
-
-            case self::PARAM_FILTER_KEYS["QUERY"]['placeholder']:
-                return $this->query;
-
-            case self::PARAM_FILTER_KEYS["TIMESTAMP"]['placeholder']:
-                $date = new DateTime();
-                return $date->format("Y-m-d h:i:s");
-        }
-        return $this->formatValue($this->getQueryFilterValue($paramValue));
-    }
-
-    private function formatValue($value)
-    {
-        if (is_numeric($value)) {
-            return (int)$value;
-        }
-        return $value;
+        return $this->dataProcessor->getQueryFilterValue($method->value);
     }
 
     public function setApiRequestName(string $apiRequestName)
@@ -505,6 +410,7 @@ class BaseOperations extends ApiBase
     public function setQuery(string $query)
     {
         $this->query = $query;
+        $this->dataProcessor->setQuery($query);
     }
 
     public function setTimestamp(string $timestamp)
@@ -512,18 +418,6 @@ class BaseOperations extends ApiBase
         $this->timestamp = $timestamp;
     }
 
-    public function setCategory(string $category)
-    {
-        $this->category = $category;
-    }
-
-    /**
-     * @return mixed
-     */
-    public function getQueryArray()
-    {
-        return $this->queryArray;
-    }
 
     /**
      * @param mixed $queryArray
@@ -531,6 +425,7 @@ class BaseOperations extends ApiBase
     public function setQueryArray($queryArray): void
     {
         $this->queryArray = $queryArray;
+        $this->dataProcessor->setQueryArray($queryArray);
     }
 
 

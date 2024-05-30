@@ -18,6 +18,7 @@ use App\Models\S;
 use App\Models\Sr;
 use App\Services\ApiManager\Operations\ApiRequestService;
 use App\Services\ApiServices\ApiService;
+use App\Services\ApiServices\ServiceRequests\SrOperationsService;
 use App\Services\ApiServices\ServiceRequests\SrService;
 use App\Services\Permission\AccessControlService;
 use App\Services\Permission\PermissionService;
@@ -395,6 +396,19 @@ class ServiceRequestController extends Controller
             new  ServiceRequestResource(
                 $this->srService->getServiceRequestRepository()->getModel()
             )
+        );
+    }
+    public function runSrRequest(
+        Provider        $provider,
+        Sr              $serviceRequest,
+        Request $request,
+        SrOperationsService $srOperationsService
+    ): \Illuminate\Http\JsonResponse
+    {
+        $srOperationsService->getRequestOperation()->setProvider($provider);
+        $srOperationsService->runOperationForSr($serviceRequest);
+        return $this->sendSuccessResponse(
+            "Request ran successfully",
         );
     }
 

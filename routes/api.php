@@ -153,6 +153,8 @@ Route::middleware(['auth:sanctum', 'ability:api:admin,api:superuser,api:super_ad
                         Route::delete('/delete', [ServiceRequestController::class, 'deleteServiceRequest'])->name('delete');
                         Route::patch('/defaults/update', [ServiceRequestController::class, 'updateSrDefaults'])->name('defaults.update');
                         Route::patch('/update', [ServiceRequestController::class, 'updateServiceRequest'])->name('update');
+                        Route::middleware('can:view,provider')->get('/request/run', [ServiceRequestController::class, 'runSrRequest'])
+                            ->name('request.run');
                         Route::post('/duplicate', [ServiceRequestController::class, 'duplicateServiceRequest'])->name('duplicate');
                         Route::prefix('schedule')->name('schedule.')->group(function () {
                             Route::post('/create', [ServiceRequestScheduleController::class, 'createRequestSchedule'])->name('create');

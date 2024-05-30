@@ -270,25 +270,62 @@ class DefaultData
         return [
             [
                 SrConfigService::REQUEST_CONFIG_ITEM_REQUIRED => true,
-                SrConfigService::REQUEST_CONFIG_ITEM_NAME => 'token_request_headers',
+                SrConfigService::REQUEST_CONFIG_ITEM_NAME => ApiBase::TOKEN_REQUEST_AUTH_TYPE,
+                SrConfigService::REQUEST_CONFIG_ITEM_SELECTED_VALUE_TYPE => "choice",
+                SrConfigService::REQUEST_CONFIG_ITEM_VALUE => 'none',
+                SrConfigService::REQUEST_CONFIG_ITEM_ARRAY_VALUE => [],
+                SrConfigService::REQUEST_CONFIG_ITEM_VALUE_CHOICES => ['none', ApiBase::AUTH_BASIC, ApiBase::OAUTH_BEARER, 'auth_token'],
+            ],
+            [
+                SrConfigService::REQUEST_CONFIG_ITEM_REQUIRED => true,
+                SrConfigService::REQUEST_CONFIG_ITEM_NAME => ApiBase::TOKEN_REQUEST_HEADERS,
                 SrConfigService::REQUEST_CONFIG_ITEM_SELECTED_VALUE_TYPE => "list",
                 SrConfigService::REQUEST_CONFIG_ITEM_VALUE => '',
                 SrConfigService::REQUEST_CONFIG_ITEM_ARRAY_VALUE => [],
             ],
             [
                 SrConfigService::REQUEST_CONFIG_ITEM_REQUIRED => true,
-                SrConfigService::REQUEST_CONFIG_ITEM_NAME => 'token_request_body',
+                SrConfigService::REQUEST_CONFIG_ITEM_NAME => ApiBase::TOKEN_REQUEST_BODY,
                 SrConfigService::REQUEST_CONFIG_ITEM_SELECTED_VALUE_TYPE => "list",
                 SrConfigService::REQUEST_CONFIG_ITEM_VALUE => '',
                 SrConfigService::REQUEST_CONFIG_ITEM_ARRAY_VALUE => [],
             ],
             [
                 SrConfigService::REQUEST_CONFIG_ITEM_REQUIRED => true,
-                SrConfigService::REQUEST_CONFIG_ITEM_NAME => 'token_request_query',
+                SrConfigService::REQUEST_CONFIG_ITEM_NAME => ApiBase::TOKEN_REQUEST_QUERY,
                 SrConfigService::REQUEST_CONFIG_ITEM_SELECTED_VALUE_TYPE => "list",
                 SrConfigService::REQUEST_CONFIG_ITEM_VALUE => '',
                 SrConfigService::REQUEST_CONFIG_ITEM_ARRAY_VALUE => [],
             ],
+            [
+                SrConfigService::REQUEST_CONFIG_ITEM_REQUIRED => true,
+                SrConfigService::REQUEST_CONFIG_ITEM_NAME => ApiBase::TOKEN_REQUEST_METHOD,
+                SrConfigService::REQUEST_CONFIG_ITEM_SELECTED_VALUE_TYPE => "choice",
+                SrConfigService::REQUEST_CONFIG_ITEM_VALUE => '',
+                SrConfigService::REQUEST_CONFIG_ITEM_ARRAY_VALUE => [],
+                SrConfigService::REQUEST_CONFIG_ITEM_VALUE_CHOICES => ['get', 'post'],
+            ],
+            [
+                SrConfigService::REQUEST_CONFIG_ITEM_REQUIRED => true,
+                SrConfigService::REQUEST_CONFIG_ITEM_NAME => ApiBase::TOKEN_REQUEST_USERNAME,
+                SrConfigService::REQUEST_CONFIG_ITEM_SELECTED_VALUE_TYPE => "text",
+                SrConfigService::REQUEST_CONFIG_ITEM_VALUE => '',
+                SrConfigService::REQUEST_CONFIG_ITEM_ARRAY_VALUE => [],
+            ],
+            [
+                SrConfigService::REQUEST_CONFIG_ITEM_REQUIRED => true,
+                SrConfigService::REQUEST_CONFIG_ITEM_NAME => ApiBase::TOKEN_REQUEST_PASSWORD,
+                SrConfigService::REQUEST_CONFIG_ITEM_SELECTED_VALUE_TYPE => "text",
+                SrConfigService::REQUEST_CONFIG_ITEM_VALUE => '',
+                SrConfigService::REQUEST_CONFIG_ITEM_ARRAY_VALUE => [],
+            ],
+            [
+                SrConfigService::REQUEST_CONFIG_ITEM_REQUIRED => true,
+                SrConfigService::REQUEST_CONFIG_ITEM_NAME => ApiBase::TOKEN_REQUEST_TOKEN,
+                SrConfigService::REQUEST_CONFIG_ITEM_SELECTED_VALUE_TYPE => "text",
+                SrConfigService::REQUEST_CONFIG_ITEM_VALUE => '',
+                SrConfigService::REQUEST_CONFIG_ITEM_ARRAY_VALUE => [],
+            ]
         ];
     }
 }

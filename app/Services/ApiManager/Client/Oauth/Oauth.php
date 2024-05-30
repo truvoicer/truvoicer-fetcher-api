@@ -3,12 +3,15 @@
 namespace App\Services\ApiManager\Client\Oauth;
 
 use App\Models\Provider;
+use App\Models\SrConfig;
 use App\Repositories\OauthAccessTokenRepository;
 use App\Services\ApiManager\Client\ApiClientHandler;
 use App\Services\ApiManager\Client\Entity\ApiRequest;
+use App\Services\ApiManager\Data\DataProcessor;
 use App\Services\Provider\ProviderService;
 use App\Services\Tools\SerializerService;
 use DateTime;
+use Illuminate\Database\Eloquent\Collection;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 
 class Oauth extends ApiClientHandler
@@ -17,6 +20,10 @@ class Oauth extends ApiClientHandler
     private ProviderService $providerService;
     private SerializerService $serializerService;
     private OauthAccessTokenRepository $oathTokenRepository;
+
+    private array $tokenRequestHeaders;
+    private array $tokenRequestBody;
+    private array $tokenRequestQuery;
 
     public function __construct(
         OauthAccessTokenRepository $oathTokenRepository,
@@ -45,6 +52,9 @@ class Oauth extends ApiClientHandler
         );
     }
 
+    /**
+     * @throws \Exception
+     */
     private function sendAccessTokenRequest()
     {
         $response = $this->sendRequest($this->setRequestData());
@@ -62,14 +72,12 @@ class Oauth extends ApiClientHandler
         $grantTypeValue = $this->getPropertyValue(self::OAUTH_GRANT_TYPE_FIELD_VALUE);
         $scopeName = $this->getPropertyValue(self::OAUTH_SCOPE_FIELD_NAME);
         $scopeValue = $this->getPropertyValue(self::OAUTH_SCOPE_FIELD_VALUE);
-        $clientIdValue = $this->getPropertyValue(self::CLIENT_ID);
-        $clientSecretValue = $this->getPropertyValue(self::CLIENT_SECRET);
         $accessTokenValue = $this->getPropertyValue(self::ACCESS_TOKEN);
         $secretKeyValue = $this->getPropertyValue(self::SECRET_KEY);
 
         $apiRequest->setMethod("POST");
         $apiRequest->setUrl($this->getPropertyValue(self::OAUTH_TOKEN_URL_KEY));
-        $apiRequest->setHeaders(['Content-Type' => 'application/x-www-form-urlencoded']);
+
 
         switch ($this->getPropertyValue(self::API_AUTH_TYPE)) {
             case "oauth":
@@ -78,18 +86,18 @@ class Oauth extends ApiClientHandler
                     $accessTokenValue,
                     $secretKeyValue
                 );
-                $apiRequest->setBody([
-                    $grantTypeName => $grantTypeValue,
-                    $scopeName => $scopeValue
-                ]);
                 break;
             case "oauth_body":
-                $apiRequest->setBody([
-                    $grantTypeName => $grantTypeValue,
-                    "client_id" => $clientIdValue,
-                    "client_secret" => $clientSecretValue
-                ]);
                 break;
+        }
+        if (count($this->tokenRequestBody)) {
+            $apiRequest->setBody($this->tokenRequestBody);
+        }
+        if (count($this->tokenRequestHeaders)) {
+            $apiRequest->setHeaders($this->tokenRequestHeaders);
+        }
+        if (count($this->tokenRequestQuery)) {
+            $apiRequest->setQuery($this->tokenRequestQuery);
         }
         return $apiRequest;
     }
@@ -123,6 +131,7 @@ class Oauth extends ApiClientHandler
         return $expiryDate->setTimestamp(time() + $expirySeconds);
     }
 
+
     /**
      * @param mixed $provider
      */
@@ -130,4 +139,20 @@ class Oauth extends ApiClientHandler
     {
         $this->provider = $provider;
     }
+
+    public function setTokenRequestHeaders(array $tokenRequestHeaders): void
+    {
+        $this->tokenRequestHeaders = $tokenRequestHeaders;
+    }
+
+    public function setTokenRequestBody(array $tokenRequestBody): void
+    {
+        $this->tokenRequestBody = $tokenRequestBody;
+    }
+
+    public function setTokenRequestQuery(array $tokenRequestQuery): void
+    {
+        $this->tokenRequestQuery = $tokenRequestQuery;
+    }
+
 }

@@ -32,6 +32,15 @@ class ApiBase
     const USER_ID = "user_id";
     const BASE_URL = "base_url";
 
+    public const TOKEN_REQUEST_AUTH_TYPE = 'token_request_auth_type';
+    public const TOKEN_REQUEST_HEADERS = 'token_request_headers';
+    public const TOKEN_REQUEST_BODY = 'token_request_body';
+    public const TOKEN_REQUEST_QUERY = 'token_request_query';
+    public const TOKEN_REQUEST_METHOD = 'token_request_method';
+    public const TOKEN_REQUEST_USERNAME = 'token_request_username';
+    public const TOKEN_REQUEST_PASSWORD = 'token_request_password';
+    public const TOKEN_REQUEST_TOKEN = 'token_request_token';
+
     const PARAM_FILTER_KEYS = [
         "API_BASE_URL" => [
             'placeholder' => "[API_BASE_URL]",
@@ -47,6 +56,30 @@ class ApiBase
         ],
         "SECRET_KEY" => [
             'placeholder' => "[SECRET_KEY]",
+            'keymap' => null
+        ],
+        "OAUTH_GRANT_TYPE_FIELD_NAME" => [
+            'placeholder' => "[OAUTH_GRANT_TYPE_FIELD_NAME]",
+            'keymap' => null
+        ],
+        "OAUTH_GRANT_TYPE_FIELD_VALUE" => [
+            'placeholder' => "[OAUTH_GRANT_TYPE_FIELD_VALUE]",
+            'keymap' => null
+        ],
+        "OAUTH_SCOPE_FIELD_NAME" => [
+            'placeholder' => "[OAUTH_SCOPE_FIELD_NAME]",
+            'keymap' => null
+        ],
+        "OAUTH_SCOPE_FIELD_VALUE" => [
+            'placeholder' => "[OAUTH_SCOPE_FIELD_VALUE]",
+            'keymap' => null
+        ],
+        "CLIENT_ID" => [
+            'placeholder' => "[CLIENT_ID]",
+            'keymap' => null
+        ],
+        "CLIENT_SECRET" => [
+            'placeholder' => "[CLIENT_SECRET]",
             'keymap' => null
         ],
         "ACCESS_KEY" => [
