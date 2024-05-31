@@ -76,10 +76,7 @@ class SrConfigService extends BaseService
             case ApiBase::AUTH_BEARER:
                 $config = DefaultData::getServiceRequestBearerAuthConfig();
                 break;
-            case ApiBase::OAUTH:
-            case ApiBase::OAUTH_BASIC:
-            case ApiBase::OAUTH_BEARER:
-            case ApiBase::OAUTH_BODY:
+            case ApiBase::OAUTH2:
                 $config = DefaultData::getServiceRequestOauthConfig();
                 break;
         }

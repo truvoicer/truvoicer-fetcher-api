@@ -2,9 +2,11 @@
 
 namespace App\Services\ApiManager\Client\Oauth;
 
+use App\Exceptions\OauthResponseException;
 use App\Models\Provider;
 use App\Models\SrConfig;
 use App\Repositories\OauthAccessTokenRepository;
+use App\Services\ApiManager\ApiBase;
 use App\Services\ApiManager\Client\ApiClientHandler;
 use App\Services\ApiManager\Client\Entity\ApiRequest;
 use App\Services\ApiManager\Data\DataProcessor;
@@ -16,6 +18,7 @@ use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 
 class Oauth extends ApiClientHandler
 {
+    public const ALLOWED_METHODS = ['GET', 'POST'];
     private ?Provider $provider = null;
     private ProviderService $providerService;
     private SerializerService $serializerService;
@@ -24,6 +27,12 @@ class Oauth extends ApiClientHandler
     private array $tokenRequestHeaders;
     private array $tokenRequestBody;
     private array $tokenRequestQuery;
+    private string $authType;
+    private string $username;
+    private string $password;
+    private string $token;
+    private string $method;
+    private string $url;
 
     public function __construct(
         OauthAccessTokenRepository $oathTokenRepository,
@@ -57,37 +66,71 @@ class Oauth extends ApiClientHandler
      */
     private function sendAccessTokenRequest()
     {
-        $response = $this->sendRequest($this->setRequestData());
+        $request  = $this->setRequestData();
+        $response = $this->sendRequest($request);
         if ($response->status() !== 200) {
-            throw new BadRequestHttpException("Error retrieving access token.");
+            throw new OauthResponseException(
+                "Oauth response error",
+                $response->status(),
+                $response->json(),
+                $request
+            );
         }
-        return $response->json(true);
+        return $response->json();
     }
 
-    private function setRequestData()
+    private function validateTokenRequest()
     {
+        if (empty($this->provider) || !($this->provider instanceof Provider)) {
+            throw new BadRequestHttpException("Provider not set.");
+        }
+
+        if (empty($this->url)) {
+            throw new BadRequestHttpException("Url not set.");
+        }
+
+        if (empty($this->method)) {
+            throw new BadRequestHttpException("Method not set.");
+        }
+
+        if (!in_array($this->method, self::ALLOWED_METHODS)) {
+            throw new BadRequestHttpException("Method not allowed.");
+        }
+
+        if (empty($this->authType)) {
+            throw new BadRequestHttpException("Auth type not set.");
+        }
+        if ($this->authType === ApiBase::AUTH_BASIC) {
+            if (empty($this->username) || empty($this->password)) {
+                throw new BadRequestHttpException("Username or password not set.");
+            }
+        }
+        if ($this->authType === ApiBase::AUTH_BEARER) {
+            if (empty($this->token)) {
+                throw new BadRequestHttpException("Token not set.");
+            }
+        }
+    }
+    private function setRequestData(): ApiRequest
+    {
+        $this->validateTokenRequest();
+
         $apiRequest = new ApiRequest();
 
-        $grantTypeName = $this->getPropertyValue(self::OAUTH_GRANT_TYPE_FIELD_NAME);
-        $grantTypeValue = $this->getPropertyValue(self::OAUTH_GRANT_TYPE_FIELD_VALUE);
-        $scopeName = $this->getPropertyValue(self::OAUTH_SCOPE_FIELD_NAME);
-        $scopeValue = $this->getPropertyValue(self::OAUTH_SCOPE_FIELD_VALUE);
-        $accessTokenValue = $this->getPropertyValue(self::ACCESS_TOKEN);
-        $secretKeyValue = $this->getPropertyValue(self::SECRET_KEY);
+        $apiRequest->setMethod($this->method);
+        $apiRequest->setUrl($this->url);
 
-        $apiRequest->setMethod("POST");
-        $apiRequest->setUrl($this->getPropertyValue(self::OAUTH_TOKEN_URL_KEY));
-
-
-        switch ($this->getPropertyValue(self::API_AUTH_TYPE)) {
-            case "oauth":
-            case "oauth_basic":
+        switch ($this->authType) {
+            case ApiBase::AUTH_BASIC:
                 $apiRequest->addBasicAuthentication(
-                    $accessTokenValue,
-                    $secretKeyValue
+                    $this->username,
+                    $this->password
                 );
                 break;
-            case "oauth_body":
+            case ApiBase::AUTH_BEARER:
+                $apiRequest->addTokenAuthentication(
+                    $this->token
+                );
                 break;
         }
         if (count($this->tokenRequestBody)) {
@@ -153,6 +196,36 @@ class Oauth extends ApiClientHandler
     public function setTokenRequestQuery(array $tokenRequestQuery): void
     {
         $this->tokenRequestQuery = $tokenRequestQuery;
+    }
+
+    public function setAuthType(string $authType): void
+    {
+        $this->authType = $authType;
+    }
+
+    public function setUsername(string $username): void
+    {
+        $this->username = $username;
+    }
+
+    public function setPassword(string $password): void
+    {
+        $this->password = $password;
+    }
+
+    public function setToken(string $token): void
+    {
+        $this->token = $token;
+    }
+
+    public function setMethod(string $method): void
+    {
+        $this->method = strtoupper($method);
+    }
+
+    public function setUrl(string $url): void
+    {
+        $this->url = $url;
     }
 
 }

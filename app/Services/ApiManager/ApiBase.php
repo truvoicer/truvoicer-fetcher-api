@@ -10,10 +10,7 @@ class ApiBase
 {
     const API_TYPE = "api_type";
 
-    const OAUTH = 'oauth';
-    const OAUTH_BEARER = 'oauth_bearer';
-    const OAUTH_BASIC = 'oauth_basic';
-    const OAUTH_BODY = 'oauth_body';
+    const OAUTH2 = 'oauth2';
     const AMAZON_SDK = 'amazon_sdk';
     const ACCESS_TOKEN = 'access_token';
     const AUTH_BASIC = 'auth_basic';
@@ -21,11 +18,12 @@ class ApiBase
     const AUTH_NONE = 'none';
 
     const API_AUTH_TYPE = "api_authentication_type";
-    const OAUTH_TOKEN_URL_KEY = "oauth_token_url";
+    const OAUTH_GRANT_TYPE = "oauth_access_token_grant_type";
     const OAUTH_GRANT_TYPE_FIELD_NAME = "oauth_grant_type_field_name";
     const OAUTH_GRANT_TYPE_FIELD_VALUE = "oauth_grant_type_field_value";
     const OAUTH_SCOPE_FIELD_NAME = "oauth_scope_field_name";
     const OAUTH_SCOPE_FIELD_VALUE = "oauth_scope_field_value";
+    const OAUTH_TOKEN_URL = "oauth_token_url";
     const CLIENT_ID = "client_id";
     const CLIENT_SECRET = "client_secret";
     const SECRET_KEY = "secret_key";

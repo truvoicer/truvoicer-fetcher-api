@@ -27,8 +27,8 @@ class ApiClientHandler extends ApiBase
                     ->withQueryParameters($apiRequest->getQuery())
                     ->get($apiRequest->getUrl()),
                 ApiRequest::METHOD_POST => $client
-                    ->withBody($apiRequest->getBody())
-                    ->post($apiRequest->getUrl()),
+                    ->withQueryParameters($apiRequest->getQuery())
+                    ->post($apiRequest->getUrl(), $apiRequest->getBody()),
                 default => throw new Exception('Invalid method'),
             };
         } catch (Exception $e) {

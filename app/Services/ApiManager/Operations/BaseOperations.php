@@ -183,11 +183,7 @@ class BaseOperations extends ApiBase
         $baseUrl = $this->dataProcessor->getProviderPropertyValue(self::BASE_URL);
         $accessTokenValue = $this->dataProcessor->getProviderPropertyValue(self::ACCESS_TOKEN);
         switch ($this->dataProcessor->getProviderPropertyValue(self::API_AUTH_TYPE)) {
-            case parent::OAUTH:
-            case parent::OAUTH_BODY:
-            case parent::OAUTH_BASIC:
-            case parent::OAUTH_BEARER:
-
+            case parent::OAUTH2:
                 $tokenRequestHeaders = $this->dataProcessor->getRequestConfig('token_request_headers');
                 $tokenRequestBody = $this->dataProcessor->getRequestConfig('token_request_body');
                 $tokenRequestQuery = $this->dataProcessor->getRequestConfig('token_request_query');
@@ -206,17 +202,39 @@ class BaseOperations extends ApiBase
                 $this->oath->setTokenRequestHeaders($headers);
                 $this->oath->setTokenRequestBody($body);
                 $this->oath->setTokenRequestQuery($query);
+
                 $tokenRequestAuthType = $this->dataProcessor->getRequestConfig(self::TOKEN_REQUEST_AUTH_TYPE);
-                switch ($tokenRequestAuthType) {
-                    case parent::AUTH_BASIC:
-                        $this->oath->addAuthentication(parent::AUTH_BASIC);
-                        break;
-                    case parent::AUTH_BEARER:
-                        $this->oath->setTokenRequestAuthType(parent::AUTH_BEARER);
-                        break;
-                    default:
-                        throw new BadRequestHttpException("Token request auth type not set or invalid.");
+                if (!$tokenRequestAuthType instanceof SrConfig) {
+                    throw new BadRequestHttpException("Token request auth type not found.");
                 }
+
+                $this->oath->setAuthType($tokenRequestAuthType->value);
+
+                $tokenRequestUsername = $this->dataProcessor->getRequestConfig(self::TOKEN_REQUEST_USERNAME);
+                if ($tokenRequestUsername instanceof SrConfig) {
+                    $this->oath->setUsername($tokenRequestUsername->value);
+                }
+
+                $tokenRequestPassword = $this->dataProcessor->getRequestConfig(self::TOKEN_REQUEST_PASSWORD);
+                if ($tokenRequestPassword instanceof SrConfig) {
+                    $this->oath->setPassword($tokenRequestPassword->value);
+                }
+
+                $tokenRequestToken = $this->dataProcessor->getRequestConfig(self::TOKEN_REQUEST_TOKEN);
+                if ($tokenRequestToken instanceof SrConfig) {
+                    $this->oath->setToken($tokenRequestToken->value);
+                }
+
+                $tokenRequestMethod = $this->dataProcessor->getRequestConfig(self::TOKEN_REQUEST_METHOD);
+                if ($tokenRequestMethod instanceof SrConfig) {
+                    $this->oath->setMethod($tokenRequestMethod->value);
+                }
+
+                $tokenRequestUrl = $this->dataProcessor->getProviderPropertyValue(self::OAUTH_TOKEN_URL);
+                if (!empty($tokenRequestUrl)) {
+                    $this->oath->setUrl($tokenRequestUrl);
+                }
+
                 $accessToken = $this->oath->getAccessToken();
                 $endpoint = $this->getEndpoint();
                 $this->apiRequest->setHeaders([

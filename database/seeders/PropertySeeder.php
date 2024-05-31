@@ -18,14 +18,19 @@ class PropertySeeder extends Seeder
         foreach (DefaultData::getProviderProperties() as $data) {
             $findProperty = $propertyService->getPropertyRepository()->findOneBy([['name', '=', $data['name']]]);
             if ($findProperty instanceof Property) {
-                continue;
+                $save = $findProperty->update([
+                    'label' => $data['label'],
+                    'value_type' => $data['value_type'],
+                    'value_choices' => $data['value_choices'],
+                ]);
+            } else {
+                $save = $propertyService->createProperty([
+                    'name' => $data['name'],
+                    'label' => $data['label'],
+                    'value_type' => $data['value_type'],
+                    'value_choices' => $data['value_choices'],
+                ]);
             }
-            $save = $propertyService->createProperty([
-                'name' => $data['name'],
-                'label' => $data['label'],
-                'value_type' => $data['value_type'],
-                'value_choices' => $data['value_choices'],
-            ]);
             if (!$save) {
                 throw new \Exception(
                     "Property not created | name: {$data['name']} | label: {$data['label']}"

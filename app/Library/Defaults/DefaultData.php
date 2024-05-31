@@ -111,14 +111,11 @@ class DefaultData
     {
         return [
             [
-                'name' => "api_authentication_type",
+                'name' => ApiBase::API_AUTH_TYPE,
                 'label' => "Api Authentication Type",
                 'value_type' => 'choice',
                 'value_choices' => [
-                    ApiBase::OAUTH_BASIC,
-                    ApiBase::OAUTH,
-                    ApiBase::OAUTH_BEARER,
-                    ApiBase::OAUTH_BODY,
+                    ApiBase::OAUTH2,
                     ApiBase::AMAZON_SDK,
                     ApiBase::AUTH_BASIC,
                     ApiBase::AUTH_BEARER,
@@ -127,7 +124,7 @@ class DefaultData
                 ]
             ],
             [
-                'name' => "api_type",
+                'name' => ApiBase::API_TYPE,
                 'label' => "Api Type",
                 'value_type' => 'choice',
                 'value_choices' => [
@@ -136,67 +133,67 @@ class DefaultData
                 ]
             ],
             [
-                'name' => "base_url",
+                'name' => ApiBase::BASE_URL,
                 'label' => "Base Url",
                 'value_type' => 'custom',
                 'value_choices' => null
             ],
             [
-                'name' => "user_id",
+                'name' => ApiBase::USER_ID,
                 'label' => "User Id",
                 'value_type' => 'custom',
                 'value_choices' => null
             ],
             [
-                'name' => "access_token",
+                'name' => ApiBase::ACCESS_TOKEN,
                 'label' => "Access Token",
                 'value_type' => 'custom',
                 'value_choices' => null
             ],
             [
-                'name' => "client_id",
+                'name' => ApiBase::CLIENT_ID,
                 'label' => "Client Id",
                 'value_type' => 'custom',
                 'value_choices' => null
             ],
             [
-                'name' => "client_secret",
+                'name' => ApiBase::CLIENT_SECRET,
                 'label' => "Client Secret",
                 'value_type' => 'custom',
                 'value_choices' => null
             ],
             [
-                'name' => "oauth_access_token_grant_type",
+                'name' => ApiBase::OAUTH_GRANT_TYPE,
                 'label' => "Oauth Access Token Grant Type",
                 'value_type' => 'custom',
                 'value_choices' => null
             ],
             [
-                'name' => "oauth_grant_type_field_name",
+                'name' => ApiBase::OAUTH_GRANT_TYPE_FIELD_NAME,
                 'label' => "Oauth Grant Type Field Name",
                 'value_type' => 'custom',
                 'value_choices' => null
             ],
             [
-                'name' => "oauth_grant_type_field_value",
+                'name' => ApiBase::OAUTH_GRANT_TYPE_FIELD_VALUE,
                 'label' => "Oauth Grant Type Field value",
                 'value_type' => 'custom',
                 'value_choices' => null
             ],
             [
-                'name' => "oauth_scope_field_name",
+                'name' => ApiBase::OAUTH_SCOPE_FIELD_NAME,
                 'label' => "Oauth Scope Field Name",
                 'value_type' => 'custom',
                 'value_choices' => null
             ],
             [
-                'name' => "oauth_scope_field_value",
+                'name' => ApiBase::OAUTH_SCOPE_FIELD_VALUE,
                 'label' => "Oauth Scope Field Value",
                 'value_type' => 'custom',
                 'value_choices' => null
             ],
             [
-                'name' => "oauth_token_url",
+                'name' => ApiBase::OAUTH_TOKEN_URL,
                 'label' => "Oauth Token Url",
                 'value_type' => 'custom',
                 'value_choices' => null
@@ -274,7 +271,7 @@ class DefaultData
                 SrConfigService::REQUEST_CONFIG_ITEM_SELECTED_VALUE_TYPE => "choice",
                 SrConfigService::REQUEST_CONFIG_ITEM_VALUE => 'none',
                 SrConfigService::REQUEST_CONFIG_ITEM_ARRAY_VALUE => [],
-                SrConfigService::REQUEST_CONFIG_ITEM_VALUE_CHOICES => ['none', ApiBase::AUTH_BASIC, ApiBase::OAUTH_BEARER, 'auth_token'],
+                SrConfigService::REQUEST_CONFIG_ITEM_VALUE_CHOICES => ['none', ApiBase::AUTH_BASIC, ApiBase::AUTH_BEARER, 'auth_token'],
             ],
             [
                 SrConfigService::REQUEST_CONFIG_ITEM_REQUIRED => true,
