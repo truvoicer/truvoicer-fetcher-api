@@ -2,8 +2,8 @@
 
 namespace Database\Seeders;
 
-use App\Library\Defaults\DefaultData;
 use App\Models\User;
+use App\Services\ApiManager\Data\DefaultData;
 use App\Services\User\UserAdminService;
 use Illuminate\Database\Seeder;
 

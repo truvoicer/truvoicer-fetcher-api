@@ -14,6 +14,8 @@ use App\Repositories\ProviderPropertyRepository;
 use App\Repositories\ProviderRepository;
 use App\Repositories\SRepository;
 use App\Repositories\ProviderUserRepository;
+use App\Services\ApiManager\Data\DataConstants;
+use App\Services\ApiManager\Data\DefaultData;
 use App\Services\ApiServices\ApiService;
 use App\Services\ApiServices\ServiceRequests\SrService;
 use App\Services\Auth\AuthService;
@@ -125,7 +127,10 @@ class ProviderService extends BaseService
 
     public function getProviderProperties(Provider $provider)
     {
-        return $this->providerPropertyRepository->findProviderProperties($provider);
+        $properties = array_map(function ($property) {
+            return $property['name'];
+        }, DefaultData::getProviderProperties());
+        return $this->providerPropertyRepository->findProviderProperties($provider, $properties);
     }
 
     public function getProviderPropertyValue(Provider $provider, string $propertyName)

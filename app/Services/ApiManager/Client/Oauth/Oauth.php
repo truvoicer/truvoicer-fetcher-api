@@ -4,16 +4,13 @@ namespace App\Services\ApiManager\Client\Oauth;
 
 use App\Exceptions\OauthResponseException;
 use App\Models\Provider;
-use App\Models\SrConfig;
 use App\Repositories\OauthAccessTokenRepository;
-use App\Services\ApiManager\ApiBase;
 use App\Services\ApiManager\Client\ApiClientHandler;
 use App\Services\ApiManager\Client\Entity\ApiRequest;
-use App\Services\ApiManager\Data\DataProcessor;
+use App\Services\ApiManager\Data\DataConstants;
 use App\Services\Provider\ProviderService;
 use App\Services\Tools\SerializerService;
 use DateTime;
-use Illuminate\Database\Eloquent\Collection;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 
 class Oauth extends ApiClientHandler
@@ -100,12 +97,12 @@ class Oauth extends ApiClientHandler
         if (empty($this->authType)) {
             throw new BadRequestHttpException("Auth type not set.");
         }
-        if ($this->authType === ApiBase::AUTH_BASIC) {
+        if ($this->authType === DataConstants::AUTH_BASIC) {
             if (empty($this->username) || empty($this->password)) {
                 throw new BadRequestHttpException("Username or password not set.");
             }
         }
-        if ($this->authType === ApiBase::AUTH_BEARER) {
+        if ($this->authType === DataConstants::AUTH_BEARER) {
             if (empty($this->token)) {
                 throw new BadRequestHttpException("Token not set.");
             }
@@ -121,13 +118,13 @@ class Oauth extends ApiClientHandler
         $apiRequest->setUrl($this->url);
 
         switch ($this->authType) {
-            case ApiBase::AUTH_BASIC:
+            case DataConstants::AUTH_BASIC:
                 $apiRequest->addBasicAuthentication(
                     $this->username,
                     $this->password
                 );
                 break;
-            case ApiBase::AUTH_BEARER:
+            case DataConstants::AUTH_BEARER:
                 $apiRequest->addTokenAuthentication(
                     $this->token
                 );

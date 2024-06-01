@@ -8,6 +8,7 @@ use App\Models\Sr;
 use App\Models\SResponseKey;
 use App\Models\SrResponseKey;
 use App\Services\ApiManager\ApiBase;
+use App\Services\ApiManager\Data\DataConstants;
 use App\Services\ApiServices\ServiceRequests\SrResponseKeyService;
 use App\Services\Provider\ProviderService;
 use App\Services\ApiServices\ServiceRequests\SrService;
@@ -371,9 +372,9 @@ class ResponseHandler extends ApiBase
     private function getReservedParamsValues($value)
     {
         switch ($value) {
-            case self::PARAM_FILTER_KEYS["API_BASE_URL"]['placeholder']:
-            case self::PARAM_FILTER_KEYS["BASE_URL"]['placeholder']:
-                return $this->providerService->getProviderPropertyValue($this->provider, ApiBase::BASE_URL);
+            case DataConstants::PARAM_FILTER_KEYS["API_BASE_URL"]['placeholder']:
+            case DataConstants::PARAM_FILTER_KEYS["BASE_URL"]['placeholder']:
+                return $this->providerService->getProviderPropertyValue($this->provider, DataConstants::BASE_URL);
             default:
                 return $value;
         }

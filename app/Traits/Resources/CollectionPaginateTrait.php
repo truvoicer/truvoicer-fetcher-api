@@ -2,7 +2,7 @@
 
 namespace App\Traits\Resources;
 
-use App\Library\Defaults\DefaultData;
+use App\Services\ApiManager\Data\DefaultData;
 use Illuminate\Pagination\LengthAwarePaginator;
 
 trait CollectionPaginateTrait

@@ -2,9 +2,9 @@
 
 namespace Database\Seeders;
 
-use App\Library\Defaults\DefaultData;
 use App\Models\Role;
 use App\Models\User;
+use App\Services\ApiManager\Data\DefaultData;
 use App\Services\Auth\AuthService;
 use App\Services\User\RoleService;
 use App\Services\User\UserAdminService;

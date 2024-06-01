@@ -4,17 +4,12 @@ namespace App\Services\ApiServices\ServiceRequests;
 use App\Models\Property;
 use App\Models\Sr;
 use App\Models\SrConfig;
-use App\Library\Defaults\DefaultData;
 use App\Repositories\PropertyRepository;
-use App\Repositories\SRepository;
 use App\Repositories\SrConfigRepository;
-use App\Repositories\SrParameterRepository;
-use App\Repositories\SrRepository;
-use App\Repositories\SResponseKeyRepository;
 use App\Services\ApiManager\ApiBase;
+use App\Services\ApiManager\Data\DataConstants;
+use App\Services\ApiManager\Data\DefaultData;
 use App\Services\BaseService;
-use App\Services\Provider\ProviderService;
-use Illuminate\Database\Eloquent\Model;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 
 class SrConfigService extends BaseService
@@ -70,13 +65,13 @@ class SrConfigService extends BaseService
         }
         $config = [];
         switch ($apiAuthTypeProviderProperty->providerProperty->value) {
-            case ApiBase::AUTH_BASIC:
+            case DataConstants::AUTH_BASIC:
                 $config = DefaultData::getServiceRequestBasicAuthConfig();
                 break;
-            case ApiBase::AUTH_BEARER:
+            case DataConstants::AUTH_BEARER:
                 $config = DefaultData::getServiceRequestBearerAuthConfig();
                 break;
-            case ApiBase::OAUTH2:
+            case DataConstants::OAUTH2:
                 $config = DefaultData::getServiceRequestOauthConfig();
                 break;
         }

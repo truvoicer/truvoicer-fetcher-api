@@ -3,6 +3,7 @@
 namespace App\Http\Requests\Provider\Property;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class SaveProviderPropertyRequest extends FormRequest
 {
@@ -22,7 +23,19 @@ class SaveProviderPropertyRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'value' => 'required|string',
+            'value' => [
+                'string',
+                'nullable',
+                Rule::requiredIf(fn () => in_array($this->get('value_type'), ['text', 'choice']))
+            ],
+            "value_type" => [
+                Rule::in(['list', 'text', 'choice'])
+            ],
+            "array_value" => [
+                'array',
+                'nullable',
+                'required_if:value_type,list'
+            ]
         ];
     }
 }

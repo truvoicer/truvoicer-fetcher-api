@@ -2,7 +2,6 @@
 
 namespace App\Services\ApiServices\ServiceRequests;
 
-use App\Library\Defaults\DefaultData;
 use App\Models\Provider;
 use App\Models\S;
 use App\Models\Sr;
@@ -10,6 +9,7 @@ use App\Models\SrSchedule;
 use App\Repositories\MongoDB\MongoDBRepository;
 use App\Repositories\SrRepository;
 use App\Repositories\SrResponseKeyRepository;
+use App\Services\ApiManager\Data\DefaultData;
 use App\Services\ApiManager\Operations\ApiRequestService;
 use App\Services\ApiManager\Response\Entity\ApiResponse;
 use App\Services\ApiServices\SResponseKeysService;

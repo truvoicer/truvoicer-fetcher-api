@@ -38,7 +38,7 @@ class DataProcessor
 
     public function getReservedParamsValues($paramValue)
     {
-        foreach (ApiBase::PARAM_FILTER_KEYS as $key => $value) {
+        foreach (DataConstants::PARAM_FILTER_KEYS as $key => $value) {
             if ($value['placeholder'] !== $paramValue) {
                 continue;
             }
@@ -53,38 +53,38 @@ class DataProcessor
         }
 
         switch ($paramValue) {
-            case ApiBase::PARAM_FILTER_KEYS["OAUTH_GRANT_TYPE_FIELD_NAME"]['placeholder']:
-                return $this->getProviderPropertyValue(ApiBase::OAUTH_GRANT_TYPE_FIELD_NAME);
+            case DataConstants::PARAM_FILTER_KEYS["OAUTH_GRANT_TYPE_FIELD_NAME"]['placeholder']:
+                return $this->getProviderPropertyValue(DataConstants::OAUTH_GRANT_TYPE_FIELD_NAME);
 
-            case ApiBase::PARAM_FILTER_KEYS["OAUTH_GRANT_TYPE_FIELD_VALUE"]['placeholder']:
-                return $this->getProviderPropertyValue(ApiBase::OAUTH_GRANT_TYPE_FIELD_VALUE);
+            case DataConstants::PARAM_FILTER_KEYS["OAUTH_GRANT_TYPE_FIELD_VALUE"]['placeholder']:
+                return $this->getProviderPropertyValue(DataConstants::OAUTH_GRANT_TYPE_FIELD_VALUE);
 
-            case ApiBase::PARAM_FILTER_KEYS["OAUTH_SCOPE_FIELD_NAME"]['placeholder']:
-                return $this->getProviderPropertyValue(ApiBase::OAUTH_SCOPE_FIELD_NAME);
+            case DataConstants::PARAM_FILTER_KEYS["OAUTH_SCOPE_FIELD_NAME"]['placeholder']:
+                return $this->getProviderPropertyValue(DataConstants::OAUTH_SCOPE_FIELD_NAME);
 
-            case ApiBase::PARAM_FILTER_KEYS["OAUTH_SCOPE_FIELD_VALUE"]['placeholder']:
-                return $this->getProviderPropertyValue(ApiBase::OAUTH_SCOPE_FIELD_VALUE);
+            case DataConstants::PARAM_FILTER_KEYS["OAUTH_SCOPE_FIELD_VALUE"]['placeholder']:
+                return $this->getProviderPropertyValue(DataConstants::OAUTH_SCOPE_FIELD_VALUE);
 
-            case ApiBase::PARAM_FILTER_KEYS["PROVIDER_USER_ID"]['placeholder']:
-                return $this->getProviderPropertyValue(ApiBase::USER_ID);
+            case DataConstants::PARAM_FILTER_KEYS["PROVIDER_USER_ID"]['placeholder']:
+                return $this->getProviderPropertyValue(DataConstants::USER_ID);
 
-            case ApiBase::PARAM_FILTER_KEYS["SECRET_KEY"]['placeholder']:
-                return $this->getProviderPropertyValue(ApiBase::SECRET_KEY);
+            case DataConstants::PARAM_FILTER_KEYS["SECRET_KEY"]['placeholder']:
+                return $this->getProviderPropertyValue(DataConstants::SECRET_KEY);
 
-            case ApiBase::PARAM_FILTER_KEYS["CLIENT_ID"]['placeholder']:
-                return $this->getProviderPropertyValue(ApiBase::CLIENT_ID);
+            case DataConstants::PARAM_FILTER_KEYS["CLIENT_ID"]['placeholder']:
+                return $this->getProviderPropertyValue(DataConstants::CLIENT_ID);
 
-            case ApiBase::PARAM_FILTER_KEYS["CLIENT_SECRET"]['placeholder']:
-                return $this->getProviderPropertyValue(ApiBase::CLIENT_SECRET);
+            case DataConstants::PARAM_FILTER_KEYS["CLIENT_SECRET"]['placeholder']:
+                return $this->getProviderPropertyValue(DataConstants::CLIENT_SECRET);
 
-            case ApiBase::PARAM_FILTER_KEYS["ACCESS_KEY"]['placeholder']:
-            case ApiBase::PARAM_FILTER_KEYS["ACCESS_TOKEN"]['placeholder']:
-                return $this->getProviderPropertyValue(ApiBase::ACCESS_TOKEN);
+            case DataConstants::PARAM_FILTER_KEYS["ACCESS_KEY"]['placeholder']:
+            case DataConstants::PARAM_FILTER_KEYS["ACCESS_TOKEN"]['placeholder']:
+                return $this->getProviderPropertyValue(DataConstants::ACCESS_TOKEN);
 
-            case ApiBase::PARAM_FILTER_KEYS["QUERY"]['placeholder']:
+            case DataConstants::PARAM_FILTER_KEYS["QUERY"]['placeholder']:
                 return $this->query;
 
-            case ApiBase::PARAM_FILTER_KEYS["TIMESTAMP"]['placeholder']:
+            case DataConstants::PARAM_FILTER_KEYS["TIMESTAMP"]['placeholder']:
                 $date = new DateTime();
                 return $date->format("Y-m-d h:i:s");
         }

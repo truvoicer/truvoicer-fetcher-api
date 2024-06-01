@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\Backend\Tools;
 
 use App\Http\Controllers\Controller;
 use App\Services\ApiManager\ApiBase;
+use App\Services\ApiManager\Data\DataConstants;
 use App\Services\Permission\AccessControlService;
 use App\Services\Permission\PermissionService;
 use App\Services\Tools\FileSystem\Downloads\DownloadsFileSystemService;
@@ -74,7 +75,7 @@ class UtilsController extends Controller
     {
         return $this->sendSuccessResponse(
             "success",
-            ApiBase::PAGINATION_TYPES
+            DataConstants::PAGINATION_TYPES
         );
     }
 }

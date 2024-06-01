@@ -2,11 +2,10 @@
 
 namespace App\Services\ApiManager\Operations\DataHandler;
 
-use App\Library\Defaults\DefaultData;
-use App\Models\Provider;
 use App\Models\S;
 use App\Models\Sr;
 use App\Repositories\MongoDB\MongoDBRepository;
+use App\Services\ApiManager\Data\DefaultData;
 use App\Services\ApiServices\ServiceRequests\SrResponseKeyService;
 use App\Services\ApiServices\SResponseKeysService;
 use Illuminate\Database\Eloquent\Collection;

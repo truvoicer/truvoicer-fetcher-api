@@ -3,6 +3,7 @@
 namespace App\Services\Tools;
 
 use App\Services\ApiManager\ApiBase;
+use App\Services\ApiManager\Data\DataConstants;
 
 class VariablesService
 {
@@ -12,7 +13,7 @@ class VariablesService
         return match ($type) {
             'service_request' => array_map(function ($item) {
                 return $item['placeholder'];
-            }, ApiBase::PARAM_FILTER_KEYS),
+            }, DataConstants::PARAM_FILTER_KEYS),
             default => [],
         };
     }

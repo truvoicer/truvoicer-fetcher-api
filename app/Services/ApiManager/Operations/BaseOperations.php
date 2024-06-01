@@ -11,6 +11,7 @@ use App\Services\ApiManager\ApiBase;
 use App\Services\ApiManager\Client\ApiClientHandler;
 use App\Services\ApiManager\Client\Entity\ApiRequest;
 use App\Services\ApiManager\Client\Oauth\Oauth;
+use App\Services\ApiManager\Data\DataConstants;
 use App\Services\ApiManager\Data\DataProcessor;
 use App\Services\ApiManager\Response\Entity\ApiResponse;
 use App\Services\ApiManager\Response\ResponseManager;
@@ -180,10 +181,10 @@ class BaseOperations extends ApiBase
 
     private function getRequest()
     {
-        $baseUrl = $this->dataProcessor->getProviderPropertyValue(self::BASE_URL);
-        $accessTokenValue = $this->dataProcessor->getProviderPropertyValue(self::ACCESS_TOKEN);
-        switch ($this->dataProcessor->getProviderPropertyValue(self::API_AUTH_TYPE)) {
-            case parent::OAUTH2:
+        $baseUrl = $this->dataProcessor->getProviderPropertyValue(DataConstants::BASE_URL);
+        $accessTokenValue = $this->dataProcessor->getProviderPropertyValue(DataConstants::ACCESS_TOKEN);
+        switch ($this->dataProcessor->getProviderPropertyValue(DataConstants::API_AUTH_TYPE)) {
+            case DataConstants::OAUTH2:
                 $tokenRequestHeaders = $this->dataProcessor->getRequestConfig('token_request_headers');
                 $tokenRequestBody = $this->dataProcessor->getRequestConfig('token_request_body');
                 $tokenRequestQuery = $this->dataProcessor->getRequestConfig('token_request_query');
@@ -203,34 +204,34 @@ class BaseOperations extends ApiBase
                 $this->oath->setTokenRequestBody($body);
                 $this->oath->setTokenRequestQuery($query);
 
-                $tokenRequestAuthType = $this->dataProcessor->getRequestConfig(self::TOKEN_REQUEST_AUTH_TYPE);
+                $tokenRequestAuthType = $this->dataProcessor->getRequestConfig(DataConstants::TOKEN_REQUEST_AUTH_TYPE);
                 if (!$tokenRequestAuthType instanceof SrConfig) {
                     throw new BadRequestHttpException("Token request auth type not found.");
                 }
 
                 $this->oath->setAuthType($tokenRequestAuthType->value);
 
-                $tokenRequestUsername = $this->dataProcessor->getRequestConfig(self::TOKEN_REQUEST_USERNAME);
+                $tokenRequestUsername = $this->dataProcessor->getRequestConfig(DataConstants::TOKEN_REQUEST_USERNAME);
                 if ($tokenRequestUsername instanceof SrConfig) {
                     $this->oath->setUsername($tokenRequestUsername->value);
                 }
 
-                $tokenRequestPassword = $this->dataProcessor->getRequestConfig(self::TOKEN_REQUEST_PASSWORD);
+                $tokenRequestPassword = $this->dataProcessor->getRequestConfig(DataConstants::TOKEN_REQUEST_PASSWORD);
                 if ($tokenRequestPassword instanceof SrConfig) {
                     $this->oath->setPassword($tokenRequestPassword->value);
                 }
 
-                $tokenRequestToken = $this->dataProcessor->getRequestConfig(self::TOKEN_REQUEST_TOKEN);
+                $tokenRequestToken = $this->dataProcessor->getRequestConfig(DataConstants::TOKEN_REQUEST_TOKEN);
                 if ($tokenRequestToken instanceof SrConfig) {
                     $this->oath->setToken($tokenRequestToken->value);
                 }
 
-                $tokenRequestMethod = $this->dataProcessor->getRequestConfig(self::TOKEN_REQUEST_METHOD);
+                $tokenRequestMethod = $this->dataProcessor->getRequestConfig(DataConstants::TOKEN_REQUEST_METHOD);
                 if ($tokenRequestMethod instanceof SrConfig) {
                     $this->oath->setMethod($tokenRequestMethod->value);
                 }
 
-                $tokenRequestUrl = $this->dataProcessor->getProviderPropertyValue(self::OAUTH_TOKEN_URL);
+                $tokenRequestUrl = $this->dataProcessor->getProviderPropertyValue(DataConstants::OAUTH_TOKEN_URL);
                 if (!empty($tokenRequestUrl)) {
                     $this->oath->setUrl($tokenRequestUrl);
                 }
@@ -247,7 +248,7 @@ class BaseOperations extends ApiBase
                 break;
 //            case "amazon-sdk":
 //                return $this->runAmazonRequest();
-            case parent::AUTH_BEARER:
+            case DataConstants::AUTH_BEARER:
                 $endpoint = $this->getEndpoint();
                 $this->apiRequest->setHeaders($this->getHeaders());
                 $this->getAuthBearerAuthentication();
@@ -255,7 +256,7 @@ class BaseOperations extends ApiBase
                 $this->apiRequest->setUrl($baseUrl . $endpoint);
                 $this->setRequestData();
                 break;
-            case parent::AUTH_BASIC:
+            case DataConstants::AUTH_BASIC:
                 $endpoint = $this->getEndpoint();
                 $this->apiRequest->setHeaders($this->getHeaders());
                 $this->getBasicAuthentication();
@@ -263,8 +264,8 @@ class BaseOperations extends ApiBase
                 $this->apiRequest->setUrl($baseUrl . $endpoint);
                 $this->setRequestData();
                 break;
-            case parent::ACCESS_TOKEN:
-            case parent::AUTH_NONE:
+            case DataConstants::ACCESS_TOKEN:
+            case DataConstants::AUTH_NONE:
                 $endpoint = $this->getEndpoint();
                 $this->apiRequest->setHeaders($this->getHeaders());
                 $this->apiRequest->setMethod($this->getMethod());
@@ -323,7 +324,7 @@ class BaseOperations extends ApiBase
 
     private function setRequestData()
     {
-        switch ($this->dataProcessor->getProviderPropertyValue(self::API_TYPE)) {
+        switch ($this->dataProcessor->getProviderPropertyValue(DataConstants::API_TYPE)) {
             case "query_string":
                 $requestQueryArray = $this->dataProcessor->buildRequestQuery();
                 $this->apiRequest->setQuery($requestQueryArray);

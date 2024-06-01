@@ -2,14 +2,12 @@
 
 namespace App\Repositories;
 
-use App\Library\Defaults\DefaultData;
 use App\Models\Provider;
 use App\Models\S;
 use App\Models\Sr;
 use App\Models\SResponseKey;
-use App\Models\SrResponseKey;
+use App\Services\ApiManager\Data\DefaultData;
 use App\Services\ApiServices\SResponseKeysService;
-use Illuminate\Database\Eloquent\Model;
 
 class SResponseKeyRepository extends BaseRepository
 {
