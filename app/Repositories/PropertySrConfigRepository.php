@@ -3,20 +3,21 @@
 namespace App\Repositories;
 
 use App\Models\Property;
+use App\Models\PropertySrConfig;
 use App\Models\Provider;
 use App\Models\ProviderProperty;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 
-class ProviderPropertyRepository extends BaseRepository
+class PropertySrConfigRepository extends BaseRepository
 {
     public function __construct()
     {
-        parent::__construct(ProviderProperty::class);
+        parent::__construct(PropertySrConfig::class);
     }
 
-    public function getModel(): ProviderProperty
+    public function getModel(): PropertySrConfig
     {
         return parent::getModel();
     }

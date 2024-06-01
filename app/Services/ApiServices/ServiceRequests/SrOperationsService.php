@@ -9,6 +9,7 @@ use App\Models\SrSchedule;
 use App\Repositories\MongoDB\MongoDBRepository;
 use App\Repositories\SrRepository;
 use App\Repositories\SrResponseKeyRepository;
+use App\Services\ApiManager\Data\DataConstants;
 use App\Services\ApiManager\Data\DefaultData;
 use App\Services\ApiManager\Operations\ApiRequestService;
 use App\Services\ApiManager\Response\Entity\ApiResponse;
@@ -211,7 +212,7 @@ class SrOperationsService
                 $sr->name,
             )
         );
-        $pageSizeResponseKey = DefaultData::SERVICE_RESPONSE_KEYS['PAGE_SIZE'][SResponseKeysService::RESPONSE_KEY_NAME];
+        $pageSizeResponseKey = DataConstants::SERVICE_RESPONSE_KEYS['PAGE_SIZE'][SResponseKeysService::RESPONSE_KEY_NAME];
         $pageSize = SrResponseKeyRepository::getSrResponseKeyValueByName(
             $provider,
             $sr,
@@ -347,7 +348,7 @@ class SrOperationsService
     }
 
     private function getTotalItems(ApiResponse $apiResponse) {
-        $totalItemsResponseKey = DefaultData::SERVICE_RESPONSE_KEYS['TOTAL_ITEMS'][SResponseKeysService::RESPONSE_KEY_NAME];
+        $totalItemsResponseKey = DataConstants::SERVICE_RESPONSE_KEYS['TOTAL_ITEMS'][SResponseKeysService::RESPONSE_KEY_NAME];
         $extraData = $apiResponse->getExtraData();
         if (!isset($extraData[$totalItemsResponseKey]) || $extraData[$totalItemsResponseKey] === '') {
             return $this->totalItems;
@@ -355,7 +356,7 @@ class SrOperationsService
         return (int)$extraData[$totalItemsResponseKey];
     }
     private function getPageSize(ApiResponse $apiResponse) {
-        $pageSizeResponseKey = DefaultData::SERVICE_RESPONSE_KEYS['PAGE_SIZE'][SResponseKeysService::RESPONSE_KEY_NAME];
+        $pageSizeResponseKey = DataConstants::SERVICE_RESPONSE_KEYS['PAGE_SIZE'][SResponseKeysService::RESPONSE_KEY_NAME];
         $extraData = $apiResponse->getExtraData();
         if (!isset($extraData[$pageSizeResponseKey]) || $extraData[$pageSizeResponseKey] === '') {
             return false;
@@ -375,7 +376,7 @@ class SrOperationsService
 
         $pageSize  = $this->getPageSize($apiResponse);
 
-        $offsetResponseKey = DefaultData::SERVICE_RESPONSE_KEYS['OFFSET'][SResponseKeysService::RESPONSE_KEY_NAME];
+        $offsetResponseKey = DataConstants::SERVICE_RESPONSE_KEYS['OFFSET'][SResponseKeysService::RESPONSE_KEY_NAME];
         if (isset($extraData[$offsetResponseKey]) && $extraData[$offsetResponseKey] !== '') {
             $this->offset = (int)$extraData[$offsetResponseKey];
         } else {
@@ -407,7 +408,7 @@ class SrOperationsService
         }
         $this->runOperationForSr($sr, [
             'query' => '',
-            DefaultData::SERVICE_RESPONSE_KEYS['OFFSET'][SResponseKeysService::RESPONSE_KEY_NAME] => $this->offset,
+            DataConstants::SERVICE_RESPONSE_KEYS['OFFSET'][SResponseKeysService::RESPONSE_KEY_NAME] => $this->offset,
         ]);
     }
 
@@ -429,10 +430,10 @@ class SrOperationsService
             return;
         }
 
-        $totalItemsResponseKey = DefaultData::SERVICE_RESPONSE_KEYS['TOTAL_ITEMS'][SResponseKeysService::RESPONSE_KEY_NAME];
-        $totalPagesResponseKey = DefaultData::SERVICE_RESPONSE_KEYS['TOTAL_PAGES'][SResponseKeysService::RESPONSE_KEY_NAME];
-        $pageNumberResponseKey = DefaultData::SERVICE_RESPONSE_KEYS['PAGE_NUMBER'][SResponseKeysService::RESPONSE_KEY_NAME];
-        $pageSizeResponseKey = DefaultData::SERVICE_RESPONSE_KEYS['PAGE_SIZE'][SResponseKeysService::RESPONSE_KEY_NAME];
+        $totalItemsResponseKey = DataConstants::SERVICE_RESPONSE_KEYS['TOTAL_ITEMS'][SResponseKeysService::RESPONSE_KEY_NAME];
+        $totalPagesResponseKey = DataConstants::SERVICE_RESPONSE_KEYS['TOTAL_PAGES'][SResponseKeysService::RESPONSE_KEY_NAME];
+        $pageNumberResponseKey = DataConstants::SERVICE_RESPONSE_KEYS['PAGE_NUMBER'][SResponseKeysService::RESPONSE_KEY_NAME];
+        $pageSizeResponseKey = DataConstants::SERVICE_RESPONSE_KEYS['PAGE_SIZE'][SResponseKeysService::RESPONSE_KEY_NAME];
 
         $extraData = $apiResponse->getExtraData();
 //        $totalItems = null;
@@ -459,7 +460,7 @@ class SrOperationsService
         }
         $this->runOperationForSr($sr, [
             'query' => '',
-            DefaultData::SERVICE_RESPONSE_KEYS['PAGE_NUMBER'][SResponseKeysService::RESPONSE_KEY_NAME] => $this->pageNumber,
+            DataConstants::SERVICE_RESPONSE_KEYS['PAGE_NUMBER'][SResponseKeysService::RESPONSE_KEY_NAME] => $this->pageNumber,
         ]);
     }
 

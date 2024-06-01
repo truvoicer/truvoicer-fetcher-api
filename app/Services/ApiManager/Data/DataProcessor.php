@@ -99,7 +99,24 @@ class DataProcessor
         return $value;
     }
 
-    public function getRequestConfig(string $parameterName)
+    public function getConfigValue(string $parameterName)
+    {
+        $srConfig = $this->getSrConfigItem($parameterName);
+        if ($srConfig instanceof SrConfig) {
+            switch ($srConfig->value_type) {
+                case 'choice':
+                case 'text':
+                    return $srConfig->value;
+                case 'list':
+                    return $srConfig->array_value;
+            }
+            return $srConfig;
+        }
+
+        return $this->getProviderPropertyValue($parameterName);
+    }
+
+    public function getSrConfigItem(string $parameterName)
     {
         $config = $this->requestConfigs->where('name', $parameterName)->first();
         if (!$config instanceof SrConfig) {
@@ -160,10 +177,17 @@ class DataProcessor
         if (!$property instanceof Property) {
             return null;
         }
-        if (!$property->providerProperty instanceof ProviderProperty ) {
+        if (!$property->providerProperty instanceof ProviderProperty) {
             return null;
         }
-        return $property->providerProperty->value;
+        switch ($property->value_type) {
+            case 'choice':
+            case 'text':
+                return $property->providerProperty->value;
+            case 'list':
+                return $property->providerProperty->array_value;
+        }
+        return null;
     }
 
     public function setRequestConfigs(Collection $requestConfigs): void

@@ -51,7 +51,12 @@ class SrConfigService extends BaseService
 
     public function findByParams(Sr $serviceRequest, string $sort, string $order, ?int $count = null) {
         $this->requestConfigRepo->setPagination(true);
-        return $this->requestConfigRepo->findByParams($serviceRequest, $sort, $order, $count);
+        return $this->requestConfigRepo->findByParams(
+            $serviceRequest,
+            array_map(function ($property) {
+                return $property['name'];
+            }, DefaultData::getProviderProperties())
+        );
     }
 
 
@@ -121,10 +126,25 @@ class SrConfigService extends BaseService
 
     public function createRequestConfig(Sr $serviceRequest, array $data)
     {
-        return $this->requestConfigRepo->createRequestConfig(
-            $serviceRequest,
-            $this->getRequestConfigData($data)
-        );
+//        return $this->requestConfigRepo->createRequestConfig(
+//            $serviceRequest,
+//            $this->getRequestConfigData($data)
+//        );
+
+        if (empty($data['value_type'])) {
+            throw new BadRequestHttpException("Value type is required.");
+        }
+        return match ($data['value_type']) {
+            'text', 'choice' => $this->requestConfigRepo->saveSrConfigProperty($provider, $property, [
+                'value' => $data['value'],
+                'array_value' => null
+            ]),
+            'list' => $this->requestConfigRepo->saveSrConfigProperty($provider, $property, [
+                'array_value' => $data['array_value'],
+                'value' => null,
+            ]),
+            default => throw new BadRequestHttpException("Invalid value type."),
+        };
     }
 
     public function createDefaultRequestConfigs(Sr $serviceRequest, array $defaultConfig = []) {

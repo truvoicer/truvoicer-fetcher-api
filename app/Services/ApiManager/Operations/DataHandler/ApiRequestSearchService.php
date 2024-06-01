@@ -5,6 +5,7 @@ namespace App\Services\ApiManager\Operations\DataHandler;
 use App\Models\S;
 use App\Models\Sr;
 use App\Repositories\MongoDB\MongoDBRepository;
+use App\Services\ApiManager\Data\DataConstants;
 use App\Services\ApiManager\Data\DefaultData;
 use App\Services\ApiServices\ServiceRequests\SrResponseKeyService;
 use App\Services\ApiServices\SResponseKeysService;
@@ -92,15 +93,15 @@ class ApiRequestSearchService
         $this->searchInit();
 //
         $this->mongoDBRepository->setPagination(true);
-        if (!empty($query[DefaultData::PAGE_SIZE])) {
-            $this->mongoDBRepository->setPerPage((int)$query[DefaultData::PAGE_SIZE]);
+        if (!empty($query[DataConstants::PAGE_SIZE])) {
+            $this->mongoDBRepository->setPerPage((int)$query[DataConstants::PAGE_SIZE]);
         }
 
-        if (!empty($query[DefaultData::PAGE_NUMBER])) {
-            $this->mongoDBRepository->setPage((int)$query[DefaultData::PAGE_NUMBER]);
+        if (!empty($query[DataConstants::PAGE_NUMBER])) {
+            $this->mongoDBRepository->setPage((int)$query[DataConstants::PAGE_NUMBER]);
         }
 
-        $reservedKeys = array_column(DefaultData::SERVICE_RESPONSE_KEYS, SResponseKeysService::RESPONSE_KEY_NAME);
+        $reservedKeys = array_column(DataConstants::SERVICE_RESPONSE_KEYS, SResponseKeysService::RESPONSE_KEY_NAME);
         $reservedKeys = array_merge($reservedKeys, self::RESERVED_SEARCH_RESPONSE_KEYS);
 
         $whereGroup = [];

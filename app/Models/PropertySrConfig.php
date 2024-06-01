@@ -6,10 +6,9 @@ use App\Repositories\ProviderPropertyRepository;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class ProviderProperty extends Model
+class PropertySrConfig extends Model
 {
-    use HasFactory;
-    public const TABLE_NAME = 'provider_properties';
+    use HasFactory; public const TABLE_NAME = 'property_sr_configs';
     public const REPOSITORY = ProviderPropertyRepository::class;
 
     protected $casts = [
@@ -17,7 +16,7 @@ class ProviderProperty extends Model
     ];
 
     protected $fillable = [
-        'provider_id',
+        'sr_config_id',
         'property_id',
         'value',
         'array_value'
@@ -25,9 +24,9 @@ class ProviderProperty extends Model
 
 //    protected $with = ['provider', 'property'];
 
-    public function provider()
+    public function srConfig()
     {
-        return $this->belongsTo(Provider::class);
+        return $this->belongsTo(SrConfig::class);
     }
 
     public function property() {

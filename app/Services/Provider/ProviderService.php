@@ -239,9 +239,22 @@ class ProviderService extends BaseService
         );
     }
 
-    public function createProviderProperty(Provider $provider, Property $property, string $value)
+    public function createProviderProperty(Provider $provider, Property $property, array $data)
     {
-        return $this->providerPropertyRepository->saveProviderProperty($provider, $property, $value);
+        if (empty($data['value_type'])) {
+            throw new BadRequestHttpException("Value type is required.");
+        }
+        return match ($data['value_type']) {
+            'text', 'choice' => $this->providerPropertyRepository->saveProviderProperty($provider, $property, [
+                'value' => $data['value'],
+                'array_value' => null
+            ]),
+            'list' => $this->providerPropertyRepository->saveProviderProperty($provider, $property, [
+                'array_value' => $data['array_value'],
+                'value' => null,
+            ]),
+            default => throw new BadRequestHttpException("Invalid value type."),
+        };
     }
 
     public function deleteProviderById(int $providerId)

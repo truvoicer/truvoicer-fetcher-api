@@ -2,6 +2,7 @@
 
 namespace App\Traits\Resources;
 
+use App\Services\ApiManager\Data\DataConstants;
 use App\Services\ApiManager\Data\DefaultData;
 use Illuminate\Pagination\LengthAwarePaginator;
 
@@ -10,14 +11,14 @@ trait CollectionPaginateTrait
     public function buildLinks(LengthAwarePaginator $resource)
     {
         return [
-            DefaultData::TOTAL_PAGES => ceil($resource->total() / $resource->perPage()),
-            DefaultData::TOTAL_ITEMS => $resource->total(),
-            DefaultData::PAGE_SIZE => $resource->perPage(),
-            DefaultData::PAGE_NUMBER => $resource->currentPage(),
-            DefaultData::PREV_PAGE => $resource->currentPage() - 1,
-            DefaultData::NEXT_PAGE => $resource->currentPage() + 1,
-            DefaultData::LAST_PAGE => $resource->lastPage(),
-            DefaultData::PAGINATION_TYPE => 'page'
+            DataConstants::TOTAL_PAGES => ceil($resource->total() / $resource->perPage()),
+            DataConstants::TOTAL_ITEMS => $resource->total(),
+            DataConstants::PAGE_SIZE => $resource->perPage(),
+            DataConstants::PAGE_NUMBER => $resource->currentPage(),
+            DataConstants::PREV_PAGE => $resource->currentPage() - 1,
+            DataConstants::NEXT_PAGE => $resource->currentPage() + 1,
+            DataConstants::LAST_PAGE => $resource->lastPage(),
+            DataConstants::PAGINATION_TYPE => 'page'
         ];
     }
 }

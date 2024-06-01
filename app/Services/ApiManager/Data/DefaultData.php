@@ -2,7 +2,6 @@
 
 namespace App\Services\ApiManager\Data;
 
-use App\Services\ApiServices\SResponseKeysService;
 
 class DefaultData
 {

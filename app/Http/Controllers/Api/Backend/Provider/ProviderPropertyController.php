@@ -133,7 +133,11 @@ class ProviderPropertyController extends Controller
             return $this->sendErrorResponse("Access control: operation not permitted");
         }
 
-        $create = $this->providerService->createProviderProperty($provider, $property, $request->get('value'));
+        $create = $this->providerService->createProviderProperty(
+            $provider,
+            $property,
+            $request->validated()
+        );
         if (!$create) {
             return $this->sendErrorResponse("Error adding provider property.");
         }
