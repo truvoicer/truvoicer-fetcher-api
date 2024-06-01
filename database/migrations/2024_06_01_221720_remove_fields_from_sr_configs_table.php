@@ -28,6 +28,7 @@ return new class extends Migration
             $table->string('value_type');
             $table->json('value_choices')->nullable();
             $table->dropForeign(['property_id']);
+            $table->dropColumn('property_id');
         });
     }
 };

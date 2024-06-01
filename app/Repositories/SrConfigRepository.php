@@ -68,9 +68,7 @@ class SrConfigRepository extends BaseRepository
     public function findSrConfigProperty(Sr $sr, Property $property)
     {
         return $sr->srConfig()
-            ->whereHas('propertySrConfig',  function (HasOne $query) use ($property) {
-                $query->where('property_id', '=', $property->id);
-            })
+                ->where('property_id', '=', $property->id)
             ->first();
     }
 
@@ -78,7 +76,7 @@ class SrConfigRepository extends BaseRepository
     {
         $findSrConfigProperty = $this->findSrConfigProperty($sr, $property);
         if (!$findSrConfigProperty instanceof SrConfig) {
-
+            $create = $sr->srConfig()->create($data);
             return $create->exists;
         }
 
