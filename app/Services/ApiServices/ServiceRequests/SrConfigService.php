@@ -49,7 +49,7 @@ class SrConfigService extends BaseService
         return $this->findBySr($serviceRequest);
     }
 
-    public function findByParams(Sr $serviceRequest, string $sort, string $order, ?int $count = null) {
+    public function findByParams(Sr $serviceRequest) {
         $this->requestConfigRepo->setPagination(true);
         return $this->requestConfigRepo->findByParams(
             $serviceRequest,
@@ -124,7 +124,7 @@ class SrConfigService extends BaseService
         return $data;
     }
 
-    public function createRequestConfig(Sr $serviceRequest, array $data)
+    public function createRequestConfig(Sr $serviceRequest, Property $property, array $data)
     {
 //        return $this->requestConfigRepo->createRequestConfig(
 //            $serviceRequest,
@@ -135,11 +135,11 @@ class SrConfigService extends BaseService
             throw new BadRequestHttpException("Value type is required.");
         }
         return match ($data['value_type']) {
-            'text', 'choice' => $this->requestConfigRepo->saveSrConfigProperty($provider, $property, [
+            'text', 'choice' => $this->requestConfigRepo->saveSrConfigProperty($serviceRequest, $property, [
                 'value' => $data['value'],
                 'array_value' => null
             ]),
-            'list' => $this->requestConfigRepo->saveSrConfigProperty($provider, $property, [
+            'list' => $this->requestConfigRepo->saveSrConfigProperty($serviceRequest, $property, [
                 'array_value' => $data['array_value'],
                 'value' => null,
             ]),

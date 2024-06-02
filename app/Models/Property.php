@@ -11,7 +11,7 @@ class Property extends Model
     use HasFactory;
     public const TABLE_NAME = 'properties';
     public const REPOSITORY = PropertyRepository::class;
-    protected $with = ['providerProperty'];
+    protected $with = ['providerProperty', 'srConfig'];
     protected $casts = [
         'value_choices' => 'array',
     ];
@@ -39,6 +39,15 @@ class Property extends Model
     {
         return $this->hasOne(
             ProviderProperty::class,
+            'property_id',
+            'id'
+        );
+    }
+
+    public function srConfig()
+    {
+        return $this->hasOne(
+            SrConfig::class,
             'property_id',
             'id'
         );

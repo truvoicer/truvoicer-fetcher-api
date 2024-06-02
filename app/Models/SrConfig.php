@@ -17,6 +17,7 @@ class SrConfig extends Model
         'value_choices' => 'array',
         'array_value' => 'array',
     ];
+
     protected $fillable = [
         'name',
         'value',
@@ -24,8 +25,19 @@ class SrConfig extends Model
         'array_value',
         'value_choices',
     ];
+
     public function sr()
     {
         return $this->belongsTo(Sr::class);
     }
+
+    public function property()
+    {
+        return $this->hasOne(
+            Property::class,
+            'id',
+            'property_id'
+        );
+    }
+
 }

@@ -8,6 +8,7 @@ use App\Http\Requests\Service\Request\Config\DeleteBatchSrConfigRequest;
 use App\Http\Requests\Service\Request\Config\UpdateServiceRequestConfigRequest;
 use App\Http\Resources\Service\ServiceRequest\ServiceRequestConfigCollection;
 use App\Http\Resources\Service\ServiceRequest\ServiceRequestConfigResource;
+use App\Models\Property;
 use App\Models\Provider;
 use App\Models\Sr;
 use App\Models\SrConfig;
@@ -93,7 +94,7 @@ class ServiceRequestConfigController extends Controller
     public function getServiceRequestConfig(
         Provider $provider,
         Sr       $serviceRequest,
-        SrConfig $serviceRequestConfig,
+        Property $property,
         Request  $request
     ): \Illuminate\Http\JsonResponse
     {
@@ -124,6 +125,7 @@ class ServiceRequestConfigController extends Controller
     public function createRequestConfig(
         Provider                          $provider,
         Sr                                $serviceRequest,
+        Property $property,
         CreateServiceRequestConfigRequest $request
     ): \Illuminate\Http\JsonResponse
     {
@@ -142,6 +144,7 @@ class ServiceRequestConfigController extends Controller
         }
         $create = $this->requestConfigService->createRequestConfig(
             $serviceRequest,
+            $property,
             $request->all()
         );
 
@@ -157,47 +160,6 @@ class ServiceRequestConfigController extends Controller
     }
 
     /**
-     * Update a service request config based on request POST data
-     * Returns json success message and service request config data on successful update
-     *
-     * Returns error response and message on fail
-     */
-    public function updateRequestConfig(
-        Provider                          $provider,
-        Sr                                $serviceRequest,
-        SrConfig                          $serviceRequestConfig,
-        UpdateServiceRequestConfigRequest $request
-    ): \Illuminate\Http\JsonResponse
-    {
-        $this->setAccessControlUser($request->user());
-        if (
-            !$this->accessControlService->checkPermissionsForEntity(
-                $provider,
-                [
-                    PermissionService::PERMISSION_ADMIN,
-                    PermissionService::PERMISSION_UPDATE,
-                ]
-            )
-        ) {
-            return $this->sendErrorResponse("Access denied");
-        }
-        $update = $this->requestConfigService->updateRequestConfig(
-            $serviceRequestConfig,
-            $request->all()
-        );
-
-        if (!$update) {
-            return $this->sendErrorResponse("Error updating config item");
-        }
-        return $this->sendSuccessResponse(
-            "Config item updated",
-            new ServiceRequestConfigResource(
-                $this->requestConfigService->getRequestConfigRepo()->getModel()
-            )
-        );
-    }
-
-    /**
      * Delete a service request config based on request POST data
      * Returns json success message and service request config data on successful deletion
      *
@@ -206,7 +168,7 @@ class ServiceRequestConfigController extends Controller
     public function deleteRequestConfig(
         Provider $provider,
         Sr       $serviceRequest,
-        SrConfig $serviceRequestConfig,
+        Property $property,
         Request  $request
     ): \Illuminate\Http\JsonResponse
     {

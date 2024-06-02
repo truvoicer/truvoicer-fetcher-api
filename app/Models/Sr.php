@@ -129,5 +129,4 @@ class Sr extends Model
         );
     }
 
-
 }

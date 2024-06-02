@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::table('sr_configs', function (Blueprint $table) {
             $table->dropColumn('value_type');
             $table->dropColumn('value_choices');
-            $table->bigInteger('property_id')->nullable()->unsigned();
+            $table->bigInteger('property_id')->nullable()->unsigned()->after('id');
             $table->foreign('property_id')->references('id')->on('properties')->onDelete('cascade');
         });
     }

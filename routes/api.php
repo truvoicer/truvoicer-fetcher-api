@@ -169,14 +169,16 @@ Route::middleware(['auth:sanctum', 'ability:api:admin,api:superuser,api:super_ad
                             Route::patch('/{srRateLimit}/update', [SrRateLimitController::class, 'updateRequestRateLimit'])->name('update');
                         });
                         Route::prefix('config')->name('config.')->group(function () {
-                            Route::get('/list', [ServiceRequestConfigController::class, 'getRequestConfigList'])->name('list');
-                            Route::post('/create', [ServiceRequestConfigController::class, 'createRequestConfig'])->name('create');
-                            Route::prefix('batch')->name('batch.')->group(function () {
-                                Route::delete('/delete', [ServiceRequestConfigController::class, 'deleteBatch'])->name('delete');
+                            Route::prefix('property')->name('property.')->group(function () {
+                                Route::get('/list', [ServiceRequestConfigController::class, 'getRequestConfigList'])->name('list');
+                                Route::prefix('batch')->name('batch.')->group(function () {
+                                    Route::delete('/delete', [ServiceRequestConfigController::class, 'deleteBatch'])->name('delete');
+                                });
+                                Route::get('/{property}', [ServiceRequestConfigController::class, 'getServiceRequestConfig'])->name('detail');
+                                Route::patch('/{property}/update', [ServiceRequestConfigController::class, 'createRequestConfig'])->name('save');
+                                Route::delete('/{property}/delete', [ServiceRequestConfigController::class, 'deleteRequestConfig'])->name('delete');
                             });
-                            Route::get('/{serviceRequestConfig}', [ServiceRequestConfigController::class, 'getServiceRequestConfig'])->name('detail');
-                            Route::delete('/{serviceRequestConfig}/delete', [ServiceRequestConfigController::class, 'deleteRequestConfig'])->name('delete');
-                            Route::patch('/{serviceRequestConfig}/update', [ServiceRequestConfigController::class, 'updateRequestConfig'])->name('update');
+
                         });
                         Route::prefix('parameter')->name('parameter.')->group(function () {
                             Route::get('/list', [ServiceRequestParameterController::class, 'getServiceRequestParameterList'])->name('list');

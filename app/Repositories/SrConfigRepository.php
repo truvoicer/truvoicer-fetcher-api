@@ -35,22 +35,21 @@ class SrConfigRepository extends BaseRepository
         $property = new Property();
         $query = $property->query()
             ->whereIn('name', $properties)
-            ->with(['propertySrConfig' => function (HasOne $query) use ($serviceRequest) {
-                $query->whereHas('srConfig', function ($query) use ($serviceRequest) {
-                    $query->whereHas('sr', function ($query) use ($serviceRequest) {
-                        $query->where('id', '=', $serviceRequest->id);
+            ->with(['srConfig' => function ($query) use ($serviceRequest) {
+                $query->whereHas('sr', function ($query) use ($serviceRequest) {
+                    $query->where('id', '=', $serviceRequest->id);
 
-                    });
                 });
             }]);
         return $this->getResults($query);
     }
 
-    public function getRequestConfigByName(Sr $serviceRequest, string $configItemName)
+    public function getRequestConfigByName(Sr $serviceRequest, string $propertyName)
     {
-        return $serviceRequest
-            ->srConfig()
-            ->where('name', $configItemName)
+        return $serviceRequest->srConfig()
+            ->whereHas('property', function ($query) use ($propertyName) {
+                $query->where('name', '=', $propertyName);
+            })
             ->first();
     }
 
@@ -76,16 +75,11 @@ class SrConfigRepository extends BaseRepository
     {
         $findSrConfigProperty = $this->findSrConfigProperty($sr, $property);
         if (!$findSrConfigProperty instanceof SrConfig) {
-            $create = $sr->srConfig()->create($data);
+            $create = $sr->srConfig()->create(['property_id' => $property->id, ...$data]);
             return $create->exists;
         }
 
-        $update = $findSrConfigProperty->properties()->updateExistingPivot($property->id, $data);
-        return true;
+        return $findSrConfigProperty->update( $data);
     }
 
-    public function deleteSrConfigProperty(SrConfig $srConfig, Property $property)
-    {
-        return ($srConfig->properties()->detach($property->id) > 0);
-    }
 }
