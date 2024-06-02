@@ -112,7 +112,9 @@ class ServiceRequestConfigController extends Controller
         }
         return $this->sendSuccessResponse(
             "success",
-            new ServiceRequestConfigResource($serviceRequestConfig)
+            new ServiceRequestConfigResource(
+                $this->requestConfigService->getRequestConfigRepo()->findSrConfigProperty($serviceRequest, $property)
+            )
         );
     }
 
@@ -142,7 +144,7 @@ class ServiceRequestConfigController extends Controller
         ) {
             return $this->sendErrorResponse("Access denied");
         }
-        $create = $this->requestConfigService->createRequestConfig(
+        $create = $this->requestConfigService->saveRequestConfig(
             $serviceRequest,
             $property,
             $request->all()
@@ -184,7 +186,7 @@ class ServiceRequestConfigController extends Controller
         ) {
             return $this->sendErrorResponse("Access denied");
         }
-        if (!$this->requestConfigService->deleteRequestConfig($serviceRequestConfig)) {
+        if (!$this->requestConfigService->deleteRequestConfig($serviceRequest, $property)) {
             return $this->sendErrorResponse(
                 "Error deleting config item"
             );

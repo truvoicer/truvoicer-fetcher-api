@@ -91,17 +91,16 @@ class SrConfigService extends BaseService
                 );
             });
         }
-        $this->createDefaultRequestConfigs(
-            $serviceRequest,
-            $config
-        );
+//        $this->createDefaultRequestConfigs(
+//            $serviceRequest,
+//            $config
+//        );
         return true;
     }
 
     private function getRequestConfigData(array $data)
     {
         $fields = [
-            'name',
             'value',
             'value_type',
             'array_value',
@@ -124,13 +123,8 @@ class SrConfigService extends BaseService
         return $data;
     }
 
-    public function createRequestConfig(Sr $serviceRequest, Property $property, array $data)
+    public function saveRequestConfig(Sr $serviceRequest, Property $property, array $data)
     {
-//        return $this->requestConfigRepo->createRequestConfig(
-//            $serviceRequest,
-//            $this->getRequestConfigData($data)
-//        );
-
         if (empty($data['value_type'])) {
             throw new BadRequestHttpException("Value type is required.");
         }
@@ -147,45 +141,11 @@ class SrConfigService extends BaseService
         };
     }
 
-    public function createDefaultRequestConfigs(Sr $serviceRequest, array $defaultConfig = []) {
-        $provider = $serviceRequest->provider()->first();
-
-        foreach ($defaultConfig as $item) {
-            $findConfig = $this->requestConfigRepo->getRequestConfigByName(
-                $serviceRequest,
-                $item[self::REQUEST_CONFIG_ITEM_NAME]
-            );
-            if ($findConfig instanceof SrConfig) {
-                continue;
-            }
-            $insertData = [
-                self::REQUEST_CONFIG_ITEM_NAME => $item[self::REQUEST_CONFIG_ITEM_NAME],
-                self::REQUEST_CONFIG_ITEM_SELECTED_VALUE_TYPE => $item[self::REQUEST_CONFIG_ITEM_SELECTED_VALUE_TYPE],
-                self::REQUEST_CONFIG_ITEM_VALUE => $item[self::REQUEST_CONFIG_ITEM_VALUE],
-                self::REQUEST_CONFIG_ITEM_ARRAY_VALUE => $item[self::REQUEST_CONFIG_ITEM_ARRAY_VALUE],
-            ];
-            if (isset($item[self::REQUEST_CONFIG_ITEM_VALUE_CHOICES])) {
-                $insertData[self::REQUEST_CONFIG_ITEM_VALUE_CHOICES] = $item[self::REQUEST_CONFIG_ITEM_VALUE_CHOICES];
-            }
-           $create = $this->createRequestConfig($serviceRequest, $insertData);
-           if (!$create) {
-               throw new BadRequestHttpException(sprintf(
-                   "Service request config item: %s not created.",
-                   $item[self::REQUEST_CONFIG_ITEM_NAME])
-               );
-           }
-        }
-    }
-
-    public function updateRequestConfig(SrConfig $serviceRequestConfig, array $data)
-    {
-        $this->requestConfigRepo->setModel($serviceRequestConfig);
-        return $this->requestConfigRepo->save($this->getRequestConfigData($data));
-    }
-
-    public function deleteRequestConfig(SrConfig $serviceRequestConfig) {
-        $this->requestConfigRepo->setModel($serviceRequestConfig);
-        return $this->requestConfigRepo->delete();
+    public function deleteRequestConfig(Sr $serviceRequest, Property $property): bool {
+        return ($this->requestConfigRepo->deleteSrConfigProperty(
+            $serviceRequest,
+            $property
+        )) > 0;
     }
 
     public function getRequestConfigRepo(): SrConfigRepository

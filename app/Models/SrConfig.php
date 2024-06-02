@@ -19,7 +19,7 @@ class SrConfig extends Model
     ];
 
     protected $fillable = [
-        'name',
+        'sr_id',
         'value',
         'value_type',
         'array_value',

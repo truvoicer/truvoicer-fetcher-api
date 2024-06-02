@@ -11,7 +11,7 @@ class Property extends Model
     use HasFactory;
     public const TABLE_NAME = 'properties';
     public const REPOSITORY = PropertyRepository::class;
-    protected $with = ['providerProperty', 'srConfig'];
+
     protected $casts = [
         'value_choices' => 'array',
     ];

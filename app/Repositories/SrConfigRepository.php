@@ -28,10 +28,6 @@ class SrConfigRepository extends BaseRepository
 
     public function findByParams(Sr $serviceRequest, array $properties)
     {
-//        return $serviceRequest->srConfig()
-//            ->orderBy($sort, $order)
-//            ->get();
-
         $property = new Property();
         $query = $property->query()
             ->whereIn('name', $properties)
@@ -53,33 +49,26 @@ class SrConfigRepository extends BaseRepository
             ->first();
     }
 
-    public function createRequestConfig(Sr $serviceRequest, array $data)
-    {
-        $create = $serviceRequest->srConfig()->create($data);
-        if (!$create->exists) {
-            return false;
-        }
-        $this->setModel($create);
-        return true;
-    }
-
-
     public function findSrConfigProperty(Sr $sr, Property $property)
     {
-        return $sr->srConfig()
-                ->where('property_id', '=', $property->id)
+        return $property->with(['srConfig' => function (HasOne $query) use ($sr) {
+            $query->where('sr_id', '=', $sr->id);
+        }])
+            ->where('id', '=', $property->id)
             ->first();
     }
 
     public function saveSrConfigProperty(Sr $sr, Property $property, array $data)
     {
-        $findSrConfigProperty = $this->findSrConfigProperty($sr, $property);
-        if (!$findSrConfigProperty instanceof SrConfig) {
-            $create = $sr->srConfig()->create(['property_id' => $property->id, ...$data]);
+        $create = $property->srConfig()->updateOrCreate([], ['sr_id' => $sr->id, ...$data]);
             return $create->exists;
-        }
+    }
 
-        return $findSrConfigProperty->update( $data);
+    public function deleteSrConfigProperty(Sr $sr, Property $property): int
+    {
+        return $sr->srConfig()
+            ->where('property_id', '=', $property->id)
+            ->delete();
     }
 
 }
