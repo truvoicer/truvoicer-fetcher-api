@@ -129,4 +129,8 @@ class Sr extends Model
         );
     }
 
+    public function oauthAccessToken()
+    {
+        return $this->hasMany(OauthAccessToken::class);
+    }
 }

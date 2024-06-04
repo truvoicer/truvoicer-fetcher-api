@@ -4,6 +4,7 @@ namespace App\Repositories;
 
 use App\Models\OauthAccessToken;
 use App\Models\Provider;
+use App\Models\Sr;
 use DateTime;
 
 class OauthAccessTokenRepository extends BaseRepository
@@ -18,19 +19,18 @@ class OauthAccessTokenRepository extends BaseRepository
         return parent::getModel();
     }
 
-    public function insertOathToken(string $token, DateTime $expiry, Provider $provider) {
-        return $this->save([
+    public function insertOathToken(Sr $sr, string $token, DateTime $expiry) {
+        return $sr->oauthAccessToken()->create([
             'access_token' => $token,
             'expiry' => $expiry,
-            'provider' => $provider->id
         ]);
     }
 
 
-    public function getLatestAccessToken(Provider $provider) {
-        $dateTime = new DateTime();
-        return $provider->oauthAccessToken()
-            ->where('expiry', '>', $dateTime->format('Y-m-d H:i:s'))
+    public function getLatestAccessToken(Sr $sr) {
+        $dateTime = now();
+        return $sr->oauthAccessToken()
+            ->whereDate('expiry', '>', $dateTime)
             ->orderBy('created_at', 'desc')
             ->first();
     }

@@ -102,15 +102,8 @@ class DataProcessor
     public function getConfigValue(string $parameterName)
     {
         $srConfig = $this->getSrConfigItem($parameterName);
-        if ($srConfig instanceof SrConfig) {
-            switch ($srConfig->value_type) {
-                case 'choice':
-                case 'text':
-                    return $srConfig->value;
-                case 'list':
-                    return $srConfig->array_value;
-            }
-            return $srConfig;
+        if ($srConfig instanceof Property) {
+            return $this->getPropertyValue($srConfig->value_type, $srConfig->srConfig);
         }
 
         return $this->getProviderPropertyValue($parameterName);
@@ -118,11 +111,23 @@ class DataProcessor
 
     public function getSrConfigItem(string $parameterName)
     {
-        $config = $this->requestConfigs->where('name', $parameterName)->first();
-        if (!$config instanceof SrConfig) {
+        $property = $this->requestConfigs->where('name', $parameterName)->first();
+        if (!$property instanceof Property) {
             return null;
         }
-        return $config;
+        if (!$property->srConfig instanceof SrConfig) {
+            return null;
+        }
+        return $property;
+    }
+
+    public function getSrConfigItemValue(string $parameterName)
+    {
+        $property = $this->getSrConfigItem($parameterName);
+        if (!$property instanceof SrConfig) {
+            return null;
+        }
+        return $this->getPropertyValue($property->value_type, $property->srConfig);
     }
 
     public function getQueryFilterValue($string)
@@ -171,6 +176,17 @@ class DataProcessor
         return $queryArray;
     }
 
+    public function getPropertyValue(string $valueType, ProviderProperty|SrConfig $property) {
+        switch ($valueType) {
+            case 'choice':
+            case 'text':
+                return $property->value;
+            case 'list':
+                return $property->array_value;
+        }
+        return null;
+    }
+
     public function getProviderPropertyValue(string $propertyName)
     {
         $property = $this->providerProperties->where('name', $propertyName)->first();
@@ -180,14 +196,7 @@ class DataProcessor
         if (!$property->providerProperty instanceof ProviderProperty) {
             return null;
         }
-        switch ($property->value_type) {
-            case 'choice':
-            case 'text':
-                return $property->providerProperty->value;
-            case 'list':
-                return $property->providerProperty->array_value;
-        }
-        return null;
+        return $this->getPropertyValue($property->value_type, $property->providerProperty);
     }
 
     public function setRequestConfigs(Collection $requestConfigs): void

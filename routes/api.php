@@ -307,5 +307,9 @@ Route::middleware(['auth:sanctum', 'ability:api:admin,api:superuser,api:super_ad
                 });
             });
         });
+        Route::prefix('property')->name('property.')->group(function () {
+            Route::get('/list', [PropertyController::class, 'getPropertyList'])->name('list');
+            Route::get('/{property}', [PropertyController::class, 'getProperty'])->name('detail');
+        });
     });
 });

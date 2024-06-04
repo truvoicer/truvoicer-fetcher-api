@@ -2,6 +2,7 @@
 
 namespace App\Services\ApiManager\Operations;
 
+use App\Exceptions\OauthResponseException;
 use App\Models\Provider;
 use App\Models\ProviderRateLimit;
 use App\Models\Sr;
@@ -164,6 +165,7 @@ class BaseOperations extends ApiBase
         $this->dataProcessor->setRequestParameters($parameters);
         $this->dataProcessor->setProviderProperties($providerProperties);
         $this->oath->setProvider($this->provider);
+        $this->oath->setSr($this->apiService);
         $getRequest = $this->requestHandler();
         return $getRequest;
     }
@@ -179,17 +181,21 @@ class BaseOperations extends ApiBase
         );
     }
 
+    /**
+     * @throws OauthResponseException
+     */
     private function getRequest()
     {
         $baseUrl = $this->dataProcessor->getProviderPropertyValue(DataConstants::BASE_URL);
         $accessTokenValue = $this->dataProcessor->getProviderPropertyValue(DataConstants::ACCESS_TOKEN);
-        switch ($this->dataProcessor->getProviderPropertyValue(DataConstants::API_AUTH_TYPE)) {
+        switch ($this->dataProcessor->getConfigValue(DataConstants::API_AUTH_TYPE)) {
             case DataConstants::OAUTH2:
                 $this->initOauth();
                 $accessToken = $this->oath->getAccessToken();
+
                 $endpoint = $this->getEndpoint();
                 $this->apiRequest->setHeaders([
-                    "Authorization" => "Bearer " . $accessToken->getAccessToken(),
+                    "Authorization" => "Bearer " . $accessToken->access_token,
                     "Client-ID" => $accessTokenValue
                 ]);
                 $this->apiRequest->setMethod($this->getMethod());
@@ -274,7 +280,7 @@ class BaseOperations extends ApiBase
         }
 
         $tokenRequestMethod = $this->dataProcessor->getConfigValue(DataConstants::TOKEN_REQUEST_METHOD);
-        dd($tokenRequestMethod);
+
         if (!empty($tokenRequestMethod)) {
             $this->oath->setMethod($tokenRequestMethod);
         }

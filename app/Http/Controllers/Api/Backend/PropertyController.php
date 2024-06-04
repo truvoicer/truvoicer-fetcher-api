@@ -54,14 +54,13 @@ class PropertyController extends Controller
             return $this->sendErrorResponse("Access control: operation not permitted");
         }
 
+        $this->propertyRepository->setOrderDir($request->get('order', "asc"));
+        $this->propertyRepository->setSortField($request->get('sort', "name"));
+        $this->propertyRepository->setLimit($request->get('count', -1));
         return $this->sendSuccessResponse(
             "success",
             new PropertyCollection(
-                $this->propertyService->findPropertiesByParams(
-                    $request->get('sort', "name"),
-                    $request->get('order', "asc"),
-                    $request->get('count', -1)
-                )
+                $this->propertyRepository->findMany()
             )
         );
     }

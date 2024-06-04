@@ -181,14 +181,19 @@ class DefaultData
                 DataConstants::REQUEST_CONFIG_ITEM_ARRAY_VALUE => [],
             ],
             [
-                DataConstants::REQUEST_CONFIG_ITEM_REQUIRED => true,
-                DataConstants::REQUEST_CONFIG_ITEM_NAME => 'content_type',
-                DataConstants::REQUEST_CONFIG_ITEM_LABEL => 'Content Type',
-                DataConstants::REQUEST_CONFIG_ITEM_SELECTED_VALUE_TYPE => "choice",
-                DataConstants::REQUEST_CONFIG_ITEM_VALUE => 'json',
+                DataConstants::REQUEST_CONFIG_ITEM_NAME => 'body',
+                DataConstants::REQUEST_CONFIG_ITEM_LABEL => 'Body',
+                DataConstants::REQUEST_CONFIG_ITEM_SELECTED_VALUE_TYPE => "list",
+                DataConstants::REQUEST_CONFIG_ITEM_VALUE => '',
                 DataConstants::REQUEST_CONFIG_ITEM_ARRAY_VALUE => [],
-                DataConstants::REQUEST_CONFIG_ITEM_VALUE_CHOICES => ['json', 'xml'],
-            ]
+            ],
+            [
+                DataConstants::REQUEST_CONFIG_ITEM_NAME => 'query',
+                DataConstants::REQUEST_CONFIG_ITEM_LABEL => 'Query',
+                DataConstants::REQUEST_CONFIG_ITEM_SELECTED_VALUE_TYPE => "list",
+                DataConstants::REQUEST_CONFIG_ITEM_VALUE => '',
+                DataConstants::REQUEST_CONFIG_ITEM_ARRAY_VALUE => [],
+            ],
         ];
     }
     public static function getServiceRequestBasicAuthConfig()

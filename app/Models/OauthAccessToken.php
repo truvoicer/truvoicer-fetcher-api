@@ -17,8 +17,8 @@ class OauthAccessToken extends Model
       'expiry'
     ];
 
-    public function provider()
+    public function sr()
     {
-        return $this->belongsTo(Provider::class);
+        return $this->belongsTo(Sr::class);
     }
 }

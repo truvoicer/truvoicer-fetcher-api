@@ -21,9 +21,22 @@ class SrConfigRepository extends BaseRepository
     {
         return parent::getModel();
     }
+
     public function findBySr(Sr $serviceRequest)
     {
-        return $this->getResults($serviceRequest->srConfig());
+        $property = new Property();
+        $query = $property->query()
+            ->whereHas('srConfig', function ($query) use ($serviceRequest) {
+                $query->whereHas('sr', function ($query) use ($serviceRequest) {
+                    $query->where('id', '=', $serviceRequest->id);
+                });
+            })
+            ->with(['srConfig' => function ($query) use ($serviceRequest) {
+                $query->whereHas('sr', function ($query) use ($serviceRequest) {
+                    $query->where('id', '=', $serviceRequest->id);
+                });
+            }]);
+        return $this->getResults($query);
     }
 
     public function findByParams(Sr $serviceRequest, array $properties)
@@ -31,6 +44,11 @@ class SrConfigRepository extends BaseRepository
         $property = new Property();
         $query = $property->query()
             ->whereIn('name', $properties)
+            ->whereHas('srConfig', function ($query) use ($serviceRequest) {
+                $query->whereHas('sr', function ($query) use ($serviceRequest) {
+                    $query->where('id', '=', $serviceRequest->id);
+                });
+            })
             ->with(['srConfig' => function ($query) use ($serviceRequest) {
                 $query->whereHas('sr', function ($query) use ($serviceRequest) {
                     $query->where('id', '=', $serviceRequest->id);
@@ -61,7 +79,7 @@ class SrConfigRepository extends BaseRepository
     public function saveSrConfigProperty(Sr $sr, Property $property, array $data)
     {
         $create = $property->srConfig()->updateOrCreate([], ['sr_id' => $sr->id, ...$data]);
-            return $create->exists;
+        return $create->exists;
     }
 
     public function deleteSrConfigProperty(Sr $sr, Property $property): int

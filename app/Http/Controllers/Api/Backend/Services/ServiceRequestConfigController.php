@@ -75,9 +75,6 @@ class ServiceRequestConfigController extends Controller
 //        }
         $findRequestConfigs = $this->requestConfigService->findByParams(
             $serviceRequest,
-            $request->get('sort', "name"),
-            $request->get('order', "asc"),
-            $request->get('count', -1)
         );
         return $this->sendSuccessResponse("success",
             new ServiceRequestConfigCollection(
