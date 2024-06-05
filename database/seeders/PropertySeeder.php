@@ -14,7 +14,12 @@ class PropertySeeder extends Seeder
      */
     public function run(PropertyService $propertyService): void
     {
-        //
+        foreach ($propertyService->getPropertyRepository()->findMany() as $property) {
+            $findByName = in_array($property->name, array_column(DefaultData::getProviderProperties(), 'name'));
+            if ($findByName === false) {
+                $property->delete();
+            }
+        }
         foreach (DefaultData::getProviderProperties() as $data) {
             $findProperty = $propertyService->getPropertyRepository()->findOneBy([['name', '=', $data['name']]]);
             $saveData = [];

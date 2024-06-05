@@ -157,7 +157,7 @@ class BaseOperations extends ApiBase
         if (!$parameters) {
             throw new BadRequestHttpException("Request parameters not found for operation.");
         }
-        $providerProperties = $this->providerService->getProviderProperties($this->provider);
+        $providerProperties = $this->providerService->getAllProviderProperties($this->provider);
         if (!$providerProperties) {
             throw new BadRequestHttpException("Provider properties not found for operation.");
         }
@@ -181,51 +181,60 @@ class BaseOperations extends ApiBase
         );
     }
 
+    private function runPreRequestTasks() {
+        switch ($this->dataProcessor->getConfigValue(DataConstants::API_AUTH_TYPE)) {
+            case DataConstants::OAUTH2:
+                $this->initOauth();
+                $this->oath->getAccessToken();
+                break;
+            }
+            return true;
+    }
     /**
      * @throws OauthResponseException
      */
     private function getRequest()
     {
         $baseUrl = $this->dataProcessor->getProviderPropertyValue(DataConstants::BASE_URL);
-        $accessTokenValue = $this->dataProcessor->getProviderPropertyValue(DataConstants::ACCESS_TOKEN);
-        switch ($this->dataProcessor->getConfigValue(DataConstants::API_AUTH_TYPE)) {
+        $apiAuthType = $this->dataProcessor->getConfigValue(DataConstants::API_AUTH_TYPE);
+        switch ($apiAuthType) {
             case DataConstants::OAUTH2:
-                $this->initOauth();
-                $accessToken = $this->oath->getAccessToken();
-
-                $endpoint = $this->getEndpoint();
-                $this->apiRequest->setHeaders([
-                    "Authorization" => "Bearer " . $accessToken->access_token,
-                    "Client-ID" => $accessTokenValue
-                ]);
-                $this->apiRequest->setMethod($this->getMethod());
-                $this->apiRequest->setUrl($baseUrl . $endpoint);
-                $this->setRequestData();
+                $apiAuthType = $this->dataProcessor->getConfigValue(DataConstants::OAUTH_API_AUTH_TYPE);
                 break;
-//            case "amazon-sdk":
-//                return $this->runAmazonRequest();
+        }
+
+        $endpoint = $this->dataProcessor->getConfigValue(DataConstants::ENDPOINT);
+        $method = $this->dataProcessor->getConfigValue(DataConstants::METHOD);
+        $headers = $this->dataProcessor->getConfigValue(DataConstants::HEADERS);
+        $body = $this->dataProcessor->getConfigValue(DataConstants::BODY);
+        $query = $this->dataProcessor->getConfigValue(DataConstants::QUERY);
+
+        if ($headers) {
+            $headers = $this->buildListValues($headers);
+        }
+        if ($body) {
+            $body = $this->buildListValues($body);
+        }
+        if ($query) {
+            $query = $this->buildListValues($query);
+        }
+
+        $this->apiRequest->setHeaders($headers);
+        $this->apiRequest->setMethod($method);
+        $this->apiRequest->setUrl($baseUrl . $endpoint);
+        $this->apiRequest->setQuery($query);
+
+        switch ($apiAuthType) {
             case DataConstants::AUTH_BEARER:
-                $endpoint = $this->getEndpoint();
-                $this->apiRequest->setHeaders($this->getHeaders());
                 $this->getAuthBearerAuthentication();
-                $this->apiRequest->setMethod($this->getMethod());
-                $this->apiRequest->setUrl($baseUrl . $endpoint);
                 $this->setRequestData();
                 break;
             case DataConstants::AUTH_BASIC:
-                $endpoint = $this->getEndpoint();
-                $this->apiRequest->setHeaders($this->getHeaders());
                 $this->getBasicAuthentication();
-                $this->apiRequest->setMethod($this->getMethod());
-                $this->apiRequest->setUrl($baseUrl . $endpoint);
                 $this->setRequestData();
                 break;
             case DataConstants::ACCESS_TOKEN:
             case DataConstants::AUTH_NONE:
-                $endpoint = $this->getEndpoint();
-                $this->apiRequest->setHeaders($this->getHeaders());
-                $this->apiRequest->setMethod($this->getMethod());
-                $this->apiRequest->setUrl($baseUrl . $endpoint);
                 $this->setRequestData();
                 break;
         }

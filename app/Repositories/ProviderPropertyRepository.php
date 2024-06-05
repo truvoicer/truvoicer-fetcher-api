@@ -5,6 +5,7 @@ namespace App\Repositories;
 use App\Models\Property;
 use App\Models\Provider;
 use App\Models\ProviderProperty;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
@@ -21,11 +22,28 @@ class ProviderPropertyRepository extends BaseRepository
         return parent::getModel();
     }
 
+    public function findAllProviderProperties(Provider $provider, array $properties)
+    {
+        $property = new Property();
+        $query = $property->query()
+            ->whereIn('name', $properties)
+            ->whereHas('providerProperty', function (Builder $query) use ($provider) {
+                $query->where('provider_id', '=', $provider->id);
+            })
+            ->with(['providerProperty' => function (HasOne $query) use ($provider) {
+                $query->where('provider_id', '=', $provider->id);
+            }]);
+        return $this->getResults($query);
+    }
+
     public function findProviderProperties(Provider $provider, array $properties)
     {
         $property = new Property();
         $query = $property->query()
             ->whereIn('name', $properties)
+            ->whereHas('providerProperty', function (Builder $query) use ($provider) {
+                $query->where('provider_id', '=', $provider->id);
+            })
             ->with(['providerProperty' => function (HasOne $query) use ($provider) {
                 $query->where('provider_id', '=', $provider->id);
             }]);

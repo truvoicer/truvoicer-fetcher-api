@@ -54,7 +54,7 @@ class Oauth extends ApiClientHandler
      */
     public function getAccessToken()
     {
-        if ($this->provider === null) {
+        if (!isset($this->sr)) {
             return false;
         }
         $accessToken = $this->checkAccessToken();
@@ -71,6 +71,7 @@ class Oauth extends ApiClientHandler
             $this->getExpiryDatetime($response["expires_in"])
         );
     }
+
 
     private function handleTokenResponse(Response $response)
     {

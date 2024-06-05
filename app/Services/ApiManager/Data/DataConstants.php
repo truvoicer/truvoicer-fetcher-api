@@ -28,11 +28,7 @@ class DataConstants
     const AUTH_NONE = 'none';
 
     const API_AUTH_TYPE = "api_authentication_type";
-    const OAUTH_GRANT_TYPE = "oauth_access_token_grant_type";
-    const OAUTH_GRANT_TYPE_FIELD_NAME = "oauth_grant_type_field_name";
-    const OAUTH_GRANT_TYPE_FIELD_VALUE = "oauth_grant_type_field_value";
-    const OAUTH_SCOPE_FIELD_NAME = "oauth_scope_field_name";
-    const OAUTH_SCOPE_FIELD_VALUE = "oauth_scope_field_value";
+    const OAUTH_API_AUTH_TYPE = "oauth_api_authentication_type";
     const OAUTH_TOKEN_URL = "oauth_token_url";
     const CLIENT_ID = "client_id";
     const CLIENT_SECRET = "client_secret";
@@ -48,6 +44,16 @@ class DataConstants
     public const TOKEN_REQUEST_USERNAME = 'token_request_username';
     public const TOKEN_REQUEST_PASSWORD = 'token_request_password';
     public const TOKEN_REQUEST_TOKEN = 'token_request_token';
+
+    public const BEARER_TOKEN = 'bearer_token';
+    public const HEADERS = 'headers';
+    public const BODY = 'body';
+    public const QUERY = 'query';
+    public const METHOD = 'method';
+    public const USERNAME = 'username';
+    public const PASSWORD = 'password';
+    public const TOKEN = 'token';
+    public const ENDPOINT = 'endpoint';
 
     const PARAM_FILTER_KEYS = [
         "API_BASE_URL" => [

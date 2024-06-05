@@ -53,18 +53,6 @@ class DataProcessor
         }
 
         switch ($paramValue) {
-            case DataConstants::PARAM_FILTER_KEYS["OAUTH_GRANT_TYPE_FIELD_NAME"]['placeholder']:
-                return $this->getProviderPropertyValue(DataConstants::OAUTH_GRANT_TYPE_FIELD_NAME);
-
-            case DataConstants::PARAM_FILTER_KEYS["OAUTH_GRANT_TYPE_FIELD_VALUE"]['placeholder']:
-                return $this->getProviderPropertyValue(DataConstants::OAUTH_GRANT_TYPE_FIELD_VALUE);
-
-            case DataConstants::PARAM_FILTER_KEYS["OAUTH_SCOPE_FIELD_NAME"]['placeholder']:
-                return $this->getProviderPropertyValue(DataConstants::OAUTH_SCOPE_FIELD_NAME);
-
-            case DataConstants::PARAM_FILTER_KEYS["OAUTH_SCOPE_FIELD_VALUE"]['placeholder']:
-                return $this->getProviderPropertyValue(DataConstants::OAUTH_SCOPE_FIELD_VALUE);
-
             case DataConstants::PARAM_FILTER_KEYS["PROVIDER_USER_ID"]['placeholder']:
                 return $this->getProviderPropertyValue(DataConstants::USER_ID);
 
