@@ -109,15 +109,6 @@ class DataProcessor
         return $property;
     }
 
-    public function getSrConfigItemValue(string $parameterName)
-    {
-        $property = $this->getSrConfigItem($parameterName);
-        if (!$property instanceof SrConfig) {
-            return null;
-        }
-        return $this->getPropertyValue($property->value_type, $property->srConfig);
-    }
-
     public function getQueryFilterValue($string)
     {
         if (preg_match_all('~\[(.*?)\]~', $string, $output)) {

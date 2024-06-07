@@ -48,7 +48,7 @@ class ResponseManager extends BaseService
     public function getRequestContent(Response $response, ApiRequest $apiRequest)
     {
         try {
-            $contentType = null;
+            $contentType = 'unknown';
             $content = null;
             switch ($this->getContentType($response)) {
                 case self::CONTENT_TYPE_JSON:
@@ -141,7 +141,7 @@ class ResponseManager extends BaseService
         return $this->setResponseDefaults($apiResponse);
     }
 
-    private function successResponse(string $contentType, array $requestData, array $extraData, ApiRequest $apiRequest, Response $response)
+    private function successResponse(?string $contentType, array $requestData, array $extraData, ApiRequest $apiRequest, Response $response)
     {
         $apiResponse = new ApiResponse();
         $apiResponse->setContentType($contentType);

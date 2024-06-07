@@ -164,6 +164,13 @@ class DefaultData
             [
                 DataConstants::REQUEST_CONFIG_ITEM_NAME => DataConstants::BODY,
                 DataConstants::REQUEST_CONFIG_ITEM_LABEL => 'Body',
+                DataConstants::REQUEST_CONFIG_ITEM_SELECTED_VALUE_TYPE => "text",
+                DataConstants::REQUEST_CONFIG_ITEM_VALUE => '',
+                DataConstants::REQUEST_CONFIG_ITEM_ARRAY_VALUE => [],
+            ],
+            [
+                DataConstants::REQUEST_CONFIG_ITEM_NAME => DataConstants::POST_BODY,
+                DataConstants::REQUEST_CONFIG_ITEM_LABEL => 'Post Body',
                 DataConstants::REQUEST_CONFIG_ITEM_SELECTED_VALUE_TYPE => "list",
                 DataConstants::REQUEST_CONFIG_ITEM_VALUE => '',
                 DataConstants::REQUEST_CONFIG_ITEM_ARRAY_VALUE => [],
@@ -231,6 +238,14 @@ class DefaultData
             [
                 DataConstants::REQUEST_CONFIG_ITEM_REQUIRED => true,
                 DataConstants::REQUEST_CONFIG_ITEM_NAME => DataConstants::TOKEN_REQUEST_BODY,
+                DataConstants::REQUEST_CONFIG_ITEM_LABEL => 'Oauth Token Request Body',
+                DataConstants::REQUEST_CONFIG_ITEM_SELECTED_VALUE_TYPE => "text",
+                DataConstants::REQUEST_CONFIG_ITEM_VALUE => '',
+                DataConstants::REQUEST_CONFIG_ITEM_ARRAY_VALUE => [],
+            ],
+            [
+                DataConstants::REQUEST_CONFIG_ITEM_REQUIRED => true,
+                DataConstants::REQUEST_CONFIG_ITEM_NAME => DataConstants::TOKEN_REQUEST_POST_BODY,
                 DataConstants::REQUEST_CONFIG_ITEM_LABEL => 'Oauth Token Request Post Data',
                 DataConstants::REQUEST_CONFIG_ITEM_SELECTED_VALUE_TYPE => "list",
                 DataConstants::REQUEST_CONFIG_ITEM_VALUE => '',

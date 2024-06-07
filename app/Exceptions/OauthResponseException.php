@@ -10,7 +10,7 @@ class OauthResponseException extends Exception
     public function __construct(
         $message = "Oauth response error",
         private ?int $statusCode = null,
-        private array $data = [],
+        private ?array $data = [],
         private ?ApiRequest $request = null,
     )
     {

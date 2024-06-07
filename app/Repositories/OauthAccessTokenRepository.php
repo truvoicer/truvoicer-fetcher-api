@@ -30,7 +30,7 @@ class OauthAccessTokenRepository extends BaseRepository
     public function getLatestAccessToken(Sr $sr) {
         $dateTime = now();
         return $sr->oauthAccessToken()
-            ->whereDate('expiry', '>', $dateTime)
+            ->whereDate('expiry', '>=', $dateTime)
             ->orderBy('created_at', 'desc')
             ->first();
     }

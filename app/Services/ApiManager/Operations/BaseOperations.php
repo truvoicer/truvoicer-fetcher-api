@@ -181,20 +181,23 @@ class BaseOperations extends ApiBase
         );
     }
 
-    private function runPreRequestTasks() {
+    private function runPreRequestTasks()
+    {
         switch ($this->dataProcessor->getConfigValue(DataConstants::API_AUTH_TYPE)) {
             case DataConstants::OAUTH2:
                 $this->initOauth();
                 $this->oath->getAccessToken();
                 break;
-            }
-            return true;
+        }
+        return true;
     }
+
     /**
      * @throws OauthResponseException
      */
     private function getRequest()
     {
+        $this->runPreRequestTasks();
         $baseUrl = $this->dataProcessor->getProviderPropertyValue(DataConstants::BASE_URL);
         $apiAuthType = $this->dataProcessor->getConfigValue(DataConstants::API_AUTH_TYPE);
         switch ($apiAuthType) {
@@ -207,35 +210,48 @@ class BaseOperations extends ApiBase
         $method = $this->dataProcessor->getConfigValue(DataConstants::METHOD);
         $headers = $this->dataProcessor->getConfigValue(DataConstants::HEADERS);
         $body = $this->dataProcessor->getConfigValue(DataConstants::BODY);
+        $postBody = $this->dataProcessor->getConfigValue(DataConstants::POST_BODY);
         $query = $this->dataProcessor->getConfigValue(DataConstants::QUERY);
 
         if ($headers) {
             $headers = $this->buildListValues($headers);
         }
-        if ($body) {
-            $body = $this->buildListValues($body);
+        if ($postBody) {
+            $postBody = $this->buildListValues($postBody);
         }
         if ($query) {
             $query = $this->buildListValues($query);
         }
 
-        $this->apiRequest->setHeaders($headers);
-        $this->apiRequest->setMethod($method);
-        $this->apiRequest->setUrl($baseUrl . $endpoint);
-        $this->apiRequest->setQuery($query);
+        if (is_array($headers)) {
+            $this->apiRequest->setHeaders($headers);
+        }
+
+        if (is_string($method)) {
+            $this->apiRequest->setMethod($method);
+        }
+        if (is_array($postBody)) {
+            $this->apiRequest->setPostBody($postBody);
+        }
+        if (is_string($baseUrl . $endpoint)) {
+            $this->apiRequest->setUrl($baseUrl . $endpoint);
+        }
+        if (is_array($query)) {
+            $this->apiRequest->setQuery($query);
+        }
+        if (!empty($body) && is_string($body)) {
+            $this->apiRequest->setBody($body);
+        }
 
         switch ($apiAuthType) {
             case DataConstants::AUTH_BEARER:
                 $this->getAuthBearerAuthentication();
-                $this->setRequestData();
                 break;
             case DataConstants::AUTH_BASIC:
                 $this->getBasicAuthentication();
-                $this->setRequestData();
                 break;
             case DataConstants::ACCESS_TOKEN:
             case DataConstants::AUTH_NONE:
-                $this->setRequestData();
                 break;
         }
         $this->eventsService->apiSendRequestEvent($this->apiRequest);
@@ -246,25 +262,31 @@ class BaseOperations extends ApiBase
         }
     }
 
-    private function initOauth() {
-        $tokenRequestHeaders = $this->dataProcessor->getConfigValue('token_request_headers');
-        $tokenRequestBody = $this->dataProcessor->getConfigValue('token_request_body');
-        $tokenRequestQuery = $this->dataProcessor->getConfigValue('token_request_query');
+    private function initOauth()
+    {
+        $tokenRequestHeaders = $this->dataProcessor->getConfigValue(DataConstants::TOKEN_REQUEST_HEADERS);
+        $tokenRequestPostBody = $this->dataProcessor->getConfigValue(DataConstants::TOKEN_REQUEST_POST_BODY);
+        $tokenRequestBody = $this->dataProcessor->getConfigValue(DataConstants::TOKEN_REQUEST_BODY);
+        $tokenRequestQuery = $this->dataProcessor->getConfigValue(DataConstants::TOKEN_REQUEST_QUERY);
 
         $headers = $body = $query = [];
-        if ($tokenRequestHeaders) {
+        if (is_array($tokenRequestHeaders)) {
             $headers = $this->buildListValues($tokenRequestHeaders);
         }
-        if ($tokenRequestBody) {
-            $body = $this->buildListValues($tokenRequestBody);
+        if (is_array($tokenRequestPostBody)) {
+            $body = $this->buildListValues($tokenRequestPostBody);
         }
-        if ($tokenRequestQuery) {
+        if (is_array($tokenRequestQuery)) {
             $query = $this->buildListValues($tokenRequestQuery);
         }
 
         $this->oath->setTokenRequestHeaders($headers);
-        $this->oath->setTokenRequestBody($body);
+        $this->oath->setTokenRequestPostBody($body);
         $this->oath->setTokenRequestQuery($query);
+
+        if (!empty($tokenRequestBody) && is_string($tokenRequestBody)) {
+            $this->oath->setTokenRequestBody($tokenRequestBody);
+        }
 
         $tokenRequestAuthType = $this->dataProcessor->getConfigValue(DataConstants::TOKEN_REQUEST_AUTH_TYPE);
         if (empty($tokenRequestAuthType)) {
@@ -275,12 +297,12 @@ class BaseOperations extends ApiBase
 
         $tokenRequestUsername = $this->dataProcessor->getConfigValue(DataConstants::TOKEN_REQUEST_USERNAME);
         if (!empty($tokenRequestUsername)) {
-            $this->oath->setUsername($tokenRequestUsername);
+            $this->oath->setUsername(trim($this->dataProcessor->filterParameterValue($tokenRequestUsername)));
         }
 
         $tokenRequestPassword = $this->dataProcessor->getConfigValue(DataConstants::TOKEN_REQUEST_PASSWORD);
         if (!empty($tokenRequestPassword)) {
-            $this->oath->setPassword($tokenRequestPassword);
+            $this->oath->setPassword(trim($this->dataProcessor->filterParameterValue($tokenRequestPassword)));
         }
 
         $tokenRequestToken = $this->dataProcessor->getConfigValue(DataConstants::TOKEN_REQUEST_TOKEN);
@@ -303,34 +325,39 @@ class BaseOperations extends ApiBase
 
     private function getBasicAuthentication()
     {
-        $usernameConfig = $this->dataProcessor->getSrConfigItem("username");
-        $passwordConfig = $this->dataProcessor->getSrConfigItem("password");
-        $username = null;
-        $password = null;
-        if ($usernameConfig instanceof SrConfig) {
-            $username = $usernameConfig->value;
-        }
-        if ($passwordConfig instanceof SrConfig) {
-            $password = $passwordConfig->value;
-        }
+        $username = $this->dataProcessor->getConfigValue(DataConstants::USERNAME);
+        $password = $this->dataProcessor->getConfigValue(DataConstants::PASSWORD);
 
         if ($username === null && $password === null) {
             throw new BadRequestHttpException("Request config username and password are both not set.");
         }
         if ($password === null || $password === "") {
             $this->apiRequest->addBasicAuthentication(
-                $this->dataProcessor->filterParameterValue($username)
+                trim($this->dataProcessor->filterParameterValue($username))
             );
         }
+
         $this->apiRequest->addBasicAuthentication(
-            $this->dataProcessor->filterParameterValue($username),
-            $password
+            trim($this->dataProcessor->filterParameterValue($username)),
+            trim($this->dataProcessor->filterParameterValue($password))
         );
     }
 
     private function getAuthBearerAuthentication()
     {
-        $bearerToken = $this->dataProcessor->getSrConfigItem("bearer_token");
+        $apiAuthType = $this->dataProcessor->getConfigValue(DataConstants::API_AUTH_TYPE);
+        if ($apiAuthType == DataConstants::OAUTH2) {
+            $getAccessToken = $this->oath->getAccessToken();
+            if (!$getAccessToken?->access_token) {
+                throw new BadRequestHttpException("Error getting access token.");
+            }
+            $this->apiRequest->addTokenAuthentication(
+                $getAccessToken?->access_token
+            );
+            return;
+        }
+
+        $bearerToken = $this->dataProcessor->getSrConfigItem(DataConstants::BEARER_TOKEN);
         if (!$bearerToken instanceof SrConfig) {
             throw new BadRequestHttpException("Request config bearer token not found.");
         }
@@ -342,69 +369,9 @@ class BaseOperations extends ApiBase
         );
     }
 
-    private function setRequestData()
-    {
-        switch ($this->dataProcessor->getProviderPropertyValue(DataConstants::API_TYPE)) {
-            case "query_string":
-                $requestQueryArray = $this->dataProcessor->buildRequestQuery();
-                $this->apiRequest->setQuery($requestQueryArray);
-                break;
-            case "query_schema":
-                $this->apiRequest->setBody($this->dataProcessor->getRequestBody());
-                break;
-            default:
-                throw new BadRequestHttpException(
-                    sprintf("Provider property (api_type) not set or not valid for %s",
-                        $this->provider->label)
-                );
-        }
-    }
-
-
     private function runAmazonRequest()
     {
 
-    }
-
-    private function getHeaders()
-    {
-        $headers = ["Content-Type" => "application/json;charset=utf-8"];
-        $getHeaders = $this->dataProcessor->getSrConfigItem("headers");
-        if (!$getHeaders instanceof SrConfig) {
-            return $headers;
-        }
-        if (empty($getHeaders->array_value)) {
-            return $headers;
-        }
-        $headerArray = $getHeaders->array_value;
-        foreach ($headerArray as $item) {
-            $headers[$item["name"]] = $this->dataProcessor->filterParameterValue($item["value"]);
-        }
-        return $headers;
-    }
-
-    private function getEndpoint()
-    {
-        $endpoint = $this->dataProcessor->getSrConfigItem("endpoint");
-        if (!$endpoint instanceof SrConfig) {
-            throw new BadRequestHttpException("Endpoint is not specified in request config");
-        }
-        if (empty($endpoint->value)) {
-            throw new BadRequestHttpException("Endpoint is not valid");
-        }
-        return $this->dataProcessor->getQueryFilterValue($endpoint->value);
-    }
-
-    private function getMethod()
-    {
-        $method = $this->dataProcessor->getSrConfigItem("request_method");
-        if (!$method instanceof SrConfig) {
-            throw new BadRequestHttpException("Request method is not specified in request config");
-        }
-        if (empty($method->value)) {
-            throw new BadRequestHttpException("Request method is invalid");
-        }
-        return $this->dataProcessor->getQueryFilterValue($method->value);
     }
 
     public function setApiRequestName(string $apiRequestName)

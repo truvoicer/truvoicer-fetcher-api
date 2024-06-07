@@ -17,18 +17,33 @@ class ApiClientHandler extends ApiBase
     public function sendRequest(ApiRequest $apiRequest)
     {
         try {
-            $client = $this->addAuthentication(
-                $apiRequest,
-                Http::withHeaders($apiRequest->getHeaders())
-            );
+            $headers = $apiRequest->getHeaders();
+            $client = null;
+            if (in_array('application/x-www-form-urlencoded', $headers)) {
+                unset($headers['application/x-www-form-urlencoded']);
+                $client = Http::asForm();
+            }
+            if (in_array('application/json', $headers)) {
+                unset($headers['application/json']);
+                $client = Http::asJson();
+            }
+            if ($client === null) {
+                $client = Http::asJson();
+            }
+            $client->withHeaders($headers);
+            $client = $this->addAuthentication($apiRequest, $client);
+            if ($apiRequest->getBody()) {
+                $client->withBody($apiRequest->getBody());
+            }
+            if ($apiRequest->getQuery()) {
+                $client->withQueryParameters($apiRequest->getQuery());
+            }
 
             return match ($apiRequest->getMethod()) {
                 ApiRequest::METHOD_GET => $client
-                    ->withQueryParameters($apiRequest->getQuery())
                     ->get($apiRequest->getUrl()),
                 ApiRequest::METHOD_POST => $client
-                    ->withQueryParameters($apiRequest->getQuery())
-                    ->post($apiRequest->getUrl(), $apiRequest->getBody()),
+                    ->post($apiRequest->getUrl(), $apiRequest->getPostBody()),
                 default => throw new Exception('Invalid method'),
             };
         } catch (Exception $e) {
@@ -63,7 +78,7 @@ class ApiClientHandler extends ApiBase
         } elseif (isset($authentication[ApiRequest::AUTH_TOKEN])) {
             $client->withToken(
                 $authentication[ApiRequest::AUTH_TOKEN][ApiRequest::TOKEN],
-                $authentication[ApiRequest::AUTH_DIGEST][ApiRequest::TOKEN_TYPE]
+                $authentication[ApiRequest::AUTH_TOKEN][ApiRequest::TOKEN_TYPE]
             );
         }
         return $client;

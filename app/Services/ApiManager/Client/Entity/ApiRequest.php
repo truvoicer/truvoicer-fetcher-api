@@ -22,19 +22,20 @@ class ApiRequest
     private string $url = "";
     private array $headers = [];
     private array $query = [];
-    private array $body = [];
+    private array $postBody = [];
+    private ?string $body = null;
     private array $authentication = [];
 
     /**
-     * @return mixed
+     * @return string
      */
-    public function getMethod()
+    public function getMethod(): string
     {
         return $this->method;
     }
 
     /**
-     * @param mixed $method
+     * @param string $method
      */
     public function setMethod(string $method = ""): void
     {
@@ -42,9 +43,9 @@ class ApiRequest
     }
 
     /**
-     * @return mixed
+     * @return string
      */
-    public function getUrl()
+    public function getUrl(): string
     {
         return $this->url;
     }
@@ -58,15 +59,15 @@ class ApiRequest
     }
 
     /**
-     * @return mixed
+     * @return array
      */
-    public function getHeaders()
+    public function getHeaders(): array
     {
         return $this->headers;
     }
 
     /**
-     * @param mixed $headers
+     * @param array $headers
      */
     public function setHeaders(array $headers = []): void
     {
@@ -74,15 +75,15 @@ class ApiRequest
     }
 
     /**
-     * @return mixed
+     * @return array
      */
-    public function getQuery()
+    public function getQuery(): array
     {
         return $this->query;
     }
 
     /**
-     * @param mixed $query
+     * @param array $query
      */
     public function setQuery(array $query = []): void
     {
@@ -90,34 +91,34 @@ class ApiRequest
     }
 
     /**
-     * @return mixed
+     * @return array
      */
-    public function getAuthentication()
+    public function getAuthentication(): array
     {
         return $this->authentication;
     }
 
     /**
-     * @param mixed $authentication
+     * @param array $authentication
      */
     public function setAuthentication(array $authentication = []): void
     {
         $this->authentication = $authentication;
     }
 
-    public function addBasicAuthentication(string $username, ?string $password = '') {
+    public function addBasicAuthentication(string $username, ?string $password = ''): void {
         $this->authentication[self::AUTH_BASIC] = [
           self::USERNAME => $username,
           self::PASSWORD => $password
         ];
     }
-    public function addDigestAuthentication(string $username, ?string $password = '') {
+    public function addDigestAuthentication(string $username, ?string $password = ''): void {
         $this->authentication[self::AUTH_DIGEST] = [
           self::USERNAME => $username,
           self::PASSWORD => $password
         ];
     }
-    public function addTokenAuthentication(string $token, ?string $tokenType = self::TOKEN_TYPE_BEARER) {
+    public function addTokenAuthentication(string $token, ?string $tokenType = self::TOKEN_TYPE_BEARER): void {
         $this->authentication[self::AUTH_TOKEN] = [
           self::TOKEN => $token,
           self::TOKEN_TYPE => $tokenType
@@ -125,17 +126,27 @@ class ApiRequest
     }
 
     /**
-     * @return mixed
+     * @return array
      */
-    public function getBody()
+    public function getPostBody(): array
+    {
+        return $this->postBody;
+    }
+
+    /**
+     * @param array $postBody
+     */
+    public function setPostBody(array $postBody): void
+    {
+        $this->postBody = $postBody;
+    }
+
+    public function getBody(): ?string
     {
         return $this->body;
     }
 
-    /**
-     * @param mixed $body
-     */
-    public function setBody($body): void
+    public function setBody(?string $body): void
     {
         $this->body = $body;
     }
@@ -145,6 +156,7 @@ class ApiRequest
         return [
             "url" => $this->getUrl(),
             "headers" => $this->getHeaders(),
+            "post_body" => $this->getPostBody(),
             "body" => $this->getBody(),
             "query" => $this->getQuery(),
             "method" => $this->getMethod(),

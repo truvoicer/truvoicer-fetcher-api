@@ -38,6 +38,7 @@ class DataConstants
 
     public const TOKEN_REQUEST_AUTH_TYPE = 'token_request_auth_type';
     public const TOKEN_REQUEST_HEADERS = 'token_request_headers';
+    public const TOKEN_REQUEST_POST_BODY = 'token_request_post_body';
     public const TOKEN_REQUEST_BODY = 'token_request_body';
     public const TOKEN_REQUEST_QUERY = 'token_request_query';
     public const TOKEN_REQUEST_METHOD = 'token_request_method';
@@ -48,6 +49,7 @@ class DataConstants
     public const BEARER_TOKEN = 'bearer_token';
     public const HEADERS = 'headers';
     public const BODY = 'body';
+    public const POST_BODY = 'post_body';
     public const QUERY = 'query';
     public const METHOD = 'method';
     public const USERNAME = 'username';

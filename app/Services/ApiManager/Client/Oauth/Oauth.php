@@ -27,7 +27,8 @@ class Oauth extends ApiClientHandler
     private OauthAccessTokenRepository $oathTokenRepository;
 
     private array $tokenRequestHeaders;
-    private array $tokenRequestBody;
+    private array $tokenRequestPostBody;
+    private string $tokenRequestBody;
     private array $tokenRequestQuery;
     private string $authType;
     private string $username;
@@ -58,6 +59,7 @@ class Oauth extends ApiClientHandler
             return false;
         }
         $accessToken = $this->checkAccessToken();
+
         if ($accessToken !== null) {
             return $accessToken;
         }
@@ -156,7 +158,11 @@ class Oauth extends ApiClientHandler
                 );
                 break;
         }
-        if (count($this->tokenRequestBody)) {
+        if (count($this->tokenRequestPostBody)) {
+            $this->apiRequest->setPostBody($this->tokenRequestPostBody);
+        }
+
+        if (!empty($this->tokenRequestBody)) {
             $this->apiRequest->setBody($this->tokenRequestBody);
         }
         if (count($this->tokenRequestHeaders)) {
@@ -211,7 +217,12 @@ class Oauth extends ApiClientHandler
         $this->tokenRequestHeaders = $tokenRequestHeaders;
     }
 
-    public function setTokenRequestBody(array $tokenRequestBody): void
+    public function setTokenRequestPostBody(array $tokenRequestPostBody): void
+    {
+        $this->tokenRequestPostBody = $tokenRequestPostBody;
+    }
+
+    public function setTokenRequestBody(string $tokenRequestBody): void
     {
         $this->tokenRequestBody = $tokenRequestBody;
     }
