@@ -88,7 +88,7 @@ class Oauth extends ApiClientHandler
         $response = $response->json();
         if (!isset($response["access_token"]) || !isset($response["expires_in"])) {
             throw new OauthResponseException(
-                "Oauth response error",
+                "Oauth response error | access_token or expires_in not set.",
                 $response->status(),
                 $response->json(),
                 $this->apiRequest

@@ -5,6 +5,7 @@ namespace App\Services\ApiManager\Response;
 use App\Models\Provider;
 use App\Models\Sr;
 use App\Services\ApiManager\Client\Entity\ApiRequest;
+use App\Services\ApiManager\Data\DataProcessor;
 use App\Services\ApiManager\Response\Entity\ApiResponse;
 use App\Services\ApiManager\Response\Handlers\Json\JsonResponseHandler;
 use App\Services\ApiManager\Response\Handlers\Xml\XmlResponseHandler;
@@ -27,7 +28,7 @@ class ResponseManager extends BaseService
 
     private Sr $serviceRequest;
     private Provider $provider;
-    public string $requestType;
+    public string $responseFormat;
 
     public function __construct(JsonResponseHandler $jsonResponseHandler, XmlResponseHandler $xmlResponseHandler)
     {
@@ -49,17 +50,18 @@ class ResponseManager extends BaseService
     {
         try {
             $contentType = 'unknown';
-            $content = null;
+            $content = [];
             switch ($this->getContentType($response)) {
                 case self::CONTENT_TYPE_JSON:
                     $contentType = "json";
-                    $content = $response->json();
+                    $content = $response->json() ?? [];
                     break;
                 case self::CONTENT_TYPE_XML:
                     $contentType = "xml";
                     $content = [$response->body()];
                     break;
             }
+
             return $this->successResponse(
                 $contentType,
                 $content,
@@ -109,7 +111,7 @@ class ResponseManager extends BaseService
 
     public function setResponseDefaults(ApiResponse $apiResponse)
     {
-        $apiResponse->setRequestType($this->requestType);
+        $apiResponse->setRequestType($this->responseFormat);
         $apiResponse->setServiceRequest([
             'id' => $this->serviceRequest->id,
             'name' => $this->serviceRequest->name,
@@ -165,7 +167,13 @@ class ResponseManager extends BaseService
     private function getContentType(Response $response)
     {
         $contentTypeArray = [];
+
+        if (!empty($this->responseFormat)) {
+            return $this->responseFormat;
+        }
+
         $headers = $response->headers();
+
         foreach ($headers as $key => $item) {
             if (strtolower($key) === "content-type") {
                 $contentTypeArray = $item;
@@ -218,9 +226,9 @@ class ResponseManager extends BaseService
         $this->provider = $provider;
     }
 
-    public function setRequestType(string $requestType): void
+    public function setResponseFormat(string $responseFormat): void
     {
-        $this->requestType = $requestType;
+        $this->responseFormat = $responseFormat;
     }
 
 }

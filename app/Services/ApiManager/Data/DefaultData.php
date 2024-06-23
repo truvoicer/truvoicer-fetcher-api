@@ -93,6 +93,15 @@ class DefaultData
                 ]
             ],
             [
+                DataConstants::REQUEST_CONFIG_ITEM_NAME => DataConstants::RESPONSE_FORMAT,
+                DataConstants::REQUEST_CONFIG_ITEM_LABEL => "Response Format",
+                DataConstants::REQUEST_CONFIG_ITEM_SELECTED_VALUE_TYPE => 'choice',
+                DataConstants::REQUEST_CONFIG_ITEM_VALUE_CHOICES => [
+                    'json',
+                    'xml'
+                ]
+            ],
+            [
                 DataConstants::REQUEST_CONFIG_ITEM_NAME => DataConstants::BASE_URL,
                 DataConstants::REQUEST_CONFIG_ITEM_LABEL => "Base Url",
                 DataConstants::REQUEST_CONFIG_ITEM_SELECTED_VALUE_TYPE => 'text',

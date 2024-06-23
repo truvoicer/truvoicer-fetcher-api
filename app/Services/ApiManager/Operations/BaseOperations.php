@@ -73,7 +73,7 @@ class BaseOperations extends ApiBase
     {
         $this->responseManager->setServiceRequest($this->apiService);
         $this->responseManager->setProvider($this->provider);
-        $this->responseManager->setRequestType($requestType);
+        $this->responseManager->setResponseFormat($this->dataProcessor->getConfigValue(DataConstants::RESPONSE_FORMAT));
         $apiResponse = new ApiResponse();
         $apiResponse->setStatus("error");
         $apiResponse = $this->responseManager->setResponseDefaults($apiResponse);
@@ -255,6 +255,7 @@ class BaseOperations extends ApiBase
                 break;
         }
         $this->eventsService->apiSendRequestEvent($this->apiRequest);
+
         try {
             return $this->apiClientHandler->sendRequest($this->apiRequest);
         } catch (Exception $exception) {

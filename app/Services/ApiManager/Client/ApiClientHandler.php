@@ -19,14 +19,16 @@ class ApiClientHandler extends ApiBase
         try {
             $headers = $apiRequest->getHeaders();
             $client = null;
-            if (in_array('application/x-www-form-urlencoded', $headers)) {
-                unset($headers['application/x-www-form-urlencoded']);
-                $client = Http::asForm();
+            if (array_key_exists('Content-Type', $headers)) {
+                if ($headers['Content-Type'] === 'application/x-www-form-urlencoded') {
+                    unset($headers['Content-Type']);
+                    $client = Http::asForm();
+                } else if ($headers['Content-Type'] === 'application/json') {
+                    unset($headers['Content-Type']);
+                    $client = Http::asJson();
+                }
             }
-            if (in_array('application/json', $headers)) {
-                unset($headers['application/json']);
-                $client = Http::asJson();
-            }
+
             if ($client === null) {
                 $client = Http::asJson();
             }

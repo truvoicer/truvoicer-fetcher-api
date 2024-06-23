@@ -56,6 +56,7 @@ class DataConstants
     public const PASSWORD = 'password';
     public const TOKEN = 'token';
     public const ENDPOINT = 'endpoint';
+    public const RESPONSE_FORMAT = 'response_format';
 
     const PARAM_FILTER_KEYS = [
         "API_BASE_URL" => [
