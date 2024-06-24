@@ -10,6 +10,8 @@ use App\Services\ApiManager\ApiBase;
 use App\Services\ApiManager\Data\DataConstants;
 use App\Services\ApiManager\Data\DefaultData;
 use App\Services\BaseService;
+use App\Services\Property\PropertyService;
+use App\Services\Provider\ProviderService;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 
 class SrConfigService extends BaseService
@@ -24,12 +26,10 @@ class SrConfigService extends BaseService
 
     private PropertyRepository $propertyRepository;
     private SrConfigRepository $requestConfigRepo;
-    private SrService $srService;
 
-    public function __construct(SrService $srService)
+    public function __construct(private ProviderService $providerService, private SrService $srService)
     {
         parent::__construct();
-        $this->srService = $srService;
         $this->propertyRepository = new PropertyRepository();
         $this->requestConfigRepo = new SrConfigRepository();
     }
@@ -38,15 +38,21 @@ class SrConfigService extends BaseService
         return $this->requestConfigRepo->findBySr($serviceRequest);
     }
 
-    public function findConfigForOperationBySr(Sr $serviceRequest) {
+    public function findConfigForOperationBySr(Sr $serviceRequest, ?array $properties = null) {
         $parentServiceRequest = $this->srService->findParentSr($serviceRequest);
         if (!$parentServiceRequest instanceof Sr) {
-            return $this->findBySr($serviceRequest);
+            return (is_array($properties))
+                ? $this->requestConfigRepo->findByParams($serviceRequest, $properties)
+                : $this->requestConfigRepo->findBySr($serviceRequest);
         }
         if (empty($serviceRequest->pivot) || empty($serviceRequest->pivot->config_override)) {
-            return $this->findBySr($parentServiceRequest);
+            return (is_array($properties))
+                ? $this->requestConfigRepo->findByParams($parentServiceRequest, $properties)
+                : $this->requestConfigRepo->findBySr($parentServiceRequest);
         }
-        return $this->findBySr($serviceRequest);
+        return (is_array($properties))
+            ? $this->requestConfigRepo->findByParams($serviceRequest, $properties)
+            : $this->requestConfigRepo->findBySr($serviceRequest);
     }
 
     public function findByParams(Sr $serviceRequest) {
@@ -59,6 +65,30 @@ class SrConfigService extends BaseService
         );
     }
 
+    public function getConfigValue(Sr $sr, string $parameterName, ?bool $includeParent = true)
+    {
+        $srConfig = $this->findSrConfigItem($sr, $parameterName);
+        if ($srConfig instanceof Property) {
+            return PropertyService::getPropertyValue($srConfig->value_type, $srConfig->srConfig);
+        }
+        if ($includeParent) {
+            return $this->providerService->getProviderPropertyValue($sr->provider()->first(), $parameterName);
+        }
+        return null;
+    }
+
+    public function findSrConfigItem(Sr $sr, string $parameterName)
+    {
+        $findConfig = $this->findConfigForOperationBySr($sr, [$parameterName]);
+        $property = $findConfig->first();
+        if (!$property instanceof Property) {
+            return null;
+        }
+        if (!$property->srConfig instanceof SrConfig) {
+            return null;
+        }
+        return $property;
+    }
 
     public function requestConfigValidator(Sr $serviceRequest, ?bool $requiredOnly = false) {
         $provider = $serviceRequest->provider()->first();

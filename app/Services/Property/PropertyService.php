@@ -3,6 +3,8 @@ namespace App\Services\Property;
 
 use App\Models\Property;
 use App\Models\Provider;
+use App\Models\ProviderProperty;
+use App\Models\SrConfig;
 use App\Repositories\PropertyRepository;
 use App\Services\BaseService;
 use App\Services\Permission\AccessControlService;
@@ -24,6 +26,17 @@ class PropertyService extends BaseService {
     }
     public function getAllPropertiesArray() {
         return $this->propertyRepository->getAllPropertiesArray();
+    }
+
+    public static function getPropertyValue(string $valueType, ProviderProperty|SrConfig $property) {
+        switch ($valueType) {
+            case 'choice':
+            case 'text':
+                return $property->value;
+            case 'list':
+                return $property->array_value;
+        }
+        return null;
     }
 
     private function setPropertyObject(array $propertyData) {

@@ -3,6 +3,7 @@
 namespace App\Services\ApiServices\ServiceRequests;
 
 //use App\Models\ResponseKeyRequestItem;
+use App\Exceptions\SrValidationException;
 use App\Models\Provider;
 use App\Models\Sr;
 use App\Models\SrConfig;
@@ -14,6 +15,7 @@ use App\Repositories\SResponseKeyRepository;
 use App\Repositories\SrRepository;
 use App\Repositories\SrResponseKeyRepository;
 use App\Repositories\SrResponseKeySrRepository;
+use App\Services\ApiManager\Data\DataConstants;
 use App\Services\BaseService;
 use App\Services\Permission\AccessControlService;
 use App\Services\Permission\PermissionService;
@@ -23,27 +25,22 @@ use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 
 class SrResponseKeyService extends BaseService
 {
-    private SrService $srService;
-    private SrRepository $srRepository;
     private SrResponseKeyRepository $srResponseKeyRepository;
     private SrResponseKeySrRepository $srResponseKeySrRepository;
     private SResponseKeyRepository $SResponseKeyRepository;
     private SrConfigRepository $srConfigRepository;
-    private AccessControlService $accessControlService;
 
     public function __construct(
-        AccessControlService $accessControlService,
-        SrService $srService
+        private AccessControlService $accessControlService,
+        private SrService $srService,
+        private SrConfigService $srConfigService
     )
     {
         parent::__construct();
-        $this->srService = $srService;
-        $this->srRepository = new SrRepository();
         $this->SResponseKeyRepository = new SResponseKeyRepository();
         $this->srResponseKeyRepository = new SrResponseKeyRepository();
         $this->srConfigRepository = new SrConfigRepository();
         $this->srResponseKeySrRepository = new SrResponseKeySrRepository();
-        $this->accessControlService = $accessControlService;
     }
 
     public function findByParams(string $sort, string $order, int $count = -1)
@@ -64,24 +61,26 @@ class SrResponseKeyService extends BaseService
         }
         return $this->srResponseKeyRepository->findSrResponseKeysWithRelation($serviceRequest);
     }
-    public function getResponseKeysByRequest(Provider $provider, Sr $serviceRequest)
-    {
-        return $this->SResponseKeyRepository->getResponseKeysByRequest($provider, $serviceRequest);
-    }
+
 
     public function validateSrResponseKeys(Sr $sr, ?bool $requiredOnly = false)
     {
-        $configItem = $this->srConfigRepository->getRequestConfigByName($sr, 'content_type');
-        if (!$configItem instanceof SrConfig) {
-            $this->addError(
-                'validation_sr_r_key_content_type_not_found',
-                sprintf("Service request id:%s does not have a content_type config item.", $sr->id)
+        $responseFormatValue = $this->srConfigService->getConfigValue($sr, DataConstants::RESPONSE_FORMAT);
+        $provider = $sr->provider()->first();
+        if (empty($responseFormatValue)) {
+            throw new SrValidationException(
+                sprintf(
+                    "Service request (id:%s | name:%s | provider id:%s name: %s) does not have a response_format property/config value.",
+                    $sr->id,
+                    $sr->name,
+                    $provider->id,
+                    $provider->name
+                )
             );
-            return false;
         }
         return $this->SResponseKeyRepository->createDefaultServiceResponseKeys(
             $sr->s()->first(),
-            $configItem->value,
+            $responseFormatValue,
             $requiredOnly
         );
     }

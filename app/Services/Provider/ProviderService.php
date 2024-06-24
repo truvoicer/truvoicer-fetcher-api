@@ -141,7 +141,7 @@ class ProviderService extends BaseService
         return $this->providerPropertyRepository->findAllProviderProperties($provider, $properties);
     }
 
-    public function getProviderPropertyValue(Provider $provider, string $propertyName)
+    public function getProviderPropertyItem(Provider $provider, string $propertyName)
     {
         $property = $this->getProviderPropertyObjectByName($provider, $propertyName);
         if (!$property instanceof Property) {
@@ -150,7 +150,16 @@ class ProviderService extends BaseService
         if (!$property->providerProperty instanceof ProviderProperty ) {
             return null;
         }
-        return $property->providerProperty->value;
+        return $property;
+    }
+
+    public function getProviderPropertyValue(Provider $provider, string $propertyName)
+    {
+        $property = $this->getProviderPropertyItem($provider, $propertyName);
+        if (!$property) {
+            return null;
+        }
+        return PropertyService::getPropertyValue($property->value_type, $property->providerProperty);
     }
 
     private function setProviderObject(array $providerData)

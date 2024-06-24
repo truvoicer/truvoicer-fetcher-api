@@ -457,9 +457,8 @@ class ServiceRequestController extends Controller
         } else {
             $runApiRequest = $requestOperation->getOperationRequestContent($data);
         }
-
         return new JsonResponse(
-            $this->serializerService->entityToArray($runApiRequest),
+            $runApiRequest,
             Response::HTTP_OK
         );
     }
