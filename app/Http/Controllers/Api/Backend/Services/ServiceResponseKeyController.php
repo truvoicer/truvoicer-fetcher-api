@@ -275,7 +275,7 @@ class ServiceResponseKeyController extends Controller
             return $this->sendErrorResponse("Access denied");
         }
 
-        if (!$this->responseKeysService->deleteBatch($request->get('ids'))) {
+        if (!$this->responseKeysService->deleteBatch($request->validated('ids'))) {
             return $this->sendErrorResponse(
                 "Error deleting service response keys",
             );

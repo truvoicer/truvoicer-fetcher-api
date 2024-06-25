@@ -164,7 +164,7 @@ class SResponseKeysService extends BaseService
         if (!count($ids)) {
             throw new BadRequestHttpException("No service ids provided.");
         }
-        return $this->serviceRepository->deleteBatch($ids);
+        return $this->responseKeyRepository->deleteBatch($ids);
     }
 
     public function getResponseKeyRepository(): SResponseKeyRepository

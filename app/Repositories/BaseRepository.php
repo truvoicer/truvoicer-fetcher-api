@@ -337,6 +337,7 @@ class BaseRepository
     }
 
     public function deleteBatch(array $ids) {
+        $ids = array_map('intval', $ids);
         foreach ($ids as $index => $id) {
             if ($index === 0) {
                 $this->addWhere('id', $id);
