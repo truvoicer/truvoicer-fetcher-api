@@ -258,12 +258,13 @@ class BaseRepository
             $query = $this->addWithToQuery($query);
         }
 
-        $query->limit($this->limit);
 //        $query->offset($this->offset);
         if ($this->sortField) {
             $query->orderBy($this->sortField, $this->orderDir);
         }
-
+        if (!$this->paginate && $this->limit > -1) {
+            $query->limit($this->limit);
+        }
         if ($this->paginate) {
             return $query->paginate($this->perPage);
         }

@@ -74,13 +74,22 @@ class ServiceRequestResponseKeyController extends Controller
                 $this->srResponseKeyService->getSrResponseKeyRepository()->getErrors()
             );
         }
-            $responseKeys = $this->srResponseKeyService->getRequestResponseKeys(
-                $serviceRequest,
-                $request->get('sort', "name"),
-                $request->get('order', "asc"),
-                $request->get('count', -1),
-                $request->query->filter('pagination', true, FILTER_VALIDATE_BOOLEAN)
-            );
+        $this->srResponseKeyService->getSrResponseKeyRepository()->setPagination(
+            $request->query->filter('pagination', true, FILTER_VALIDATE_BOOLEAN)
+        );
+        $this->srResponseKeyService->getSrResponseKeyRepository()->setSortField(
+            $request->get('sort', "name")
+        );
+        $this->srResponseKeyService->getSrResponseKeyRepository()->setOrderDir(
+            $request->get('order', "asc")
+        );
+
+        $this->srResponseKeyService->getSrResponseKeyRepository()->setPerPage(
+            $request->get('count', -1)
+        );
+        $responseKeys = $this->srResponseKeyService->getRequestResponseKeys(
+            $serviceRequest,
+        );
 
         return $this->sendSuccessResponse(
             "success",

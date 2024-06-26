@@ -93,8 +93,11 @@ Route::middleware(['auth:sanctum', 'ability:api:admin,api:superuser,api:super_ad
             });
         });
         Route::get('/permission/entity/list', [UserController::class, 'getProtectedEntitiesList'])->name('entity.list');
-        Route::get('/sr/type/list', [ServiceRequestController::class, 'getTypeList'])->name('sr.type.list');
 
+        Route::prefix('sr')->name('sr.')->group(function () {
+            Route::get('/list', [ServiceRequestController::class, 'getServiceRequestList'])->name('list');
+            Route::get('/type/list', [ServiceRequestController::class, 'getTypeList'])->name('type.list');
+        });
         Route::prefix('category')->name('category.')->group(function () {
             Route::get('/list', [CategoryController::class, 'getCategories'])->name('list');
             Route::post('/create', [CategoryController::class, 'createCategory'])->name('create');
@@ -131,7 +134,7 @@ Route::middleware(['auth:sanctum', 'ability:api:admin,api:superuser,api:super_ad
                     Route::delete('/{property}/delete', [ProviderPropertyController::class, 'deleteProviderProperty'])->name('delete');
                 });
                 Route::prefix('service-request')->name('service-request.')->group(function () {
-                    Route::get('/list', [ServiceRequestController::class, 'getServiceRequestList'])->name('list');
+                    Route::get('/list', [ServiceRequestController::class, 'getProviderServiceRequestList'])->name('list');
                     Route::get('/service/{service}', [ServiceRequestController::class, 'getProviderServiceRequest'])->name('service.detail');
                     Route::get('/test-run', [ServiceRequestController::class, 'runApiRequest'])->name('test-run');
                     Route::post('/response-keys/merge', [ServiceRequestController::class, 'mergeServiceRequestResponseKeys'])->name('response-keys.merge');

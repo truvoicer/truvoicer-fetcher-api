@@ -8,7 +8,9 @@ use App\Models\Provider;
 use App\Models\S;
 use App\Models\Sr;
 use App\Models\SrChildSr;
+use App\Models\User;
 use App\Services\Category\CategoryService;
+use App\Services\Permission\PermissionService;
 use Illuminate\Database\Eloquent\Collection;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 
@@ -45,6 +47,31 @@ class SrRepository extends BaseRepository
     {
         return $this->getResults(
             $serviceRequest->srParameter()
+        );
+    }
+
+    public function getUserServiceRequestByProviderIds(User $user, array $providerIds)
+    {
+        $this->setPermissions([
+            PermissionService::PERMISSION_ADMIN,
+            PermissionService::PERMISSION_READ,
+        ]);
+        if (is_null($this->query)) {
+            $this->setQuery($this->buildQuery());
+        }
+        return $this->getResults(
+            $this->query
+                ->whereHas('provider', function ($query) use ($user, $providerIds) {
+                    $query->whereIn('id', $providerIds);
+                    $query->whereHas('providerUser', function ($query) use ($user) {
+                        $query->where('user_id', $user->id);
+                        $query->whereHas('providerUserPermission', function ($query) {
+                            $query->whereHas('permission', function ($query) {
+                                $query->whereIn('name', $this->permissions);
+                            });
+                        });
+                    });
+                })
         );
     }
     public function getServiceRequestByProvider(Provider $provider) {

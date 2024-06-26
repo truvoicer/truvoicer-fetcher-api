@@ -5,6 +5,7 @@ namespace App\Services\ApiServices\ServiceRequests;
 use App\Models\S;
 use App\Models\Provider;
 use App\Models\Sr;
+use App\Models\User;
 use App\Repositories\SrChildSrRepository;
 use App\Repositories\SrRepository;
 use App\Repositories\SrResponseKeyRepository;
@@ -68,6 +69,14 @@ class SrService extends BaseService
             throw new BadRequestHttpException("Service request does not exist in database.");
         }
         return $getServiceRequest;
+    }
+
+    public function getUserServiceRequestByProviderIds(User $user, array $providerIds)
+    {
+        $this->serviceRequestRepository->setPagination(true);
+        return $this->serviceRequestRepository->getUserServiceRequestByProviderIds(
+            $user, $providerIds
+        );
     }
 
     public function getUserServiceRequestByProvider(Provider $provider)

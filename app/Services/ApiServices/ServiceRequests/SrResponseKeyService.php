@@ -100,14 +100,9 @@ class SrResponseKeyService extends BaseService
 
     public function getRequestResponseKeys(
         Sr $serviceRequest,
-        string $sort = "name",
-        string $order = "asc",
-        ?int $count = null,
-        bool $pagination = true
     ): LengthAwarePaginator|Collection
     {
-        $this->srResponseKeyRepository->setPagination($pagination);
-        return $this->srResponseKeyRepository->findSrResponseKeysWithRelation($serviceRequest, $sort, $order, $count);
+        return $this->srResponseKeyRepository->findSrResponseKeysWithRelation($serviceRequest);
     }
 
     private function getResponseKeySrsFromRequest($requestData)

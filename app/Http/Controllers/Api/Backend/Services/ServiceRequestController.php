@@ -81,7 +81,7 @@ class ServiceRequestController extends Controller
      * Returns a list of service requests based on the request query parameters
      *
      */
-    public function getServiceRequestList(Provider $provider, Request $request): \Illuminate\Http\JsonResponse
+    public function getProviderServiceRequestList(Provider $provider, Request $request): \Illuminate\Http\JsonResponse
     {
         $this->setAccessControlUser($request->user());
         if (
@@ -108,6 +108,44 @@ class ServiceRequestController extends Controller
         }
         $getServices = $this->srService->getUserServiceRequestByProvider(
             $provider,
+        );
+
+        if ($request->query->getBoolean('tree_view', false)) {
+            return $this->sendSuccessResponse(
+                "success",
+                new SrTreeViewCollection($getServices)
+            );
+        }
+        return $this->sendSuccessResponse(
+            "success",
+            new ServiceRequestCollection($getServices)
+        );
+    }
+    /**
+     * Get list of service requests function
+     * Returns a list of service requests based on the request query parameters
+     *
+     */
+    public function getServiceRequestList(Request $request): \Illuminate\Http\JsonResponse
+    {
+        $this->srService->getServiceRequestRepository()
+            ->setSortField($request->get('sort', "name"))
+            ->setOrderDir($request->get('order', "asc"))
+            ->setLimit($request->get('count', -1));
+        if (!$request->query->getBoolean('include_children', false)) {
+            $this->srService->getServiceRequestRepository()->setWhereDoesntHave(['parentSrs']);
+        }
+        if ($request->query->getBoolean('show_nested_children', false)) {
+            $this->srService->getServiceRequestRepository()->setWith(['childSrs']);
+        }
+        $providerIds = $request->get('provider_ids');
+        if (empty($providerIds)) {
+            return $this->sendErrorResponse("Provider ids not found in the request.");
+        }
+
+        $getServices = $this->srService->getUserServiceRequestByProviderIds(
+            $request->user(),
+            array_map(fn($id) => (int)trim($id), $providerIds)
         );
 
         if ($request->query->getBoolean('tree_view', false)) {
