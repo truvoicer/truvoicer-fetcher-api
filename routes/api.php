@@ -95,7 +95,7 @@ Route::middleware(['auth:sanctum', 'ability:api:admin,api:superuser,api:super_ad
         Route::get('/permission/entity/list', [UserController::class, 'getProtectedEntitiesList'])->name('entity.list');
 
         Route::prefix('sr')->name('sr.')->group(function () {
-            Route::get('/list', [ServiceRequestController::class, 'getServiceRequestList'])->name('list');
+            Route::post('/list', [ServiceRequestController::class, 'getServiceRequestList'])->name('list');
             Route::get('/type/list', [ServiceRequestController::class, 'getTypeList'])->name('type.list');
         });
         Route::prefix('category')->name('category.')->group(function () {

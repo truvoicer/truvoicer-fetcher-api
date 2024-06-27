@@ -138,14 +138,14 @@ class ServiceRequestController extends Controller
         if ($request->query->getBoolean('show_nested_children', false)) {
             $this->srService->getServiceRequestRepository()->setWith(['childSrs']);
         }
-        $providerIds = $request->get('provider_ids');
-        if (empty($providerIds)) {
+        $providerIds = $request->get('provider_ids', []);
+        if (!count($providerIds)) {
             return $this->sendErrorResponse("Provider ids not found in the request.");
         }
 
         $getServices = $this->srService->getUserServiceRequestByProviderIds(
             $request->user(),
-            array_map(fn($id) => (int)trim($id), $providerIds)
+            $providerIds
         );
 
         if ($request->query->getBoolean('tree_view', false)) {
