@@ -43,10 +43,34 @@ class SrRepository extends BaseRepository
         );
     }
 
-    public function findBySr(Sr $serviceRequest)
+    public function userPermissionsQuery(User $user, $query)
     {
+        $query->whereHas('providerUser', function ($query) use ($user) {
+            $query->where('user_id', $user->id);
+            $query->whereHas('providerUserPermission', function ($query) {
+                $query->whereHas('permission', function ($query) {
+                    $query->whereIn('name', $this->permissions);
+                });
+            });
+        });
+        return $query;
+    }
+
+    public function getUserServiceRequestByIds(User $user, array $ids)
+    {
+        $this->setPermissions([
+            PermissionService::PERMISSION_ADMIN,
+            PermissionService::PERMISSION_READ,
+        ]);
+        if (is_null($this->query)) {
+            $this->setQuery($this->buildQuery());
+        }
         return $this->getResults(
-            $serviceRequest->srParameter()
+            $this->query
+                ->whereIn('id', $ids)
+                ->whereHas('provider', function ($query) use ($user, $ids) {
+                    $query = $this->userPermissionsQuery($user, $query);
+                })
         );
     }
 
@@ -63,14 +87,7 @@ class SrRepository extends BaseRepository
             $this->query
                 ->whereHas('provider', function ($query) use ($user, $providerIds) {
                     $query->whereIn('id', $providerIds);
-                    $query->whereHas('providerUser', function ($query) use ($user) {
-                        $query->where('user_id', $user->id);
-                        $query->whereHas('providerUserPermission', function ($query) {
-                            $query->whereHas('permission', function ($query) {
-                                $query->whereIn('name', $this->permissions);
-                            });
-                        });
-                    });
+                    $query = $this->userPermissionsQuery($user, $query);
                 })
         );
     }

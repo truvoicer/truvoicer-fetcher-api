@@ -6,8 +6,9 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Service\Request\ResponseKey\CreateServiceRequestResponseKeyRequest;
 use App\Http\Requests\Service\Request\ResponseKey\DeleteBatchSrResponseKeyRequest;
 use App\Http\Requests\Service\Request\ResponseKey\UpdateServiceRequestResponseKeyRequest;
-use App\Http\Resources\ServiceRequestResponseKeyCollection;
-use App\Http\Resources\ServiceRequestResponseKeyResource;
+use App\Http\Resources\Service\ServiceRequest\SrResponseKeyResource;
+use App\Http\Resources\Service\ServiceRequest\SrResponseKeyWithServiceCollection;
+use App\Http\Resources\Service\ServiceRequest\SrResponseKeyWithServiceResource;
 use App\Models\Provider;
 use App\Models\Sr;
 use App\Models\SResponseKey;
@@ -93,7 +94,7 @@ class ServiceRequestResponseKeyController extends Controller
 
         return $this->sendSuccessResponse(
             "success",
-            new ServiceRequestResponseKeyCollection($responseKeys)
+            new SrResponseKeyWithServiceCollection($responseKeys)
         );
     }
 
@@ -122,7 +123,7 @@ class ServiceRequestResponseKeyController extends Controller
         }
         return $this->sendSuccessResponse(
             "success",
-            new ServiceRequestResponseKeyResource($srResponseKey)
+            new SrResponseKeyResource($srResponseKey)
         );
     }
     public function getRequestResponseKeyByResponseKey(
@@ -152,7 +153,7 @@ class ServiceRequestResponseKeyController extends Controller
         }
         return $this->sendSuccessResponse(
             "success",
-            new ServiceRequestResponseKeyResource($find)
+            new SrResponseKeyWithServiceResource($find)
         );
     }
 
@@ -209,7 +210,7 @@ class ServiceRequestResponseKeyController extends Controller
         }
         return $this->sendSuccessResponse(
             "Successfully added response key.",
-            new ServiceRequestResponseKeyResource(
+            new SrResponseKeyResource(
                 $this->srResponseKeyService->getSrResponseKeyRepository()->getModel()
             )
         );
@@ -244,7 +245,7 @@ class ServiceRequestResponseKeyController extends Controller
         }
         return $this->sendSuccessResponse(
             "Successfully added response key.",
-            new ServiceRequestResponseKeyResource(
+            new SrResponseKeyResource(
                 $this->srResponseKeyService->getSrResponseKeyRepository()->getModel()
             )
         );
@@ -286,7 +287,7 @@ class ServiceRequestResponseKeyController extends Controller
         }
         return $this->sendSuccessResponse(
             "Service response key updated",
-            new ServiceRequestResponseKeyResource(
+            new SrResponseKeyResource(
                 $this->srResponseKeyService->getSrResponseKeyRepository()->getModel()
             )
         );

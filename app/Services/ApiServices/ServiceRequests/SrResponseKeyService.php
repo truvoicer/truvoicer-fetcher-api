@@ -152,21 +152,13 @@ class SrResponseKeyService extends BaseService
         $provider = $serviceRequest->provider()->first();
 
         $srIds = $this->getResponseKeySrsFromRequest($data);
+
         if (!count($srIds)) {
             return false;
         }
         $this->accessControlService->setUser($user);
-        $srs = $provider->sr()->whereIn('id', $srIds)->get()->filter(function (Sr $sr) {
-            return (
-                $this->accessControlService->checkPermissionsForEntity(
-                    $sr->provider()->first(),
-                    [
-                        PermissionService::PERMISSION_ADMIN,
-                        PermissionService::PERMISSION_READ,
-                    ],
-                )
-            );
-        });
+
+        $srs = $this->srService->getServiceRequestRepository()->getUserServiceRequestByIds($user, $srIds);
 
         $srIds = $srs->map(function (Sr $sr) {
             return $sr->id;

@@ -1,11 +1,12 @@
 <?php
 
-namespace App\Http\Resources;
+namespace App\Http\Resources\Service\ServiceRequest;
 
+use App\Http\Resources\BaseCollection;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\ResourceCollection;
 
-class ServiceRequestResponseKeyCollection extends BaseCollection
+class SrResponseKeySrsCollection extends ResourceCollection
 {
     /**
      * Transform the resource collection into an array.
@@ -13,8 +14,7 @@ class ServiceRequestResponseKeyCollection extends BaseCollection
      * @return array<int|string, mixed>
      */
 
-    public static $wrap = 'service_request_response_keys';
-    public $collects = ServiceRequestResponseKeyResource::class;
+    public $collects = SrResponseKeySrsResource::class;
     public function toArray(Request $request): array
     {
         return parent::toArray($request);

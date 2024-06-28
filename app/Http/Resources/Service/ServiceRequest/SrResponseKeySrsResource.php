@@ -6,7 +6,7 @@ use App\Http\Resources\ProviderMinimalResource;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
-class ServiceRequestResource extends JsonResource
+class SrResponseKeySrsResource extends JsonResource
 {
     /**
      * Transform the resource into an array.
@@ -17,8 +17,6 @@ class ServiceRequestResource extends JsonResource
     {
         $data = parent::toArray($request);
         $data['provider'] = new ProviderMinimalResource($this->provider);
-        $data['pivot'] = $this->pivot;
-        $data['hasChildren'] = $this->childSrs->count() > 0;
         return $data;
     }
 }

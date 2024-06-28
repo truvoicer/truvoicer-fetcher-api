@@ -131,7 +131,8 @@ class ServiceRequestController extends Controller
         $this->srService->getServiceRequestRepository()
             ->setSortField($request->get('sort', "name"))
             ->setOrderDir($request->get('order', "asc"))
-            ->setLimit($request->get('count', -1));
+            ->setLimit($request->get('count', -1))
+            ->setWith(['provider']);
         if (!$request->query->getBoolean('include_children', false)) {
             $this->srService->getServiceRequestRepository()->setWhereDoesntHave(['parentSrs']);
         }
