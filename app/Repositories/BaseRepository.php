@@ -266,7 +266,9 @@ class BaseRepository
             $query->limit($this->limit);
         }
         if ($this->paginate) {
-            return $query->paginate($this->perPage);
+            return $query->paginate(
+                ($this->perPage > -1) ? $this->perPage : 10000
+            );
         }
         return $query->get();
     }

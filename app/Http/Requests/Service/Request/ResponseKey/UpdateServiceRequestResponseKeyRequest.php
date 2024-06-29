@@ -3,6 +3,7 @@
 namespace App\Http\Requests\Service\Request\ResponseKey;
 
 use App\Models\Sr;
+use App\Rules\StringOrInteger;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -36,10 +37,15 @@ class UpdateServiceRequestResponseKeyRequest extends FormRequest
             'prepend_extra_data_value' => 'string|nullable',
             'is_service_request' => 'nullable|boolean',
             'array_keys' => 'nullable|array',
-            'response_key_srs.*' => Rule::forEach(function ($value, string $attribute) {
+            'response_key_srs.*.id' => Rule::forEach(function ($value, string $attribute) {
                 return [
                     'required_if_accepted:is_service_request',
                     Rule::exists(Sr::class, 'id'),
+                ];
+            }),
+            'response_key_srs.*.response_keys.*' => Rule::forEach(function ($value, string $attribute) {
+                return [
+                    'string'
                 ];
             })
         ];

@@ -105,20 +105,26 @@ class SrResponseKeyService extends BaseService
         return $this->srResponseKeyRepository->findSrResponseKeysWithRelation($serviceRequest);
     }
 
-    private function getResponseKeySrsFromRequest($requestData)
+    private function filterResponseKeySrs(array $requestData)
     {
-        if (!array_key_exists("response_key_srs", $requestData)) {
-            return false;
-        }
-        if (!is_array($requestData["response_key_srs"])) {
-            return false;
-        }
-        $filter = array_filter($requestData["response_key_srs"], function ($item) {
+        return array_filter($requestData, function ($item) {
             return (!empty($item["id"]) && is_numeric($item["id"]));
         });
-        return array_map(function ($item) {
-            return $item["id"];
-        }, $filter);
+    }
+
+    private function prepareResponseKeySrsSaveData(array $requestData)
+    {
+        $srsData = [];
+        foreach ($requestData as $srData) {
+            if (!empty($srData['response_keys']) && is_array($srData['response_keys'])) {
+                $srsData[$srData['id']] = [
+                    'response_keys' => $srData['response_keys']
+                ];
+            } else {
+                $srsData[] = $srData['id'];
+            }
+        }
+        return $srsData;
     }
 
     public function setRequestResponseKeyObject(array $data)
@@ -147,26 +153,29 @@ class SrResponseKeyService extends BaseService
         return $requestResponseKeyData;
     }
 
-    public function saveSrResponseKeySrs(User $user, Sr $serviceRequest, SrResponseKey $srResponseKey, array $data)
+    public function saveSrResponseKeySrs(User $user, SrResponseKey $srResponseKey, array $data)
     {
-        $provider = $serviceRequest->provider()->first();
-
-        $srIds = $this->getResponseKeySrsFromRequest($data);
-
-        if (!count($srIds)) {
+        $filterResponseKeySrs = $this->filterResponseKeySrs(
+            (!empty($data["response_key_srs"]) && is_array($data["response_key_srs"]))
+                ? $data["response_key_srs"]
+                : []
+        );
+        if (!count($filterResponseKeySrs)) {
             return false;
         }
+        $srIds = array_map(fn ($item) => $item['id'], $filterResponseKeySrs);
+
         $this->accessControlService->setUser($user);
 
         $srs = $this->srService->getServiceRequestRepository()->getUserServiceRequestByIds($user, $srIds);
 
-        $srIds = $srs->map(function (Sr $sr) {
-            return $sr->id;
-        })->toArray();
+        $filterResponseKeySrs = array_filter($filterResponseKeySrs, function ($item) use($srs) {
+            return $srs->where('id', $item['id'])->count() > 0;
+        });
 
-        $this->srResponseKeySrRepository->saveResponseKeySr(
+        $this->srResponseKeySrRepository->syncResponseKeySrs(
             $srResponseKey,
-            $srIds
+            $this->prepareResponseKeySrsSaveData($filterResponseKeySrs)
         );
         return true;
     }
@@ -185,7 +194,6 @@ class SrResponseKeyService extends BaseService
         if ($srResponseKey->is_service_request) {
             $createResponseKey = $this->saveSrResponseKeySrs(
                 $user,
-                $serviceRequest,
                 $srResponseKey,
                 $data
             );
@@ -208,7 +216,6 @@ class SrResponseKeyService extends BaseService
         if ($srResponseKey->is_service_request) {
             $save = $this->saveSrResponseKeySrs(
                 $user,
-                $serviceRequest,
                 $srResponseKey,
                 $data
             );
@@ -229,7 +236,6 @@ class SrResponseKeyService extends BaseService
         if ($srResponseKey->is_service_request) {
             $save = $this->saveSrResponseKeySrs(
                 $user,
-                $serviceRequest,
                 $srResponseKey,
                 $data
             );

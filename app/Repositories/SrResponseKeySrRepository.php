@@ -20,13 +20,40 @@ class SrResponseKeySrRepository extends BaseRepository
         return parent::getModel();
     }
 
-    public function saveResponseKeySr(SrResponseKey $srResponseKey,  array $srIds)
+    public function syncResponseKeySrs(SrResponseKey $srResponseKey, array $syncData)
     {
         if (!$srResponseKey->exists) {
             return false;
         }
-        $srResponseKey->srResponseKeySrs()->whereNotIn('sr_id', $srIds)->detach();
-        $srResponseKey->srResponseKeySrs()->sync($srIds);
+        $srIds = [];
+        foreach ($syncData as $index => $sr) {
+            if (is_array($sr)) {
+                $srIds[] = $index;
+            } else {
+                $srIds[] = $sr;
+            }
+        }
+        SrResponseKeySr::where('sr_response_key_id', $srResponseKey->id)
+            ->whereNotIn('sr_id', $srIds)
+            ->delete();
+
+        foreach ($syncData as $index => $sr) {
+            $srId = is_array($sr) ? $index : $sr;
+            $saveData = [
+                'sr_id' => $srId,
+                'sr_response_key_id' => $srResponseKey->id,
+            ];
+            if (is_array($sr)) {
+                $saveData['response_keys'] = $sr;
+            }
+            SrResponseKeySr::updateOrCreate(
+                [
+                    'sr_id' => $srId,
+                    'sr_response_key_id' => $srResponseKey->id
+                ],
+                $saveData
+            );
+        }
         return true;
     }
 }

@@ -8,6 +8,8 @@ use App\Http\Requests\Service\Request\ResponseKey\DeleteBatchSrResponseKeyReques
 use App\Http\Requests\Service\Request\ResponseKey\UpdateServiceRequestResponseKeyRequest;
 use App\Http\Resources\Service\ServiceRequest\SrResponseKeyResource;
 use App\Http\Resources\Service\ServiceRequest\SrResponseKeyWithServiceCollection;
+use App\Http\Resources\Service\ServiceRequest\SrResponseKeyWithServiceMinimalCollection;
+use App\Http\Resources\Service\ServiceRequest\SrResponseKeyWithServiceMinimalResource;
 use App\Http\Resources\Service\ServiceRequest\SrResponseKeyWithServiceResource;
 use App\Models\Provider;
 use App\Models\Sr;
@@ -91,7 +93,12 @@ class ServiceRequestResponseKeyController extends Controller
         $responseKeys = $this->srResponseKeyService->getRequestResponseKeys(
             $serviceRequest,
         );
-
+        if ($request->query->getBoolean('minimal')) {
+            return $this->sendSuccessResponse(
+                "success",
+                new SrResponseKeyWithServiceMinimalCollection($responseKeys)
+            );
+        }
         return $this->sendSuccessResponse(
             "success",
             new SrResponseKeyWithServiceCollection($responseKeys)
@@ -220,7 +227,7 @@ class ServiceRequestResponseKeyController extends Controller
         Provider     $provider,
         Sr           $serviceRequest,
         SResponseKey $sResponseKey,
-        Request      $request
+        UpdateServiceRequestResponseKeyRequest       $request
     ) {
         $this->setAccessControlUser($request->user());
         if (
@@ -238,7 +245,7 @@ class ServiceRequestResponseKeyController extends Controller
             $request->user(),
             $serviceRequest,
             $sResponseKey,
-            $request->all()
+            $request->validated()
         );
         if (!$create) {
             return $this->sendErrorResponse("Error adding response key.");

@@ -15,7 +15,7 @@ class RunSrOperation extends Command
      *
      * @var string
      */
-    protected $signature = 'sr:op:run';
+    protected $signature = 'sr:op:run {--type=} {--provider_name=} {--sr_name=}';
 
     /**
      * The console command description.
@@ -31,9 +31,10 @@ class RunSrOperation extends Command
      */
     public function handle(SrOperationsService $srOperationsService, ProviderEventService $providerEventService)
     {
-        $type = $this->ask('Event type? (queue/event)');
-        $providerName = $this->ask('Enter provider name');
-        $srName = $this->ask('Enter service request name');
+        $type = $this->option('type');
+        $providerName = $this->option('provider_name');
+        $srName = $this->option('sr_name');
+
         $provider = Provider::where('name', '=', $providerName)->first();
         if (!$provider) {
             $this->error('Provider not found');
@@ -53,5 +54,19 @@ class RunSrOperation extends Command
         $srOperationsService->getRequestOperation()->setProvider($provider);
         $srOperationsService->runOperationForSr($sr);
         return CommandAlias::SUCCESS;
+    }
+
+    /**
+     * Prompt for missing input arguments using the returned questions.
+     *
+     * @return array<string, string>
+     */
+    protected function promptForMissingArgumentsUsing(): array
+    {
+        return [
+            'type' => 'Event type? (queue/event)',
+            'provider_name' => 'Enter provider name',
+            'sr_name' => 'Enter service request name',
+        ];
     }
 }
