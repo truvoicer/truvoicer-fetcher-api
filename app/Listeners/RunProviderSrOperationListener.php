@@ -4,6 +4,7 @@ namespace App\Listeners;
 
 use App\Events\RunProviderSrOperationEvent;
 use App\Models\Provider;
+use App\Models\User;
 use App\Services\ApiServices\ServiceRequests\SrOperationsService;
 use App\Services\Provider\ProviderService;
 use App\Services\Task\ScheduleService;
@@ -30,10 +31,20 @@ class RunProviderSrOperationListener implements ShouldQueue
     {
         Log::log('info', 'RunSrOperationListener');
         $providerId = $event->providerId;
+        $userId = $event->userId;
         $interval = $event->interval;
         $executeImmediately = $event->executeImmediately;
+        if (!is_int($userId)) {
+            Log::log('error', 'RunSrOperationListener: $userId is not int');
+            return;
+        }
         if (!is_int($providerId)) {
             Log::log('error', 'RunSrOperationListener: $providerId is not int');
+            return;
+        }
+        $user = $this->providerService->getUserRepository()->findById($userId);
+        if (!$user instanceof User) {
+            Log::log('error', 'RunSrOperationListener: $user is not instance of User');
             return;
         }
         $provider = $this->providerService->getProviderRepository()->findById($providerId);
@@ -45,6 +56,7 @@ class RunProviderSrOperationListener implements ShouldQueue
             Log::log('error', 'RunSrOperationListener: $interval is not string');
             return;
         }
+        $this->srOperationsService->setUser($user);
         $this->srOperationsService->runSrOperationsByInterval($provider, $interval, $executeImmediately);
     }
 }

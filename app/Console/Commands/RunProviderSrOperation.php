@@ -3,6 +3,7 @@
 namespace App\Console\Commands;
 
 use App\Models\Provider;
+use App\Models\User;
 use App\Services\ApiServices\ServiceRequests\SrOperationsService;
 use App\Services\Provider\ProviderEventService;
 use Illuminate\Console\Command;
@@ -15,7 +16,7 @@ class RunProviderSrOperation extends Command
      *
      * @var string
      */
-    protected $signature = 'provider:op:run';
+    protected $signature = 'provider:op:run {--type=} {--provider_name=} {--email=}';
 
     /**
      * The console command description.
@@ -39,18 +40,31 @@ class RunProviderSrOperation extends Command
 //            )
 //        );
 //        $providerName = $this->ask('Enter provider name');
-        $providerName = 'reed';
+        $type = $this->option('type');
+        $providerName = $this->option('provider_name');
+
+        $email = $this->option('email');
+        if (empty($type) || empty($providerName) || empty($email)){
+            $this->error('Missing required arguments');
+            return CommandAlias::FAILURE;
+        }
+        $user = User::where('email', '=', $email)->first();
+        if (!$user) {
+            $this->error('User not found');
+            return CommandAlias::FAILURE;
+        }
         $interval = 'every_minute';
-        $type = 'event';
+
         $provider = Provider::where('name', '=', $providerName)->first();
         if (!$provider) {
             $this->error('Provider not found');
             return CommandAlias::FAILURE;
         }
         if ($type === 'queue') {
-            $providerEventService->dispatchProviderSrOperationEvent($provider, $interval, true);
+            $providerEventService->dispatchProviderSrOperationEvent($user, $provider, $interval, true);
             return CommandAlias::SUCCESS;
         }
+        $srOperationsService->setUser($user);
         $srOperationsService->runSrOperationsByInterval($provider, $interval, true);
         return CommandAlias::SUCCESS;
     }

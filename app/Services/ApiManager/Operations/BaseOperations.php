@@ -234,13 +234,13 @@ class BaseOperations extends ApiBase
             $this->apiRequest->setPostBody($postBody);
         }
         if (is_string($baseUrl . $endpoint)) {
-            $this->apiRequest->setUrl($baseUrl . $endpoint);
+            $this->apiRequest->setUrl($this->dataProcessor->filterParameterValue($baseUrl) . $this->dataProcessor->filterParameterValue($endpoint));
         }
         if (is_array($query)) {
             $this->apiRequest->setQuery($query);
         }
         if (!empty($body) && is_string($body)) {
-            $this->apiRequest->setBody($body);
+            $this->apiRequest->setBody($this->dataProcessor->filterParameterValue($body));
         }
 
         switch ($apiAuthType) {

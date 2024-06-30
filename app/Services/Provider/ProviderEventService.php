@@ -7,6 +7,7 @@ use App\Events\RunSrOperationEvent;
 use App\Models\Provider;
 use App\Models\Sr;
 use App\Models\SrSchedule;
+use App\Models\User;
 use App\Services\ApiServices\ServiceRequests\SrOperationsService;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Log;
@@ -38,17 +39,32 @@ class ProviderEventService
         }
     }
 
-    public function dispatchProviderSrOperationEvent(Provider $provider, string $interval, ?bool $executeImmediately = false)
+    public function dispatchProviderSrOperationEvent(
+        User $user,
+        Provider $provider,
+        string $interval,
+        ?bool $executeImmediately = false
+    )
     {
-        return RunProviderSrOperationEvent::dispatch($provider->id, $interval, $executeImmediately);
+        return RunProviderSrOperationEvent::dispatch(
+            $user->id,
+            $provider->id,
+            $interval,
+            $executeImmediately
+        );
     }
 
     public function dispatchSrOperationEvent(
+        User $user,
         Sr     $sr,
         ?array $queryData = SrOperationsService::DEFAULT_QUERY_DATA,
     )
     {
-        return RunSrOperationEvent::dispatch($sr->id, $queryData);
+        return RunSrOperationEvent::dispatch(
+            $user->id,
+            $sr->id,
+            $queryData
+        );
     }
     public function dispatchSrScheduleOperationEvent(
         Sr     $sr,

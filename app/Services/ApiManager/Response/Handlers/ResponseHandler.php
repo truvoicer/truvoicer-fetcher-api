@@ -168,9 +168,12 @@ class ResponseHandler extends ApiBase
             $items[] = [
                 "data" => $data,
                 "request_item" => [
-                    "request_name" => $sr->label,
-                    "request_operation" => $sr->name,
-                    "request_parameters" => $this->getServiceRequestParameters($sr)
+                    "request_label" => $sr->label,
+                    "request_name" => $sr->name,
+                    "request_parameters" => $this->getServiceRequestParameters($sr),
+                    'response_keys' => $sr?->pivot?->response_keys,
+                    'provider_name' => $sr?->provider?->name,
+                    'provider_label' => $sr?->provider?->label,
                 ]
             ];
         }

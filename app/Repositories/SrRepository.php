@@ -16,15 +16,19 @@ use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 
 class SrRepository extends BaseRepository
 {
+    private ProviderRepository $providerRepository;
+
     public const SR_TYPE_LIST = 'list';
     public const SR_TYPE_SINGLE = 'single';
     public const SR_TYPES = [
         self::SR_TYPE_LIST,
         self::SR_TYPE_SINGLE
     ];
+
     public function __construct()
     {
         parent::__construct(Sr::class);
+        $this->providerRepository = new ProviderRepository();
     }
 
     public function getModel(): Sr
@@ -43,18 +47,6 @@ class SrRepository extends BaseRepository
         );
     }
 
-    public function userPermissionsQuery(User $user, $query)
-    {
-        $query->whereHas('providerUser', function ($query) use ($user) {
-            $query->where('user_id', $user->id);
-            $query->whereHas('providerUserPermission', function ($query) {
-                $query->whereHas('permission', function ($query) {
-                    $query->whereIn('name', $this->permissions);
-                });
-            });
-        });
-        return $query;
-    }
 
     public function getUserServiceRequestByIds(User $user, array $ids)
     {
@@ -69,7 +61,7 @@ class SrRepository extends BaseRepository
             $this->query
                 ->whereIn('id', $ids)
                 ->whereHas('provider', function ($query) use ($user, $ids) {
-                    $query = $this->userPermissionsQuery($user, $query);
+                    $query = $this->providerRepository->userPermissionsQuery($user, $query);
                 })
         );
     }
@@ -87,7 +79,7 @@ class SrRepository extends BaseRepository
             $this->query
                 ->whereHas('provider', function ($query) use ($user, $providerIds) {
                     $query->whereIn('id', $providerIds);
-                    $query = $this->userPermissionsQuery($user, $query);
+                    $query = $this->providerRepository->userPermissionsQuery($user, $query);
                 })
         );
     }

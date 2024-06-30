@@ -78,7 +78,16 @@ class SrConfigRepository extends BaseRepository
 
     public function saveSrConfigProperty(Sr $sr, Property $property, array $data)
     {
-        $create = $property->srConfig()->updateOrCreate([], ['sr_id' => $sr->id, ...$data]);
+        $create = $property->srConfig()->updateOrCreate(
+            [
+                'property_id' => $property->id,
+                'sr_id' => $sr->id
+            ],
+            [
+                'sr_id' => $sr->id,
+                ...$data
+            ]
+        );
         return $create->exists;
     }
 

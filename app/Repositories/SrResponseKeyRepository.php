@@ -118,8 +118,8 @@ class SrResponseKeyRepository extends BaseRepository
     {
         $query = SResponseKey::with(['srResponseKey' => function ($query) use ($serviceRequest) {
             $query->where('sr_id', '=', $serviceRequest->id);
-            $query->with('srResponseKeySrs', function ($query) {
-//                   $query->with('sr');
+            $query->with('srResponseKeySrs', function ($query) use ($serviceRequest){
+//                $query->where('sr_id', '=', $serviceRequest->id);
             });
         }])
             ->where('id', '=', $serviceResponseKey->id)

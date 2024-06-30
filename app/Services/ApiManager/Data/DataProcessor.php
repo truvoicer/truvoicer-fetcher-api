@@ -113,11 +113,14 @@ class DataProcessor
     {
         if (preg_match_all('~\[(.*?)\]~', $string, $output)) {
             foreach ($output[1] as $key => $value) {
-                if (array_key_exists($value, $this->queryArray)) {
-                    $string = str_replace($output[0][$key], $this->queryArray[$value], $string, $count);
-                } else {
+                if (!array_key_exists($value, $this->queryArray)) {
                     return false;
                 }
+                $queryValue = $this->queryArray[$value];
+                if (is_array($queryValue)) {
+                    $queryValue = implode(",", $queryValue);
+                }
+                $string = str_replace($output[0][$key], $queryValue, $string, $count);
             }
         }
         return $string;

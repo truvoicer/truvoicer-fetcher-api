@@ -100,6 +100,7 @@ class ServiceRequestScheduleController extends Controller
             return $this->sendErrorResponse("Access denied");
         }
         $create = $this->srScheduleService->createSrSchedule(
+            $request->user(),
             $serviceRequest,
             $request->all()
         );
@@ -141,6 +142,7 @@ class ServiceRequestScheduleController extends Controller
             return $this->sendErrorResponse("Access denied");
         }
         $update = $this->srScheduleService->saveSrSchedule(
+            $request->user(),
             $srSchedule,
             $request->all()
         );

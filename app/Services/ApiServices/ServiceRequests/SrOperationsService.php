@@ -6,6 +6,7 @@ use App\Models\Provider;
 use App\Models\S;
 use App\Models\Sr;
 use App\Models\SrSchedule;
+use App\Models\User;
 use App\Repositories\MongoDB\MongoDBRepository;
 use App\Repositories\SrRepository;
 use App\Repositories\SrResponseKeyRepository;
@@ -42,11 +43,14 @@ class SrOperationsService
     public const DEFAULT_QUERY_DATA = [
         'query' => '',
     ];
+
     private MongoDBRepository $mongoDBRepository;
     private SrService $srService;
     private ProviderService $providerService;
     private SrScheduleService $srScheduleService;
     private ApiRequestService $requestOperation;
+    private User $user;
+
     private int $offset = 0;
     private int $pageNumber = 1;
     private int $pageSize = 100;
@@ -138,12 +142,14 @@ class SrOperationsService
         return false;
     }
 
+    private function buildNestedSrResponseKeyData(array $responseKeyNames, array $data) {
+        return array_filter($data, function ($key) use ($responseKeyNames) {
+            return in_array($key, $responseKeyNames);
+        }, ARRAY_FILTER_USE_KEY);
+    }
+
     private function runResponseKeySrItem(Sr $parentSr, array $data)
     {
-        $provider = $parentSr->provider()->first();
-        if (!$provider instanceof Provider) {
-            return false;
-        }
         foreach ($data as $key => $item) {
 
             if (!is_array($item)) {
@@ -173,18 +179,26 @@ class SrOperationsService
                 if (empty($requestItem['request_name'])) {
                     continue;
                 }
-                if (empty($requestItem['request_operation'])) {
+                if (empty($requestItem['provider_name'])) {
                     continue;
                 }
-                $sr = SrRepository::getSrByName($provider, $requestItem['request_operation']);
+                $provider = $this->providerService->getUserProviderByName($this->user, $requestItem['provider_name']);
+                if (!$provider instanceof Provider) {
+                    continue;
+                }
+                $sr = SrRepository::getSrByName($provider, $requestItem['request_name']);
                 if (!$sr instanceof Sr) {
                     continue;
                 }
+
                 $this->runOperationForSr(
                     $sr,
-                    [
-                        'query' => $nested['data'],
-                    ]
+                    $this->buildNestedSrResponseKeyData(
+                        (!empty($requestItem['response_keys']) && is_array($requestItem['response_keys']))
+                            ? $requestItem['response_keys']
+                            : [],
+                        $data
+                    )
                 );
             }
         }
@@ -193,6 +207,14 @@ class SrOperationsService
 
     public function runOperationForSr(Sr $sr, ?array $queryData = ['query' => ''])
     {
+        $provider = $sr->provider()->first();
+        if (!$provider instanceof Provider) {
+            return;
+        }
+
+        if ($this->user->cannot('view', $provider)) {
+            return;
+        }
         Log::channel(self::LOGGING_NAME)->info(
             sprintf(
                 'Running operation for service request: %s | Request name: %s',
@@ -201,10 +223,6 @@ class SrOperationsService
             )
         );
         $this->requestOperation->setSr($sr);
-        $provider = $sr->provider()->first();
-        if (!$provider instanceof Provider) {
-            return;
-        }
         Log::channel(self::LOGGING_NAME)->info(
             sprintf(
                 'Found provider: %s | Service request: %s',
@@ -271,6 +289,7 @@ class SrOperationsService
             );
             return false;
         }
+
         foreach ($requestData as $item) {
             $collectionName = $this->mongoDBRepository->getCollectionName($sr);
             $this->mongoDBRepository->setCollection($collectionName);
@@ -296,6 +315,7 @@ class SrOperationsService
                 );
                 continue;
             }
+
             if ($this->doesDataExistInDb($operationData, $insertData)) {
                 continue;
             }
@@ -468,4 +488,10 @@ class SrOperationsService
     {
         return $this->requestOperation;
     }
+
+    public function setUser(User $user): void
+    {
+        $this->user = $user;
+    }
+
 }

@@ -10,10 +10,12 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class SrScheduleRepository extends BaseRepository
 {
+    private ProviderRepository $providerRepository;
 
     public function __construct()
     {
         parent::__construct(SrSchedule::class);
+        $this->providerRepository = new ProviderRepository();
     }
 
     public function getModel(): SrSchedule

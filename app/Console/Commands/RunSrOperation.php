@@ -3,6 +3,7 @@
 namespace App\Console\Commands;
 
 use App\Models\Provider;
+use App\Models\User;
 use App\Services\ApiServices\ServiceRequests\SrOperationsService;
 use App\Services\Provider\ProviderEventService;
 use Illuminate\Console\Command;
@@ -15,7 +16,7 @@ class RunSrOperation extends Command
      *
      * @var string
      */
-    protected $signature = 'sr:op:run {--type=} {--provider_name=} {--sr_name=}';
+    protected $signature = 'sr:op:run {--type=} {--provider_name=} {--sr_name=} {--email=}';
 
     /**
      * The console command description.
@@ -34,7 +35,16 @@ class RunSrOperation extends Command
         $type = $this->option('type');
         $providerName = $this->option('provider_name');
         $srName = $this->option('sr_name');
-
+        $email = $this->option('email');
+        if (empty($type) || empty($providerName) || empty($srName) || empty($email)){
+            $this->error('Missing required arguments');
+            return CommandAlias::FAILURE;
+        }
+        $user = User::where('email', '=', $email)->first();
+        if (!$user) {
+            $this->error('User not found');
+            return CommandAlias::FAILURE;
+        }
         $provider = Provider::where('name', '=', $providerName)->first();
         if (!$provider) {
             $this->error('Provider not found');
@@ -47,10 +57,10 @@ class RunSrOperation extends Command
         }
 
         if ($type === 'queue') {
-            $providerEventService->dispatchSrOperationEvent($sr);
+            $providerEventService->dispatchSrOperationEvent($user, $sr);
             return CommandAlias::SUCCESS;
         }
-
+        $srOperationsService->setUser($user);
         $srOperationsService->getRequestOperation()->setProvider($provider);
         $srOperationsService->runOperationForSr($sr);
         return CommandAlias::SUCCESS;

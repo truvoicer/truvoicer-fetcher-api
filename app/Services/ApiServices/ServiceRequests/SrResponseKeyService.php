@@ -117,9 +117,7 @@ class SrResponseKeyService extends BaseService
         $srsData = [];
         foreach ($requestData as $srData) {
             if (!empty($srData['response_keys']) && is_array($srData['response_keys'])) {
-                $srsData[$srData['id']] = [
-                    'response_keys' => $srData['response_keys']
-                ];
+                $srsData[$srData['id']] = $srData['response_keys'];
             } else {
                 $srsData[] = $srData['id'];
             }

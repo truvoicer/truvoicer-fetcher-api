@@ -15,6 +15,7 @@ class RunProviderSrOperationEvent
      * Create a new event instance.
      */
     public function __construct(
+        public int $userId,
         public int $providerId,
         public string $interval,
         public ?bool $executeImmediately = false

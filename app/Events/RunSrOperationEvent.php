@@ -16,6 +16,7 @@ class RunSrOperationEvent
      * Create a new event instance.
      */
     public function __construct(
+        public int $userId,
         public int     $srId,
         public array $queryData
     )

@@ -4,6 +4,7 @@ namespace App\Services\ApiServices\ServiceRequests;
 
 use App\Models\Sr;
 use App\Models\SrSchedule;
+use App\Models\User;
 use App\Repositories\SrScheduleRepository;
 use App\Services\BaseService;
 use App\Services\Provider\ProviderEventService;
@@ -54,29 +55,31 @@ class SrScheduleService extends BaseService
         return $this->srScheduleRepository->findBySr($serviceRequest);
     }
 
-    public function createSrSchedule(Sr $serviceRequest, array $data)
+    public function createSrSchedule(User $user, Sr $serviceRequest, array $data)
     {
         if (!$this->srScheduleRepository->createSrSchedule($serviceRequest, $data)) {
             return false;
         }
         return $this->runServiceRequest(
+            $user,
             $this->srScheduleRepository->getModel(),
             Arr::get($data, 'execute_immediately_choice')
         );
     }
-    public function saveSrSchedule(SrSchedule $srSchedule, array $data)
+    public function saveSrSchedule(User $user, SrSchedule $srSchedule, array $data)
     {
         $this->srScheduleRepository->setModel($srSchedule);
         if (!$this->srScheduleRepository->saveSrSchedule($data)) {
             return false;
         }
         return $this->runServiceRequest(
+            $user,
             $this->srScheduleRepository->getModel(),
             Arr::get($data, 'execute_immediately_choice')
         );
     }
 
-    public function runServiceRequest(SrSchedule $srSchedule, ?string $executeImmediatelyOp = null) {
+    public function runServiceRequest(User $user, SrSchedule $srSchedule, ?string $executeImmediatelyOp = null) {
         if (!$srSchedule->execute_immediately) {
             return true;
         }
@@ -88,11 +91,12 @@ class SrScheduleService extends BaseService
         switch ($executeImmediatelyOp) {
             case 'execute':
                 $srOperationsService = App::make(SrOperationsService::class);
+                $srOperationsService->setUser($user);
                 $srOperationsService->getRequestOperation()->setProvider($sr->provider()->first());
                 $srOperationsService->runOperationForSr($sr);
                 break;
             default:
-                $this->providerEventService->dispatchSrOperationEvent($sr);
+                $this->providerEventService->dispatchSrOperationEvent($user, $sr);
                 break;
 
         }

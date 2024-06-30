@@ -496,6 +496,7 @@ class ServiceRequestController extends Controller
         } else {
             $runApiRequest = $requestOperation->getOperationRequestContent($data);
         }
+
         return new JsonResponse(
             $runApiRequest,
             Response::HTTP_OK

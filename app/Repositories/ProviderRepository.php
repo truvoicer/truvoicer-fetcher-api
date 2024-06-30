@@ -22,6 +22,20 @@ class ProviderRepository extends BaseRepository
         return parent::getModel();
     }
 
+    public function userPermissionsQuery(User $user, $query)
+    {
+        $query->whereHas('providerUser', function ($query) use ($user) {
+            $query->where('user_id', $user->id);
+            $query->whereHas('providerUserPermission', function ($query) {
+                $query->whereHas('permission', function ($query) {
+                    $query->whereIn('name', $this->permissions);
+                });
+            });
+        });
+        return $query;
+    }
+
+
     public function getProviderList()
     {
         if (is_null($this->query)) {
