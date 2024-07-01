@@ -43,7 +43,12 @@ class UpdateServiceRequestResponseKeyRequest extends FormRequest
                     Rule::exists(Sr::class, 'id'),
                 ];
             }),
-            'response_key_srs.*.response_keys.*' => Rule::forEach(function ($value, string $attribute) {
+            'response_key_srs.*.request_response_keys.*' => Rule::forEach(function ($value, string $attribute) {
+                return [
+                    'string'
+                ];
+            }),
+            'response_key_srs.*.response_response_keys.*' => Rule::forEach(function ($value, string $attribute) {
                 return [
                     'string'
                 ];

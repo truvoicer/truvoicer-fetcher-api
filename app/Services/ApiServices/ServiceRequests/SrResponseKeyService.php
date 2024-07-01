@@ -108,21 +108,20 @@ class SrResponseKeyService extends BaseService
     private function filterResponseKeySrs(array $requestData)
     {
         return array_filter($requestData, function ($item) {
-            return (!empty($item["id"]) && is_numeric($item["id"]));
-        });
-    }
-
-    private function prepareResponseKeySrsSaveData(array $requestData)
-    {
-        $srsData = [];
-        foreach ($requestData as $srData) {
-            if (!empty($srData['response_keys']) && is_array($srData['response_keys'])) {
-                $srsData[$srData['id']] = $srData['response_keys'];
-            } else {
-                $srsData[] = $srData['id'];
+            if (
+                empty($item["id"]) ||
+                !is_numeric($item["id"])
+            ) {
+                return false;
             }
-        }
-        return $srsData;
+            if (!empty($item["request_response_keys"]) && !is_array($item["request_response_keys"])) {
+                return false;
+            }
+            if (!empty($item["response_response_keys"]) && !is_array($item["response_response_keys"])) {
+                return false;
+            }
+            return true;
+        });
     }
 
     public function setRequestResponseKeyObject(array $data)
@@ -173,7 +172,7 @@ class SrResponseKeyService extends BaseService
 
         $this->srResponseKeySrRepository->syncResponseKeySrs(
             $srResponseKey,
-            $this->prepareResponseKeySrsSaveData($filterResponseKeySrs)
+            $filterResponseKeySrs
         );
         return true;
     }

@@ -25,16 +25,14 @@ class SrResponseKeySrRepository extends BaseRepository
         if (!$srResponseKey->exists) {
             return false;
         }
-        $srIds = [];
-        foreach ($syncData as $index => $sr) {
-            if (is_array($sr)) {
-                $srIds[] = $index;
-            } else {
-                $srIds[] = $sr;
-            }
-        }
         SrResponseKeySr::where('sr_response_key_id', $srResponseKey->id)
-            ->whereNotIn('sr_id', $srIds)
+            ->whereNotIn('sr_id',
+                array_filter(
+                    array_map(fn($sr) => $sr['id'], $syncData),
+                    fn($sr) => !empty($sr['id']),
+                    ARRAY_FILTER_USE_BOTH
+                )
+            )
             ->delete();
 
         foreach ($syncData as $index => $sr) {
@@ -43,8 +41,11 @@ class SrResponseKeySrRepository extends BaseRepository
                 'sr_id' => $srId,
                 'sr_response_key_id' => $srResponseKey->id,
             ];
-            if (is_array($sr)) {
-                $saveData['response_keys'] = $sr;
+            if (!empty($sr['request_response_keys']) && is_array($sr['request_response_keys'])) {
+                $saveData['request_response_keys'] = $sr['request_response_keys'];
+            }
+            if (!empty($sr['response_response_keys']) && is_array($sr['response_response_keys'])) {
+                $saveData['response_response_keys'] = $sr['response_response_keys'];
             }
             SrResponseKeySr::updateOrCreate(
                 [
