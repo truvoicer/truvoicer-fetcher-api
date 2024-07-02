@@ -50,7 +50,7 @@ class SrRepository extends BaseRepository
 
     public function getUserServiceRequestByIds(User $user, array $ids)
     {
-        $this->setPermissions([
+        $this->providerRepository->setPermissions([
             PermissionService::PERMISSION_ADMIN,
             PermissionService::PERMISSION_READ,
         ]);
@@ -68,7 +68,7 @@ class SrRepository extends BaseRepository
 
     public function getUserServiceRequestByProviderIds(User $user, array $providerIds)
     {
-        $this->setPermissions([
+        $this->providerRepository->setPermissions([
             PermissionService::PERMISSION_ADMIN,
             PermissionService::PERMISSION_READ,
         ]);

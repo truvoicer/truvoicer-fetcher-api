@@ -21,5 +21,6 @@ class SrResponseKeySr extends Pivot
         'sr_response_key_id',
         'request_response_keys',
         'response_response_keys',
+        'action'
     ];
 }

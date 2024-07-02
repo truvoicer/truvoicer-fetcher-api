@@ -114,6 +114,12 @@ class SrResponseKeyService extends BaseService
             ) {
                 return false;
             }
+            if (
+                !empty($item["action"]) &&
+                !in_array($item["action"], SrResponseKeySrRepository::ALLOWED_ACTIONS)
+            ) {
+                return false;
+            }
             if (!empty($item["request_response_keys"]) && !is_array($item["request_response_keys"])) {
                 return false;
             }

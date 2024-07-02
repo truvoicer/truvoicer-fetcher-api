@@ -10,6 +10,10 @@ use App\Models\SResponseKey;
 
 class SrResponseKeySrRepository extends BaseRepository
 {
+    public const ALLOWED_ACTIONS = [
+        'store',
+        'return_value',
+    ];
     public function __construct()
     {
         parent::__construct(SrResponseKeySr::class);
@@ -36,10 +40,17 @@ class SrResponseKeySrRepository extends BaseRepository
             ->delete();
 
         foreach ($syncData as $index => $sr) {
-            $srId = is_array($sr) ? $index : $sr;
+            if (empty($sr['id'])) {
+                continue;
+            }
+            if (empty($sr['action']) || !in_array($sr['action'], self::ALLOWED_ACTIONS)) {
+                continue;
+            }
+            $srId = $sr['id'];
             $saveData = [
                 'sr_id' => $srId,
                 'sr_response_key_id' => $srResponseKey->id,
+                'action' => $sr['action'],
             ];
             if (!empty($sr['request_response_keys']) && is_array($sr['request_response_keys'])) {
                 $saveData['request_response_keys'] = $sr['request_response_keys'];

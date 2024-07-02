@@ -194,8 +194,8 @@ class SrOperationsService
                 $this->runOperationForSr(
                     $sr,
                     $this->buildNestedSrResponseKeyData(
-                        (!empty($requestItem['response_keys']) && is_array($requestItem['response_keys']))
-                            ? $requestItem['response_keys']
+                        (!empty($requestItem['request_response_keys']) && is_array($requestItem['request_response_keys']))
+                            ? $requestItem['request_response_keys']
                             : [],
                         $data
                     )
@@ -319,6 +319,9 @@ class SrOperationsService
             if ($this->doesDataExistInDb($operationData, $insertData)) {
                 continue;
             }
+
+            $item = $this->hasReturnValueResponseKeySrs($item);
+
             if (!$this->mongoDBRepository->insert($insertData)) {
                 Log::channel(self::LOGGING_NAME)->error(
                     sprintf(
@@ -338,6 +341,39 @@ class SrOperationsService
         $this->runSrPagination($sr, $operationData);
 
         return true;
+    }
+
+    private function hasReturnValueResponseKeySrs(array $data) {
+        $filtered = array_map(function ($item) {
+            if (!is_array($item)) {
+                return false;
+            }
+            $filtered = array_filter($item, function ($nested) {
+                if (!is_array($nested)) {
+                    return false;
+                }
+                if (
+                    !Arr::exists($nested, 'data') &&
+                    !Arr::exists($nested, 'request_item')
+                ) {
+                    return false;
+                }
+                if (!array_key_exists('request_item', $nested)) {
+                    return false;
+                }
+                if (!is_array($nested['request_item'])) {
+                    return false;
+                }
+
+                $requestItem = $nested['request_item'];
+                if (empty($requestItem['action'])) {
+                    return false;
+                }
+                return $requestItem['action'] === 'return_value';
+            }, ARRAY_FILTER_USE_BOTH);
+            return count($filtered) > 0;
+        }, $data);
+        return count($filtered) > 0;
     }
 
     private function runSrPagination(Sr $sr, ApiResponse $apiResponse)
