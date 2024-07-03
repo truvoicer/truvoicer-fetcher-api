@@ -226,10 +226,22 @@ class SrResponseKeyService extends BaseService
         return $save;
     }
 
-    public function updateRequestResponseKey(User $user, Sr $serviceRequest, SrResponseKey $serviceResponseKey, array $data)
+    public function updateRequestResponseKey(User $user, Sr $serviceRequest, SrResponseKey $srResponseKey, array $data)
     {
+        if (!empty($data["name"])) {
+            $sResponseKey = $srResponseKey->sResponseKey()->first();
+            if (
+                $sResponseKey instanceof SResponseKey &&
+                !$this->SResponseKeyRepository->saveServiceResponseKey(
+                    $sResponseKey,
+                    ['name' => $data["name"]]
+                )
+            ) {
+                return false;
+            }
+        }
         $save = $this->srResponseKeyRepository->updateSrResponseKey(
-            $serviceResponseKey,
+            $srResponseKey,
             $this->setRequestResponseKeyObject($data)
         );
         if (!$save) {

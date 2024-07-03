@@ -10,6 +10,7 @@ use App\Models\User;
 use App\Repositories\MongoDB\MongoDBRepository;
 use App\Repositories\SrRepository;
 use App\Repositories\SrResponseKeyRepository;
+use App\Repositories\SrResponseKeySrRepository;
 use App\Services\ApiManager\Data\DataConstants;
 use App\Services\ApiManager\Data\DefaultData;
 use App\Services\ApiManager\Operations\ApiRequestService;
@@ -24,6 +25,7 @@ use Illuminate\Support\Facades\Log;
 class SrOperationsService
 {
     use ErrorTrait;
+
     const LOGGING_NAME = 'SrMongoOperations';
     const LOGGING_PATH = 'logs/sr_mongo_operations/log.log';
 
@@ -98,7 +100,7 @@ class SrOperationsService
         }
         $this->requestOperation->setProvider($provider);
         foreach ($srs as $serviceRequest) {
-            $this->runOperationForSr($serviceRequest);
+            $this->runOperationForSr($serviceRequest, SrResponseKeySrRepository::ACTION_STORE);
         }
     }
 
@@ -142,78 +144,63 @@ class SrOperationsService
         return false;
     }
 
-    private function buildNestedSrResponseKeyData(array $responseKeyNames, array $data) {
-        return array_filter($data, function ($key) use ($responseKeyNames) {
+    private function buildNestedSrResponseKeyData(array $responseKeyNames, string|int $value, array $data)
+    {
+        $buildData = array_filter($data, function ($key) use ($responseKeyNames) {
             return in_array($key, $responseKeyNames);
         }, ARRAY_FILTER_USE_KEY);
+        $buildData['item_id'] = $value;
+        return $buildData;
     }
 
-    private function runResponseKeySrItem(Sr $parentSr, array $data)
+    private function validateResponseKeySrConfig($data)
     {
-        foreach ($data as $key => $item) {
-
-            if (!is_array($item)) {
-                continue;
-            }
-            foreach ($item as $nested) {
-                if (!is_array($nested)) {
-                    continue;
-                }
-                if (
-                    !Arr::exists($nested, 'data') &&
-                    !Arr::exists($nested, 'request_item')
-                ) {
-                    continue;
-                }
-                if (!array_key_exists('request_item', $nested)) {
-                    continue;
-                }
-                if (!is_array($nested['request_item'])) {
-                    continue;
-                }
-                if (empty($nested['data'])) {
-                    continue;
-                }
-
-                $requestItem = $nested['request_item'];
-                if (empty($requestItem['request_name'])) {
-                    continue;
-                }
-                if (empty($requestItem['provider_name'])) {
-                    continue;
-                }
-                $provider = $this->providerService->getUserProviderByName($this->user, $requestItem['provider_name']);
-                if (!$provider instanceof Provider) {
-                    continue;
-                }
-                $sr = SrRepository::getSrByName($provider, $requestItem['request_name']);
-                if (!$sr instanceof Sr) {
-                    continue;
-                }
-
-                $this->runOperationForSr(
-                    $sr,
-                    $this->buildNestedSrResponseKeyData(
-                        (!empty($requestItem['request_response_keys']) && is_array($requestItem['request_response_keys']))
-                            ? $requestItem['request_response_keys']
-                            : [],
-                        $data
-                    )
-                );
-            }
+        if (!is_array($data)) {
+            return false;
         }
-        return true;
+        return array_filter($data, function ($item) {
+            if (!is_array($item)) {
+                return false;
+            }
+            if (
+                !Arr::exists($item, 'data') &&
+                !Arr::exists($item, 'request_item')
+            ) {
+                return false;
+            }
+            if (!array_key_exists('request_item', $item)) {
+                return false;
+            }
+            if (!is_array($item['request_item'])) {
+                return false;
+            }
+//            if (empty($item['data'])) {
+//                return false;
+//            }
+
+            $requestItem = $item['request_item'];
+            if (empty($requestItem['request_name'])) {
+                return false;
+            }
+            if (empty($requestItem['provider_name'])) {
+                return false;
+            }
+            if (empty($requestItem['action'])) {
+                return false;
+            }
+            return true;
+        });
     }
 
-    public function runOperationForSr(Sr $sr, ?array $queryData = ['query' => ''])
+    private function executeSrOperationRequest(Sr $sr, ?array $queryData = ['query' => ''])
     {
         $provider = $sr->provider()->first();
         if (!$provider instanceof Provider) {
-            return;
+            return false;
         }
 
         if ($this->user->cannot('view', $provider)) {
-            return;
+            return false;
         }
         Log::channel(self::LOGGING_NAME)->info(
             sprintf(
@@ -241,17 +228,49 @@ class SrOperationsService
         } else {
             $queryData[$pageSizeResponseKey] = $this->pageSize;
         }
-        $operationData = $this->requestOperation->runOperation($queryData);
+        return $this->requestOperation->runOperation($queryData);
+    }
 
-        if ($operationData->getStatus() !== 'success') {
+    private function runResponseKeySrItem(Sr $parentSr, array $data)
+    {
+        foreach ($data as $key => $item) {
+            foreach ($this->validateResponseKeySrConfig($item) as $nested) {
+                $requestItem = $nested['request_item'];
+                $provider = $this->providerService->getUserProviderByName($this->user, $requestItem['provider_name']);
+                if (!$provider instanceof Provider) {
+                    continue;
+                }
+                $sr = SrRepository::getSrByName($provider, $requestItem['request_name']);
+                if (!$sr instanceof Sr) {
+                    continue;
+                }
+
+                $this->runOperationForSr(
+                    $sr,
+                    $requestItem['action'],
+                    $this->buildNestedSrResponseKeyData(
+                        $this->getRequestResponseKeyNames($requestItem),
+                        $nested['data'],
+                        $data
+                    )
+                );
+            }
+        }
+        return true;
+    }
+
+    private function srOperationResponseHandler(Sr $sr, ApiResponse $apiResponse)
+    {
+        $provider = $sr->provider()->first();
+        if ($apiResponse->getStatus() !== 'success') {
             Log::channel(self::LOGGING_NAME)->error(
                 sprintf(
                     'Error running operation for service request: %s | Provider: %s | Error: %s',
                     $sr->label,
                     $provider->name,
-                    $operationData->getMessage()
+                    $apiResponse->getMessage()
                 ),
-                $operationData->toArray()
+                $apiResponse->toArray()
             );
             return false;
         }
@@ -263,14 +282,14 @@ class SrOperationsService
                     $sr->label,
                     $provider->name,
                 ),
-                $operationData->toArray()
+                $apiResponse->toArray()
             );
             return false;
         }
-        $requestData = $operationData->getRequestData();
+        $requestData = $apiResponse->getRequestData();
         if (count($requestData) === 0) {
-            $apiRequest = $operationData->getApiRequest();
-            $response = $operationData->getResponse();
+            $apiRequest = $apiResponse->getApiRequest();
+            $response = $apiResponse->getResponse();
             Log::channel(self::LOGGING_NAME)->info(
                 sprintf(
                     'No request data found for service request: %s | Provider: %s',
@@ -278,7 +297,7 @@ class SrOperationsService
                     $provider->name,
                 ),
                 [
-                    'data' => $operationData->toArray(),
+                    'data' => $apiResponse->toArray(),
                     'request_data' => ($apiRequest) ? $apiRequest->toArray() : [],
                     'response' => (empty($response)) ? null : [
                         'status' => $response->status(),
@@ -289,88 +308,204 @@ class SrOperationsService
             );
             return false;
         }
+        return [
+            'operation_data' => $apiResponse,
+            'request_data' => $requestData,
+        ];
+    }
 
-        foreach ($requestData as $item) {
+    private function prepareDbSaveData(Sr $sr, ApiResponse $operationData, array $item, array $queryData = [])
+    {
+        $provider = $sr->provider()->first();
+        $insertData = $this->buildSaveData($operationData, $item, $queryData);
+        if (!$insertData) {
+            Log::channel(self::LOGGING_NAME)->error(
+                sprintf(
+                    'Error building save data for service request: %s | Provider: %s',
+                    $sr->label,
+                    $provider->name,
+                ),
+            );
+            return false;
+        }
+        if (!$this->validateRequiredFields($insertData)) {
+            Log::channel(self::LOGGING_NAME)->error(
+                sprintf(
+                    'Error validating required fields for service request: %s | Provider: %s',
+                    $sr->label,
+                    $provider->name,
+                ),
+                $insertData
+            );
+            return false;
+        }
+
+        if ($this->doesDataExistInDb($operationData, $insertData)) {
+            return false;
+        }
+        return $insertData;
+    }
+
+    private function saveToDb(Sr $sr, array $data)
+    {
+        $provider = $sr->provider()->first();
+        if (!$this->mongoDBRepository->insert($data)) {
+            Log::channel(self::LOGGING_NAME)->error(
+                sprintf(
+                    'Error inserting data for service request: %s | Provider: %s',
+                    $sr->label,
+                    $provider->name,
+                ),
+                $data
+            );
+            return false;
+        }
+        return true;
+    }
+
+    private function validateAction(string $action)
+    {
+        return in_array($action, SrResponseKeySrRepository::ALLOWED_ACTIONS);
+    }
+
+    private function shouldSaveToDb(string $action)
+    {
+        return match ($action) {
+            SrResponseKeySrRepository::ACTION_STORE => true,
+            default => false,
+        };
+    }
+
+    public function runOperationForSr(Sr $sr, string $action, ?array $queryData = ['query' => ''])
+    {
+        $provider = $sr->provider()->first();
+        if (!$this->validateAction($action)) {
+            Log::channel(self::LOGGING_NAME)->error(
+                sprintf(
+                    'Invalid action: %s for service request: %s, provider: %s',
+                    $action,
+                    $sr->label,
+                    $provider->label,
+                )
+            );
+            return false;
+        }
+
+        $response = $this->srOperationResponseHandler(
+            $sr,
+            $this->executeSrOperationRequest($sr, $queryData)
+        );
+        if (!$response) {
+            return false;
+        }
+
+        $operationData = $response['operation_data'];
+        $requestData = $response['request_data'];
+        if ($this->shouldSaveToDb($action)) {
             $collectionName = $this->mongoDBRepository->getCollectionName($sr);
             $this->mongoDBRepository->setCollection($collectionName);
-            $insertData = $this->buildSaveData($operationData, $item, $queryData);
-            if (!$insertData) {
-                Log::channel(self::LOGGING_NAME)->error(
-                    sprintf(
-                        'Error building save data for service request: %s | Provider: %s',
-                        $sr->label,
-                        $provider->name,
-                    ),
-                );
-                continue;
-            }
-            if (!$this->validateRequiredFields($insertData)) {
-                Log::channel(self::LOGGING_NAME)->error(
-                    sprintf(
-                        'Error validating required fields for service request: %s | Provider: %s',
-                        $sr->label,
-                        $provider->name,
-                    ),
-                    $insertData
-                );
-                continue;
-            }
+        }
 
-            if ($this->doesDataExistInDb($operationData, $insertData)) {
-                continue;
+        $data = [];
+        foreach ($requestData as $item) {
+            if ($this->shouldSaveToDb($action)) {
+                $item = $this->prepareDbSaveData($operationData, $item, $queryData);
+                if (!$item) {
+                    continue;
+                }
             }
 
             $item = $this->hasReturnValueResponseKeySrs($item);
 
-            if (!$this->mongoDBRepository->insert($insertData)) {
-                Log::channel(self::LOGGING_NAME)->error(
-                    sprintf(
-                        'Error inserting data for service request: %s | Provider: %s',
-                        $sr->label,
-                        $provider->name,
-                    ),
-                    $insertData
-                );
-                continue;
+            if ($this->shouldSaveToDb($action)) {
+                if (!$this->saveToDb($sr, $item)) {
+                    continue;
+                }
+                $item = $this->runResponseKeySrItem($sr, $item);
+                if (!$item) {
+                    continue;
+                }
             }
-            $insertData = $this->runResponseKeySrItem($sr, $item);
-            if (!$insertData) {
-                continue;
-            }
+            $data[] = $item;
         }
-        $this->runSrPagination($sr, $operationData);
+        if ($this->shouldSaveToDb($action)) {
+            $this->runSrPagination($sr, $operationData);
+        }
 
-        return true;
+        return $data;
     }
 
-    private function hasReturnValueResponseKeySrs(array $data) {
-        $filtered = array_map(function ($item) {
-            if (!is_array($item)) {
-                return false;
-            }
-            $filtered = array_filter($item, function ($nested) {
-                if (!is_array($nested)) {
+    private function getRequestResponseKeyNames(array $data)
+    {
+        if (
+            !empty($data['request_response_keys']) &&
+            is_array($data['request_response_keys'])
+        ) {
+            return $data['request_response_keys'];
+        }
+        return [];
+    }
+
+    private function hasReturnValueResponseKeySrs(array $data)
+    {
+        $filtered = array_map(function ($item) use ($data) {
+            $filtered = array_filter($this->validateResponseKeySrConfig($item), function ($nested) {
+                $requestItem = $nested['request_item'];
+                return $requestItem['action'] === 'return_value';
+            }, ARRAY_FILTER_USE_BOTH);
+
+            $filtered = array_map(function ($nested) use ($data) {
+                $requestItem = $nested['request_item'];
+
+                $provider = $this->providerService->getUserProviderByName($this->user, $requestItem['provider_name']);
+                if (!$provider instanceof Provider) {
                     return false;
                 }
-                if (
-                    !Arr::exists($nested, 'data') &&
-                    !Arr::exists($nested, 'request_item')
-                ) {
-                    return false;
-                }
-                if (!array_key_exists('request_item', $nested)) {
-                    return false;
-                }
-                if (!is_array($nested['request_item'])) {
+                $sr = SrRepository::getSrByName($provider, $requestItem['request_name']);
+                if (!$sr instanceof Sr) {
                     return false;
                 }
 
-                $requestItem = $nested['request_item'];
-                if (empty($requestItem['action'])) {
-                    return false;
+                $srConfigData = $nested['data'];
+
+                if (is_array($srConfigData)) {
+                    foreach ($srConfigData as $key => $value) {
+                        if (!is_string($value) && !is_numeric($value)) {
+                            continue;
+                        }
+                        $queryData = $this->buildNestedSrResponseKeyData(
+                            $this->getRequestResponseKeyNames($requestItem),
+                            $value,
+                            $data
+                        );
+                        $response = $this->runOperationForSr(
+                            $sr,
+                            $requestItem['action'],
+                            $queryData
+                        );
+                        if (!$response) {
+                            return false;
+                        }
+                    }
+                } elseif (is_string($srConfigData)) {
+                    $queryData = $this->buildNestedSrResponseKeyData(
+                        $this->getRequestResponseKeyNames($requestItem),
+                        $srConfigData,
+                        $data
+                    );
+                    $response = $this->runOperationForSr(
+                        $sr,
+                        $requestItem['action'],
+                        $queryData
+                    );
+                    if (!$response) {
+                        return false;
+                    }
                 }
+
                 return $requestItem['action'] === 'return_value';
-            }, ARRAY_FILTER_USE_BOTH);
+            }, $filtered);
+
             return count($filtered) > 0;
         }, $data);
         return count($filtered) > 0;
@@ -403,7 +538,8 @@ class SrOperationsService
         }
     }
 
-    private function getTotalItems(ApiResponse $apiResponse) {
+    private function getTotalItems(ApiResponse $apiResponse)
+    {
         $totalItemsResponseKey = DataConstants::SERVICE_RESPONSE_KEYS['TOTAL_ITEMS'][SResponseKeysService::RESPONSE_KEY_NAME];
         $extraData = $apiResponse->getExtraData();
         if (!isset($extraData[$totalItemsResponseKey]) || $extraData[$totalItemsResponseKey] === '') {
@@ -411,7 +547,9 @@ class SrOperationsService
         }
         return (int)$extraData[$totalItemsResponseKey];
     }
-    private function getPageSize(ApiResponse $apiResponse) {
+
+    private function getPageSize(ApiResponse $apiResponse)
+    {
         $pageSizeResponseKey = DataConstants::SERVICE_RESPONSE_KEYS['PAGE_SIZE'][SResponseKeysService::RESPONSE_KEY_NAME];
         $extraData = $apiResponse->getExtraData();
         if (!isset($extraData[$pageSizeResponseKey]) || $extraData[$pageSizeResponseKey] === '') {
@@ -419,7 +557,9 @@ class SrOperationsService
         }
         return (int)$extraData[$pageSizeResponseKey];
     }
-    private function runSrPaginationOffset(Sr $sr, ApiResponse $apiResponse) {
+
+    private function runSrPaginationOffset(Sr $sr, ApiResponse $apiResponse)
+    {
         Log::channel(self::LOGGING_NAME)->info('Running offset pagination!');
         $provider = $sr->provider()->first();
         if (!$provider instanceof Provider) {
@@ -430,7 +570,7 @@ class SrOperationsService
 
         $this->totalItems = $this->getTotalItems($apiResponse);
 
-        $pageSize  = $this->getPageSize($apiResponse);
+        $pageSize = $this->getPageSize($apiResponse);
 
         $offsetResponseKey = DataConstants::SERVICE_RESPONSE_KEYS['OFFSET'][SResponseKeysService::RESPONSE_KEY_NAME];
         if (isset($extraData[$offsetResponseKey]) && $extraData[$offsetResponseKey] !== '') {
@@ -462,24 +602,32 @@ class SrOperationsService
             );
             return;
         }
-        $this->runOperationForSr($sr, [
-            'query' => '',
-            DataConstants::SERVICE_RESPONSE_KEYS['OFFSET'][SResponseKeysService::RESPONSE_KEY_NAME] => $this->offset,
-        ]);
+        $this->runOperationForSr($sr, SrResponseKeySrRepository::ACTION_STORE,
+            [
+                'query' => '',
+                DataConstants::SERVICE_RESPONSE_KEYS['OFFSET'][SResponseKeysService::RESPONSE_KEY_NAME] => $this->offset,
+            ]);
     }
 
-    private function getTotalPagesFromTotalItems() {
+    private function getTotalPagesFromTotalItems()
+    {
         return $this->totalItems / $this->pageSize;
     }
-    private function getPageFromOffset(int $offset) {
+
+    private function getPageFromOffset(int $offset)
+    {
         $totalPages = $this->getTotalPagesFromTotalItems();
         $offsetPageCount = $this->totalItems - $offset;
         return round($totalPages - round($offsetPageCount / $this->pageSize));
     }
-    private function getOffsetFromPageNumber() {
+
+    private function getOffsetFromPageNumber()
+    {
         return ($this->pageNumber * $this->pageSize);
     }
-    private function runSrPaginationPage(Sr $sr, ApiResponse $apiResponse) {
+
+    private function runSrPaginationPage(Sr $sr, ApiResponse $apiResponse)
+    {
         Log::channel(self::LOGGING_NAME)->info('Running page pagination!');
         $provider = $sr->provider()->first();
         if (!$provider instanceof Provider) {
@@ -514,10 +662,12 @@ class SrOperationsService
         if ($this->pageNumber > $totalPages) {
             return;
         }
-        $this->runOperationForSr($sr, [
-            'query' => '',
-            DataConstants::SERVICE_RESPONSE_KEYS['PAGE_NUMBER'][SResponseKeysService::RESPONSE_KEY_NAME] => $this->pageNumber,
-        ]);
+        $this->runOperationForSr($sr,
+            SrResponseKeySrRepository::ACTION_STORE,
+            [
+                'query' => '',
+                DataConstants::SERVICE_RESPONSE_KEYS['PAGE_NUMBER'][SResponseKeysService::RESPONSE_KEY_NAME] => $this->pageNumber,
+            ]);
     }
 
     public function getRequestOperation(): ApiRequestService

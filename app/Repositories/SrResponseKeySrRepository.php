@@ -10,9 +10,12 @@ use App\Models\SResponseKey;
 
 class SrResponseKeySrRepository extends BaseRepository
 {
+    public const ACTION_STORE = 'store';
+    public const ACTION_RETURN_VALUE = 'return_value';
+
     public const ALLOWED_ACTIONS = [
-        'store',
-        'return_value',
+        self::ACTION_STORE,
+        self::ACTION_RETURN_VALUE,
     ];
     public function __construct()
     {

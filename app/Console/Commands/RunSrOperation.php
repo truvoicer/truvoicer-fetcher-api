@@ -4,6 +4,7 @@ namespace App\Console\Commands;
 
 use App\Models\Provider;
 use App\Models\User;
+use App\Repositories\SrResponseKeySrRepository;
 use App\Services\ApiServices\ServiceRequests\SrOperationsService;
 use App\Services\Provider\ProviderEventService;
 use Illuminate\Console\Command;
@@ -62,7 +63,10 @@ class RunSrOperation extends Command
         }
         $srOperationsService->setUser($user);
         $srOperationsService->getRequestOperation()->setProvider($provider);
-        $srOperationsService->runOperationForSr($sr);
+        $srOperationsService->runOperationForSr(
+            $sr,
+            SrResponseKeySrRepository::ACTION_STORE
+        );
         return CommandAlias::SUCCESS;
     }
 

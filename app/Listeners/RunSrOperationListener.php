@@ -6,6 +6,7 @@ use App\Events\RunSrOperationEvent;
 use App\Models\Provider;
 use App\Models\Sr;
 use App\Models\User;
+use App\Repositories\SrResponseKeySrRepository;
 use App\Services\ApiServices\ServiceRequests\SrOperationsService;
 use App\Services\ApiServices\ServiceRequests\SrService;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -62,6 +63,10 @@ class RunSrOperationListener implements ShouldQueue
         }
         $this->srOperationsService->setUser($user);
         $this->srOperationsService->getRequestOperation()->setProvider($provider);
-        $this->srOperationsService->runOperationForSr($sr, $queryData);
+        $this->srOperationsService->runOperationForSr(
+            $sr,
+            SrResponseKeySrRepository::ACTION_STORE,
+            $queryData
+        );
     }
 }

@@ -31,7 +31,7 @@ class SrResponseKey extends Model
     }
     public function sResponseKey()
     {
-        return $this->hasMany(SResponseKey::class);
+        return $this->belongsTo(SResponseKey::class);
     }
     public function sResponseKeySr()
     {

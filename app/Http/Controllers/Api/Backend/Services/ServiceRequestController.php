@@ -16,6 +16,7 @@ use App\Http\Resources\Service\ServiceRequest\SrTreeViewCollection;
 use App\Models\Provider;
 use App\Models\S;
 use App\Models\Sr;
+use App\Repositories\SrResponseKeySrRepository;
 use App\Services\ApiManager\Operations\ApiRequestService;
 use App\Services\ApiServices\ApiService;
 use App\Services\ApiServices\ServiceRequests\SrOperationsService;
@@ -445,7 +446,10 @@ class ServiceRequestController extends Controller
     ): \Illuminate\Http\JsonResponse
     {
         $srOperationsService->getRequestOperation()->setProvider($provider);
-        $srOperationsService->runOperationForSr($serviceRequest);
+        $srOperationsService->runOperationForSr(
+            $serviceRequest,
+            SrResponseKeySrRepository::ACTION_STORE
+        );
         return $this->sendSuccessResponse(
             "Request ran successfully",
         );
