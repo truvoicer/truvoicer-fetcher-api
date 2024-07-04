@@ -233,8 +233,13 @@ class SrOperationsService
 
     private function runResponseKeySrItem(Sr $parentSr, array $data)
     {
+
         foreach ($data as $key => $item) {
-            foreach ($this->validateResponseKeySrConfig($item) as $nested) {
+            $validate = $this->validateResponseKeySrConfig($item);
+            if (!$validate) {
+                continue;
+            }
+            foreach ($validate as $nested) {
                 $requestItem = $nested['request_item'];
                 $provider = $this->providerService->getUserProviderByName($this->user, $requestItem['provider_name']);
                 if (!$provider instanceof Provider) {
@@ -401,6 +406,7 @@ class SrOperationsService
 
         $operationData = $response['operation_data'];
         $requestData = $response['request_data'];
+
         if ($this->shouldSaveToDb($action)) {
             $collectionName = $this->mongoDBRepository->getCollectionName($sr);
             $this->mongoDBRepository->setCollection($collectionName);
@@ -409,7 +415,7 @@ class SrOperationsService
         $data = [];
         foreach ($requestData as $item) {
             if ($this->shouldSaveToDb($action)) {
-                $item = $this->prepareDbSaveData($operationData, $item, $queryData);
+                $item = $this->prepareDbSaveData($sr, $operationData, $item, $queryData);
                 if (!$item) {
                     continue;
                 }
@@ -449,10 +455,14 @@ class SrOperationsService
     private function hasReturnValueResponseKeySrs(array $data)
     {
         $filtered = array_map(function ($item) use ($data) {
-            $filtered = array_filter($this->validateResponseKeySrConfig($item), function ($nested) {
+            $validate = $this->validateResponseKeySrConfig($item);
+            if (!$validate) {
+                return $item;
+            }
+            $filtered = array_filter($validate, function ($nested) {
                 $requestItem = $nested['request_item'];
                 return $requestItem['action'] === 'return_value';
-            }, ARRAY_FILTER_USE_BOTH);
+            }, ARRAY_FILTER_USE_BOTH);#
 
             $filtered = array_map(function ($nested) use ($data) {
                 $requestItem = $nested['request_item'];
@@ -478,6 +488,7 @@ class SrOperationsService
                             $value,
                             $data
                         );
+
                         $response = $this->runOperationForSr(
                             $sr,
                             $requestItem['action'],
@@ -486,6 +497,7 @@ class SrOperationsService
                         if (!$response) {
                             return false;
                         }
+                        dd($response);
                     }
                 } elseif (is_string($srConfigData)) {
                     $queryData = $this->buildNestedSrResponseKeyData(
@@ -508,7 +520,7 @@ class SrOperationsService
 
             return count($filtered) > 0;
         }, $data);
-        return count($filtered) > 0;
+        return $data;
     }
 
     private function runSrPagination(Sr $sr, ApiResponse $apiResponse)
