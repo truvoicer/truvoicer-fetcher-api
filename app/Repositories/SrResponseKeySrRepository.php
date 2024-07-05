@@ -46,15 +46,20 @@ class SrResponseKeySrRepository extends BaseRepository
             if (empty($sr['id'])) {
                 continue;
             }
-            if (empty($sr['action']) || !in_array($sr['action'], self::ALLOWED_ACTIONS)) {
+            if (!empty($sr['action']) && !in_array($sr['action'], self::ALLOWED_ACTIONS)) {
                 continue;
             }
             $srId = $sr['id'];
             $saveData = [
                 'sr_id' => $srId,
                 'sr_response_key_id' => $srResponseKey->id,
-                'action' => $sr['action'],
             ];
+            if (!empty($sr['action'])) {
+                $saveData['action'] = $sr['action'];
+            }
+            if (array_key_exists('single_request', $sr) && is_bool($sr['single_request'])) {
+                $saveData['single_request'] = $sr['single_request'];
+            }
             if (!empty($sr['request_response_keys']) && is_array($sr['request_response_keys'])) {
                 $saveData['request_response_keys'] = $sr['request_response_keys'];
             }

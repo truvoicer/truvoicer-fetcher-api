@@ -87,7 +87,7 @@ class Sr extends Model
             'sr_id',
             'sr_response_key_id'
         )
-            ->withPivot('response_response_keys', 'request_response_keys', 'action')
+            ->withPivot('response_response_keys', 'request_response_keys', 'action', 'single_request')
             ->using(SrResponseKeySr::class);
     }
 

@@ -25,6 +25,27 @@ class DataProcessor
     {
     }
 
+    public static function buildSingleArray(array $array, ?bool $isFirst = true)
+    {
+        $result = [];
+        if ($isFirst && count($array)) {
+            $array = [$array[array_key_first($array)]];
+        }
+        foreach ($array as $key => $value) {
+            if ($isFirst && is_array($value)) {
+                $result = array_merge($result, self::buildSingleArray($value, false));
+                continue;
+            }
+            $result[$key] = $value;
+        }
+        return $result;
+    }
+
+    public static function buildListArray(array $array)
+    {
+        return $array;
+    }
+
     public function filterParameterValue($paramValue)
     {
         if (preg_match_all('~\[(.*?)\]~', $paramValue, $output)) {

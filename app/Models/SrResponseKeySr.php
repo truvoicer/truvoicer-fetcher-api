@@ -14,13 +14,15 @@ class SrResponseKeySr extends Pivot
     protected $table = self::TABLE_NAME;
     protected $casts = [
         'request_response_keys' => 'array',
-        'response_response_keys' => 'array'
+        'response_response_keys' => 'array',
+        'single_request' => 'boolean'
     ];
     protected $fillable = [
         'sr_id',
         'sr_response_key_id',
         'request_response_keys',
         'response_response_keys',
-        'action'
+        'action',
+        'single_request'
     ];
 }

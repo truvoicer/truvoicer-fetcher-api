@@ -313,10 +313,7 @@ class SrOperationsService
             );
             return false;
         }
-        return [
-            'operation_data' => $apiResponse,
-            'request_data' => $requestData,
-        ];
+        return $apiResponse;
     }
 
     private function prepareDbSaveData(Sr $sr, ApiResponse $operationData, array $item, array $queryData = [])
@@ -381,6 +378,52 @@ class SrOperationsService
         };
     }
 
+    private function processRequestDataItem(Sr $sr, string $action, array $requestDataItem, array $queryData, ApiResponse $apiResponse)
+    {
+
+        if ($this->shouldSaveToDb($action)) {
+            $item = $this->prepareDbSaveData($sr, $apiResponse, $requestDataItem, $queryData);
+            if (!$item) {
+                return false;
+            }
+        }
+
+        $requestDataItem = $this->hasReturnValueResponseKeySrs($requestDataItem);
+
+        if ($this->shouldSaveToDb($action)) {
+            if (!$this->saveToDb($sr, $requestDataItem)) {
+                return false;
+            }
+            $requestDataItem = $this->runResponseKeySrItem($sr, $requestDataItem);
+            if (!$requestDataItem) {
+                return false;
+            }
+        }
+        return $requestDataItem;
+    }
+
+    private function processSingleSrData(Sr $sr, string $action, array $queryData, ApiResponse $apiResponse)
+    {
+        return $this->processRequestDataItem($sr, $action, $apiResponse->getRequestData(), $queryData, $apiResponse);
+    }
+
+    private function processListSrData(Sr $sr, string $action, array $queryData, ApiResponse $apiResponse)
+    {
+        $data = [];
+        foreach ($apiResponse->getRequestData() as $item) {
+            $requestDataItem = $this->processRequestDataItem($sr, $action, $item, $queryData, $apiResponse);
+            if (!$requestDataItem) {
+                continue;
+            }
+            $data[] = $requestDataItem;
+        }
+        if ($this->shouldSaveToDb($action)) {
+            $this->runSrPagination($sr, $apiResponse);
+        }
+
+        return $data;
+    }
+
     public function runOperationForSr(Sr $sr, string $action, ?array $queryData = ['query' => ''])
     {
         $provider = $sr->provider()->first();
@@ -396,49 +439,24 @@ class SrOperationsService
             return false;
         }
 
-        $response = $this->srOperationResponseHandler(
+        $apiResponse = $this->srOperationResponseHandler(
             $sr,
             $this->executeSrOperationRequest($sr, $queryData)
         );
-        if (!$response) {
+        if (!$apiResponse) {
             return false;
         }
-
-        $operationData = $response['operation_data'];
-        $requestData = $response['request_data'];
 
         if ($this->shouldSaveToDb($action)) {
             $collectionName = $this->mongoDBRepository->getCollectionName($sr);
             $this->mongoDBRepository->setCollection($collectionName);
         }
 
-        $data = [];
-        foreach ($requestData as $item) {
-            if ($this->shouldSaveToDb($action)) {
-                $item = $this->prepareDbSaveData($sr, $operationData, $item, $queryData);
-                if (!$item) {
-                    continue;
-                }
-            }
-
-            $item = $this->hasReturnValueResponseKeySrs($item);
-
-            if ($this->shouldSaveToDb($action)) {
-                if (!$this->saveToDb($sr, $item)) {
-                    continue;
-                }
-                $item = $this->runResponseKeySrItem($sr, $item);
-                if (!$item) {
-                    continue;
-                }
-            }
-            $data[] = $item;
-        }
-        if ($this->shouldSaveToDb($action)) {
-            $this->runSrPagination($sr, $operationData);
-        }
-
-        return $data;
+        return match ($sr->type) {
+            'single' => $this->processSingleSrData($sr, $action, $queryData, $apiResponse),
+            'list' => $this->processListSrData($sr, $action, $queryData, $apiResponse),
+            default => false,
+        };
     }
 
     private function getRequestResponseKeyNames(array $data)
@@ -452,20 +470,62 @@ class SrOperationsService
         return [];
     }
 
+    private function getResponseResponseKeyNames(array $data)
+    {
+        if (
+            !empty($data['response_response_keys']) &&
+            is_array($data['response_response_keys'])
+        ) {
+            return $data['response_response_keys'];
+        }
+        return [];
+    }
+
+    private function buildReturnValue(Sr $sr, array $data, array $responseKeyNames)
+    {
+        if (!count($responseKeyNames)) {
+            return null;
+        }
+        switch ($sr->type) {
+            case 'single':
+                if (count($responseKeyNames) === 1) {
+                    return $data[$responseKeyNames[0]];
+                }
+                return array_filter($data, function ($key) use ($responseKeyNames) {
+                    return in_array($key, $responseKeyNames);
+                }, ARRAY_FILTER_USE_KEY);
+
+            case 'list':
+                return array_map(function ($item) use ($responseKeyNames) {
+                    if (count($responseKeyNames) === 1) {
+                        return $item[$responseKeyNames[0]];
+                    }
+                    return array_filter($item, function ($key) use ($responseKeyNames) {
+                        return in_array($key, $responseKeyNames);
+                    }, ARRAY_FILTER_USE_KEY);
+                }, $data);
+            default:
+                return null;
+        }
+    }
+
     private function hasReturnValueResponseKeySrs(array $data)
     {
-        $filtered = array_map(function ($item) use ($data) {
+        foreach ($data as $keyName => $item) {
             $validate = $this->validateResponseKeySrConfig($item);
             if (!$validate) {
-                return $item;
+                continue;
             }
             $filtered = array_filter($validate, function ($nested) {
                 $requestItem = $nested['request_item'];
                 return $requestItem['action'] === 'return_value';
             }, ARRAY_FILTER_USE_BOTH);#
-
+            if (count($filtered) === 0) {
+                continue;
+            }
             $filtered = array_map(function ($nested) use ($data) {
                 $requestItem = $nested['request_item'];
+                $singleRequest = $requestItem['single_request'] ?? false;
 
                 $provider = $this->providerService->getUserProviderByName($this->user, $requestItem['provider_name']);
                 if (!$provider instanceof Provider) {
@@ -476,13 +536,19 @@ class SrOperationsService
                     return false;
                 }
 
+                $responseKeyNames = $this->getResponseResponseKeyNames($requestItem);
                 $srConfigData = $nested['data'];
 
+                $returnValue = null;
                 if (is_array($srConfigData)) {
+                    $returnValue = [];
+                    $step = 0;
                     foreach ($srConfigData as $key => $value) {
                         if (!is_string($value) && !is_numeric($value)) {
+                            $step++;
                             continue;
                         }
+
                         $queryData = $this->buildNestedSrResponseKeyData(
                             $this->getRequestResponseKeyNames($requestItem),
                             $value,
@@ -495,10 +561,24 @@ class SrOperationsService
                             $queryData
                         );
                         if (!$response) {
-                            return false;
+                            $step++;
+                            continue;
                         }
-                        dd($response);
+
+                        $returnValue = array_merge(
+                            $returnValue,
+                            $this->buildReturnValue(
+                                $sr,
+                                $response,
+                                $responseKeyNames
+                            )
+                        );
+
+                        if ($singleRequest) {
+                            break;
+                        }
                     }
+
                 } elseif (is_string($srConfigData)) {
                     $queryData = $this->buildNestedSrResponseKeyData(
                         $this->getRequestResponseKeyNames($requestItem),
@@ -513,13 +593,20 @@ class SrOperationsService
                     if (!$response) {
                         return false;
                     }
+                    $returnValue = $this->buildReturnValue(
+                        $sr,
+                        $response,
+                        $responseKeyNames
+                    );
                 }
-
-                return $requestItem['action'] === 'return_value';
+                return $returnValue;
             }, $filtered);
-
-            return count($filtered) > 0;
-        }, $data);
+            if (count($filtered) === 1) {
+                $data[$keyName] = $filtered[array_key_first($filtered)];
+                continue;
+            }
+            $data[$keyName] = $filtered;
+        }
         return $data;
     }
 

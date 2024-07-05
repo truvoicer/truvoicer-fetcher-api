@@ -157,11 +157,15 @@ class ResponseManager extends BaseService
 
     private function buildArray(array $array)
     {
-        $buildArray = [];
-        foreach ($array as $item) {
-            array_push($buildArray, $item);
+        switch ($this->serviceRequest->type) {
+            case 'single':
+                return DataProcessor::buildSingleArray($array);
+            case 'list':
+                return DataProcessor::buildListArray($array);
+            default:
+                return $array;
         }
-        return $buildArray;
+
     }
 
     private function getContentType(Response $response)

@@ -282,6 +282,7 @@ class ServiceRequestResponseKeyController extends Controller
         ) {
             return $this->sendErrorResponse("Access denied");
         }
+
         $update = $this->srResponseKeyService->updateRequestResponseKey(
             $request->user(),
             $serviceRequest,

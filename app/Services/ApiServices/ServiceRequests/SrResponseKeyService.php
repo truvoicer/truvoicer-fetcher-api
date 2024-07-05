@@ -126,6 +126,9 @@ class SrResponseKeyService extends BaseService
             if (!empty($item["response_response_keys"]) && !is_array($item["response_response_keys"])) {
                 return false;
             }
+            if (array_key_exists('single_request', $item) && !is_bool($item["single_request"])) {
+                return false;
+            }
             return true;
         });
     }
@@ -194,7 +197,11 @@ class SrResponseKeyService extends BaseService
             return false;
         }
         $srResponseKey = $this->srResponseKeyRepository->getModel();
-        if ($srResponseKey->is_service_request) {
+        if (
+            $srResponseKey->is_service_request &&
+            !empty($data["response_key_srs"]) &&
+            is_array($data["response_key_srs"])
+        ) {
             $createResponseKey = $this->saveSrResponseKeySrs(
                 $user,
                 $srResponseKey,
@@ -216,7 +223,11 @@ class SrResponseKeyService extends BaseService
         }
 
         $srResponseKey = $this->srResponseKeyRepository->getModel();
-        if ($srResponseKey->is_service_request) {
+        if (
+            $srResponseKey->is_service_request &&
+            !empty($data["response_key_srs"]) &&
+            is_array($data["response_key_srs"])
+        ) {
             $save = $this->saveSrResponseKeySrs(
                 $user,
                 $srResponseKey,
@@ -248,13 +259,18 @@ class SrResponseKeyService extends BaseService
             return false;
         }
         $srResponseKey = $this->srResponseKeyRepository->getModel();
-        if ($srResponseKey->is_service_request) {
+        if (
+            $srResponseKey->is_service_request &&
+            !empty($data["response_key_srs"]) &&
+            is_array($data["response_key_srs"])
+        ) {
             $save = $this->saveSrResponseKeySrs(
                 $user,
                 $srResponseKey,
                 $data
             );
         }
+
         return $save;
     }
 
