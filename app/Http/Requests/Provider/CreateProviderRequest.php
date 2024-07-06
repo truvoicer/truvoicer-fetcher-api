@@ -2,7 +2,9 @@
 
 namespace App\Http\Requests\Provider;
 
+use App\Models\Category;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class CreateProviderRequest extends FormRequest
 {
@@ -24,7 +26,12 @@ class CreateProviderRequest extends FormRequest
         return [
             'name' => 'string|nullable',
             'label' => 'required|string',
-            'categories' => 'array|nullable',
+            'categories' => 'sometimes|array',
+            'categories.*.id' => Rule::forEach(function ($value, string $attribute) {
+                return [
+                    Rule::exists(Category::class, 'id'),
+                ];
+            }),
         ];
     }
 }

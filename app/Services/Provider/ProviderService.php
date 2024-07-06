@@ -215,15 +215,24 @@ class ProviderService extends BaseService
         if ($checkProvider instanceof Provider) {
             throw new BadRequestHttpException(sprintf("Provider (%s) already exists.", $data['name']));
         }
-        $provider = $this->setProviderObject($data);
-        if (!$this->providerRepository->createProvider($provider)) {
+        $providerData = $this->setProviderObject($data);
+
+        if (!$this->providerRepository->createProvider($providerData)) {
             throw new BadRequestHttpException(sprintf("Error creating provider: %s", $data['name']));
         }
 
-        return $this->permissionEntities->saveUserEntityPermissions(
+        if (!$this->permissionEntities->saveUserEntityPermissions(
             $user,
             $this->providerRepository->getModel(),
             ['name' => PermissionService::PERMISSION_ADMIN]
+        )) {
+            throw new BadRequestHttpException("Error creating provider permissions.");
+        }
+
+        return $this->permissionEntities->saveRelatedEntity(
+            $this->providerRepository->getModel(),
+            Category::class,
+            (!empty($providerData['categories']) && is_array($providerData['categories'])) ? $providerData['categories'] : []
         );
     }
 

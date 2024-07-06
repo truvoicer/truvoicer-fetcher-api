@@ -12,9 +12,20 @@ class XmlResponseHandler extends ResponseHandler
 
     public function getListItems()
     {
-        $itemList = $this->getItemList();
-        $buildListItems =  $this->buildListItems($itemList);
-        return $buildListItems;
+        return array_values(
+            $this->buildListItems(
+                $this->getItemList()
+            )
+        );
+    }
+
+    private function buildArray(array $array)
+    {
+        $buildArray = [];
+        foreach ($array as $item) {
+            array_push($buildArray, $item);
+        }
+        return $buildArray;
     }
 
     public function getListData()
