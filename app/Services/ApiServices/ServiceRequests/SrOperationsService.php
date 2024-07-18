@@ -404,6 +404,10 @@ class SrOperationsService
 
     private function processSingleSrData(Sr $sr, string $action, array $queryData, ApiResponse $apiResponse)
     {
+        if ($this->shouldSaveToDb($action)) {
+            $collectionName = $this->mongoDBRepository->getCollectionName($sr);
+            $this->mongoDBRepository->setCollection($collectionName);
+        }
         return $this->processRequestDataItem($sr, $action, $apiResponse->getRequestData(), $queryData, $apiResponse);
     }
 
@@ -411,6 +415,10 @@ class SrOperationsService
     {
         $data = [];
         foreach ($apiResponse->getRequestData() as $item) {
+            if ($this->shouldSaveToDb($action)) {
+                $collectionName = $this->mongoDBRepository->getCollectionName($sr);
+                $this->mongoDBRepository->setCollection($collectionName);
+            }
             $requestDataItem = $this->processRequestDataItem($sr, $action, $item, $queryData, $apiResponse);
             if (!$requestDataItem) {
                 continue;
@@ -445,11 +453,6 @@ class SrOperationsService
         );
         if (!$apiResponse) {
             return false;
-        }
-
-        if ($this->shouldSaveToDb($action)) {
-            $collectionName = $this->mongoDBRepository->getCollectionName($sr);
-            $this->mongoDBRepository->setCollection($collectionName);
         }
 
         return match ($sr->type) {

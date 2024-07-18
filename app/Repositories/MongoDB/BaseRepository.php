@@ -44,6 +44,10 @@ class BaseRepository
         $this->connection = DB::connection('mongodb');
     }
 
+    public function getCollection(): string
+    {
+        return $this->collection;
+    }
 
 
     public function findAll()

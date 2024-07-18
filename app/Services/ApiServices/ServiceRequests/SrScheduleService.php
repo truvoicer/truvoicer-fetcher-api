@@ -5,6 +5,7 @@ namespace App\Services\ApiServices\ServiceRequests;
 use App\Models\Sr;
 use App\Models\SrSchedule;
 use App\Models\User;
+use App\Repositories\SrResponseKeySrRepository;
 use App\Repositories\SrScheduleRepository;
 use App\Services\BaseService;
 use App\Services\Provider\ProviderEventService;
@@ -93,7 +94,7 @@ class SrScheduleService extends BaseService
                 $srOperationsService = App::make(SrOperationsService::class);
                 $srOperationsService->setUser($user);
                 $srOperationsService->getRequestOperation()->setProvider($sr->provider()->first());
-                $srOperationsService->runOperationForSr($sr);
+                $srOperationsService->runOperationForSr($sr, SrResponseKeySrRepository::ACTION_STORE);
                 break;
             default:
                 $this->providerEventService->dispatchSrOperationEvent($user, $sr);
