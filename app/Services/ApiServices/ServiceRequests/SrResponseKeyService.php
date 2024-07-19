@@ -140,6 +140,7 @@ class SrResponseKeyService extends BaseService
             "show_in_response",
             "list_item",
             "custom_value",
+            "is_date",
             "append_extra_data_value",
             "prepend_extra_data_value",
             "is_service_request",

@@ -299,18 +299,45 @@ class ResponseHandler extends ApiBase
         return $buildArray;
     }
 
+    private function buildDateValue($value)
+    {
+        $dateRegexes = [
+            [
+                'format' => "MM/DD/YYYY",
+                'regex' => "^(1[0-2]|0?[1-9])\/(3[01]|[12][0-9]|0?[1-9])\/(?:[0-9]{2})?[0-9]{2}"
+            ],
+            [
+                'format' => "DD/MM/YYYY",
+                'regex' => "^(3[01]|[12][0-9]|0?[1-9])\\/(1[0-2]|0?[1-9])\\/(?:[0-9]{2})?[0-9]{2}"
+            ],
+            [
+                'format' => "YYYY/MM/DD",
+                'regex' => "^([0-9]{4})\/(1[0-2]|0?[1-9])\/(3[01]|[12][0-9]|0?[1-9])"
+            ],
+            [
+                'format' => "YYYY/DD/MM",
+                'regex' => "^([0-9]{4})\/(3[01]|[12][0-9]|0?[1-9])\/(1[0-2]|0?[1-9])"
+            ]
+        ];
+        return date('Y-m-d H:i:s', strtotime($value));
+    }
+
     private function buildRequestKeyTextValue(SrResponseKey $requestResponseKey, $itemArrayValue)
     {
         if (!is_array($itemArrayValue)) {
-            return $itemArrayValue;
-        }
-        foreach ($itemArrayValue as $item) {
-            foreach ($requestResponseKey->array_keys as $arrayKey) {
-                if (is_array($item)) {
-                    return $this->getRequestKeyArrayItemValue($arrayKey["name"], $arrayKey["value"], $item);
+            foreach ($itemArrayValue as $item) {
+                foreach ($requestResponseKey->array_keys as $arrayKey) {
+                    if (is_array($item)) {
+                        return $this->getRequestKeyArrayItemValue($arrayKey["name"], $arrayKey["value"], $item);
+                    }
                 }
             }
+            return null;
         }
+        if ($requestResponseKey->is_date) {
+            return $this->buildDateValue($itemArrayValue);
+        }
+        return $itemArrayValue;
     }
 
     private function getRequestKeyArrayItemValue($objectKeyToReturn, $conditions, $item)

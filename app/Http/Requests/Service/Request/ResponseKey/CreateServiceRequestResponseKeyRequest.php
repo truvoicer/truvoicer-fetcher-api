@@ -32,6 +32,7 @@ class CreateServiceRequestResponseKeyRequest extends FormRequest
             'show_in_response' => 'nullable|boolean',
             'list_item' => 'nullable|boolean',
             'custom_value' => 'nullable|boolean',
+            'is_date' => 'nullable|boolean',
             'append_extra_data_value' => 'string|nullable',
             'prepend_extra_data_value' => 'string|nullable',
             'is_service_request' => 'nullable|boolean',
