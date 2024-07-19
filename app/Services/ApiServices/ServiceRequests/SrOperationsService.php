@@ -20,6 +20,7 @@ use App\Services\Provider\ProviderService;
 use App\Services\Task\ScheduleService;
 use App\Traits\Error\ErrorTrait;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Log;
 
 class SrOperationsService
@@ -53,6 +54,7 @@ class SrOperationsService
     private ApiRequestService $requestOperation;
     private User $user;
 
+    private Carbon $now;
     private int $offset = 0;
     private int $pageNumber = 1;
     private int $pageSize = 100;
@@ -71,6 +73,7 @@ class SrOperationsService
         $this->requestOperation = $requestOperation;
         $this->srScheduleService = $srScheduleService;
         $this->mongoDBRepository = new MongoDBRepository();
+        $this->now = now();
     }
 
     public function providerSrSchedule(string $interval)
@@ -107,7 +110,6 @@ class SrOperationsService
     private function buildSaveData(ApiResponse $requestResponse, array $data, array $queryData = [])
     {
         $requestData = $requestResponse->toArray();
-
         foreach (self::REMOVE_SAVE_DATA_FIELDS as $field) {
             if (isset($requestData[$field])) {
                 unset($requestData[$field]);
@@ -119,6 +121,13 @@ class SrOperationsService
             $requestData,
             $data
         );
+        $now = now()->toISOString();
+        if (empty($insertData['created_at'])) {
+            $insertData['created_at'] = $now;
+        }
+        if (empty($insertData['updated_at'])) {
+            $insertData['updated_at'] = $now;
+        }
         return $insertData;
     }
 
@@ -382,8 +391,8 @@ class SrOperationsService
     {
 
         if ($this->shouldSaveToDb($action)) {
-            $item = $this->prepareDbSaveData($sr, $apiResponse, $requestDataItem, $queryData);
-            if (!$item) {
+            $requestDataItem = $this->prepareDbSaveData($sr, $apiResponse, $requestDataItem, $queryData);
+            if (!$requestDataItem) {
                 return false;
             }
         }

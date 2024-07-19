@@ -11,13 +11,16 @@ class ResourceHelpers
     const RESPONSE_PROPERTIES = [
         'status',
         'contentType',
+//        'provider',
+        'requestCategory',
+//        'serviceRequest',
+//        'service',
+    ];
+    const INCLUDE_IN_COLLECTION_ITEMS = [
         'provider',
         'requestCategory',
         'serviceRequest',
         'service',
-    ];
-    const INCLUDE_IN_COLLECTION_ITEMS = [
-        'provider',
     ];
 
     public static function buildResponseProperties(array $data)
