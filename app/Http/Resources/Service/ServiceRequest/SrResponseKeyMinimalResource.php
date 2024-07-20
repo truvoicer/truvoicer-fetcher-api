@@ -25,6 +25,7 @@ class SrResponseKeyMinimalResource extends JsonResource
             'list_item' => $this->list_item,
             'custom_value' => $this->custom_value,
             'is_date' => $this->is_date,
+            'date_format' => $this->date_format,
             'append_extra_data_value' => $this->append_extra_data_value,
             'prepend_extra_data_value' => $this->prepend_extra_data_value,
             'created_at' => $this->created_at,

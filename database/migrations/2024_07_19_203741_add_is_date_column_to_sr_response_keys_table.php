@@ -13,6 +13,7 @@ return new class extends Migration
     {
         Schema::table('sr_response_keys', function (Blueprint $table) {
             $table->boolean('is_date')->default(false)->after('custom_value');
+            $table->string('date_format')->nullable()->after('is_date');
         });
     }
 
@@ -23,6 +24,7 @@ return new class extends Migration
     {
         Schema::table('sr_response_keys', function (Blueprint $table) {
             $table->dropColumn('is_date');
+            $table->dropColumn('date_format');
         });
     }
 };

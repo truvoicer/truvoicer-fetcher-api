@@ -35,6 +35,7 @@ class UpdateServiceRequestResponseKeyRequest extends FormRequest
             'list_item' => 'nullable|boolean',
             'custom_value' => 'nullable|boolean',
             'is_date' => 'nullable|boolean',
+            'date_format' => 'nullable|string',
             'append_extra_data_value' => 'string|nullable',
             'prepend_extra_data_value' => 'string|nullable',
             'is_service_request' => 'nullable|boolean',

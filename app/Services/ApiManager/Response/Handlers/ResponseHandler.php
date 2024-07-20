@@ -14,6 +14,7 @@ use App\Services\Provider\ProviderService;
 use App\Services\ApiServices\ServiceRequests\SrService;
 use App\Services\ApiServices\SResponseKeysService;
 use App\Services\Tools\XmlService;
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Collection;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 
@@ -299,32 +300,17 @@ class ResponseHandler extends ApiBase
         return $buildArray;
     }
 
-    private function buildDateValue($value)
+    private function buildDateValue(SrResponseKey $requestResponseKey, $value)
     {
-        $dateRegexes = [
-            [
-                'format' => "MM/DD/YYYY",
-                'regex' => "^(1[0-2]|0?[1-9])\/(3[01]|[12][0-9]|0?[1-9])\/(?:[0-9]{2})?[0-9]{2}"
-            ],
-            [
-                'format' => "DD/MM/YYYY",
-                'regex' => "^(3[01]|[12][0-9]|0?[1-9])\\/(1[0-2]|0?[1-9])\\/(?:[0-9]{2})?[0-9]{2}"
-            ],
-            [
-                'format' => "YYYY/MM/DD",
-                'regex' => "^([0-9]{4})\/(1[0-2]|0?[1-9])\/(3[01]|[12][0-9]|0?[1-9])"
-            ],
-            [
-                'format' => "YYYY/DD/MM",
-                'regex' => "^([0-9]{4})\/(3[01]|[12][0-9]|0?[1-9])\/(1[0-2]|0?[1-9])"
-            ]
-        ];
-        return date('Y-m-d H:i:s', strtotime($value));
+        if (empty($requestResponseKey->date_format)) {
+            return Carbon::create($value)->toISOString();
+        }
+        return Carbon::createFromFormat($requestResponseKey->date_format, $value)->toISOString();
     }
 
     private function buildRequestKeyTextValue(SrResponseKey $requestResponseKey, $itemArrayValue)
     {
-        if (!is_array($itemArrayValue)) {
+        if (is_array($itemArrayValue)) {
             foreach ($itemArrayValue as $item) {
                 foreach ($requestResponseKey->array_keys as $arrayKey) {
                     if (is_array($item)) {
@@ -335,7 +321,7 @@ class ResponseHandler extends ApiBase
             return null;
         }
         if ($requestResponseKey->is_date) {
-            return $this->buildDateValue($itemArrayValue);
+            return $this->buildDateValue($requestResponseKey, $itemArrayValue);
         }
         return $itemArrayValue;
     }
