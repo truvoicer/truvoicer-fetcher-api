@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api\Frontend;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\OperationsRequest;
 use App\Http\Resources\ApiSearchItemResource;
 use App\Http\Resources\ApiSearchListResourceCollection;
 use App\Http\Resources\ApiSearchResource;
@@ -28,25 +29,12 @@ class OperationsController extends Controller
         parent::__construct($accessControlService, $httpRequestService, $serializerService);
     }
 
-    public function searchOperation(string $type, ApiRequestDataHandler $apiRequestDataHandler, Request $request)
+    public function searchOperation(string $type, ApiRequestDataHandler $apiRequestDataHandler, OperationsRequest $request)
     {
-        $data = $request->all();
-//        $appEnv = $this->getParameter("app.env");
-//        if ($appEnv === "prod") {
-//            $cacheKey = preg_replace('/[^a-zA-Z0-9\']/', '', $request->getRequestUri());
-//            $cache = new FilesystemAdapter();
-//            $operationData = $cache->get($cacheKey, function (ItemInterface $item) use ($requestOperation, $data, $name) {
-//                $item->expiresAfter(10800);
-//
-//                $requestOperation->setProviderName($data['provider']);
-//                $requestOperation->setApiRequestName($name);
-//                return $requestOperation->runOperation($data);
-//            });
-//        }
         $provider = $request->get('provider');
         $service = $request->get('service');
         $apiRequestDataHandler->setUser($request->user());
-        $results = $apiRequestDataHandler->searchOperation($type, $provider, $service, $data);
+        $results = $apiRequestDataHandler->searchOperation($type, $provider, $service, $request->validated());
         if (!$results) {
             $this->sendErrorResponse(
                 'Invalid search type',

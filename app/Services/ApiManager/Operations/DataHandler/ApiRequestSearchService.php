@@ -72,16 +72,20 @@ class ApiRequestSearchService
         }
         return $orderBy;
     }
-    private function getOrderBy(Sr $sr): array
+    private function getOrderBy(Sr $sr, ?array $query): array
     {
         $sortOrder = 'desc';
         $defaultData = $sr->default_data;
-        if (!is_array($defaultData) || empty($defaultData['sort_by'])) {
+        if (!is_array($query) || !empty($query['sort_by'])) {
+            $orderBy = $query['sort_by'];
+        } else if (!is_array($defaultData) || empty($defaultData['sort_by'])) {
             $orderBy = $this->getOrderByFromResponseKeys($sr);
         } else {
             $orderBy = $defaultData['sort_by'];
         }
-        if (!empty($defaultData['sort_order'])) {
+        if (!empty($query['sort_order'])) {
+            $sortOrder = $query['sort_order'];
+        } else if (!empty($defaultData['sort_order'])) {
             $sortOrder = $defaultData['sort_order'];
         }
 
@@ -117,7 +121,7 @@ class ApiRequestSearchService
                 'serviceRequest.name',
                 $sr->name,
             );
-            list($orderBy, $sortOrder) = $this->getOrderBy($sr);
+            list($orderBy, $sortOrder) = $this->getOrderBy($sr, $query);
             if (!empty($orderBy) && in_array($sortOrder, $this->mongoDBRepository::AVAILABLE_ORDER_DIRECTIONS)) {
                 $sort[] = [$orderBy, $sortOrder];
             }
