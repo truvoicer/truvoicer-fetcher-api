@@ -22,13 +22,13 @@ class OperationsRequest extends FormRequest
     public function rules(): array
     {
         return [
-            "page_number" => ["sometimes", "integer"],
-            "page_size" => ["sometimes", "integer"],
-            "sort_by" => ["sometimes", "string"],
-            "sort_order" => ["sometimes", "string"],
-            "date_key" => ["sometimes", "string"],
-            "provider" =>["sometimes", "array"],
-            "service" => ["sometimes", "string"],
+            "page_number" => ["sometimes", "integer", 'nullable'],
+            "page_size" => ["sometimes", "integer", 'nullable'],
+            "sort_by" => ["sometimes", "string", 'nullable'],
+            "sort_order" => ["sometimes", "string", 'nullable'],
+            "date_key" => ["sometimes", "string", 'nullable'],
+            "provider" =>["sometimes", "array", 'nullable'],
+            "service" => ["sometimes", "string", 'nullable'],
         ];
     }
 }
