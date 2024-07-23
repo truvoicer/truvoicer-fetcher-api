@@ -4,6 +4,7 @@ namespace App\Services\ApiManager\Response;
 
 use App\Models\Provider;
 use App\Models\Sr;
+use App\Repositories\SrRepository;
 use App\Services\ApiManager\Client\Entity\ApiRequest;
 use App\Services\ApiManager\Data\DataProcessor;
 use App\Services\ApiManager\Response\Entity\ApiResponse;
@@ -158,9 +159,10 @@ class ResponseManager extends BaseService
     private function buildArray(array $array)
     {
         switch ($this->serviceRequest->type) {
-            case 'single':
+            case SrRepository::SR_TYPE_SINGLE:
+            case SrRepository::SR_TYPE_DETAIL:
                 return DataProcessor::buildSingleArray($array);
-            case 'list':
+            case SrRepository::SR_TYPE_LIST:
                 return DataProcessor::buildListArray($array);
             default:
                 return $array;

@@ -466,8 +466,8 @@ class SrOperationsService
         }
 
         return match ($sr->type) {
-            'single' => $this->processSingleSrData($sr, $action, $queryData, $apiResponse),
-            'list' => $this->processListSrData($sr, $action, $queryData, $apiResponse),
+            SrRepository::SR_TYPE_DETAIL, SrRepository::SR_TYPE_SINGLE => $this->processSingleSrData($sr, $action, $queryData, $apiResponse),
+            SrRepository::SR_TYPE_LIST => $this->processListSrData($sr, $action, $queryData, $apiResponse),
             default => false,
         };
     }
@@ -500,7 +500,8 @@ class SrOperationsService
             return null;
         }
         switch ($sr->type) {
-            case 'single':
+            case SrRepository::SR_TYPE_DETAIL:
+            case SrRepository::SR_TYPE_SINGLE:
                 if (count($responseKeyNames) === 1) {
                     return $data[$responseKeyNames[0]];
                 }
@@ -508,7 +509,7 @@ class SrOperationsService
                     return in_array($key, $responseKeyNames);
                 }, ARRAY_FILTER_USE_KEY);
 
-            case 'list':
+            case SrRepository::SR_TYPE_LIST:
                 return array_map(function ($item) use ($responseKeyNames) {
                     if (count($responseKeyNames) === 1) {
                         return $item[$responseKeyNames[0]];

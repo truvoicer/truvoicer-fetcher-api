@@ -20,9 +20,11 @@ class SrRepository extends BaseRepository
 
     public const SR_TYPE_LIST = 'list';
     public const SR_TYPE_SINGLE = 'single';
+    public const SR_TYPE_DETAIL = 'detail';
     public const SR_TYPES = [
         self::SR_TYPE_LIST,
-        self::SR_TYPE_SINGLE
+        self::SR_TYPE_SINGLE,
+        self::SR_TYPE_DETAIL,
     ];
 
     public function __construct()

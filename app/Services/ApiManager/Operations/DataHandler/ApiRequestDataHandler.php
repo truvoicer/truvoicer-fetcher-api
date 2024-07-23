@@ -9,6 +9,7 @@ use App\Models\S;
 use App\Models\Sr;
 use App\Models\User;
 use App\Repositories\MongoDB\MongoDBRepository;
+use App\Repositories\SrRepository;
 use App\Services\ApiManager\Operations\ApiRequestService;
 use App\Services\ApiManager\Response\Entity\ApiResponse;
 use App\Services\ApiServices\ApiService;
@@ -56,9 +57,9 @@ class ApiRequestDataHandler
         return $this->apiRequestSearchService->runListSearch($query);
     }
 
-    public function runItemSearch(array $providers, int|string $itemId): array|null
+    public function runItemSearch(string $type, array $providers, int|string $itemId): array|null
     {
-        $this->searchInit('single', $providers);
+        $this->searchInit($type, $providers);
         return $this->apiRequestSearchService->runSingleItemSearch($itemId);
     }
 
@@ -227,14 +228,16 @@ class ApiRequestDataHandler
         $this->setService($getService);
         $providerData = $this->buildProviderData($providers);
         switch ($type) {
-            case 'list':
+            case SrRepository::SR_TYPE_LIST:
                 $results = $this->runListSearch(
                     $providerData,
                     $data
                 );
                 return new ApiSearchListResourceCollection($results);
-            case 'single':
+            case SrRepository::SR_TYPE_DETAIL:
+            case SrRepository::SR_TYPE_SINGLE:
                 $results = $this->runItemSearch(
+                    $type,
                     $providerData,
                     $data['item_id']
                 );

@@ -171,6 +171,7 @@ class ResponseHandler extends ApiBase
                 "request_item" => [
                     "request_label" => $sr->label,
                     "request_name" => $sr->name,
+                    "request_type" => $sr->type,
                     "request_parameters" => $this->getServiceRequestParameters($sr),
                     'action' => $sr?->pivot?->action,
                     'single_request' => $sr?->pivot?->single_request,

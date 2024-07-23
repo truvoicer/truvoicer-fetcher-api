@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Service\Request;
 
+use App\Repositories\SrRepository;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -23,7 +24,11 @@ class CreateSrRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'type' => 'string|required',
+            'type' => [
+                'required',
+                'string',
+                Rule::in(SrRepository::SR_TYPES)
+            ],
             'default_sr' => 'boolean|nullable',
             'name' => 'string|nullable',
             'label' => 'required|string',
