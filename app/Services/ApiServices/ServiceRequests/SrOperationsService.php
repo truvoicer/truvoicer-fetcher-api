@@ -251,6 +251,10 @@ class SrOperationsService
             }
             foreach ($validate as $nested) {
                 $requestItem = $nested['request_item'];
+                $disableRequest = $requestItem['disable_request'] ?? false;
+                if ($disableRequest) {
+                    return true;
+                }
                 $provider = $this->providerService->getUserProviderByName($this->user, $requestItem['provider_name']);
                 if (!$provider instanceof Provider) {
                     continue;
@@ -540,7 +544,10 @@ class SrOperationsService
             $filtered = array_map(function ($nested) use ($data) {
                 $requestItem = $nested['request_item'];
                 $singleRequest = $requestItem['single_request'] ?? false;
-
+                $disableRequest = $requestItem['disable_request'] ?? false;
+                if ($disableRequest) {
+                    return $nested;
+                }
                 $provider = $this->providerService->getUserProviderByName($this->user, $requestItem['provider_name']);
                 if (!$provider instanceof Provider) {
                     return false;

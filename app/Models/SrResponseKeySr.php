@@ -15,7 +15,8 @@ class SrResponseKeySr extends Pivot
     protected $casts = [
         'request_response_keys' => 'array',
         'response_response_keys' => 'array',
-        'single_request' => 'boolean'
+        'single_request' => 'boolean',
+        'disable_request' => 'boolean'
     ];
     protected $fillable = [
         'sr_id',
@@ -23,6 +24,7 @@ class SrResponseKeySr extends Pivot
         'request_response_keys',
         'response_response_keys',
         'action',
-        'single_request'
+        'single_request',
+        'disable_request'
     ];
 }

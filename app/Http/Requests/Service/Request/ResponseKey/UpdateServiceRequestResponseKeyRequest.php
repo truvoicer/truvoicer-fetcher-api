@@ -47,6 +47,9 @@ class UpdateServiceRequestResponseKeyRequest extends FormRequest
             'response_key_srs.*.single_request' => [
                 'boolean'
             ],
+            'response_key_srs.*.disable_request' => [
+                'boolean'
+            ],
             'response_key_srs.*.id' => Rule::forEach(function ($value, string $attribute) {
                 return [
                     'required_if_accepted:is_service_request',

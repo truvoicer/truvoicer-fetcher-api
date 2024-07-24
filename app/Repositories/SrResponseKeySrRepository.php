@@ -60,6 +60,9 @@ class SrResponseKeySrRepository extends BaseRepository
             if (array_key_exists('single_request', $sr) && is_bool($sr['single_request'])) {
                 $saveData['single_request'] = $sr['single_request'];
             }
+            if (array_key_exists('disable_request', $sr) && is_bool($sr['disable_request'])) {
+                $saveData['disable_request'] = $sr['disable_request'];
+            }
             if (!empty($sr['request_response_keys']) && is_array($sr['request_response_keys'])) {
                 $saveData['request_response_keys'] = $sr['request_response_keys'];
             }

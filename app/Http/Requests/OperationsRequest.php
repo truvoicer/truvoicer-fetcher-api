@@ -29,6 +29,7 @@ class OperationsRequest extends FormRequest
             "date_key" => ["sometimes", "string", 'nullable'],
             "provider" =>["sometimes", "array", 'nullable'],
             "service" => ["sometimes", "string", 'nullable'],
+            "item_id" => ["sometimes", 'nullable'],
         ];
     }
 }

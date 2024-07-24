@@ -175,6 +175,7 @@ class ResponseHandler extends ApiBase
                     "request_parameters" => $this->getServiceRequestParameters($sr),
                     'action' => $sr?->pivot?->action,
                     'single_request' => $sr?->pivot?->single_request,
+                    'disable_request' => $sr?->pivot?->disable_request,
                     'request_response_keys' => $sr?->pivot?->request_response_keys,
                     'response_response_keys' => $sr?->pivot?->response_response_keys,
                     'provider_name' => $sr?->provider?->name,

@@ -129,6 +129,9 @@ class SrResponseKeyService extends BaseService
             if (array_key_exists('single_request', $item) && !is_bool($item["single_request"])) {
                 return false;
             }
+            if (array_key_exists('disable_request', $item) && !is_bool($item["disable_request"])) {
+                return false;
+            }
             return true;
         });
     }
