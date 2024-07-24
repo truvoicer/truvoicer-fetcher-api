@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class OperationsRequest extends FormRequest
 {
@@ -22,6 +23,7 @@ class OperationsRequest extends FormRequest
     public function rules(): array
     {
         return [
+            "api_fetch_type" => ["required", "string", Rule::in(["database", "api_direct"])],
             "page_number" => ["sometimes", "integer", 'nullable'],
             "page_size" => ["sometimes", "integer", 'nullable'],
             "sort_by" => ["sometimes", "string", 'nullable'],

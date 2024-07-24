@@ -34,10 +34,21 @@ class OperationsController extends Controller
         $provider = $request->get('provider');
         $service = $request->get('service');
         $apiRequestDataHandler->setUser($request->user());
-        $results = $apiRequestDataHandler->searchOperation($type, $provider, $service, $request->validated());
+        switch($request->validated('api_fetch_type')) {
+            case 'database':
+                $results = $apiRequestDataHandler->searchOperation($type, $provider, $service, $request->validated());
+                break;
+            case 'api_direct':
+                $results = $apiRequestDataHandler->searchOperation($type, $provider, $service, $request->validated());
+                break;
+            default:
+                return $this->sendErrorResponse(
+                    'Invalid search type',
+                );
+        }
         if (!$results) {
-            $this->sendErrorResponse(
-                'Invalid search type',
+            return $this->sendErrorResponse(
+                'No results found',
             );
         }
         return $this->sendSuccessResponse(
