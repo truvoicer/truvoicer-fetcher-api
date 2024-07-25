@@ -9,6 +9,7 @@ use App\Http\Resources\ApiSearchListResourceCollection;
 use App\Http\Resources\ApiSearchResource;
 use App\Http\Resources\ApiSearchResourceCollection;
 use App\Services\ApiManager\Operations\DataHandler\ApiRequestDataHandler;
+use App\Services\ApiManager\Operations\DataHandler\ApiRequestMongoDbHandler;
 use App\Services\Permission\AccessControlService;
 use App\Services\Tools\HttpRequestService;
 use App\Services\Tools\SerializerService;
@@ -34,18 +35,13 @@ class OperationsController extends Controller
         $provider = $request->get('provider');
         $service = $request->get('service');
         $apiRequestDataHandler->setUser($request->user());
-        switch($request->validated('api_fetch_type')) {
-            case 'database':
-                $results = $apiRequestDataHandler->searchOperation($type, $provider, $service, $request->validated());
-                break;
-            case 'api_direct':
-                $results = $apiRequestDataHandler->searchOperation($type, $provider, $service, $request->validated());
-                break;
-            default:
-                return $this->sendErrorResponse(
-                    'Invalid search type',
-                );
-        }
+        $results = $apiRequestDataHandler->searchOperation(
+            $request->validated('api_fetch_type'),
+            $type,
+            $provider,
+            $service,
+            $request->validated()
+        );
         if (!$results) {
             return $this->sendErrorResponse(
                 'No results found',

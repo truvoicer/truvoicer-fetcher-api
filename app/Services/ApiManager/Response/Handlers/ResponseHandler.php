@@ -7,8 +7,10 @@ use App\Models\Provider;
 use App\Models\Sr;
 use App\Models\SResponseKey;
 use App\Models\SrResponseKey;
+use App\Repositories\SrRepository;
 use App\Services\ApiManager\ApiBase;
 use App\Services\ApiManager\Data\DataConstants;
+use App\Services\ApiManager\Operations\ApiRequestService;
 use App\Services\ApiServices\ServiceRequests\SrResponseKeyService;
 use App\Services\Provider\ProviderService;
 use App\Services\ApiServices\ServiceRequests\SrService;
@@ -16,17 +18,13 @@ use App\Services\ApiServices\SResponseKeysService;
 use App\Services\Tools\XmlService;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Arr;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 
 class ResponseHandler extends ApiBase
 {
-    protected ProviderService $providerService;
-    protected SrService $requestService;
-    protected SResponseKeysService $sResponseKeysService;
-    protected SrResponseKeyService $srResponseKeyService;
     protected Provider $provider;
     protected Sr $apiService;
-    protected XmlService $xmlService;
     protected array $responseArray;
     protected Collection $responseKeysArray;
 
@@ -34,18 +32,14 @@ class ResponseHandler extends ApiBase
     private string $needleMatchArrayKey = ".";
 
     public function __construct(
-        ProviderService      $providerService,
-        SrService            $requestService,
-        XmlService           $xmlService,
-        SResponseKeysService $responseKeysService,
-        SrResponseKeyService $srResponseKeyService
+        protected ProviderService      $providerService,
+        protected SrService            $requestService,
+        protected XmlService           $xmlService,
+        protected SResponseKeysService $responseKeysService,
+        protected SrResponseKeyService $srResponseKeyService,
+        protected ApiRequestService $requestOperation,
     )
     {
-        $this->providerService = $providerService;
-        $this->requestService = $requestService;
-        $this->xmlService = $xmlService;
-        $this->sResponseKeysService = $responseKeysService;
-        $this->srResponseKeyService = $srResponseKeyService;
     }
 
     protected function findSrResponseKeyValueInArray(string $name)
@@ -401,6 +395,208 @@ class ResponseHandler extends ApiBase
         }
     }
 
+    private function getRequestResponseKeyNames(array $data)
+    {
+        if (
+            !empty($data['request_response_keys']) &&
+            is_array($data['request_response_keys'])
+        ) {
+            return $data['request_response_keys'];
+        }
+        return [];
+    }
+
+    private function getResponseResponseKeyNames(array $data)
+    {
+        if (
+            !empty($data['response_response_keys']) &&
+            is_array($data['response_response_keys'])
+        ) {
+            return $data['response_response_keys'];
+        }
+        return [];
+    }
+
+    private function buildNestedSrResponseKeyData(array $responseKeyNames, string|int $value, array $data)
+    {
+        $buildData = array_filter($data, function ($key) use ($responseKeyNames) {
+            return in_array($key, $responseKeyNames);
+        }, ARRAY_FILTER_USE_KEY);
+        $buildData['item_id'] = $value;
+        return $buildData;
+    }
+
+    private function buildReturnValue(Sr $sr, array $data, array $responseKeyNames)
+    {
+        if (!count($responseKeyNames)) {
+            return null;
+        }
+        switch ($sr->type) {
+            case SrRepository::SR_TYPE_DETAIL:
+            case SrRepository::SR_TYPE_SINGLE:
+                if (count($responseKeyNames) === 1) {
+                    return $data[$responseKeyNames[0]];
+                }
+                return array_filter($data, function ($key) use ($responseKeyNames) {
+                    return in_array($key, $responseKeyNames);
+                }, ARRAY_FILTER_USE_KEY);
+
+            case SrRepository::SR_TYPE_LIST:
+                return array_map(function ($item) use ($responseKeyNames) {
+                    if (count($responseKeyNames) === 1) {
+                        return $item[$responseKeyNames[0]];
+                    }
+                    return array_filter($item, function ($key) use ($responseKeyNames) {
+                        return in_array($key, $responseKeyNames);
+                    }, ARRAY_FILTER_USE_KEY);
+                }, $data);
+            default:
+                return null;
+        }
+    }
+
+    private function validateResponseKeySrConfig($data)
+    {
+        if (!is_array($data)) {
+            return false;
+        }
+        return array_filter($data, function ($item) {
+            if (!is_array($item)) {
+                return false;
+            }
+            if (
+                !Arr::exists($item, 'data') &&
+                !Arr::exists($item, 'request_item')
+            ) {
+                return false;
+            }
+            if (!array_key_exists('request_item', $item)) {
+                return false;
+            }
+            if (!is_array($item['request_item'])) {
+                return false;
+            }
+//            if (empty($item['data'])) {
+//                return false;
+//            }
+
+            $requestItem = $item['request_item'];
+            if (empty($requestItem['request_name'])) {
+                return false;
+            }
+            if (empty($requestItem['provider_name'])) {
+                return false;
+            }
+            if (empty($requestItem['action'])) {
+                return false;
+            }
+            return true;
+        });
+    }
+
+    private function hasReturnValueResponseKeySrs(array $data)
+    {
+        foreach ($data as $keyName => $item) {
+            $validate = $this->validateResponseKeySrConfig($item);
+            if (!$validate) {
+                continue;
+            }
+            $filtered = array_filter($validate, function ($nested) {
+                $requestItem = $nested['request_item'];
+                return $requestItem['action'] === 'return_value';
+            }, ARRAY_FILTER_USE_BOTH);#
+            if (count($filtered) === 0) {
+                continue;
+            }
+            $filtered = array_map(function ($nested) use ($data) {
+                $requestItem = $nested['request_item'];
+                $singleRequest = $requestItem['single_request'] ?? false;
+                $disableRequest = $requestItem['disable_request'] ?? false;
+                if ($disableRequest) {
+                    return $nested;
+                }
+                $provider = $this->providerService->getUserProviderByName($this->user, $requestItem['provider_name']);
+                if (!$provider instanceof Provider) {
+                    return false;
+                }
+                $sr = SrRepository::getSrByName($provider, $requestItem['request_name']);
+                if (!$sr instanceof Sr) {
+                    return false;
+                }
+
+                $responseKeyNames = $this->getResponseResponseKeyNames($requestItem);
+                $srConfigData = $nested['data'];
+
+                $returnValue = null;
+                if (is_array($srConfigData)) {
+                    $returnValue = [];
+                    $step = 0;
+                    foreach ($srConfigData as $key => $value) {
+                        if (!is_string($value) && !is_numeric($value)) {
+                            $step++;
+                            continue;
+                        }
+
+                        $queryData = $this->buildNestedSrResponseKeyData(
+                            $this->getRequestResponseKeyNames($requestItem),
+                            $value,
+                            $data
+                        );
+
+                        $response = $this->runOperationForSr(
+                            $sr,
+                            $requestItem['action'],
+                            $queryData
+                        );
+                        if (!$response) {
+                            $step++;
+                            continue;
+                        }
+
+                        $returnValue = array_merge(
+                            $returnValue,
+                            $this->buildReturnValue(
+                                $sr,
+                                $response,
+                                $responseKeyNames
+                            )
+                        );
+
+                        if ($singleRequest) {
+                            break;
+                        }
+                    }
+
+                } elseif (is_string($srConfigData)) {
+                    $queryData = $this->buildNestedSrResponseKeyData(
+                        $this->getRequestResponseKeyNames($requestItem),
+                        $srConfigData,
+                        $data
+                    );
+                    $response = $this->runOperationForSr(
+                        $sr,
+                        $requestItem['action'],
+                        $queryData
+                    );
+                    if (!$response) {
+                        return false;
+                    }
+                    $returnValue = $this->buildReturnValue(
+                        $sr,
+                        $response,
+                        $responseKeyNames
+                    );
+                }
+                return $returnValue;
+            }, $filtered);
+            if (count($filtered) === 1) {
+                $data[$keyName] = $filtered[array_key_first($filtered)];
+                continue;
+            }
+            $data[$keyName] = $filtered;
+        }
+        return $data;
+    }
     /**
      * @return mixed
      */
