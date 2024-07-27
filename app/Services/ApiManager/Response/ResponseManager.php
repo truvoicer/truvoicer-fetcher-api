@@ -4,6 +4,7 @@ namespace App\Services\ApiManager\Response;
 
 use App\Models\Provider;
 use App\Models\Sr;
+use App\Models\User;
 use App\Repositories\SrRepository;
 use App\Services\ApiManager\Client\Entity\ApiRequest;
 use App\Services\ApiManager\Data\DataProcessor;
@@ -24,18 +25,16 @@ class ResponseManager extends BaseService
         self::CONTENT_TYPE_XML => ["text/xml", "application/xml", "application/rss+xml"],
     ];
 
-    private JsonResponseHandler $jsonResponseHandler;
-    private XmlResponseHandler $xmlResponseHandler;
-
     private Sr $serviceRequest;
     private Provider $provider;
     public string $responseFormat;
 
-    public function __construct(JsonResponseHandler $jsonResponseHandler, XmlResponseHandler $xmlResponseHandler)
+    public function __construct(
+        private readonly JsonResponseHandler $jsonResponseHandler,
+        private readonly XmlResponseHandler $xmlResponseHandler
+    )
     {
         parent::__construct();
-        $this->jsonResponseHandler = $jsonResponseHandler;
-        $this->xmlResponseHandler = $xmlResponseHandler;
     }
 
     private function getContentTypesFromHeaders(Response $response)
@@ -235,6 +234,13 @@ class ResponseManager extends BaseService
     public function setResponseFormat(string $responseFormat): void
     {
         $this->responseFormat = $responseFormat;
+    }
+
+    public function setUser(User $user): void
+    {
+        $this->user = $user;
+        $this->jsonResponseHandler->setUser($user);
+        $this->xmlResponseHandler->setUser($user);
     }
 
 }

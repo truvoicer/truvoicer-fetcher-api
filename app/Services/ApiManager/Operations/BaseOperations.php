@@ -71,6 +71,7 @@ class BaseOperations extends ApiBase
 
     private function responseHandler(string $requestType, $response)
     {
+        $this->responseManager->setUser($this->user);
         $this->responseManager->setServiceRequest($this->apiService);
         $this->responseManager->setProvider($this->provider);
         $this->responseManager->setResponseFormat($this->dataProcessor->getConfigValue(DataConstants::RESPONSE_FORMAT));

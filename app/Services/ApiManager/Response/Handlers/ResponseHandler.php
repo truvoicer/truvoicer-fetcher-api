@@ -4,13 +4,16 @@ namespace App\Services\ApiManager\Response\Handlers;
 
 
 use App\Models\Provider;
+use App\Models\S;
 use App\Models\Sr;
 use App\Models\SResponseKey;
 use App\Models\SrResponseKey;
 use App\Repositories\SrRepository;
+use App\Repositories\SrResponseKeySrRepository;
 use App\Services\ApiManager\ApiBase;
 use App\Services\ApiManager\Data\DataConstants;
 use App\Services\ApiManager\Operations\ApiRequestService;
+use App\Services\ApiManager\Response\Entity\ApiResponse;
 use App\Services\ApiServices\ServiceRequests\SrResponseKeyService;
 use App\Services\Provider\ProviderService;
 use App\Services\ApiServices\ServiceRequests\SrService;
@@ -19,6 +22,8 @@ use App\Services\Tools\XmlService;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Facades\App;
+use Illuminate\Support\Facades\Log;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 
 class ResponseHandler extends ApiBase
@@ -26,6 +31,7 @@ class ResponseHandler extends ApiBase
     protected Provider $provider;
     protected Sr $apiService;
     protected array $responseArray;
+    protected array $itemList;
     protected Collection $responseKeysArray;
 
     private string $needleMatchArrayValue = "=";
@@ -37,7 +43,6 @@ class ResponseHandler extends ApiBase
         protected XmlService           $xmlService,
         protected SResponseKeysService $responseKeysService,
         protected SrResponseKeyService $srResponseKeyService,
-        protected ApiRequestService $requestOperation,
     )
     {
     }
@@ -118,7 +123,7 @@ class ResponseHandler extends ApiBase
 
     protected function buildListItems(array $itemList)
     {
-        return array_map(function ($item) {
+        $buildItems = array_map(function ($item) {
             $itemList = [];
             foreach ($this->responseKeysArray as $responseKey) {
                 if (!$responseKey->srResponseKey instanceof SrResponseKey) {
@@ -137,6 +142,24 @@ class ResponseHandler extends ApiBase
             $itemList["provider"] = $this->provider->name;
             return $itemList;
         }, $itemList);
+
+        foreach ($buildItems as $index => $data) {
+            foreach ($data as $key => $items) {
+                $validate = $this->validateResponseKeySrConfig($items);
+                if (!$validate) {
+                    continue;
+                }
+                foreach ($validate as  $item) {
+                    $response = $this->hasReturnValueResponseKeySrs($item, $data);
+                    if (!empty($response)) {
+                        $buildItems[$index][$key] = $response;
+                    } else {
+                        $buildItems[$index][$key] = $item;
+                    }
+                }
+            }
+        }
+        return $buildItems;
     }
 
     protected function buildList($itemList, SrResponseKey $requestResponseKey)
@@ -144,13 +167,13 @@ class ResponseHandler extends ApiBase
         $keyArray = explode(".", $requestResponseKey->value);
         $getItemValue = $this->getArrayItems($itemList, $keyArray);
         if ($requestResponseKey->is_service_request) {
-            return $this->buildResponseKeyRequestItem($getItemValue, $requestResponseKey);
+            return $this->buildResponseKeyRequestItem($getItemValue, $requestResponseKey, $itemList);
         } else {
             return $this->getReturnDataType($requestResponseKey, $getItemValue);
         }
     }
 
-    protected function buildResponseKeyRequestItem($itemValue, SrResponseKey $requestResponseKey)
+    protected function buildResponseKeyRequestItem($itemValue, SrResponseKey $requestResponseKey, $itemList)
     {
         if ($requestResponseKey->srResponseKeySrs()->get()->count() === 0) {
             return null;
@@ -228,7 +251,8 @@ class ResponseHandler extends ApiBase
         return $this->getReturnDataType($requestResponseKey, $itemArrayValue);
     }
 
-    protected function hasAttributeValue(SrResponseKey $requestResponseKey, $itemArrayValue) {
+    protected function hasAttributeValue(SrResponseKey $requestResponseKey, $itemArrayValue)
+    {
         if (!is_array($itemArrayValue)) {
             return false;
         }
@@ -240,7 +264,9 @@ class ResponseHandler extends ApiBase
         }
         return ($itemArrayValue['xml_value_type'] === 'attribute');
     }
-    protected function buildAttributeValue(SrResponseKey $requestResponseKey, $itemArrayValue) {
+
+    protected function buildAttributeValue(SrResponseKey $requestResponseKey, $itemArrayValue)
+    {
         $values = [];
         if (array_key_exists('values', $itemArrayValue)) {
             $values = $itemArrayValue['values'];
@@ -464,6 +490,7 @@ class ResponseHandler extends ApiBase
             if (!is_array($item)) {
                 return false;
             }
+
             if (
                 !Arr::exists($item, 'data') &&
                 !Arr::exists($item, 'request_item')
@@ -476,10 +503,6 @@ class ResponseHandler extends ApiBase
             if (!is_array($item['request_item'])) {
                 return false;
             }
-//            if (empty($item['data'])) {
-//                return false;
-//            }
-
             $requestItem = $item['request_item'];
             if (empty($requestItem['request_name'])) {
                 return false;
@@ -490,113 +513,131 @@ class ResponseHandler extends ApiBase
             if (empty($requestItem['action'])) {
                 return false;
             }
-            return true;
+            return $requestItem['action'] === SrResponseKeySrRepository::ACTION_RETURN_VALUE;
         });
     }
 
-    private function hasReturnValueResponseKeySrs(array $data)
+    private function srOperationResponseHandler(Sr $sr, ApiResponse $apiResponse)
     {
-        foreach ($data as $keyName => $item) {
-            $validate = $this->validateResponseKeySrConfig($item);
-            if (!$validate) {
-                continue;
-            }
-            $filtered = array_filter($validate, function ($nested) {
-                $requestItem = $nested['request_item'];
-                return $requestItem['action'] === 'return_value';
-            }, ARRAY_FILTER_USE_BOTH);#
-            if (count($filtered) === 0) {
-                continue;
-            }
-            $filtered = array_map(function ($nested) use ($data) {
-                $requestItem = $nested['request_item'];
-                $singleRequest = $requestItem['single_request'] ?? false;
-                $disableRequest = $requestItem['disable_request'] ?? false;
-                if ($disableRequest) {
-                    return $nested;
+        $provider = $sr->provider()->first();
+        if ($apiResponse->getStatus() !== 'success') {
+            return false;
+        }
+        $service = $sr->s()->first();
+        if (!$service instanceof S) {
+            return false;
+        }
+        $requestData = $apiResponse->getRequestData();
+        if (count($requestData) === 0) {
+            return false;
+        }
+        return $apiResponse;
+    }
+
+    private function executeSrOperationRequest(Sr $sr, ?array $queryData = ['query' => ''])
+    {
+        $requestOperation = App::make(ApiRequestService::class);
+        $provider = $sr->provider()->first();
+        if (!$provider instanceof Provider) {
+            return false;
+        }
+
+        $requestOperation->setProvider($provider);
+        if ($this->user->cannot('view', $provider)) {
+            return false;
+        }
+        $requestOperation->setSr($sr);
+        $requestOperation->setUser($this->user);
+
+        $apiResponse = $this->srOperationResponseHandler(
+            $sr,
+            $requestOperation->runOperation($queryData)
+        );
+        if (!$apiResponse) {
+            return false;
+        }
+
+        return $apiResponse->getRequestData();
+    }
+
+    private function hasReturnValueResponseKeySrs($item, $data)
+    {
+        $requestItem = $item['request_item'];
+        $singleRequest = $requestItem['single_request'] ?? false;
+        $disableRequest = $requestItem['disable_request'] ?? false;
+        if ($disableRequest) {
+            return $item;
+        }
+        $provider = $this->providerService->getUserProviderByName($this->user, $requestItem['provider_name']);
+        if (!$provider instanceof Provider) {
+            return false;
+        }
+        $sr = SrRepository::getSrByName($provider, $requestItem['request_name']);
+        if (!$sr instanceof Sr) {
+            return false;
+        }
+
+        $responseKeyNames = $this->getResponseResponseKeyNames($requestItem);
+        $srConfigData = $item['data'];
+
+        $returnValue = null;
+        if (is_array($srConfigData)) {
+            $returnValue = [];
+            foreach ($srConfigData as $key => $value) {
+                if (!is_string($value) && !is_numeric($value)) {
+                    continue;
                 }
-                $provider = $this->providerService->getUserProviderByName($this->user, $requestItem['provider_name']);
-                if (!$provider instanceof Provider) {
-                    return false;
+
+                $queryData = $this->buildNestedSrResponseKeyData(
+                    $this->getRequestResponseKeyNames($requestItem),
+                    $value,
+                    $data
+                );
+
+                $response = $this->executeSrOperationRequest(
+                    $sr,
+                    $queryData
+                );
+                if (!$response) {
+                    continue;
                 }
-                $sr = SrRepository::getSrByName($provider, $requestItem['request_name']);
-                if (!$sr instanceof Sr) {
-                    return false;
-                }
-
-                $responseKeyNames = $this->getResponseResponseKeyNames($requestItem);
-                $srConfigData = $nested['data'];
-
-                $returnValue = null;
-                if (is_array($srConfigData)) {
-                    $returnValue = [];
-                    $step = 0;
-                    foreach ($srConfigData as $key => $value) {
-                        if (!is_string($value) && !is_numeric($value)) {
-                            $step++;
-                            continue;
-                        }
-
-                        $queryData = $this->buildNestedSrResponseKeyData(
-                            $this->getRequestResponseKeyNames($requestItem),
-                            $value,
-                            $data
-                        );
-
-                        $response = $this->runOperationForSr(
-                            $sr,
-                            $requestItem['action'],
-                            $queryData
-                        );
-                        if (!$response) {
-                            $step++;
-                            continue;
-                        }
-
-                        $returnValue = array_merge(
-                            $returnValue,
-                            $this->buildReturnValue(
-                                $sr,
-                                $response,
-                                $responseKeyNames
-                            )
-                        );
-
-                        if ($singleRequest) {
-                            break;
-                        }
-                    }
-
-                } elseif (is_string($srConfigData)) {
-                    $queryData = $this->buildNestedSrResponseKeyData(
-                        $this->getRequestResponseKeyNames($requestItem),
-                        $srConfigData,
-                        $data
-                    );
-                    $response = $this->runOperationForSr(
-                        $sr,
-                        $requestItem['action'],
-                        $queryData
-                    );
-                    if (!$response) {
-                        return false;
-                    }
-                    $returnValue = $this->buildReturnValue(
+                $returnValue = array_merge(
+                    $returnValue,
+                    $this->buildReturnValue(
                         $sr,
                         $response,
                         $responseKeyNames
-                    );
+                    )
+                );
+
+                if ($singleRequest) {
+                    break;
                 }
-                return $returnValue;
-            }, $filtered);
-            if (count($filtered) === 1) {
-                $data[$keyName] = $filtered[array_key_first($filtered)];
-                continue;
             }
-            $data[$keyName] = $filtered;
+
+        } elseif (is_string($srConfigData)) {
+            $queryData = $this->buildNestedSrResponseKeyData(
+                $this->getRequestResponseKeyNames($requestItem),
+                $srConfigData,
+                $data
+            );
+            $response = $this->executeSrOperationRequest(
+                $sr,
+                $queryData
+            );
+            if (!$response) {
+                return false;
+            }
+            $returnValue = $this->buildReturnValue(
+                $sr,
+                $response,
+                $responseKeyNames
+            );
         }
-        return $data;
+
+        return $returnValue;
     }
+
     /**
      * @return mixed
      */

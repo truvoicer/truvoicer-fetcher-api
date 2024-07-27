@@ -8,7 +8,7 @@ use App\Http\Resources\ApiSearchItemResource;
 use App\Http\Resources\ApiSearchListResourceCollection;
 use App\Http\Resources\ApiSearchResource;
 use App\Http\Resources\ApiSearchResourceCollection;
-use App\Services\ApiManager\Operations\DataHandler\ApiRequestDataHandler;
+use App\Services\ApiManager\Operations\DataHandler\ApiRequestDataInterface;
 use App\Services\ApiManager\Operations\DataHandler\ApiRequestMongoDbHandler;
 use App\Services\Permission\AccessControlService;
 use App\Services\Tools\HttpRequestService;
@@ -30,7 +30,7 @@ class OperationsController extends Controller
         parent::__construct($accessControlService, $httpRequestService, $serializerService);
     }
 
-    public function searchOperation(string $type, ApiRequestDataHandler $apiRequestDataHandler, OperationsRequest $request)
+    public function searchOperation(string $type, ApiRequestDataInterface $apiRequestDataHandler, OperationsRequest $request)
     {
         $provider = $request->get('provider');
         $service = $request->get('service');

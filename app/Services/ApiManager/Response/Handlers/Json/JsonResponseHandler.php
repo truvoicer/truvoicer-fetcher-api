@@ -22,7 +22,7 @@ class JsonResponseHandler extends ResponseHandler
     /**
      * @param mixed $responseArray
      */
-    public function setResponseArray($responseArray): void
+    public function setResponseArray(array $responseArray): void
     {
         $this->responseArray = $responseArray;
     }
