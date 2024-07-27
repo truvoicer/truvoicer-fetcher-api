@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Api\Frontend;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\OperationsRequest;
 use App\Http\Resources\ApiSearchItemResource;
-use App\Http\Resources\ApiSearchListResourceCollection;
+use App\Http\Resources\ApiMongoDBSearchListResourceCollection;
 use App\Http\Resources\ApiSearchResource;
 use App\Http\Resources\ApiSearchResourceCollection;
 use App\Services\ApiManager\Operations\DataHandler\ApiRequestDataInterface;

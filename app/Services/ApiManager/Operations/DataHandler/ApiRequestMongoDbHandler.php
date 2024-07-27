@@ -3,16 +3,14 @@
 namespace App\Services\ApiManager\Operations\DataHandler;
 
 use App\Http\Resources\ApiSearchItemResource;
-use App\Http\Resources\ApiSearchListResourceCollection;
+use App\Http\Resources\ApiMongoDBSearchListResourceCollection;
 use App\Models\S;
-use App\Models\User;
 use App\Repositories\SrRepository;
+use App\Services\ApiManager\Operations\ApiRequestService;
 use App\Services\ApiManager\Response\Entity\ApiResponse;
 use App\Services\ApiServices\ApiService;
+use App\Services\Category\CategoryService;
 use App\Services\Provider\ProviderService;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Relations\BelongsToMany;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
@@ -20,18 +18,26 @@ use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 
 class ApiRequestMongoDbHandler extends ApiRequestDataHandler
 {
-    private ApiResponse $apiResponse;
-
     public function __construct(
-        private EloquentCollection      $srs,
-        private ProviderService         $providerService,
-        private ApiRequestSearchService $apiRequestSearchService,
-        private ApiService              $apiService,
-        private S                       $service
+        protected EloquentCollection       $srs,
+        protected ProviderService $providerService,
+        protected readonly ApiRequestSearchService  $apiRequestSearchService,
+        protected ApiService               $apiService,
+        protected S                        $service,
+        protected CategoryService $categoryService,
+        protected ApiResponse $apiResponse,
+        protected ApiRequestService $apiRequestService,
     )
     {
-        parent::__construct($srs, $providerService);
-        $this->apiResponse = new ApiResponse();
+        parent::__construct(
+            $srs,
+            $providerService,
+            $categoryService,
+            $apiService,
+            $apiResponse,
+            $this->apiRequestService
+        );
+
     }
 
     public function searchInit(string $type, array $providers): void
@@ -91,7 +97,7 @@ class ApiRequestMongoDbHandler extends ApiRequestDataHandler
                     $providerData,
                     $data
                 );
-                return new ApiSearchListResourceCollection($results);
+                return new ApiMongoDBSearchListResourceCollection($results);
             case SrRepository::SR_TYPE_DETAIL:
             case SrRepository::SR_TYPE_SINGLE:
                 $results = $this->runItemSearch(
@@ -113,12 +119,6 @@ class ApiRequestMongoDbHandler extends ApiRequestDataHandler
             return false;
         }
         return $sr;
-    }
-
-
-    public function setUser(User $user): void
-    {
-        $this->user = $user;
     }
 
     public function setService(S $service): void

@@ -31,7 +31,6 @@ class ResponseHandler extends ApiBase
     protected Provider $provider;
     protected Sr $apiService;
     protected array $responseArray;
-    protected array $itemList;
     protected Collection $responseKeysArray;
 
     private string $needleMatchArrayValue = "=";
@@ -121,7 +120,7 @@ class ResponseHandler extends ApiBase
         return $buildList;
     }
 
-    protected function buildListItems(array $itemList)
+    protected function buildListItems(array $itemList): array
     {
         $buildItems = array_map(function ($item) {
             $itemList = [];
@@ -140,6 +139,9 @@ class ResponseHandler extends ApiBase
 
             }
             $itemList["provider"] = $this->provider->name;
+            $itemList["requestCategory"] = $this->apiService->category->name;
+            $itemList["serviceRequest"] = $this->apiService->name;
+            $itemList["service"] = $this->apiService->s()->first()->only('id', 'name');
             return $itemList;
         }, $itemList);
 

@@ -2,24 +2,39 @@
 
 namespace App\Services\ApiManager\Operations\DataHandler;
 
+use App\Http\Resources\ApiDirectSearchListResourceCollection;
+use App\Http\Resources\ApiMongoDBSearchListResourceCollection;
 use App\Models\Provider;
-use App\Models\User;
+use App\Repositories\SrRepository;
 use App\Services\ApiManager\Operations\ApiRequestService;
+use App\Services\ApiManager\Response\Entity\ApiResponse;
+use App\Services\ApiServices\ApiService;
+use App\Services\Category\CategoryService;
 use App\Services\Provider\ProviderService;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
-use Illuminate\Support\Facades\App;
+use Illuminate\Support\Collection;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 
 class ApiRequestApiDirectHandler extends ApiRequestDataHandler
 {
-    private User $user;
+
     public function __construct(
-        private readonly ApiRequestService $apiRequestService,
-        private readonly EloquentCollection $srs,
-        private readonly ProviderService    $providerService
+        protected ApiRequestService $apiRequestService,
+        protected EloquentCollection $srs,
+        protected ProviderService    $providerService,
+        protected CategoryService $categoryService,
+        protected ApiService $apiService,
+        protected ApiResponse $apiResponse
     )
     {
-        parent::__construct($srs, $providerService);
+        parent::__construct(
+            $srs,
+            $providerService,
+            $categoryService,
+            $apiService,
+            $apiResponse,
+            $apiRequestService
+        );
     }
 
     public function searchOperation(
@@ -37,7 +52,7 @@ class ApiRequestApiDirectHandler extends ApiRequestDataHandler
             throw new BadRequestHttpException("Providers not found");
         }
 
-        $requestData = [];
+        $requestData = new Collection();
         foreach ($this->srs as $index => $sr) {
             $provider = $sr->provider()->first();
             if (!$provider instanceof Provider) {
@@ -48,26 +63,27 @@ class ApiRequestApiDirectHandler extends ApiRequestDataHandler
             if ($this->user->cannot('view', $provider)) {
                 return false;
             }
-            $this->apiRequestService->setSr($sr);
-            if ($this->srs->count() === 1 && $index === 0) {
-                return $this->apiRequestService->runOperation($data);
-            }
-            $apiResponse = $this->apiRequestService->runOperation($data);
 
-            if ($apiResponse->getStatus() !== 'success') {
+            $this->apiRequestService->setSr($sr);
+
+            $response = $this->apiRequestService->runOperation($data);
+
+            if ($response->getStatus() !== 'success') {
                 continue;
             }
-            $requestData = [
-                ...$requestData,
-                $apiResponse->getRequestData()
-            ];
+            switch ($sr->type) {
+                case SrRepository::SR_TYPE_LIST:
+                    foreach ($response->getRequestData() as  $item) {
+                        $requestData->add($item);
+                    }
+                    break;
+                case SrRepository::SR_TYPE_DETAIL:
+                case SrRepository::SR_TYPE_SINGLE:
+                    return $response->getRequestData();
+            }
         }
-        return $requestData;
+
+        return new ApiDirectSearchListResourceCollection($requestData);
     }
 
-    public function setUser(User $user): void
-    {
-        $this->user = $user;
-        $this->apiRequestService->setUser($user);
-    }
 }

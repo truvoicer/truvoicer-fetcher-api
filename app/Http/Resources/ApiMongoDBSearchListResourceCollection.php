@@ -5,7 +5,7 @@ namespace App\Http\Resources;
 use App\Helpers\Resources\ResourceHelpers;
 use Illuminate\Http\Request;
 
-class ApiSearchListResourceCollection extends BaseCollection
+class ApiMongoDBSearchListResourceCollection extends BaseCollection
 {
 
     public static $wrap = 'results';

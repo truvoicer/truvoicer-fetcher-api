@@ -2,20 +2,68 @@
 
 namespace App\Services\ApiManager\Operations\DataHandler;
 
+use App\Models\User;
+use App\Services\ApiManager\Operations\ApiRequestService;
+use App\Services\ApiManager\Response\Entity\ApiResponse;
+use App\Services\ApiServices\ApiService;
+use App\Services\Category\CategoryService;
 use App\Services\Provider\ProviderService;
+use App\Traits\User\UserTrait;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Collection;
+use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 
 class ApiRequestDataHandler
 {
+    use UserTrait;
     public function __construct(
-        private readonly EloquentCollection $srs,
-        private readonly ProviderService    $providerService
+        protected EloquentCollection $srs,
+        protected ProviderService    $providerService,
+        protected CategoryService $categoryService,
+        protected ApiService $apiService,
+        protected ApiResponse $apiResponse,
+        protected ApiRequestService $apiRequestService,
     )
     {
+    }
+
+    protected function getCategory(?array $data): ?Model
+    {
+        if (!empty($data['category'])) {
+            $category = $this->categoryService->getCategoryRepository()->findByName($data['category']);
+            if (!$category) {
+                throw new BadRequestHttpException("S not found");
+            }
+            if ($this->user->cannot('view', $category)) {
+                throw new BadRequestHttpException(sprintf(
+                    "Permission denied to view category %s",
+                    $category->name
+                ));
+            }
+            return $category;
+        }
+        return null;
+    }
+    protected function getService(?array $data): ?Model
+    {
+        if (!empty($data['service'])) {
+            $service = $this->apiService->getServiceRepository()->findByName($data['service']);
+            if (!$service) {
+                throw new BadRequestHttpException("Service not found");
+            }
+            if ($this->user->cannot('view', $service)) {
+                throw new BadRequestHttpException(sprintf(
+                    "Permission denied to view service %s",
+                    $service->name
+                ));
+            }
+            return $service;
+        }
+        return null;
     }
 
     protected function buildServiceRequests(array $providers, string $type): void
@@ -154,5 +202,10 @@ class ApiRequestDataHandler
             });
         }
         return $query;
+    }
+    public function setUser(User $user): void
+    {
+        $this->user = $user;
+        $this->apiRequestService->setUser($user);
     }
 }
