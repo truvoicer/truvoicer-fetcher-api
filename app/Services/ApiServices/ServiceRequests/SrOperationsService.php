@@ -61,6 +61,9 @@ class SrOperationsService
     private int $totalItems = 1000;
     private int $totalPages = 1000;
 
+    private bool $runPagination = true;
+    private bool $runResponseKeySrRequests = true;
+
     public function __construct(
         SrService         $srService,
         ProviderService   $providerService,
@@ -402,9 +405,11 @@ class SrOperationsService
             if (!$this->saveToDb($sr, $requestDataItem)) {
                 return false;
             }
-            $requestDataItem = $this->runResponseKeySrItem($sr, $requestDataItem);
-            if (!$requestDataItem) {
-                return false;
+            if ($this->runResponseKeySrRequests) {
+                $requestDataItem = $this->runResponseKeySrItem($sr, $requestDataItem);
+                if (!$requestDataItem) {
+                    return false;
+                }
             }
         }
         return $requestDataItem;
@@ -433,7 +438,7 @@ class SrOperationsService
             }
             $data[] = $requestDataItem;
         }
-        if ($this->shouldSaveToDb($action)) {
+        if ($this->shouldSaveToDb($action) && $this->runPagination) {
             $this->runSrPagination($sr, $apiResponse);
         }
 
@@ -462,6 +467,10 @@ class SrOperationsService
         if (!$apiResponse) {
             return false;
         }
+        return $this->processByType($sr, $action, $queryData, $apiResponse);
+    }
+
+    public function processByType(Sr $sr, string $action, array $queryData, ApiResponse $apiResponse) {
 
         return match ($sr->type) {
             SrRepository::SR_TYPE_DETAIL, SrRepository::SR_TYPE_SINGLE => $this->processSingleSrData($sr, $action, $queryData, $apiResponse),
@@ -649,6 +658,16 @@ class SrOperationsService
     {
         $this->user = $user;
         $this->requestOperation->setUser($user);
+    }
+
+    public function setRunPagination(bool $runPagination): void
+    {
+        $this->runPagination = $runPagination;
+    }
+
+    public function setRunResponseKeySrRequests(bool $runResponseKeySrRequests): void
+    {
+        $this->runResponseKeySrRequests = $runResponseKeySrRequests;
     }
 
 }

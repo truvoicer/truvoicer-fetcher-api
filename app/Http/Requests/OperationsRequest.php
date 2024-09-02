@@ -23,7 +23,7 @@ class OperationsRequest extends FormRequest
     public function rules(): array
     {
         return [
-            "api_fetch_type" => ["required", "string", Rule::in(["database", "api_direct"])],
+            "api_fetch_type" => ["required", "string", Rule::in(["database", "api_direct", "mixed"])],
             "page_number" => ["sometimes", "integer", 'nullable'],
             "page_size" => ["sometimes", "integer", 'nullable'],
             "sort_by" => ["sometimes", "string", 'nullable'],

@@ -93,19 +93,17 @@ class ApiRequestMongoDbHandler extends ApiRequestDataHandler
         $providerData = $this->buildProviderData($providers);
         switch ($type) {
             case SrRepository::SR_TYPE_LIST:
-                $results = $this->runListSearch(
+                return $this->runListSearch(
                     $providerData,
                     $data
                 );
-                return new ApiMongoDBSearchListResourceCollection($results);
             case SrRepository::SR_TYPE_DETAIL:
             case SrRepository::SR_TYPE_SINGLE:
-                $results = $this->runItemSearch(
+            return $this->runItemSearch(
                     $type,
                     $providerData,
                     $data['item_id']
                 );
-                return new ApiSearchItemResource($results);
             default:
                 return false;
         }

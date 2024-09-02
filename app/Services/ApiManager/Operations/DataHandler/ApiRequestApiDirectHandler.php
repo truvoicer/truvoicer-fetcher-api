@@ -5,15 +5,19 @@ namespace App\Services\ApiManager\Operations\DataHandler;
 use App\Http\Resources\ApiDirectSearchListResourceCollection;
 use App\Http\Resources\ApiMongoDBSearchListResourceCollection;
 use App\Models\Provider;
+use App\Models\Sr;
 use App\Repositories\SrRepository;
+use App\Repositories\SrResponseKeySrRepository;
 use App\Services\ApiManager\Operations\ApiRequestService;
 use App\Services\ApiManager\Response\Entity\ApiResponse;
 use App\Services\ApiServices\ApiService;
+use App\Services\ApiServices\ServiceRequests\SrOperationsService;
 use App\Services\Category\CategoryService;
 use App\Services\Provider\ProviderService;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Support\Collection;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
+use function Symfony\Component\String\s;
 
 class ApiRequestApiDirectHandler extends ApiRequestDataHandler
 {
@@ -24,7 +28,8 @@ class ApiRequestApiDirectHandler extends ApiRequestDataHandler
         protected ProviderService    $providerService,
         protected CategoryService $categoryService,
         protected ApiService $apiService,
-        protected ApiResponse $apiResponse
+        protected ApiResponse $apiResponse,
+        protected SrOperationsService $srOperationsService,
     )
     {
         parent::__construct(
@@ -71,6 +76,9 @@ class ApiRequestApiDirectHandler extends ApiRequestDataHandler
             if ($response->getStatus() !== 'success') {
                 continue;
             }
+            if (!$this->afterFetchOperation($sr, $response, $data)) {
+
+            }
             switch ($sr->type) {
                 case SrRepository::SR_TYPE_LIST:
                     foreach ($response->getRequestData() as  $item) {
@@ -83,7 +91,23 @@ class ApiRequestApiDirectHandler extends ApiRequestDataHandler
             }
         }
 
-        return new ApiDirectSearchListResourceCollection($requestData);
+        return $requestData;
     }
 
+    private function afterFetchOperation(
+        Sr $sr,
+        ApiResponse $apiResponse,
+        array $data
+    ): bool
+    {
+        $this->srOperationsService->setRunPagination(false);
+        $this->srOperationsService->setRunResponseKeySrRequests(false);
+        $saveData = $this->srOperationsService->processByType(
+            $sr,
+            SrResponseKeySrRepository::ACTION_STORE,
+            $data,
+            $apiResponse
+        );
+        return true;
+    }
 }
