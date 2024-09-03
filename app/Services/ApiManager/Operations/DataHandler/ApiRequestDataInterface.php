@@ -35,7 +35,6 @@ class ApiRequestDataInterface
 
         switch ($fetchType) {
             case 'mixed':
-                dd('miced', $providers);
                 $response = $this->apiRequestMongoDbHandler->searchOperation(
                     $serviceType, $providers, $serviceName, $data
                 );

@@ -68,6 +68,42 @@ class ApiRequestDataHandler
 
     protected function buildServiceRequests(array $providers, string $type): void
     {
+        switch ($type) {
+            case 'list':
+                $this->buildSrsForList($providers, $type);
+                break;
+            case 'mixed':
+                $this->buildSrsForMixedSearch($providers, $type);
+                break;
+            default:
+                throw new BadRequestHttpException("Invalid type");
+        }
+    }
+    protected function buildSrsForMixedSearch(array $providers, string $type): array
+    {
+        $buildProviders = [];
+        foreach ($providers as $provider) {
+            if (empty($provider['provider_name'])) {
+                continue;
+            }
+            if (empty($provider['item_id'])) {
+                continue;
+            }
+            $findIndex = array_search($provider['provider_name'], array_column($buildProviders, 'provider_name'));
+            if ($findIndex === false) {
+                $buildProviders[] = [
+                    'provider_name' => $provider['provider_name'],
+                    'ids' => [$provider['item_id']]
+                ];
+                continue;
+            }
+            $buildProviders[$findIndex]['ids'][] = $provider['item_id'];
+        }
+        return $buildProviders;
+    }
+
+    protected function buildSrsForList(array $providers, string $type): void
+    {
         $providerNames = array_column($providers, 'provider_name');
         if (!count($providerNames)) {
             $providerNames = array_column($providers, 'name');

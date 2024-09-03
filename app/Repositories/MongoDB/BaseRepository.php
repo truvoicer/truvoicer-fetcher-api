@@ -70,18 +70,83 @@ class BaseRepository
         return $query->get();
     }
 
+    private function getOrWhereCompareQuery(int $index, $where, $query) {
+
+        switch ($where['compare']) {
+            case 'IN':
+                $query->orWhereIn($where['field'], $where['value']);
+                break;
+            case 'NOT IN':
+                $query->orWhereNotIn($where['field'], $where['value']);
+                break;
+            case 'BETWEEN':
+                $query->orWhereBetween($where['field'], $where['value']);
+                break;
+            case 'NOT BETWEEN':
+                $query->orWhereNotBetween($where['field'], $where['value']);
+                break;
+            case 'LIKE':
+                $query->orWhere($where['field'], 'like', $where['value']);
+                break;
+            case 'NOT LIKE':
+                $query->orWhere($where['field'], 'not like', $where['value']);
+                break;
+            case 'NULL':
+                $query->orWhereNull($where['field']);
+                break;
+            case 'NOT NULL':
+                $query->orWhereNotNull($where['field']);
+                break;
+            default:
+                $query->orWhere($where['field'], $where['compare'], $where['value']);
+                break;
+        }
+        return $query;
+    }
+    private function getWhereCompareQuery(int $index, $where, $query) {
+        switch ($where['compare']) {
+            case 'IN':
+                $query->whereIn($where['field'], $where['value']);
+                break;
+            case 'NOT IN':
+                $query->whereNotIn($where['field'], $where['value']);
+                break;
+            case 'BETWEEN':
+                $query->whereBetween($where['field'], $where['value']);
+                break;
+            case 'NOT BETWEEN':
+                $query->whereNotBetween($where['field'], $where['value']);
+                break;
+            case 'LIKE':
+                $query->where($where['field'], 'like', $where['value']);
+                break;
+            case 'NOT LIKE':
+                $query->where($where['field'], 'not like', $where['value']);
+                break;
+            case 'NULL':
+                $query->whereNull($where['field']);
+                break;
+            case 'NOT NULL':
+                $query->whereNotNull($where['field']);
+                break;
+            default:
+                $query->where($where['field'], $where['compare'], $where['value']);
+                break;
+        }
+        return $query;
+    }
     private function getWhereQuery(int $index, $where, $query) {
 
         if ($index === 0) {
-            $query->where($where['field'], $where['compare'], $where['value']);
+            $this->getWhereCompareQuery($index, $where, $query);
             return;
         }
         switch ($where['op']) {
             case 'OR':
-                $query->orWhere($where['field'], $where['compare'], $where['value']);
+                $this->getOrWhereCompareQuery($index, $where, $query);
                 break;
             default:
-                $query->where($where['field'], $where['compare'], $where['value']);
+                $this->getWhereCompareQuery($index, $where, $query);
                 break;
         }
     }

@@ -40,12 +40,13 @@ class ApiRequestSearchService
 
     }
 
-    public function runSingleItemSearch(string|int $itemId): array|null
+    public function runSingleItemSearch(array $itemIds): array|null
     {
         $this->searchInit();
         $this->mongoDBRepository->addWhere(
             'item_id',
-            $itemId,
+            $itemIds,
+            'IN'
         );
         $find = $this->mongoDBRepository->findOne();
         if ($find) {
@@ -54,8 +55,8 @@ class ApiRequestSearchService
 
         $this->mongoDBRepository->addWhere(
             'item_id',
-            (int)$itemId,
-            '='
+            array_map('intval', $itemIds),
+            'IN'
         );
         return $this->mongoDBRepository->findOne();
     }

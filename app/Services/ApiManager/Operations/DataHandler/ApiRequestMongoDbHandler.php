@@ -52,9 +52,9 @@ class ApiRequestMongoDbHandler extends ApiRequestDataHandler
 
     }
 
-    public function runListSearch(array $providers, ?array $query = []): Collection|LengthAwarePaginator
+    public function runListSearch(string $type, array $providers, ?array $query = []): Collection|LengthAwarePaginator
     {
-        $this->searchInit('list', $providers);
+        $this->searchInit($type, $providers);
         return $this->apiRequestSearchService->runListSearch($query);
     }
 
@@ -90,13 +90,17 @@ class ApiRequestMongoDbHandler extends ApiRequestDataHandler
             return false;
         }
         $this->setService($getService);
+
+
         $providerData = $this->buildProviderData($providers);
         switch ($type) {
             case SrRepository::SR_TYPE_LIST:
                 return $this->runListSearch(
+                    $type,
                     $providerData,
                     $data
                 );
+            case SrRepository::SR_TYPE_MIXED:
             case SrRepository::SR_TYPE_DETAIL:
             case SrRepository::SR_TYPE_SINGLE:
             return $this->runItemSearch(
