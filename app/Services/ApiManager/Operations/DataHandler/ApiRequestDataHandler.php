@@ -2,6 +2,7 @@
 
 namespace App\Services\ApiManager\Operations\DataHandler;
 
+use App\Models\Provider;
 use App\Models\User;
 use App\Services\ApiManager\Operations\ApiRequestService;
 use App\Services\ApiManager\Response\Entity\ApiResponse;
@@ -131,14 +132,29 @@ class ApiRequestDataHandler
                 $this->setServiceRequests($type, $provider->sr);
                 return;
             } else {
-                $data = $this->flattenServiceRequestData($providerData['service_request']);
+                $data = $this->flattenServiceRequestData([$providerData['service_request']]);
+
+                if (!count($data)) {
+                    continue;
+                }
                 $data = $this->buildQueryData($data, $data);
-                $query = $this->buildServiceRequestQuery(
-                    $type,
-                    $provider->sr()
-                        ->whereDoesntHave('parentSrs'),
-                    $data
-                );
+                $query = Provider::where('name', $provider->name)
+                    ->whereHas('sr', function ($query) use ($type, $provider, $data) {
+                    $query->whereDoesntHave('parentSrs');
+                    $query = $this->buildServiceRequestQuery(
+                        $type,
+                        $query,
+                        $data
+                    );
+                })
+                ->with(['sr' => function ($query) use ($type, $provider, $data) {
+                    $query->whereDoesntHave('parentSrs');
+                    $query = $this->buildServiceRequestQuery(
+                        $type,
+                        $query,
+                        $data
+                    );
+                }]);
             }
             $this->setServiceRequests($type, $query->get());
         }
@@ -158,6 +174,7 @@ class ApiRequestDataHandler
 
     private function setServiceRequests(string $type, Collection $srs)
     {
+        dd($srs->toArray());
         foreach ($srs as $sr) {
             $this->srs->push($sr);
             if ($sr->childSrs->count() > 0) {
@@ -203,18 +220,39 @@ class ApiRequestDataHandler
 
         return $buildData;
     }
+    private function hasIncludeChildren(array $data, string $name): bool
+    {
+        return (
+            (empty($data['children']) || !is_array($data['children'])) &&
+            !empty($data['include_children']) &&
+            is_array($data['include_children']) &&
+            in_array($name, $data['include_children'])
+        );
+    }
+    private function dontIncludeChildren(array $data, string $name): bool
+    {
+        return (
+            (empty($data['children']) || !is_array($data['children'])) &&
+            !empty($data['not_include_children']) &&
+            is_array($data['not_include_children']) &&
+            in_array($name, $data['not_include_children'])
+        );
+    }
     private function buildServiceRequestQuery(string $type, HasMany|BelongsToMany|Builder $query, array $data, ?array $excludeChildren = [], ?array $includeChildren = []): HasMany|BelongsToMany|Builder
     {
+
         $query->where('type', $type);
         if (count($excludeChildren)) {
             foreach ($excludeChildren as $index => $name) {
                 $query->where('name', '<>', $name);
             }
         }
-        $names = $includeChildren;
+        $names = [];
         if (!empty($data['name']) && is_array($data['name'])) {
             $names = array_merge($names, $data['name']);
         }
+
+
         foreach ($names as $index => $name) {
             if ($index === 0) {
                 $query->where('name', $name);
@@ -222,6 +260,23 @@ class ApiRequestDataHandler
                 $query->orWhere('name', $name);
             }
         }
+        $query->with('childSrs', function ($query) use ($data, $names) {
+            foreach ($names as $index => $name) {
+                if ($index === 0) {
+                    if ($this->hasIncludeChildren($data, $name)) {
+                        $query->whereHas('parentSrs', function ($query) use ($name) {
+                            $query->where('name', $name);
+                        });
+                    }
+                } else {
+                    if ($this->hasIncludeChildren($data, $name)) {
+                        $query->orWhereHas('parentSrs', function ($query) use ($name) {
+                            $query->where('name', $name);
+                        });
+                    }
+                }
+            }
+        });
         if (!empty($data['children']) && is_array($data['children'])) {
             $query->with('childSrs', function ($query) use ($type, $data, $excludeChildren, $includeChildren) {
                 $query = $this->buildServiceRequestQuery(

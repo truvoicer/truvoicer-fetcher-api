@@ -46,6 +46,7 @@ class ApiRequestMongoDbHandler extends ApiRequestDataHandler
         if ($this->srs->count() === 0) {
             throw new BadRequestHttpException("Providers not found");
         }
+        dd($this->srs->toArray());
         $this->apiRequestSearchService->setSrs($this->srs);
         $this->apiRequestSearchService->setService($this->service);
         $this->apiRequestSearchService->setType($type);
