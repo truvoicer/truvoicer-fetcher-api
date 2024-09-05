@@ -22,12 +22,12 @@ class ApiRequestDataHandler
 {
     use UserTrait;
     public function __construct(
-        protected EloquentCollection $srs,
+        protected EloquentCollection $providers,
         protected ProviderService    $providerService,
-        protected CategoryService $categoryService,
-        protected ApiService $apiService,
-        protected ApiResponse $apiResponse,
-        protected ApiRequestService $apiRequestService,
+        protected CategoryService    $categoryService,
+        protected ApiService         $apiService,
+        protected ApiResponse        $apiResponse,
+        protected ApiRequestService  $apiRequestService,
     )
     {
     }
@@ -122,6 +122,7 @@ class ApiRequestDataHandler
             })
             ->orderBy('name', 'asc')
             ->get();
+
         foreach ($getProviders as $provider) {
             $providerData = collect($providers)->firstWhere('name', $provider->name);
             if (
@@ -129,10 +130,10 @@ class ApiRequestDataHandler
                 !is_array($providerData['service_request']) ||
                 !count($providerData['service_request'])
             ) {
-                $this->setServiceRequests($type, $provider->sr);
+                $this->providers->push($provider);
                 return;
             } else {
-                $data = $this->flattenServiceRequestData([$providerData['service_request']]);
+                $data = $this->flattenServiceRequestData($providerData['service_request']);
 
                 if (!count($data)) {
                     continue;
@@ -156,7 +157,11 @@ class ApiRequestDataHandler
                     );
                 }]);
             }
-            $this->setServiceRequests($type, $query->get());
+            $provider = $query->first();
+            if (!$provider instanceof Provider) {
+                continue;
+            }
+            $this->providers->push($provider);
         }
     }
 
@@ -164,7 +169,7 @@ class ApiRequestDataHandler
     {
         foreach ($srs as $sr) {
             if ($sr->type === $type) {
-                $this->srs->push($sr);
+                $this->providers->push($sr);
             }
             if ($sr->childSrs->count() > 0) {
                 $this->flattenSrCollection($type, $sr->childSrs);
@@ -174,9 +179,8 @@ class ApiRequestDataHandler
 
     private function setServiceRequests(string $type, Collection $srs)
     {
-        dd($srs->toArray());
         foreach ($srs as $sr) {
-            $this->srs->push($sr);
+            $this->providers->push($sr);
             if ($sr->childSrs->count() > 0) {
                 $this->flattenSrCollection($type, $sr->childSrs);
             }
@@ -229,18 +233,32 @@ class ApiRequestDataHandler
             in_array($name, $data['include_children'])
         );
     }
-    private function dontIncludeChildren(array $data, string $name): bool
+
+    private function hasChildren(array $data): bool
     {
         return (
-            (empty($data['children']) || !is_array($data['children'])) &&
-            !empty($data['not_include_children']) &&
-            is_array($data['not_include_children']) &&
-            in_array($name, $data['not_include_children'])
+            !empty($data['children']) &&
+            is_array($data['children']) &&
+            count($data['children'])
         );
+    }
+
+    private function includeSrChildrenQuery(array $names, HasMany|BelongsToMany|Builder $query, ?bool $orWhere = false) {
+        foreach ($names as $index => $name) {
+            if ($index === 0 && !$orWhere) {
+                $query->whereHas('parentSrs', function ($query) use ($name) {
+                    $query->where('name', $name);
+                });
+            } else {
+                $query->orWhereHas('parentSrs', function ($query) use ($name) {
+                    $query->where('name', $name);
+                });
+            }
+        }
+        return $query;
     }
     private function buildServiceRequestQuery(string $type, HasMany|BelongsToMany|Builder $query, array $data, ?array $excludeChildren = [], ?array $includeChildren = []): HasMany|BelongsToMany|Builder
     {
-
         $query->where('type', $type);
         if (count($excludeChildren)) {
             foreach ($excludeChildren as $index => $name) {
@@ -252,7 +270,6 @@ class ApiRequestDataHandler
             $names = array_merge($names, $data['name']);
         }
 
-
         foreach ($names as $index => $name) {
             if ($index === 0) {
                 $query->where('name', $name);
@@ -260,24 +277,21 @@ class ApiRequestDataHandler
                 $query->orWhere('name', $name);
             }
         }
-        $query->with('childSrs', function ($query) use ($data, $names) {
-            foreach ($names as $index => $name) {
-                if ($index === 0) {
-                    if ($this->hasIncludeChildren($data, $name)) {
-                        $query->whereHas('parentSrs', function ($query) use ($name) {
-                            $query->where('name', $name);
-                        });
-                    }
-                } else {
-                    if ($this->hasIncludeChildren($data, $name)) {
-                        $query->orWhereHas('parentSrs', function ($query) use ($name) {
-                            $query->where('name', $name);
-                        });
-                    }
-                }
-            }
+        $includeChildrenNames = array_filter($names, function ($name) use ($data) {
+            return $this->hasIncludeChildren($data, $name);
         });
-        if (!empty($data['children']) && is_array($data['children'])) {
+
+        if (count($includeChildren)) {
+            $query = $this->includeSrChildrenQuery($includeChildren, $query, true);
+        }
+        if (!$this->hasChildren($data) && count($includeChildrenNames)) {
+            $query->with('childSrs', function ($query) use ($includeChildrenNames) {
+                $query = $this->includeSrChildrenQuery($includeChildrenNames, $query);
+            });
+        } elseif (!$this->hasChildren($data) && !count($includeChildrenNames)) {
+            $query->without('childSrs');
+        }
+        if ($this->hasChildren($data)) {
             $query->with('childSrs', function ($query) use ($type, $data, $excludeChildren, $includeChildren) {
                 $query = $this->buildServiceRequestQuery(
                     $type,

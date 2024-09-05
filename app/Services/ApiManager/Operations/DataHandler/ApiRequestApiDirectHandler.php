@@ -23,17 +23,17 @@ class ApiRequestApiDirectHandler extends ApiRequestDataHandler
 {
 
     public function __construct(
-        protected ApiRequestService $apiRequestService,
-        protected EloquentCollection $srs,
-        protected ProviderService    $providerService,
-        protected CategoryService $categoryService,
-        protected ApiService $apiService,
-        protected ApiResponse $apiResponse,
+        protected ApiRequestService   $apiRequestService,
+        protected EloquentCollection  $providers,
+        protected ProviderService     $providerService,
+        protected CategoryService     $categoryService,
+        protected ApiService          $apiService,
+        protected ApiResponse         $apiResponse,
         protected SrOperationsService $srOperationsService,
     )
     {
         parent::__construct(
-            $srs,
+            $providers,
             $providerService,
             $categoryService,
             $apiService,
@@ -53,12 +53,12 @@ class ApiRequestApiDirectHandler extends ApiRequestDataHandler
             return false;
         }
         $this->buildServiceRequests($providers, $serviceType);
-        if ($this->srs->count() === 0) {
+        if ($this->providers->count() === 0) {
             throw new BadRequestHttpException("Providers not found");
         }
 
         $requestData = new Collection();
-        foreach ($this->srs as $index => $sr) {
+        foreach ($this->providers as $index => $sr) {
             $provider = $sr->provider()->first();
             if (!$provider instanceof Provider) {
                 return false;

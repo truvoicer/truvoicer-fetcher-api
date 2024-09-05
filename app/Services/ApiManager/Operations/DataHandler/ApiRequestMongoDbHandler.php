@@ -19,18 +19,18 @@ use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 class ApiRequestMongoDbHandler extends ApiRequestDataHandler
 {
     public function __construct(
-        protected EloquentCollection       $srs,
-        protected ProviderService $providerService,
-        protected readonly ApiRequestSearchService  $apiRequestSearchService,
-        protected ApiService               $apiService,
-        protected S                        $service,
-        protected CategoryService $categoryService,
-        protected ApiResponse $apiResponse,
-        protected ApiRequestService $apiRequestService,
+        protected EloquentCollection               $providers,
+        protected ProviderService                  $providerService,
+        protected readonly ApiRequestSearchService $apiRequestSearchService,
+        protected ApiService                       $apiService,
+        protected S                                $service,
+        protected CategoryService                  $categoryService,
+        protected ApiResponse                      $apiResponse,
+        protected ApiRequestService                $apiRequestService,
     )
     {
         parent::__construct(
-            $srs,
+            $providers,
             $providerService,
             $categoryService,
             $apiService,
@@ -43,11 +43,11 @@ class ApiRequestMongoDbHandler extends ApiRequestDataHandler
     public function searchInit(string $type, array $providers): void
     {
         $this->buildServiceRequests($providers, $type);
-        if ($this->srs->count() === 0) {
+        if ($this->providers->count() === 0) {
             throw new BadRequestHttpException("Providers not found");
         }
-        dd($this->srs->toArray());
-        $this->apiRequestSearchService->setSrs($this->srs);
+        dd($this->providers->toArray());
+        $this->apiRequestSearchService->setSrs($this->providers);
         $this->apiRequestSearchService->setService($this->service);
         $this->apiRequestSearchService->setType($type);
 
