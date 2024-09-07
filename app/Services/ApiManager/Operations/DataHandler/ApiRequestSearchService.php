@@ -8,6 +8,7 @@ use App\Repositories\MongoDB\MongoDBRepository;
 use App\Services\ApiManager\Data\DataConstants;
 use App\Services\ApiManager\Data\DefaultData;
 use App\Services\ApiServices\ServiceRequests\SrResponseKeyService;
+use App\Services\ApiServices\ServiceRequests\SrService;
 use App\Services\ApiServices\SResponseKeysService;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Pagination\LengthAwarePaginator;
@@ -19,11 +20,14 @@ class ApiRequestSearchService
     ];
     private Collection $srResponseKeys;
     private string $type;
+    protected array $notFoundProviders;
+    protected array $itemSearchData;
 
     public function __construct(
-        private Collection           $srs,
+        private Collection           $providers,
         private MongoDBRepository    $mongoDBRepository,
         private SrResponseKeyService $srResponseKeyService,
+        private SrService            $srService,
         private S                    $service,
     )
     {
@@ -40,28 +44,48 @@ class ApiRequestSearchService
 
     }
 
-    public function runSingleItemSearch(array $itemIds): array|null
+    private function prepareItemSearch(string $type, array $providers): void
     {
+        $this->type = $type;
         $this->searchInit();
-        $this->mongoDBRepository->addWhere(
-            'item_id',
-            $itemIds,
-            'IN'
-        );
-        $find = $this->mongoDBRepository->findOne();
-        if ($find) {
-            return $find;
+        foreach ($providers as $provider) {
+            $providerName = $provider['provider_name'];
+            $itemIds = $provider['ids'];
+            $this->mongoDBRepository->addWhereGroup([
+                $this->mongoDBRepository->buildWhereData(
+                    'item_id',
+                    $itemIds,
+                    'IN'
+                ),
+                $this->mongoDBRepository->buildWhereData(
+                    'item_id',
+                    array_map('intval', $itemIds),
+                    'IN',
+                    'OR'
+                ),
+                $this->mongoDBRepository->buildWhereData(
+                    'item_id',
+                    array_map('intval', $itemIds),
+                    'IN',
+                    'OR'
+                )
+            ]);
+            $this->mongoDBRepository->addWhereGroup([
+                $this->mongoDBRepository->buildWhereData(
+                    'provider',
+                    $providerName,
+                )
+            ]);
         }
+    }
 
-        $this->mongoDBRepository->addWhere(
-            'item_id',
-            array_map('intval', $itemIds),
-            'IN'
-        );
+    public function runSingleItemSearch(string $type): array|null
+    {
+        $this->prepareItemSearch($type, $this->itemSearchData);
         return $this->mongoDBRepository->findOne();
     }
 
-    private function getOrderByFromResponseKeys(Sr $sr): string
+    private function getOrderByFromResponseKeys(Sr $sr): string|null
     {
         $orderBy = null;
         $srResponseKeys = $this->srResponseKeyService->findConfigForOperationBySr($sr);
@@ -71,8 +95,10 @@ class ApiRequestSearchService
         if ($dateKeys->count() > 0) {
             $orderBy = $dateKeys->first()->name;
         }
+
         return $orderBy;
     }
+
     private function getOrderBy(Sr $sr, ?array $query): array
     {
         $sortOrder = 'desc';
@@ -84,6 +110,9 @@ class ApiRequestSearchService
         } else {
             $orderBy = $defaultData['sort_by'];
         }
+        if (empty($orderBy)) {
+            $orderBy = MongoDBRepository::CREATED_AT;
+        }
         if (!empty($query['sort_order'])) {
             $sortOrder = $query['sort_order'];
         } else if (!empty($defaultData['sort_order'])) {
@@ -93,10 +122,70 @@ class ApiRequestSearchService
         return [$orderBy, $sortOrder];
 
     }
-    public function runListSearch(array $query): Collection|LengthAwarePaginator
+
+    private function prepareSearchForSavedProviders($query, array $queryData)
     {
-        $this->searchInit();
-//
+
+        $reservedKeys = array_column(DataConstants::SERVICE_RESPONSE_KEYS, SResponseKeysService::RESPONSE_KEY_NAME);
+        $reservedKeys = array_merge($reservedKeys, self::RESERVED_SEARCH_RESPONSE_KEYS);
+        $whereGroup = [];
+        $sort = [];
+        foreach ($this->providers as $provider) {
+            $srs = $this->srService->flattenSrCollection($this->type, $provider->sr);
+            if ($srs->count() === 0) {
+                continue;
+            }
+            foreach ($srs as $sr) {
+                $whereGroup[] = $this->mongoDBRepository->buildWhereData(
+                    'provider',
+                    $provider->name,
+                );
+
+                $whereGroup[] = $this->mongoDBRepository->buildWhereData(
+                    'serviceRequest.name',
+                    $sr->name,
+                );
+                list($orderBy, $sortOrder) = $this->getOrderBy($sr, $queryData);
+                if (!empty($orderBy) && in_array($sortOrder, $this->mongoDBRepository::AVAILABLE_ORDER_DIRECTIONS)) {
+                    $sort[] = [$orderBy, $sortOrder];
+                }
+
+                if (empty($queryData['query'])) {
+                    continue;
+                }
+                $queryData = $queryData['query'];
+
+                $srResponseKeys = $this->srResponseKeyService->findConfigForOperationBySr($sr);
+
+                $whereGroup[] = $this->mongoDBRepository->buildWhereData(
+                    'query_params.query',
+                    "%{$queryData}%",
+                    'like',
+                    'OR'
+                );
+                foreach ($srResponseKeys as $srResponseKey) {
+                    if (in_array($srResponseKey->name, $reservedKeys)) {
+                        continue;
+                    }
+                    $whereGroup[] = $this->mongoDBRepository->buildWhereData(
+                        $srResponseKey->name,
+                        "%{$queryData}%",
+                        'like',
+                        'OR'
+                    );
+                }
+
+                $this->mongoDBRepository->addWhereGroup($whereGroup, 'OR');
+            }
+        }
+        foreach ($sort as $sortData) {
+            $query->orderBy($sortData[0], $sortData[1]);
+        }
+        return $query;
+    }
+
+    private function preparePagination(array $query): void
+    {
         $this->mongoDBRepository->setPagination(true);
         if (!empty($query[DataConstants::PAGE_SIZE])) {
             $this->mongoDBRepository->setPerPage((int)$query[DataConstants::PAGE_SIZE]);
@@ -105,68 +194,33 @@ class ApiRequestSearchService
         if (!empty($query[DataConstants::PAGE_NUMBER])) {
             $this->mongoDBRepository->setPage((int)$query[DataConstants::PAGE_NUMBER]);
         }
+    }
 
-        $reservedKeys = array_column(DataConstants::SERVICE_RESPONSE_KEYS, SResponseKeysService::RESPONSE_KEY_NAME);
-        $reservedKeys = array_merge($reservedKeys, self::RESERVED_SEARCH_RESPONSE_KEYS);
+    public function runListSearch(array $queryData): Collection|LengthAwarePaginator
+    {
+        $results = [];
+        if (!empty($this->itemSearchData) && count($this->itemSearchData)) {
 
-        $whereGroup = [];
-        $sort = [];
-        foreach ($this->srs as $sr) {
-            $provider = $sr->provider;
-            $whereGroup[] = $this->mongoDBRepository->buildWhereData(
-                'provider',
-                $provider->name,
-            );
-
-            $whereGroup[] = $this->mongoDBRepository->buildWhereData(
-                'serviceRequest.name',
-                $sr->name,
-            );
-            list($orderBy, $sortOrder) = $this->getOrderBy($sr, $query);
-            if (!empty($orderBy) && in_array($sortOrder, $this->mongoDBRepository::AVAILABLE_ORDER_DIRECTIONS)) {
-                $sort[] = [$orderBy, $sortOrder];
-            }
-
-            if (empty($query['query'])) {
-                continue;
-            }
-            $query = $query['query'];
-
-            $srResponseKeys = $this->srResponseKeyService->findConfigForOperationBySr($sr);
-
-            $whereGroup[] = $this->mongoDBRepository->buildWhereData(
-                'query_params.query',
-                "%{$query}%",
-                'like',
-                'OR'
-            );
-            foreach ($srResponseKeys as $srResponseKey) {
-                if (in_array($srResponseKey->name, $reservedKeys)) {
-                    continue;
-                }
-                $whereGroup[] = $this->mongoDBRepository->buildWhereData(
-                    $srResponseKey->name,
-                    "%{$query}%",
-                    'like',
-                    'OR'
-                );
-            }
-
-            $this->mongoDBRepository->addWhereGroup($whereGroup, 'OR');
+            $this->prepareItemSearch($this->type, $this->itemSearchData);
+            $this->preparePagination($queryData);
+            dd($this->mongoDBRepository->findMany());
         }
-
-        $query = $this->mongoDBRepository->getQuery();
-        foreach ($sort as $sortData) {
-            $query->orderBy($sortData[0], $sortData[1]);
-        }
+        $this->searchInit();
+//
+        $this->preparePagination($queryData);
+        $query = $this->prepareSearchForSavedProviders(
+            $this->mongoDBRepository->getQuery(),
+            $queryData
+        );
         return $this->mongoDBRepository->getResults(
             $query
         );
+
     }
 
-    public function setSrs(Collection $srs): void
+    public function setProviders(Collection $srs): void
     {
-        $this->srs = $srs;
+        $this->providers = $srs;
     }
 
     public function setService(S $service): void
@@ -178,4 +232,16 @@ class ApiRequestSearchService
     {
         $this->type = $type;
     }
+
+    public function setNotFoundProviders(array $notFoundProviders): void
+    {
+        $this->notFoundProviders = $notFoundProviders;
+    }
+
+    public function setItemSearchData(array $itemSearchData): void
+    {
+        $this->itemSearchData = $itemSearchData;
+    }
+
+
 }

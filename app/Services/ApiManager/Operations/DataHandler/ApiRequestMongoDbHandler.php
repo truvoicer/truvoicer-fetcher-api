@@ -42,12 +42,11 @@ class ApiRequestMongoDbHandler extends ApiRequestDataHandler
 
     public function searchInit(string $type, array $providers): void
     {
-        $this->buildServiceRequests($providers, $type);
-        if ($this->providers->count() === 0) {
-            throw new BadRequestHttpException("Providers not found");
-        }
-        dd($this->providers->toArray());
-        $this->apiRequestSearchService->setSrs($this->providers);
+        $this->prepareProviders($providers, $type);
+
+        $this->apiRequestSearchService->setProviders($this->providers);
+        $this->apiRequestSearchService->setNotFoundProviders($this->notFoundProviders);
+        $this->apiRequestSearchService->setItemSearchData($this->itemSearchData);
         $this->apiRequestSearchService->setService($this->service);
         $this->apiRequestSearchService->setType($type);
 
@@ -59,10 +58,10 @@ class ApiRequestMongoDbHandler extends ApiRequestDataHandler
         return $this->apiRequestSearchService->runListSearch($query);
     }
 
-    public function runItemSearch(string $type, array $providers, int|string $itemId): array|null
+    public function runItemSearch(string $type, array $providers): array|null
     {
         $this->searchInit($type, $providers);
-        return $this->apiRequestSearchService->runSingleItemSearch($itemId);
+        return $this->apiRequestSearchService->runSingleItemSearch('detail');
     }
 
     private function isSingleProvider(array $data): bool
@@ -107,7 +106,7 @@ class ApiRequestMongoDbHandler extends ApiRequestDataHandler
             return $this->runItemSearch(
                     $type,
                     $providerData,
-                    $data['item_id']
+                    $data['item_id'] ?? null
                 );
             default:
                 return false;

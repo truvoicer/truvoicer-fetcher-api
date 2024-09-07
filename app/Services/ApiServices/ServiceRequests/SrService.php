@@ -12,6 +12,7 @@ use App\Repositories\SrResponseKeyRepository;
 use App\Repositories\SResponseKeyRepository;
 use App\Services\BaseService;
 use App\Helpers\Tools\UtilHelpers;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\App;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 
@@ -192,6 +193,20 @@ class SrService extends BaseService
         return $this->serviceRequestRepository->saveChildSrOverrides($serviceRequest, $saveData);
     }
 
+
+    public function flattenSrCollection(string $type, Collection $srs, ?Collection $flatSrs = null)
+    {
+        if ($flatSrs === null) {
+            $flatSrs = new Collection();
+        }
+        foreach ($srs as $sr) {
+            $flatSrs->push($sr);
+            if ($sr->childSrs->count() > 0) {
+                $this->flattenSrCollection($type, $sr->childSrs, $flatSrs);
+            }
+        }
+        return $flatSrs;
+    }
     public function duplicateServiceRequest(Sr $serviceRequest, array $data)
     {
         if (empty($data["label"])) {

@@ -7,6 +7,8 @@ use App\Models\Sr;
 
 class MongoDBRepository extends BaseRepository
 {
+    public const CREATED_AT = 'created_at';
+    public const UPDATED_AT = 'updated_at';
 
     public function getCollectionName(Sr $sr)
     {

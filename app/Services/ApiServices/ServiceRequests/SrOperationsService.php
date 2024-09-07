@@ -126,11 +126,11 @@ class SrOperationsService
         );
 
         $now = now()->toISOString();
-        if (empty($insertData['created_at'])) {
-            $insertData['created_at'] = $now;
+        if (empty($insertData[MongoDBRepository::CREATED_AT])) {
+            $insertData[MongoDBRepository::CREATED_AT] = $now;
         }
-        if (empty($insertData['updated_at'])) {
-            $insertData['updated_at'] = $now;
+        if (empty($insertData[MongoDBRepository::UPDATED_AT])) {
+            $insertData[MongoDBRepository::UPDATED_AT] = $now;
         }
         return $insertData;
     }
@@ -219,6 +219,7 @@ class SrOperationsService
                 $sr->name,
             )
         );
+        $this->requestOperation->setProvider($provider);
         $this->requestOperation->setSr($sr);
         Log::channel(self::LOGGING_NAME)->info(
             sprintf(
@@ -341,7 +342,9 @@ class SrOperationsService
                     $provider->name,
                 ),
             );
-            return false;
+            return [
+                'success' => false
+            ];
         }
         if (!$this->validateRequiredFields($insertData)) {
             Log::channel(self::LOGGING_NAME)->error(
@@ -352,13 +355,22 @@ class SrOperationsService
                 ),
                 $insertData
             );
-            return false;
+            return [
+                'success' => false
+            ];
         }
 
         if ($this->doesDataExistInDb($operationData, $insertData)) {
-            return false;
+
+            return [
+                'success' => false,
+                'data' => $insertData
+            ];
         }
-        return $insertData;
+        return [
+            'success' => true,
+            'data' => $insertData
+        ];
     }
 
     private function saveToDb(Sr $sr, array $data)
@@ -394,24 +406,29 @@ class SrOperationsService
     private function processRequestDataItem(Sr $sr, string $action, array $requestDataItem, array $queryData, ApiResponse $apiResponse)
     {
 
-        if ($this->shouldSaveToDb($action)) {
-            $requestDataItem = $this->prepareDbSaveData($sr, $apiResponse, $requestDataItem, $queryData);
-            if (!$requestDataItem) {
-                return false;
-            }
+        if (!$this->shouldSaveToDb($action)) {
+            return $requestDataItem;
+        }
+        $prepareData = $this->prepareDbSaveData($sr, $apiResponse, $requestDataItem, $queryData);
+        if (!$prepareData['success'] && empty($prepareData['data'])) {
+            return false;
+        }
+        $saveToDb = false;
+        if ($prepareData['success']) {
+            $saveToDb = $this->saveToDb($sr, $prepareData['data']);
         }
 
-        if ($this->shouldSaveToDb($action)) {
-            if (!$this->saveToDb($sr, $requestDataItem)) {
+        if ($this->runResponseKeySrRequests) {
+            $responseKeySrRequest = $this->runResponseKeySrItem($sr, $prepareData['data']);
+            if (!$responseKeySrRequest) {
                 return false;
             }
-            if ($this->runResponseKeySrRequests) {
-                $requestDataItem = $this->runResponseKeySrItem($sr, $requestDataItem);
-                if (!$requestDataItem) {
-                    return false;
-                }
-            }
         }
+        if (!$saveToDb) {
+            return false;
+        }
+
+
         return $requestDataItem;
     }
 

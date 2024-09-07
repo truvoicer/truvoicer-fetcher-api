@@ -374,4 +374,9 @@ class BaseRepository
         return $this;
     }
 
+    public function getWhereGroups(): array
+    {
+        return $this->whereGroups;
+    }
+
 }

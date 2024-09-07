@@ -40,7 +40,7 @@ class OperationsController extends Controller
             $type,
             $provider,
             $service,
-            $request->validated()
+            $request->query->all()
         );
         if (!$results) {
             return $this->sendErrorResponse(

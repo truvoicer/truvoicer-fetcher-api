@@ -10,9 +10,9 @@ class ApiRequestService extends BaseOperations
     private string $providerName;
 
     private function initialize(array $query = []) {
-        if (count($query) === 0) {
-            throw new BadRequestHttpException("Query empty in item query");
-        }
+//        if (count($query) === 0) {
+//            throw new BadRequestHttpException("Query empty in item query");
+//        }
         $this->setQuery("");
         $this->setQueryArray($query);
         if (isset($query['query'])) {

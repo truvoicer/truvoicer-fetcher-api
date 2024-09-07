@@ -21,6 +21,10 @@ use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 class ApiRequestDataHandler
 {
     use UserTrait;
+
+    protected array $notFoundProviders;
+    protected array $itemSearchData;
+
     public function __construct(
         protected EloquentCollection $providers,
         protected ProviderService    $providerService,
@@ -49,6 +53,7 @@ class ApiRequestDataHandler
         }
         return null;
     }
+
     protected function getService(?array $data): ?Model
     {
         if (!empty($data['service'])) {
@@ -67,20 +72,21 @@ class ApiRequestDataHandler
         return null;
     }
 
-    protected function buildServiceRequests(array $providers, string $type): void
+    protected function prepareProviders(array $providers, string $type): void
     {
         switch ($type) {
+            case 'mixed':
             case 'list':
                 $this->buildSrsForList($providers, $type);
-                break;
-            case 'mixed':
-                $this->buildSrsForMixedSearch($providers, $type);
+                $this->notFoundProviders = $this->prepareNotFoundProviders($providers);
                 break;
             default:
                 throw new BadRequestHttpException("Invalid type");
         }
+        $this->itemSearchData = $this->buildSrsForMixedSearch($providers, $type);
     }
-    protected function buildSrsForMixedSearch(array $providers, string $type): array
+
+    protected function buildSrsForMixedSearch(array $providers): array
     {
         $buildProviders = [];
         foreach ($providers as $provider) {
@@ -94,8 +100,12 @@ class ApiRequestDataHandler
             if ($findIndex === false) {
                 $buildProviders[] = [
                     'provider_name' => $provider['provider_name'],
-                    'ids' => [$provider['item_id']]
+                    'ids' => []
                 ];
+                $findIndex = array_search($provider['provider_name'], array_column($buildProviders, 'provider_name'));
+            }
+            if (is_array($provider['item_id'])) {
+                $buildProviders[$findIndex]['ids'] = array_merge($buildProviders[$findIndex]['ids'], $provider['item_id']);
                 continue;
             }
             $buildProviders[$findIndex]['ids'][] = $provider['item_id'];
@@ -133,7 +143,7 @@ class ApiRequestDataHandler
                 $this->providers->push($provider);
                 return;
             } else {
-                $data = $this->flattenServiceRequestData($providerData['service_request']);
+                $data = $this->prepareSrRequestData($providerData['service_request']);
 
                 if (!count($data)) {
                     continue;
@@ -141,21 +151,21 @@ class ApiRequestDataHandler
                 $data = $this->buildQueryData($data, $data);
                 $query = Provider::where('name', $provider->name)
                     ->whereHas('sr', function ($query) use ($type, $provider, $data) {
-                    $query->whereDoesntHave('parentSrs');
-                    $query = $this->buildServiceRequestQuery(
-                        $type,
-                        $query,
-                        $data
-                    );
-                })
-                ->with(['sr' => function ($query) use ($type, $provider, $data) {
-                    $query->whereDoesntHave('parentSrs');
-                    $query = $this->buildServiceRequestQuery(
-                        $type,
-                        $query,
-                        $data
-                    );
-                }]);
+                        $query->whereDoesntHave('parentSrs');
+                        $query = $this->buildServiceRequestQuery(
+                            $type,
+                            $query,
+                            $data
+                        );
+                    })
+                    ->with(['sr' => function ($query) use ($type, $provider, $data) {
+                        $query->whereDoesntHave('parentSrs');
+                        $query = $this->buildServiceRequestQuery(
+                            $type,
+                            $query,
+                            $data
+                        );
+                    }]);
             }
             $provider = $query->first();
             if (!$provider instanceof Provider) {
@@ -165,29 +175,43 @@ class ApiRequestDataHandler
         }
     }
 
-    private function flattenSrCollection(string $type, Collection $srs)
+    protected function prepareNotFoundProviders(array $providers)
     {
-        foreach ($srs as $sr) {
-            if ($sr->type === $type) {
-                $this->providers->push($sr);
-            }
-            if ($sr->childSrs->count() > 0) {
-                $this->flattenSrCollection($type, $sr->childSrs);
-            }
-        }
+        $providers = array_filter($providers, function ($provider) {
+            return !!(!empty($provider['provider_name']) && $this->providers->contains('name', $provider['provider_name']));
+        });
+
+        return array_values(
+            array_map(function ($provider) {
+                if (
+                    !empty($provider['service_request']) &&
+                    is_array($provider['service_request']) &&
+                    count($provider['service_request'])
+                ) {
+                    $provider['service_request'] = $this->flattenSrRequestData($provider['service_request']);
+                }
+                return $provider;
+            }, $providers)
+        );
     }
 
-    private function setServiceRequests(string $type, Collection $srs)
+    protected function flattenSrRequestData(array $children, array $data = [])
     {
-        foreach ($srs as $sr) {
-            $this->providers->push($sr);
-            if ($sr->childSrs->count() > 0) {
-                $this->flattenSrCollection($type, $sr->childSrs);
+        foreach ($children as $index => $child) {
+            if (!empty($child['name'])) {
+                $data[] = ['name' => $child['name']];
+            }
+            if (isset($child['include_children']) && $child['include_children'] === false) {
+                continue;
+            }
+            if (!empty($child['children']) && is_array($child['children'])) {
+                $data = $this->flattenSrRequestData($child['children'], $data);
             }
         }
+        return $data;
     }
 
-    private function flattenServiceRequestData(array $children, array $data = [], int $i = 0)
+    protected function prepareSrRequestData(array $children, array $data = [], int $i = 0)
     {
         foreach ($children as $index => $child) {
             if (!empty($child['name'])) {
@@ -200,13 +224,13 @@ class ApiRequestDataHandler
                 $data[$i]['not_include_children'][] = $child['name'];
             }
             if (!empty($child['children']) && is_array($child['children'])) {
-                $data = $this->flattenServiceRequestData($child['children'], $data, ($i + 1));
+                $data = $this->prepareSrRequestData($child['children'], $data, ($i + 1));
             }
         }
         return $data;
     }
 
-    private function buildQueryData(array $origData, array $data, ?int $step = 0): array
+    protected function buildQueryData(array $origData, array $data, ?int $step = 0): array
     {
         $buildData = [];
         $child = $origData[$step];
@@ -224,6 +248,7 @@ class ApiRequestDataHandler
 
         return $buildData;
     }
+
     private function hasIncludeChildren(array $data, string $name): bool
     {
         return (
@@ -243,7 +268,8 @@ class ApiRequestDataHandler
         );
     }
 
-    private function includeSrChildrenQuery(array $names, HasMany|BelongsToMany|Builder $query, ?bool $orWhere = false) {
+    private function includeSrChildrenQuery(array $names, HasMany|BelongsToMany|Builder $query, ?bool $orWhere = false)
+    {
         foreach ($names as $index => $name) {
             if ($index === 0 && !$orWhere) {
                 $query->whereHas('parentSrs', function ($query) use ($name) {
@@ -257,6 +283,7 @@ class ApiRequestDataHandler
         }
         return $query;
     }
+
     private function buildServiceRequestQuery(string $type, HasMany|BelongsToMany|Builder $query, array $data, ?array $excludeChildren = [], ?array $includeChildren = []): HasMany|BelongsToMany|Builder
     {
         $query->where('type', $type);
@@ -308,6 +335,7 @@ class ApiRequestDataHandler
         }
         return $query;
     }
+
     public function setUser(User $user): void
     {
         $this->user = $user;

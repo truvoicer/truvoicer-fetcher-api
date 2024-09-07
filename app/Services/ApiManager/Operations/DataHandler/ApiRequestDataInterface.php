@@ -38,6 +38,7 @@ class ApiRequestDataInterface
                 $response = $this->apiRequestMongoDbHandler->searchOperation(
                     $serviceType, $providers, $serviceName, $data
                 );
+                dd($response);
                 $response = $this->apiRequestApiDirectHandler->searchOperation(
                     $serviceType, $providers, $serviceName, $data
                 );

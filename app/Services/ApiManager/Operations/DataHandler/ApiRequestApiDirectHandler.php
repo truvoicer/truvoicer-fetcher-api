@@ -44,7 +44,7 @@ class ApiRequestApiDirectHandler extends ApiRequestDataHandler
 
     public function searchOperation(
         string $serviceType,
-        array $providers,
+        array  $providers,
         string $serviceName,
         ?array $data = []
     )
@@ -52,42 +52,39 @@ class ApiRequestApiDirectHandler extends ApiRequestDataHandler
         if (!count($providers)) {
             return false;
         }
-        $this->buildServiceRequests($providers, $serviceType);
+        $this->prepareProviders($providers, $serviceType);
         if ($this->providers->count() === 0) {
             throw new BadRequestHttpException("Providers not found");
         }
 
         $requestData = new Collection();
-        foreach ($this->providers as $index => $sr) {
-            $provider = $sr->provider()->first();
-            if (!$provider instanceof Provider) {
-                return false;
-            }
+        foreach ($this->providers as $index => $provider) {
+            foreach ($provider->sr as $sr) {
+                $this->apiRequestService->setProvider($provider);
+                if ($this->user->cannot('view', $provider)) {
+                    return false;
+                }
 
-            $this->apiRequestService->setProvider($provider);
-            if ($this->user->cannot('view', $provider)) {
-                return false;
-            }
+                $this->apiRequestService->setSr($sr);
 
-            $this->apiRequestService->setSr($sr);
+                $response = $this->apiRequestService->runOperation($data);
 
-            $response = $this->apiRequestService->runOperation($data);
+                if ($response->getStatus() !== 'success') {
+                    continue;
+                }
+                if (!$this->afterFetchOperation($sr, $response, $data)) {
 
-            if ($response->getStatus() !== 'success') {
-                continue;
-            }
-            if (!$this->afterFetchOperation($sr, $response, $data)) {
-
-            }
-            switch ($sr->type) {
-                case SrRepository::SR_TYPE_LIST:
-                    foreach ($response->getRequestData() as  $item) {
-                        $requestData->add($item);
-                    }
-                    break;
-                case SrRepository::SR_TYPE_DETAIL:
-                case SrRepository::SR_TYPE_SINGLE:
-                    return $response->getRequestData();
+                }
+                switch ($sr->type) {
+                    case SrRepository::SR_TYPE_LIST:
+                        foreach ($response->getRequestData() as $item) {
+                            $requestData->add($item);
+                        }
+                        break;
+                    case SrRepository::SR_TYPE_DETAIL:
+                    case SrRepository::SR_TYPE_SINGLE:
+                        return $response->getRequestData();
+                }
             }
         }
 
@@ -95,13 +92,14 @@ class ApiRequestApiDirectHandler extends ApiRequestDataHandler
     }
 
     private function afterFetchOperation(
-        Sr $sr,
+        Sr          $sr,
         ApiResponse $apiResponse,
-        array $data
+        array       $data
     ): bool
     {
+        $this->srOperationsService->setUser($this->user);
         $this->srOperationsService->setRunPagination(false);
-        $this->srOperationsService->setRunResponseKeySrRequests(false);
+        $this->srOperationsService->setRunResponseKeySrRequests(true);
         $saveData = $this->srOperationsService->processByType(
             $sr,
             SrResponseKeySrRepository::ACTION_STORE,
