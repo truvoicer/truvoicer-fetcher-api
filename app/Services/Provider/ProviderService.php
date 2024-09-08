@@ -130,7 +130,9 @@ class ProviderService extends BaseService
         $properties = array_map(function ($property) {
             return $property['name'];
         }, DefaultData::getProviderProperties());
-        return $this->providerPropertyRepository->findProviderProperties($provider, $properties);
+        return $this->providerPropertyRepository->findProviderProperties($provider, $properties)->map(function ($property) {
+            return $property->providerProperty;
+        });
     }
 
     public function getAllProviderProperties(Provider $provider)

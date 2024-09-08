@@ -30,6 +30,9 @@ class UpdatePropertyRequest extends FormRequest
             ],
             "value_choices" => [
                 'required_if:value_type,choice'
+            ],
+            "entities" => [
+                'required_if:value_type,entity_list'
             ]
         ];
     }

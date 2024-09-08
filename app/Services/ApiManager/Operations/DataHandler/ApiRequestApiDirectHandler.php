@@ -2,12 +2,9 @@
 
 namespace App\Services\ApiManager\Operations\DataHandler;
 
-use App\Http\Resources\ApiDirectSearchListResourceCollection;
-use App\Http\Resources\ApiMongoDBSearchListResourceCollection;
-use App\Models\Provider;
+use App\Events\ProcessSrOperationDataEvent;
 use App\Models\Sr;
 use App\Repositories\SrRepository;
-use App\Repositories\SrResponseKeySrRepository;
 use App\Services\ApiManager\Operations\ApiRequestService;
 use App\Services\ApiManager\Response\Entity\ApiResponse;
 use App\Services\ApiServices\ApiService;
@@ -17,7 +14,6 @@ use App\Services\Provider\ProviderService;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Support\Collection;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
-use function Symfony\Component\String\s;
 
 class ApiRequestApiDirectHandler extends ApiRequestDataHandler
 {
@@ -97,15 +93,15 @@ class ApiRequestApiDirectHandler extends ApiRequestDataHandler
         array       $data
     ): bool
     {
-        $this->srOperationsService->setUser($this->user);
-        $this->srOperationsService->setRunPagination(false);
-        $this->srOperationsService->setRunResponseKeySrRequests(true);
-        $saveData = $this->srOperationsService->processByType(
-            $sr,
-            SrResponseKeySrRepository::ACTION_STORE,
+        ProcessSrOperationDataEvent::dispatch(
+            $this->user->id,
+            $sr->id,
+            $apiResponse,
             $data,
-            $apiResponse
+            false,
+            true
         );
+
         return true;
     }
 }

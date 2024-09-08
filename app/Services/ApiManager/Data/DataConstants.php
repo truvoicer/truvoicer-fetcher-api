@@ -16,6 +16,7 @@ class DataConstants
     const REQUEST_CONFIG_ITEM_VALUE = "value";
     const REQUEST_CONFIG_ITEM_ARRAY_VALUE = "array_value";
     const REQUEST_CONFIG_ITEM_VALUE_CHOICES = "value_choices";
+    const REQUEST_CONFIG_ITEM_VALUE_ENTITIES = "entities";
 
 
     const API_TYPE = "api_type";
@@ -27,6 +28,7 @@ class DataConstants
     const AUTH_BEARER = 'auth_bearer';
     const AUTH_NONE = 'none';
 
+    const LIST_ITEM_SEARCH_PRIORITY = "list_item_search_priority";
     const API_AUTH_TYPE = "api_authentication_type";
     const OAUTH_API_AUTH_TYPE = "oauth_api_authentication_type";
     const OAUTH_TOKEN_URL = "oauth_token_url";

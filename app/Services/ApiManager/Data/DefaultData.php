@@ -3,6 +3,8 @@
 namespace App\Services\ApiManager\Data;
 
 
+use App\Models\Sr;
+
 class DefaultData
 {
     public const TEST_USER_DATA = [
@@ -136,6 +138,14 @@ class DefaultData
                 DataConstants::REQUEST_CONFIG_ITEM_LABEL => "Oauth Token Url",
                 DataConstants::REQUEST_CONFIG_ITEM_SELECTED_VALUE_TYPE => 'text',
                 DataConstants::REQUEST_CONFIG_ITEM_VALUE_CHOICES => null
+            ],
+            [
+                DataConstants::REQUEST_CONFIG_ITEM_NAME => DataConstants::LIST_ITEM_SEARCH_PRIORITY,
+                DataConstants::REQUEST_CONFIG_ITEM_LABEL => "List Item Search Priority",
+                DataConstants::REQUEST_CONFIG_ITEM_SELECTED_VALUE_TYPE => 'entity_list',
+                DataConstants::REQUEST_CONFIG_ITEM_VALUE_ENTITIES => [
+                    Sr::class
+                ]
             ],
             ...self::getServiceRequestOauthConfig(),
             ...self::getServiceRequestConfig(),

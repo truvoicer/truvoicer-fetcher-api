@@ -35,6 +35,9 @@ class PropertySeeder extends Seeder
             if (isset($data['value_choices'])) {
                 $saveData['value_choices'] = $data['value_choices'];
             }
+            if (isset($data['entities'])) {
+                $saveData['entities'] = $data['entities'];
+            }
             if (empty($saveData)) {
                 continue;
             }

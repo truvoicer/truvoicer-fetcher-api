@@ -63,12 +63,13 @@ class ApiRequestSearchService
                     'IN',
                     'OR'
                 ),
-                $this->mongoDBRepository->buildWhereData(
-                    'item_id',
-                    array_map('intval', $itemIds),
-                    'IN',
-                    'OR'
-                )
+                ...array_map(function ($itemId) {
+                    return $this->mongoDBRepository->addMatchArrayElement(
+                        'item_id',
+                        ['data' => (int)$itemId],
+                        'OR'
+                    );
+                }, $itemIds),
             ]);
             $this->mongoDBRepository->addWhereGroup([
                 $this->mongoDBRepository->buildWhereData(
@@ -200,13 +201,12 @@ class ApiRequestSearchService
     {
         $results = [];
         if (!empty($this->itemSearchData) && count($this->itemSearchData)) {
-
             $this->prepareItemSearch($this->type, $this->itemSearchData);
             $this->preparePagination($queryData);
-            dd($this->mongoDBRepository->findMany());
+            return $this->mongoDBRepository->findMany();
         }
         $this->searchInit();
-//
+
         $this->preparePagination($queryData);
         $query = $this->prepareSearchForSavedProviders(
             $this->mongoDBRepository->getQuery(),

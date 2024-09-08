@@ -29,12 +29,12 @@ class SaveProviderPropertyRequest extends FormRequest
                 Rule::requiredIf(fn () => in_array($this->get('value_type'), ['text', 'choice']))
             ],
             "value_type" => [
-                Rule::in(['list', 'text', 'choice'])
+                Rule::in(['list', 'text', 'choice', 'entity_list'])
             ],
             "array_value" => [
                 'array',
                 'nullable',
-                'required_if:value_type,list'
+                'required_if:value_type,list,entity_list'
             ]
         ];
     }

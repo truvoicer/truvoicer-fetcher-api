@@ -40,7 +40,7 @@ class PropertyService extends BaseService {
     }
 
     private function setPropertyObject(array $propertyData) {
-        $fields = ['name', 'label', 'value_type', 'value_choices'];
+        $fields = ['name', 'label', 'value_type', 'value_choices', 'entities'];
         $data = [];
         foreach ($fields as $field) {
             if (isset($propertyData[$field])) {
@@ -49,6 +49,9 @@ class PropertyService extends BaseService {
         }
         if (isset($data['value_choices']) && !is_array($data['value_choices'])) {
             throw new BadRequestHttpException("Property value_choices must be an array.");
+        }
+        if (isset($data['entities']) && !is_array($data['entities'])) {
+            throw new BadRequestHttpException("Property entities must be an array.");
         }
         return $data;
     }

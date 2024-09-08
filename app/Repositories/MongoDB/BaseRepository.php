@@ -97,6 +97,9 @@ class BaseRepository
             case 'NOT NULL':
                 $query->orWhereNotNull($where['field']);
                 break;
+            case 'elemMatch':
+                $query->orWhere($where['field'], 'elemMatch', $where['value']);
+                break;
             default:
                 $query->orWhere($where['field'], $where['compare'], $where['value']);
                 break;
@@ -128,6 +131,9 @@ class BaseRepository
                 break;
             case 'NOT NULL':
                 $query->whereNotNull($where['field']);
+                break;
+            case 'elemMatch':
+                $query->where($where['field'], 'elemMatch', $where['value']);
                 break;
             default:
                 $query->where($where['field'], $where['compare'], $where['value']);
@@ -302,6 +308,15 @@ class BaseRepository
         return $this;
     }
 
+    public function addMatchArrayElement(string $field, array $value, ?string $op = 'AND'): array
+    {
+        return $this->buildWhereData(
+            $field,
+            $value,
+            'elemMatch',
+            $op
+        );
+    }
     public function buildWhereData(string $field, $value, ?string $compare = '=', ?string $op = 'AND'): array
     {
         return [

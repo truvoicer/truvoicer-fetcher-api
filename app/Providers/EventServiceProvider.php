@@ -2,8 +2,10 @@
 
 namespace App\Providers;
 
+use App\Events\ProcessSrOperationDataEvent;
 use App\Events\RunProviderSrOperationEvent;
 use App\Events\RunSrOperationEvent;
+use App\Listeners\ProcessSrOperationDataListener;
 use App\Listeners\RunProviderSrOperationListener;
 use App\Listeners\RunSrOperationListener;
 use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
@@ -21,6 +23,9 @@ class EventServiceProvider extends ServiceProvider
         ],
         RunSrOperationEvent::class => [
             RunSrOperationListener::class,
+        ],
+        ProcessSrOperationDataEvent::class => [
+            ProcessSrOperationDataListener::class,
         ],
     ];
 

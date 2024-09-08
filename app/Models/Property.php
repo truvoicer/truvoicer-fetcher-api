@@ -14,12 +14,14 @@ class Property extends Model
 
     protected $casts = [
         'value_choices' => 'array',
+        'entities' => 'array'
     ];
     protected $fillable = [
         'name',
         'label',
         'value_type',
         'value_choices',
+        'entities'
     ];
     public function provider()
     {
