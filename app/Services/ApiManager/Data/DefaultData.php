@@ -4,6 +4,7 @@ namespace App\Services\ApiManager\Data;
 
 
 use App\Models\Sr;
+use App\Services\EntityService;
 
 class DefaultData
 {
@@ -64,7 +65,7 @@ class DefaultData
             [
                 DataConstants::REQUEST_CONFIG_ITEM_NAME => DataConstants::API_AUTH_TYPE,
                 DataConstants::REQUEST_CONFIG_ITEM_LABEL => "Api Authentication Type",
-                DataConstants::REQUEST_CONFIG_ITEM_SELECTED_VALUE_TYPE => 'choice',
+                DataConstants::REQUEST_CONFIG_ITEM_SELECTED_VALUE_TYPE => DataConstants::REQUEST_CONFIG_VALUE_TYPE_CHOICE,
                 DataConstants::REQUEST_CONFIG_ITEM_VALUE_CHOICES => [
                     DataConstants::OAUTH2,
                     DataConstants::AMAZON_SDK,
@@ -77,7 +78,7 @@ class DefaultData
             [
                 DataConstants::REQUEST_CONFIG_ITEM_NAME => DataConstants::OAUTH_API_AUTH_TYPE,
                 DataConstants::REQUEST_CONFIG_ITEM_LABEL => "Oauth Api Authentication Type",
-                DataConstants::REQUEST_CONFIG_ITEM_SELECTED_VALUE_TYPE => 'choice',
+                DataConstants::REQUEST_CONFIG_ITEM_SELECTED_VALUE_TYPE => DataConstants::REQUEST_CONFIG_VALUE_TYPE_CHOICE,
                 DataConstants::REQUEST_CONFIG_ITEM_VALUE_CHOICES => [
                     DataConstants::AUTH_BASIC,
                     DataConstants::AUTH_BEARER,
@@ -88,7 +89,7 @@ class DefaultData
             [
                 DataConstants::REQUEST_CONFIG_ITEM_NAME => DataConstants::API_TYPE,
                 DataConstants::REQUEST_CONFIG_ITEM_LABEL => "Api Type",
-                DataConstants::REQUEST_CONFIG_ITEM_SELECTED_VALUE_TYPE => 'choice',
+                DataConstants::REQUEST_CONFIG_ITEM_SELECTED_VALUE_TYPE => DataConstants::REQUEST_CONFIG_VALUE_TYPE_CHOICE,
                 DataConstants::REQUEST_CONFIG_ITEM_VALUE_CHOICES => [
                     'query_string',
                     'query_schema'
@@ -97,7 +98,7 @@ class DefaultData
             [
                 DataConstants::REQUEST_CONFIG_ITEM_NAME => DataConstants::RESPONSE_FORMAT,
                 DataConstants::REQUEST_CONFIG_ITEM_LABEL => "Response Format",
-                DataConstants::REQUEST_CONFIG_ITEM_SELECTED_VALUE_TYPE => 'choice',
+                DataConstants::REQUEST_CONFIG_ITEM_SELECTED_VALUE_TYPE => DataConstants::REQUEST_CONFIG_VALUE_TYPE_CHOICE,
                 DataConstants::REQUEST_CONFIG_ITEM_VALUE_CHOICES => [
                     'json',
                     'xml'
@@ -106,46 +107,44 @@ class DefaultData
             [
                 DataConstants::REQUEST_CONFIG_ITEM_NAME => DataConstants::BASE_URL,
                 DataConstants::REQUEST_CONFIG_ITEM_LABEL => "Base Url",
-                DataConstants::REQUEST_CONFIG_ITEM_SELECTED_VALUE_TYPE => 'text',
+                DataConstants::REQUEST_CONFIG_ITEM_SELECTED_VALUE_TYPE => DataConstants::REQUEST_CONFIG_VALUE_TYPE_TEXT,
                 DataConstants::REQUEST_CONFIG_ITEM_VALUE_CHOICES => null
             ],
             [
                 DataConstants::REQUEST_CONFIG_ITEM_NAME => DataConstants::USER_ID,
                 DataConstants::REQUEST_CONFIG_ITEM_LABEL => "User Id",
-                DataConstants::REQUEST_CONFIG_ITEM_SELECTED_VALUE_TYPE => 'text',
+                DataConstants::REQUEST_CONFIG_ITEM_SELECTED_VALUE_TYPE => DataConstants::REQUEST_CONFIG_VALUE_TYPE_TEXT,
                 DataConstants::REQUEST_CONFIG_ITEM_VALUE_CHOICES => null
             ],
             [
                 DataConstants::REQUEST_CONFIG_ITEM_NAME => DataConstants::ACCESS_TOKEN,
                 DataConstants::REQUEST_CONFIG_ITEM_LABEL => "Access Token",
-                DataConstants::REQUEST_CONFIG_ITEM_SELECTED_VALUE_TYPE => 'text',
+                DataConstants::REQUEST_CONFIG_ITEM_SELECTED_VALUE_TYPE => DataConstants::REQUEST_CONFIG_VALUE_TYPE_TEXT,
                 DataConstants::REQUEST_CONFIG_ITEM_VALUE_CHOICES => null
             ],
             [
                 DataConstants::REQUEST_CONFIG_ITEM_NAME => DataConstants::CLIENT_ID,
                 DataConstants::REQUEST_CONFIG_ITEM_LABEL => "Client Id",
-                DataConstants::REQUEST_CONFIG_ITEM_SELECTED_VALUE_TYPE => 'text',
+                DataConstants::REQUEST_CONFIG_ITEM_SELECTED_VALUE_TYPE => DataConstants::REQUEST_CONFIG_VALUE_TYPE_TEXT,
                 DataConstants::REQUEST_CONFIG_ITEM_VALUE_CHOICES => null
             ],
             [
                 DataConstants::REQUEST_CONFIG_ITEM_NAME => DataConstants::CLIENT_SECRET,
                 DataConstants::REQUEST_CONFIG_ITEM_LABEL => "Client Secret",
-                DataConstants::REQUEST_CONFIG_ITEM_SELECTED_VALUE_TYPE => 'text',
+                DataConstants::REQUEST_CONFIG_ITEM_SELECTED_VALUE_TYPE => DataConstants::REQUEST_CONFIG_VALUE_TYPE_TEXT,
                 DataConstants::REQUEST_CONFIG_ITEM_VALUE_CHOICES => null
             ],
             [
                 DataConstants::REQUEST_CONFIG_ITEM_NAME => DataConstants::OAUTH_TOKEN_URL,
                 DataConstants::REQUEST_CONFIG_ITEM_LABEL => "Oauth Token Url",
-                DataConstants::REQUEST_CONFIG_ITEM_SELECTED_VALUE_TYPE => 'text',
+                DataConstants::REQUEST_CONFIG_ITEM_SELECTED_VALUE_TYPE => DataConstants::REQUEST_CONFIG_VALUE_TYPE_TEXT,
                 DataConstants::REQUEST_CONFIG_ITEM_VALUE_CHOICES => null
             ],
             [
                 DataConstants::REQUEST_CONFIG_ITEM_NAME => DataConstants::LIST_ITEM_SEARCH_PRIORITY,
                 DataConstants::REQUEST_CONFIG_ITEM_LABEL => "List Item Search Priority",
-                DataConstants::REQUEST_CONFIG_ITEM_SELECTED_VALUE_TYPE => 'entity_list',
-                DataConstants::REQUEST_CONFIG_ITEM_VALUE_ENTITIES => [
-                    Sr::class
-                ]
+                DataConstants::REQUEST_CONFIG_ITEM_SELECTED_VALUE_TYPE => DataConstants::REQUEST_CONFIG_VALUE_TYPE_ENTITY_LIST,
+                DataConstants::REQUEST_CONFIG_ITEM_VALUE_ENTITIES => EntityService::ENTITIES
             ],
             ...self::getServiceRequestOauthConfig(),
             ...self::getServiceRequestConfig(),
@@ -161,14 +160,14 @@ class DefaultData
             [
                 DataConstants::REQUEST_CONFIG_ITEM_NAME => DataConstants::ENDPOINT,
                 DataConstants::REQUEST_CONFIG_ITEM_LABEL => 'Endpoint',
-                DataConstants::REQUEST_CONFIG_ITEM_SELECTED_VALUE_TYPE => "text",
+                DataConstants::REQUEST_CONFIG_ITEM_SELECTED_VALUE_TYPE => DataConstants::REQUEST_CONFIG_VALUE_TYPE_TEXT,
                 DataConstants::REQUEST_CONFIG_ITEM_VALUE => '',
                 DataConstants::REQUEST_CONFIG_ITEM_ARRAY_VALUE => [],
             ],
             [
                 DataConstants::REQUEST_CONFIG_ITEM_NAME => DataConstants::METHOD,
                 DataConstants::REQUEST_CONFIG_ITEM_LABEL => 'Request Method',
-                DataConstants::REQUEST_CONFIG_ITEM_SELECTED_VALUE_TYPE => "choice",
+                DataConstants::REQUEST_CONFIG_ITEM_SELECTED_VALUE_TYPE => DataConstants::REQUEST_CONFIG_VALUE_TYPE_CHOICE,
                 DataConstants::REQUEST_CONFIG_ITEM_VALUE => '',
                 DataConstants::REQUEST_CONFIG_ITEM_ARRAY_VALUE => [],
                 DataConstants::REQUEST_CONFIG_ITEM_VALUE_CHOICES => ['get', 'post'],
@@ -176,28 +175,28 @@ class DefaultData
             [
                 DataConstants::REQUEST_CONFIG_ITEM_NAME => DataConstants::HEADERS,
                 DataConstants::REQUEST_CONFIG_ITEM_LABEL => 'Headers',
-                DataConstants::REQUEST_CONFIG_ITEM_SELECTED_VALUE_TYPE => "list",
+                DataConstants::REQUEST_CONFIG_ITEM_SELECTED_VALUE_TYPE => DataConstants::REQUEST_CONFIG_VALUE_TYPE_LIST,
                 DataConstants::REQUEST_CONFIG_ITEM_VALUE => '',
                 DataConstants::REQUEST_CONFIG_ITEM_ARRAY_VALUE => [],
             ],
             [
                 DataConstants::REQUEST_CONFIG_ITEM_NAME => DataConstants::BODY,
                 DataConstants::REQUEST_CONFIG_ITEM_LABEL => 'Body',
-                DataConstants::REQUEST_CONFIG_ITEM_SELECTED_VALUE_TYPE => "text",
+                DataConstants::REQUEST_CONFIG_ITEM_SELECTED_VALUE_TYPE => DataConstants::REQUEST_CONFIG_VALUE_TYPE_TEXT,
                 DataConstants::REQUEST_CONFIG_ITEM_VALUE => '',
                 DataConstants::REQUEST_CONFIG_ITEM_ARRAY_VALUE => [],
             ],
             [
                 DataConstants::REQUEST_CONFIG_ITEM_NAME => DataConstants::POST_BODY,
                 DataConstants::REQUEST_CONFIG_ITEM_LABEL => 'Post Body',
-                DataConstants::REQUEST_CONFIG_ITEM_SELECTED_VALUE_TYPE => "list",
+                DataConstants::REQUEST_CONFIG_ITEM_SELECTED_VALUE_TYPE => DataConstants::REQUEST_CONFIG_VALUE_TYPE_LIST,
                 DataConstants::REQUEST_CONFIG_ITEM_VALUE => '',
                 DataConstants::REQUEST_CONFIG_ITEM_ARRAY_VALUE => [],
             ],
             [
                 DataConstants::REQUEST_CONFIG_ITEM_NAME => DataConstants::QUERY,
                 DataConstants::REQUEST_CONFIG_ITEM_LABEL => 'Query',
-                DataConstants::REQUEST_CONFIG_ITEM_SELECTED_VALUE_TYPE => "list",
+                DataConstants::REQUEST_CONFIG_ITEM_SELECTED_VALUE_TYPE => DataConstants::REQUEST_CONFIG_VALUE_TYPE_LIST,
                 DataConstants::REQUEST_CONFIG_ITEM_VALUE => '',
                 DataConstants::REQUEST_CONFIG_ITEM_ARRAY_VALUE => [],
             ],
@@ -209,14 +208,14 @@ class DefaultData
             [
                 DataConstants::REQUEST_CONFIG_ITEM_NAME => DataConstants::USERNAME,
                 DataConstants::REQUEST_CONFIG_ITEM_LABEL => 'Username',
-                DataConstants::REQUEST_CONFIG_ITEM_SELECTED_VALUE_TYPE => "text",
+                DataConstants::REQUEST_CONFIG_ITEM_SELECTED_VALUE_TYPE => DataConstants::REQUEST_CONFIG_VALUE_TYPE_TEXT,
                 DataConstants::REQUEST_CONFIG_ITEM_VALUE => '',
                 DataConstants::REQUEST_CONFIG_ITEM_ARRAY_VALUE => [],
             ],
             [
                 DataConstants::REQUEST_CONFIG_ITEM_NAME => DataConstants::PASSWORD,
                 DataConstants::REQUEST_CONFIG_ITEM_LABEL => 'Password',
-                DataConstants::REQUEST_CONFIG_ITEM_SELECTED_VALUE_TYPE => "text",
+                DataConstants::REQUEST_CONFIG_ITEM_SELECTED_VALUE_TYPE => DataConstants::REQUEST_CONFIG_VALUE_TYPE_TEXT,
                 DataConstants::REQUEST_CONFIG_ITEM_VALUE => '',
                 DataConstants::REQUEST_CONFIG_ITEM_ARRAY_VALUE => [],
             ]
@@ -228,7 +227,7 @@ class DefaultData
             [
                 DataConstants::REQUEST_CONFIG_ITEM_NAME => DataConstants::BEARER_TOKEN,
                 DataConstants::REQUEST_CONFIG_ITEM_LABEL => 'Bearer Token',
-                DataConstants::REQUEST_CONFIG_ITEM_SELECTED_VALUE_TYPE => "text",
+                DataConstants::REQUEST_CONFIG_ITEM_SELECTED_VALUE_TYPE => DataConstants::REQUEST_CONFIG_VALUE_TYPE_TEXT,
                 DataConstants::REQUEST_CONFIG_ITEM_VALUE => '',
                 DataConstants::REQUEST_CONFIG_ITEM_ARRAY_VALUE => [],
             ]
@@ -241,7 +240,7 @@ class DefaultData
                 DataConstants::REQUEST_CONFIG_ITEM_REQUIRED => true,
                 DataConstants::REQUEST_CONFIG_ITEM_NAME => DataConstants::TOKEN_REQUEST_AUTH_TYPE,
                 DataConstants::REQUEST_CONFIG_ITEM_LABEL => 'Oauth Token Request Auth Type',
-                DataConstants::REQUEST_CONFIG_ITEM_SELECTED_VALUE_TYPE => "choice",
+                DataConstants::REQUEST_CONFIG_ITEM_SELECTED_VALUE_TYPE => DataConstants::REQUEST_CONFIG_VALUE_TYPE_CHOICE,
                 DataConstants::REQUEST_CONFIG_ITEM_VALUE => 'none',
                 DataConstants::REQUEST_CONFIG_ITEM_ARRAY_VALUE => [],
                 DataConstants::REQUEST_CONFIG_ITEM_VALUE_CHOICES => ['none', DataConstants::AUTH_BASIC, DataConstants::AUTH_BEARER, 'auth_token'],
@@ -250,7 +249,7 @@ class DefaultData
                 DataConstants::REQUEST_CONFIG_ITEM_REQUIRED => true,
                 DataConstants::REQUEST_CONFIG_ITEM_NAME => DataConstants::TOKEN_REQUEST_HEADERS,
                 DataConstants::REQUEST_CONFIG_ITEM_LABEL => 'Oauth Token Request Headers',
-                DataConstants::REQUEST_CONFIG_ITEM_SELECTED_VALUE_TYPE => "list",
+                DataConstants::REQUEST_CONFIG_ITEM_SELECTED_VALUE_TYPE => DataConstants::REQUEST_CONFIG_VALUE_TYPE_LIST,
                 DataConstants::REQUEST_CONFIG_ITEM_VALUE => '',
                 DataConstants::REQUEST_CONFIG_ITEM_ARRAY_VALUE => [],
             ],
@@ -258,7 +257,7 @@ class DefaultData
                 DataConstants::REQUEST_CONFIG_ITEM_REQUIRED => true,
                 DataConstants::REQUEST_CONFIG_ITEM_NAME => DataConstants::TOKEN_REQUEST_BODY,
                 DataConstants::REQUEST_CONFIG_ITEM_LABEL => 'Oauth Token Request Body',
-                DataConstants::REQUEST_CONFIG_ITEM_SELECTED_VALUE_TYPE => "text",
+                DataConstants::REQUEST_CONFIG_ITEM_SELECTED_VALUE_TYPE => DataConstants::REQUEST_CONFIG_VALUE_TYPE_TEXT,
                 DataConstants::REQUEST_CONFIG_ITEM_VALUE => '',
                 DataConstants::REQUEST_CONFIG_ITEM_ARRAY_VALUE => [],
             ],
@@ -266,7 +265,7 @@ class DefaultData
                 DataConstants::REQUEST_CONFIG_ITEM_REQUIRED => true,
                 DataConstants::REQUEST_CONFIG_ITEM_NAME => DataConstants::TOKEN_REQUEST_POST_BODY,
                 DataConstants::REQUEST_CONFIG_ITEM_LABEL => 'Oauth Token Request Post Data',
-                DataConstants::REQUEST_CONFIG_ITEM_SELECTED_VALUE_TYPE => "list",
+                DataConstants::REQUEST_CONFIG_ITEM_SELECTED_VALUE_TYPE => DataConstants::REQUEST_CONFIG_VALUE_TYPE_LIST,
                 DataConstants::REQUEST_CONFIG_ITEM_VALUE => '',
                 DataConstants::REQUEST_CONFIG_ITEM_ARRAY_VALUE => [],
             ],
@@ -274,7 +273,7 @@ class DefaultData
                 DataConstants::REQUEST_CONFIG_ITEM_REQUIRED => true,
                 DataConstants::REQUEST_CONFIG_ITEM_NAME => DataConstants::TOKEN_REQUEST_QUERY,
                 DataConstants::REQUEST_CONFIG_ITEM_LABEL => 'Oauth Token Request Query Data',
-                DataConstants::REQUEST_CONFIG_ITEM_SELECTED_VALUE_TYPE => "list",
+                DataConstants::REQUEST_CONFIG_ITEM_SELECTED_VALUE_TYPE => DataConstants::REQUEST_CONFIG_VALUE_TYPE_LIST,
                 DataConstants::REQUEST_CONFIG_ITEM_VALUE => '',
                 DataConstants::REQUEST_CONFIG_ITEM_ARRAY_VALUE => [],
             ],
@@ -282,7 +281,7 @@ class DefaultData
                 DataConstants::REQUEST_CONFIG_ITEM_REQUIRED => true,
                 DataConstants::REQUEST_CONFIG_ITEM_NAME => DataConstants::TOKEN_REQUEST_METHOD,
                 DataConstants::REQUEST_CONFIG_ITEM_LABEL => 'Oauth Token Request Method',
-                DataConstants::REQUEST_CONFIG_ITEM_SELECTED_VALUE_TYPE => "choice",
+                DataConstants::REQUEST_CONFIG_ITEM_SELECTED_VALUE_TYPE => DataConstants::REQUEST_CONFIG_VALUE_TYPE_CHOICE,
                 DataConstants::REQUEST_CONFIG_ITEM_VALUE => '',
                 DataConstants::REQUEST_CONFIG_ITEM_ARRAY_VALUE => [],
                 DataConstants::REQUEST_CONFIG_ITEM_VALUE_CHOICES => ['get', 'post'],
@@ -291,7 +290,7 @@ class DefaultData
                 DataConstants::REQUEST_CONFIG_ITEM_REQUIRED => true,
                 DataConstants::REQUEST_CONFIG_ITEM_NAME => DataConstants::TOKEN_REQUEST_USERNAME,
                 DataConstants::REQUEST_CONFIG_ITEM_LABEL => 'Oauth Token Request Username',
-                DataConstants::REQUEST_CONFIG_ITEM_SELECTED_VALUE_TYPE => "text",
+                DataConstants::REQUEST_CONFIG_ITEM_SELECTED_VALUE_TYPE => DataConstants::REQUEST_CONFIG_VALUE_TYPE_TEXT,
                 DataConstants::REQUEST_CONFIG_ITEM_VALUE => '',
                 DataConstants::REQUEST_CONFIG_ITEM_ARRAY_VALUE => [],
             ],
@@ -299,7 +298,7 @@ class DefaultData
                 DataConstants::REQUEST_CONFIG_ITEM_REQUIRED => true,
                 DataConstants::REQUEST_CONFIG_ITEM_NAME => DataConstants::TOKEN_REQUEST_PASSWORD,
                 DataConstants::REQUEST_CONFIG_ITEM_LABEL => 'Oauth Token Request Password',
-                DataConstants::REQUEST_CONFIG_ITEM_SELECTED_VALUE_TYPE => "text",
+                DataConstants::REQUEST_CONFIG_ITEM_SELECTED_VALUE_TYPE => DataConstants::REQUEST_CONFIG_VALUE_TYPE_TEXT,
                 DataConstants::REQUEST_CONFIG_ITEM_VALUE => '',
                 DataConstants::REQUEST_CONFIG_ITEM_ARRAY_VALUE => [],
             ],
@@ -307,7 +306,7 @@ class DefaultData
                 DataConstants::REQUEST_CONFIG_ITEM_REQUIRED => true,
                 DataConstants::REQUEST_CONFIG_ITEM_NAME => DataConstants::TOKEN_REQUEST_TOKEN,
                 DataConstants::REQUEST_CONFIG_ITEM_LABEL => 'Oauth Token Request Access Token',
-                DataConstants::REQUEST_CONFIG_ITEM_SELECTED_VALUE_TYPE => "text",
+                DataConstants::REQUEST_CONFIG_ITEM_SELECTED_VALUE_TYPE => DataConstants::REQUEST_CONFIG_VALUE_TYPE_TEXT,
                 DataConstants::REQUEST_CONFIG_ITEM_VALUE => '',
                 DataConstants::REQUEST_CONFIG_ITEM_ARRAY_VALUE => [],
             ]

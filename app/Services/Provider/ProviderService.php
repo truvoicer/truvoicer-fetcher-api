@@ -271,11 +271,13 @@ class ProviderService extends BaseService
             throw new BadRequestHttpException("Value type is required.");
         }
         return match ($data['value_type']) {
-            'text', 'choice' => $this->providerPropertyRepository->saveProviderProperty($provider, $property, [
+            DataConstants::REQUEST_CONFIG_VALUE_TYPE_TEXT,
+            DataConstants::REQUEST_CONFIG_VALUE_TYPE_CHOICE => $this->providerPropertyRepository->saveProviderProperty($provider, $property, [
                 'value' => $data['value'],
                 'array_value' => null
             ]),
-            'list' => $this->providerPropertyRepository->saveProviderProperty($provider, $property, [
+            DataConstants::REQUEST_CONFIG_VALUE_TYPE_LIST,
+            DataConstants::REQUEST_CONFIG_VALUE_TYPE_ENTITY_LIST=> $this->providerPropertyRepository->saveProviderProperty($provider, $property, [
                 'array_value' => $data['array_value'],
                 'value' => null,
             ]),

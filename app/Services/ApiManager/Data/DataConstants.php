@@ -18,6 +18,16 @@ class DataConstants
     const REQUEST_CONFIG_ITEM_VALUE_CHOICES = "value_choices";
     const REQUEST_CONFIG_ITEM_VALUE_ENTITIES = "entities";
 
+    public const REQUEST_CONFIG_VALUE_TYPE_TEXT = 'text';
+    public const REQUEST_CONFIG_VALUE_TYPE_CHOICE = 'choice';
+    public const REQUEST_CONFIG_VALUE_TYPE_LIST = 'list';
+    public const REQUEST_CONFIG_VALUE_TYPE_ENTITY_LIST = 'entity_list';
+    public const REQUEST_CONFIG_VALUE_TYPES = [
+        self::REQUEST_CONFIG_VALUE_TYPE_TEXT,
+        self::REQUEST_CONFIG_VALUE_TYPE_CHOICE,
+        self::REQUEST_CONFIG_VALUE_TYPE_LIST,
+        self::REQUEST_CONFIG_VALUE_TYPE_ENTITY_LIST,
+    ];
 
     const API_TYPE = "api_type";
 

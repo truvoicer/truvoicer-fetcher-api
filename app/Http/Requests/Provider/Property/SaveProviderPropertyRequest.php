@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Provider\Property;
 
+use App\Services\ApiManager\Data\DataConstants;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -29,7 +30,7 @@ class SaveProviderPropertyRequest extends FormRequest
                 Rule::requiredIf(fn () => in_array($this->get('value_type'), ['text', 'choice']))
             ],
             "value_type" => [
-                Rule::in(['list', 'text', 'choice', 'entity_list'])
+                Rule::in(DataConstants::REQUEST_CONFIG_VALUE_TYPES)
             ],
             "array_value" => [
                 'array',

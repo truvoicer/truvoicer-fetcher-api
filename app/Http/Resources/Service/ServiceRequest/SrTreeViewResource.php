@@ -19,6 +19,7 @@ class SrTreeViewResource extends JsonResource
         return [
             'id' => $this->id,
             'name' => $this->name,
+            'type' => $this->type,
             'hasChildren' => $this->childSrs->count() > 0,
             'children' => SrTreeViewResource::collection($this->childSrs),
         ];

@@ -10,6 +10,7 @@ use App\Http\Controllers\Api\Backend\Provider\ProviderPropertyController;
 use App\Http\Controllers\Api\Backend\Provider\ProviderRateLimitController;
 use App\Http\Controllers\Api\Backend\Services\ServiceRequestScheduleController;
 use App\Http\Controllers\Api\Backend\Services\SrRateLimitController;
+use App\Http\Controllers\Api\Backend\Tools\EntityController;
 use App\Http\Controllers\Api\Backend\ValidationController;
 use App\Http\Controllers\Api\Backend\SearchController;
 use App\Http\Controllers\Api\Backend\Services\ServiceController;
@@ -91,7 +92,8 @@ Route::middleware(['auth:sanctum', 'ability:api:admin,api:superuser,api:super_ad
                 Route::get('/{query}', [SearchController::class, 'search'])->name('query');
             });
         });
-        Route::get('/permission/entity/list', [UserController::class, 'getProtectedEntitiesList'])->name('entity.list');
+        Route::get('/permission/entity/list', [UserController::class, 'getProtectedEntitiesList'])->name('permission.entities');
+        Route::post('/entities', [EntityController::class, 'index'])->name('entities');
 
         Route::prefix('sr')->name('sr.')->group(function () {
             Route::post('/list', [ServiceRequestController::class, 'getServiceRequestList'])->name('list');

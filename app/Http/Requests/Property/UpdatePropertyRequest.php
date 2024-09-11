@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Property;
 
+use App\Services\ApiManager\Data\DataConstants;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -26,7 +27,7 @@ class UpdatePropertyRequest extends FormRequest
             "name" => "string",
             "label" => "string",
             "value_type" => [
-                Rule::in(['custom', 'choice'])
+                Rule::in(DataConstants::REQUEST_CONFIG_VALUE_TYPES)
             ],
             "value_choices" => [
                 'required_if:value_type,choice'
