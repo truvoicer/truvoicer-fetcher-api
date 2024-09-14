@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Http\Resources\Service\ServiceRequest\SrTreeViewCollection;
 use App\Models\User;
+use App\Repositories\SrRepository;
 use App\Services\ApiServices\ServiceRequests\SrService;
 
 class EntityService extends BaseService
@@ -25,22 +26,40 @@ class EntityService extends BaseService
         self::ENTITY_SR_PARAMETER,
     ];
 
+    private SrRepository $srRepository;
+
     public function __construct(
-        private SrService $srService
     )
     {
         parent::__construct();
+        $this->srRepository = new SrRepository();
     }
 
     public function getEntityList(User $user, string $entity, ?array $ids): ?SrTreeViewCollection
     {
         switch ($entity) {
             case self::ENTITY_SR:
+                $this->srRepository->setPagination(false);
                 return new SrTreeViewCollection(
-                    $this->srService->getUserServiceRequestByProviderIds($user, $ids)
+                    $this->srRepository->getUserServiceRequestByProviderIds(
+                        $user, $ids
+                    )
                 );
         }
         return null;
+    }
+    public function getEntityListByEntityIds(User $user, string $entity, ?array $ids)
+    {
+        switch ($entity) {
+            case self::ENTITY_SR:
+                return  $this->srRepository->getUserServiceRequestByIds($user, $ids);
+        }
+        return null;
+    }
+
+    public static function getInstance(): EntityService
+    {
+        return new EntityService();
     }
 
 }

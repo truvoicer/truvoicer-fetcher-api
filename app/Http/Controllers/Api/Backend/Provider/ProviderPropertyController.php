@@ -7,7 +7,8 @@ use App\Http\Requests\Property\DeleteBatchPropertyRequest;
 use App\Http\Requests\Provider\Property\SaveProviderPropertyRequest;
 use App\Http\Resources\PropertyCollection;
 use App\Http\Resources\PropertyResource;
-use App\Http\Resources\ProviderPropertyCollection;
+use App\Http\Resources\PropertyWithProviderPropertyCollection;
+use App\Http\Resources\PropertyWithProviderPropertyResource;
 use App\Models\Property;
 use App\Models\Provider;
 use App\Repositories\ProviderRepository;
@@ -76,7 +77,7 @@ class ProviderPropertyController extends Controller
         );
         return $this->sendSuccessResponse(
             "success",
-            new ProviderPropertyCollection($getProviderProps)
+            new PropertyWithProviderPropertyCollection($getProviderProps)
         );
     }
 
@@ -105,7 +106,7 @@ class ProviderPropertyController extends Controller
         }
         return $this->sendSuccessResponse(
             "success",
-            new PropertyResource(
+            new PropertyWithProviderPropertyResource(
                 $this->providerService->getProviderProperty($provider, $property)
             )
         );
