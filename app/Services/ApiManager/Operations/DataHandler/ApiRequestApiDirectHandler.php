@@ -53,23 +53,32 @@ class ApiRequestApiDirectHandler extends ApiRequestDataHandler
             throw new BadRequestHttpException("Providers not found");
         }
 
-        $requestData = new Collection();
+        $collection = new Collection();
         foreach ($this->providers as $index => $provider) {
             foreach ($provider->sr as $sr) {
-                $requestData = $this->searchOperationBySr($sr, $requestData, $data);
-
+                $requestData = $this->searchOperationBySr($sr, $data);
+                switch ($sr->type) {
+                    case SrRepository::SR_TYPE_LIST:
+                        foreach ($requestData as $item) {
+                            $collection->add($item);
+                        }
+                        break;
+                    case SrRepository::SR_TYPE_DETAIL:
+                    case SrRepository::SR_TYPE_SINGLE:
+                        return $requestData;
+                }
             }
         }
 
-        return $requestData;
+        return $collection;
     }
 
-    private function searchOperationBySr(
+    public function searchOperationBySr(
         Sr         $sr,
-        Collection $collection,
         array      $data
     )
     {
+        $provider = $sr->provider;
         $this->apiRequestService->setProvider($provider);
         if ($this->user->cannot('view', $provider)) {
             return false;
@@ -85,6 +94,7 @@ class ApiRequestApiDirectHandler extends ApiRequestDataHandler
         if (!$this->afterFetchOperation($sr, $response, $data)) {
 
         }
+        $collection = new Collection();
         switch ($sr->type) {
             case SrRepository::SR_TYPE_LIST:
                 foreach ($response->getRequestData() as $item) {

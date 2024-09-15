@@ -7,6 +7,7 @@ use App\Http\Resources\ApiSearchItemResource;
 use App\Models\User;
 use App\Repositories\SrRepository;
 use App\Services\ApiManager\Data\DataConstants;
+use App\Services\ApiServices\ServiceRequests\SrService;
 use App\Services\EntityService;
 use App\Services\Provider\ProviderService;
 use Illuminate\Pagination\LengthAwarePaginator;
@@ -19,7 +20,8 @@ class ApiRequestDataInterface
     public function __construct(
         private ApiRequestMongoDbHandler $apiRequestMongoDbHandler,
         private ApiRequestApiDirectHandler $apiRequestApiDirectHandler,
-        private ProviderService $providerService
+        private ProviderService $providerService,
+        private SrService $srService
     )
     {
     }
@@ -52,7 +54,8 @@ class ApiRequestDataInterface
                 }
                 $priority = $this->prioritySearchHandler(
                     $compare,
-                    $response
+                    $response,
+                    $data
                 );
                 dd($priority);
                 break;
@@ -83,7 +86,7 @@ class ApiRequestDataInterface
         }
     }
 
-    private function prioritySearchHandler(array $searchData, Collection|LengthAwarePaginator $results): Collection|LengthAwarePaginator
+    private function prioritySearchHandler(array $searchData, Collection|LengthAwarePaginator $results, ?array $data = []): Collection|LengthAwarePaginator
     {
         $this->apiRequestMongoDbHandler->setItemSearchData($searchData);
 
@@ -112,11 +115,14 @@ class ApiRequestDataInterface
                     if (empty($srSearchPriority['type'])) {
                         continue;
                     }
+
                     switch ($srSearchPriority['type']) {
                         case SrRepository::SR_TYPE_LIST:
-                            dd($srSearchPriorityDatum);
-                            $response = $this->apiRequestApiDirectHandler->searchOperation(
-                                $serviceType, $providers, $serviceName, $data
+
+                            $sr = $this->srService->getServiceRequestRepository()->findById($srSearchPriority['id']);
+                            $response = $this->apiRequestApiDirectHandler->searchOperationBySr(
+                                $sr,
+                                $data
                             );
                             break;
                         default:

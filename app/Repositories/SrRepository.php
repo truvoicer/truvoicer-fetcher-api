@@ -34,6 +34,7 @@ class SrRepository extends BaseRepository
         $this->providerRepository = new ProviderRepository();
     }
 
+
     public function getModel(): Sr
     {
         return parent::getModel();
