@@ -9,6 +9,7 @@ use Illuminate\Database\Connection;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
+use MongoDB\Laravel\Query\Builder;
 
 class BaseRepository
 {
@@ -49,6 +50,11 @@ class BaseRepository
         return $this->collection;
     }
 
+    public function getCollectionBuilder(): Builder
+    {
+        return $this->connection->collection($this->collection);
+    }
+
 
     public function findAll()
     {
@@ -62,7 +68,7 @@ class BaseRepository
         return $this->connection->collection($this->collection)->find($id);
     }
 
-    public function getResults($query): Collection|LengthAwarePaginator
+    public function getResults(Builder $query): Collection|LengthAwarePaginator
     {
         if ($this->paginate) {
             return $query->paginate($this->perPage, ['*'], 'page', $this->page);
@@ -157,7 +163,7 @@ class BaseRepository
         }
     }
     private function buildQuery() {
-        $query = $this->connection->collection($this->collection);
+        $query = $this->getCollectionBuilder();
         $query->where(function ($query) {
             foreach ($this->where as $index => $where) {
                 $this->getWhereQuery($index, $where, $query);

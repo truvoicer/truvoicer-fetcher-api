@@ -80,6 +80,41 @@ class ApiRequestMongoDbHandler extends ApiRequestDataHandler
         return $data;
     }
 
+    public function compareResultsWithData(Collection|LengthAwarePaginator $results) {
+        $compare = array_map(function($searchItem) use ($results) {
+            $filterByProvider = $results->where('provider', $searchItem['provider_name']);
+            $itemIds = array_map('intval', $searchItem['ids']);
+            $searchItem['ids'] = array_filter($itemIds, function($id) use ($filterByProvider,$itemIds) {
+                return !$filterByProvider->where(function ($item) use ($id, $itemIds) {
+                    if (empty($item['item_id'])) {
+                        return false;
+                    }
+                    if (is_array($item['item_id'])) {
+                        $filterFind = array_filter($item['item_id'], function($id) use ($itemIds) {
+                            return in_array((int)$id['data'], $itemIds);
+                        });
+                        return !count($filterFind);
+                    }
+                    return !in_array($item['item_id'], $itemIds);
+                })->count();
+            });
+            $searchItem['ids'] = $filterByProvider->filter(function($item) use ($itemIds) {
+                if (empty($item['item_id'])) {
+                    return false;
+                }
+                if (is_array($item['item_id'])) {
+                    $filterFind = array_filter($item['item_id'], function($id) use ($itemIds) {
+                        return in_array((int)$id['data'], $itemIds);
+                    });
+                    return !count($filterFind);
+                }
+                return !in_array($item['item_id'], $itemIds);
+            });
+            return $searchItem;
+        }, $this->itemSearchData);
+
+        dd($compare);
+    }
     public function searchOperation(string $type, array $providers, string $serviceName, ?array $data = [])
     {
         if (!count($providers)) {

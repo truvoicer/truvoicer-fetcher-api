@@ -200,6 +200,7 @@ class ApiRequestSearchService
     public function runListSearch(array $queryData): Collection|LengthAwarePaginator
     {
         $results = [];
+
         if (!empty($this->itemSearchData) && count($this->itemSearchData)) {
             $this->prepareItemSearch($this->type, $this->itemSearchData);
             $this->preparePagination($queryData);
