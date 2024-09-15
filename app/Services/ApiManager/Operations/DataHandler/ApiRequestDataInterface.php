@@ -6,6 +6,11 @@ use App\Http\Resources\ApiMongoDBSearchListResourceCollection;
 use App\Http\Resources\ApiSearchItemResource;
 use App\Models\User;
 use App\Repositories\SrRepository;
+use App\Services\ApiManager\Data\DataConstants;
+use App\Services\EntityService;
+use App\Services\Provider\ProviderService;
+use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Collection;
 
 class ApiRequestDataInterface
 {
@@ -13,7 +18,8 @@ class ApiRequestDataInterface
 
     public function __construct(
         private ApiRequestMongoDbHandler $apiRequestMongoDbHandler,
-        private ApiRequestApiDirectHandler $apiRequestApiDirectHandler
+        private ApiRequestApiDirectHandler $apiRequestApiDirectHandler,
+        private ProviderService $providerService
     )
     {
     }
@@ -41,11 +47,14 @@ class ApiRequestDataInterface
                 $compare = $this->apiRequestMongoDbHandler->compareResultsWithData(
                     $response
                 );
-                dd($response);
-                $response = $this->apiRequestApiDirectHandler->searchOperation(
-                    $serviceType, $providers, $serviceName, $data
+                if (!count($compare)) {
+                    break;
+                }
+                $priority = $this->prioritySearchHandler(
+                    $compare,
+                    $response
                 );
-                dd($response);
+                dd($priority);
                 break;
             case 'database':
                 $response = $this->apiRequestMongoDbHandler->searchOperation(
@@ -74,6 +83,60 @@ class ApiRequestDataInterface
         }
     }
 
+    private function prioritySearchHandler(array $searchData, Collection|LengthAwarePaginator $results): Collection|LengthAwarePaginator
+    {
+        $this->apiRequestMongoDbHandler->setItemSearchData($searchData);
+
+        foreach ($searchData as $searchItem) {
+            if (empty($searchItem['ids']) || !is_array($searchItem['ids'])) {
+                continue;
+            }
+            if (!count($searchItem['ids'])) {
+                continue;
+            }
+            $provider = $this->providerService->getUserProviderByName($this->user, $searchItem['provider_name']);
+
+            if (!$provider) {
+                continue;
+            }
+
+            $srSearchPriorityData = $this->providerService->getProviderPropertyValue(
+                $provider,
+                DataConstants::LIST_ITEM_SEARCH_PRIORITY
+            );
+            foreach ($srSearchPriorityData as $srSearchPriorityDatum) {
+                if (empty($srSearchPriorityDatum[EntityService::ENTITY_SR]) || !is_array($srSearchPriorityDatum[EntityService::ENTITY_SR]) || !count($srSearchPriorityDatum[EntityService::ENTITY_SR])) {
+                    continue;
+                }
+                foreach ($srSearchPriorityDatum[EntityService::ENTITY_SR] as $srSearchPriority) {
+                    if (empty($srSearchPriority['type'])) {
+                        continue;
+                    }
+                    switch ($srSearchPriority['type']) {
+                        case SrRepository::SR_TYPE_LIST:
+                            dd($srSearchPriorityDatum);
+                            $response = $this->apiRequestApiDirectHandler->searchOperation(
+                                $serviceType, $providers, $serviceName, $data
+                            );
+                            break;
+                        default:
+
+                            $response = $this->apiRequestMongoDbHandler->runListSearch(
+                                $srSearchPriority['type'],
+                                $srSearchPriority['providers'],
+                                $srSearchPriority['service_name']
+                            );
+                            $response = $this->apiRequestApiDirectHandler->searchOperation(
+                                $serviceType, $providers, $serviceName, $data
+                            );
+                            break;
+                    }
+                }
+                dd($srSearchPriorityData);
+            }
+        }
+        dd($this->itemSearchData);
+    }
 
     public function setUser(User $user): void
     {

@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Repositories\ProviderPropertyRepository;
 use App\Services\ApiManager\Data\DataConstants;
 use App\Services\EntityService;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -28,42 +29,48 @@ class ProviderProperty extends Model
     ];
 
 //    protected $with = ['provider', 'property'];
-
-    public function getArrayValue(User $user)
+    protected function arrayValue(): Attribute
     {
+        return Attribute::make(
+            get: fn (mixed $value, array $attributes) => $this->getArrayValue($value, $attributes, request()->user()),
+        );
+    }
+    public function getArrayValue(mixed $value, array $attributes, User $user)
+    {
+        $value = json_decode($value, true);
         switch ($this->property->value_type) {
             case DataConstants::REQUEST_CONFIG_VALUE_TYPE_ENTITY_LIST:
-                if (!is_array($this->array_value)) {
-                    return $this->array_value;
+                if (!is_array($value)) {
+                    return $value;
                 }
-                if (!count($this->array_value)) {
-                    return $this->array_value;
+                if (!count($value)) {
+                    return $value;
                 }
                 $data = [];
-                foreach ($this->array_value as $key => $value) {
+                foreach ($value as $key => $valueItem) {
                     foreach (EntityService::ENTITIES as $entity) {
                         if (!array_key_exists($entity, $data)) {
                             $data[$entity] = [];
                         }
-                        if (empty($value[$entity])) {
+                        if (empty($valueItem[$entity])) {
                             continue;
                         }
-                        if (is_array($value[$entity])) {
+                        if (is_array($valueItem[$entity])) {
                             $data[$entity] = [
                                 ...$data[$entity],
-                                ...$value[$entity],
+                                ...$valueItem[$entity],
                             ];
                             continue;
                         }
-                        $data[$entity][] = $value[$entity];
+                        $data[$entity][] = $valueItem[$entity];
                     }
                 }
                 $data = array_filter($data, function ($item) {
                     return !empty($item);
                 });
                 $collection = [];
-                foreach ($data as $key => $value) {
-                    $srs = EntityService::getInstance()->getEntityListByEntityIds($user, $key, $value);
+                foreach ($data as $key => $valueItem) {
+                    $srs = EntityService::getInstance()->getEntityListByEntityIds($user, $key, $valueItem);
                     if ($srs instanceof Collection) {
                         $collection[$key] = $srs;
                     }
@@ -84,9 +91,9 @@ class ProviderProperty extends Model
 
                     }
                     return $item;
-                }, $this->array_value);
+                }, $value);
             default:
-                return $this->array_value;
+                return $value;
         }
     }
 

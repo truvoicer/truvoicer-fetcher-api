@@ -56,35 +56,47 @@ class ApiRequestApiDirectHandler extends ApiRequestDataHandler
         $requestData = new Collection();
         foreach ($this->providers as $index => $provider) {
             foreach ($provider->sr as $sr) {
-                $this->apiRequestService->setProvider($provider);
-                if ($this->user->cannot('view', $provider)) {
-                    return false;
-                }
+                $requestData = $this->searchOperationBySr($sr, $requestData, $data);
 
-                $this->apiRequestService->setSr($sr);
-
-                $response = $this->apiRequestService->runOperation($data);
-
-                if ($response->getStatus() !== 'success') {
-                    continue;
-                }
-                if (!$this->afterFetchOperation($sr, $response, $data)) {
-
-                }
-                switch ($sr->type) {
-                    case SrRepository::SR_TYPE_LIST:
-                        foreach ($response->getRequestData() as $item) {
-                            $requestData->add($item);
-                        }
-                        break;
-                    case SrRepository::SR_TYPE_DETAIL:
-                    case SrRepository::SR_TYPE_SINGLE:
-                        return $response->getRequestData();
-                }
             }
         }
 
         return $requestData;
+    }
+
+    private function searchOperationBySr(
+        Sr         $sr,
+        Collection $collection,
+        array      $data
+    )
+    {
+        $this->apiRequestService->setProvider($provider);
+        if ($this->user->cannot('view', $provider)) {
+            return false;
+        }
+
+        $this->apiRequestService->setSr($sr);
+
+        $response = $this->apiRequestService->runOperation($data);
+
+        if ($response->getStatus() !== 'success') {
+            return false;
+        }
+        if (!$this->afterFetchOperation($sr, $response, $data)) {
+
+        }
+        switch ($sr->type) {
+            case SrRepository::SR_TYPE_LIST:
+                foreach ($response->getRequestData() as $item) {
+                    $collection->add($item);
+                }
+                return $collection;
+            case SrRepository::SR_TYPE_DETAIL:
+            case SrRepository::SR_TYPE_SINGLE:
+                return $response->getRequestData();
+            default:
+                return false;
+        }
     }
 
     private function afterFetchOperation(

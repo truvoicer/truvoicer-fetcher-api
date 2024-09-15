@@ -341,4 +341,10 @@ class ApiRequestDataHandler
         $this->user = $user;
         $this->apiRequestService->setUser($user);
     }
+
+    public function setItemSearchData(array $itemSearchData): void
+    {
+        $this->itemSearchData = $itemSearchData;
+    }
+
 }

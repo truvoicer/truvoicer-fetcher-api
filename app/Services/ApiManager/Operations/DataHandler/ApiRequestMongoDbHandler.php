@@ -6,10 +6,12 @@ use App\Http\Resources\ApiSearchItemResource;
 use App\Http\Resources\ApiMongoDBSearchListResourceCollection;
 use App\Models\S;
 use App\Repositories\SrRepository;
+use App\Services\ApiManager\Data\DataConstants;
 use App\Services\ApiManager\Operations\ApiRequestService;
 use App\Services\ApiManager\Response\Entity\ApiResponse;
 use App\Services\ApiServices\ApiService;
 use App\Services\Category\CategoryService;
+use App\Services\EntityService;
 use App\Services\Provider\ProviderService;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
@@ -80,41 +82,33 @@ class ApiRequestMongoDbHandler extends ApiRequestDataHandler
         return $data;
     }
 
-    public function compareResultsWithData(Collection|LengthAwarePaginator $results) {
-        $compare = array_map(function($searchItem) use ($results) {
+    public function compareResultsWithData(Collection|LengthAwarePaginator $results): array
+    {
+        return array_map(function ($searchItem) use ($results) {
             $filterByProvider = $results->where('provider', $searchItem['provider_name']);
-            $itemIds = array_map('intval', $searchItem['ids']);
-            $searchItem['ids'] = array_filter($itemIds, function($id) use ($filterByProvider,$itemIds) {
-                return !$filterByProvider->where(function ($item) use ($id, $itemIds) {
-                    if (empty($item['item_id'])) {
-                        return false;
-                    }
-                    if (is_array($item['item_id'])) {
-                        $filterFind = array_filter($item['item_id'], function($id) use ($itemIds) {
-                            return in_array((int)$id['data'], $itemIds);
-                        });
-                        return !count($filterFind);
-                    }
-                    return !in_array($item['item_id'], $itemIds);
-                })->count();
-            });
-            $searchItem['ids'] = $filterByProvider->filter(function($item) use ($itemIds) {
+            $itemIds = array_map(function ($item) {
                 if (empty($item['item_id'])) {
                     return false;
                 }
                 if (is_array($item['item_id'])) {
-                    $filterFind = array_filter($item['item_id'], function($id) use ($itemIds) {
-                        return in_array((int)$id['data'], $itemIds);
-                    });
-                    return !count($filterFind);
+                    $filterFind = array_column($item['item_id'], 'data');
+                    if (!count($filterFind)) {
+                        return false;
+                    }
+                    return $filterFind[0];
                 }
-                return !in_array($item['item_id'], $itemIds);
-            });
+                return (int)$item['item_id'];
+            }, $filterByProvider->toArray());
+
+            $searchItem['ids'] = array_values(
+                array_filter($searchItem['ids'], function ($id) use ($itemIds) {
+                    return in_array($id, $itemIds);
+                })
+            );
             return $searchItem;
         }, $this->itemSearchData);
-
-        dd($compare);
     }
+
     public function searchOperation(string $type, array $providers, string $serviceName, ?array $data = [])
     {
         if (!count($providers)) {
@@ -138,7 +132,7 @@ class ApiRequestMongoDbHandler extends ApiRequestDataHandler
             case SrRepository::SR_TYPE_MIXED:
             case SrRepository::SR_TYPE_DETAIL:
             case SrRepository::SR_TYPE_SINGLE:
-            return $this->runItemSearch(
+                return $this->runItemSearch(
                     $type,
                     $providerData,
                     $data['item_id'] ?? null

@@ -34,6 +34,7 @@ class PropertyService extends BaseService {
             case 'text':
                 return $property->value;
             case 'list':
+            case 'entity_list':
                 return $property->array_value;
         }
         return null;
