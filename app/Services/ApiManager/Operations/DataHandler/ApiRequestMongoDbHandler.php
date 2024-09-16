@@ -42,10 +42,8 @@ class ApiRequestMongoDbHandler extends ApiRequestDataHandler
 
     }
 
-    public function searchInit(string $type, array $providers): void
+    public function searchInit(string $type): void
     {
-        $this->prepareProviders($providers, $type);
-
         $this->apiRequestSearchService->setProviders($this->providers);
         $this->apiRequestSearchService->setNotFoundProviders($this->notFoundProviders);
         $this->apiRequestSearchService->setItemSearchData($this->itemSearchData);
@@ -56,14 +54,16 @@ class ApiRequestMongoDbHandler extends ApiRequestDataHandler
 
     public function runListSearch(string $type, array $providers, ?array $query = []): Collection|LengthAwarePaginator
     {
-        $this->searchInit($type, $providers);
+        $this->prepareProviders($providers, $type);
+        $this->searchInit($type);
         return $this->apiRequestSearchService->runListSearch($query);
     }
 
     public function runItemSearch(string $type, array $providers): array|null
     {
-        $this->searchInit($type, $providers);
-        return $this->apiRequestSearchService->runSingleItemSearch('detail');
+        $this->prepareProviders($providers, $type);
+        $this->searchInit($type);
+        return $this->apiRequestSearchService->runSingleItemSearch($type);
     }
 
     private function isSingleProvider(array $data): bool
@@ -81,30 +81,38 @@ class ApiRequestMongoDbHandler extends ApiRequestDataHandler
         }
         return $data;
     }
-
+    public function findItemId(array $item): int|false {
+        if (empty($item['item_id'])) {
+            return false;
+        }
+        if (is_array($item['item_id'])) {
+            $filterFind = array_column($item['item_id'], 'data');
+            if (!count($filterFind)) {
+                return false;
+            }
+            return $filterFind[0];
+        }
+        return (int)$item['item_id'];
+    }
     public function compareResultsWithData(Collection|LengthAwarePaginator $results): array
     {
         return array_map(function ($searchItem) use ($results) {
             $filterByProvider = $results->where('provider', $searchItem['provider_name']);
             $itemIds = array_map(function ($item) {
-                if (empty($item['item_id'])) {
-                    return false;
-                }
-                if (is_array($item['item_id'])) {
-                    $filterFind = array_column($item['item_id'], 'data');
-                    if (!count($filterFind)) {
-                        return false;
-                    }
-                    return $filterFind[0];
-                }
-                return (int)$item['item_id'];
+                return $this->findItemId($item);
             }, $filterByProvider->toArray());
 
-            $searchItem['ids'] = array_values(
-                array_filter($searchItem['ids'], function ($id) use ($itemIds) {
-                    return in_array($id, $itemIds);
-                })
-            );
+            $itemIds = array_filter($itemIds, function ($id) {
+                return $id !== false;
+            });
+            if (!empty($searchItem['ids']) && is_array($searchItem['ids'])) {
+                $searchItem['ids'] =  array_map('intval', $searchItem['ids']);
+                $searchItem['ids'] = array_values(
+                    array_filter($searchItem['ids'], function ($id) use ($itemIds) {
+                        return !in_array($id, $itemIds);
+                    })
+                );
+            }
             return $searchItem;
         }, $this->itemSearchData);
     }
@@ -124,12 +132,12 @@ class ApiRequestMongoDbHandler extends ApiRequestDataHandler
         $providerData = $this->buildProviderData($providers);
         switch ($type) {
             case SrRepository::SR_TYPE_LIST:
+            case SrRepository::SR_TYPE_MIXED:
                 return $this->runListSearch(
                     $type,
                     $providerData,
                     $data
                 );
-            case SrRepository::SR_TYPE_MIXED:
             case SrRepository::SR_TYPE_DETAIL:
             case SrRepository::SR_TYPE_SINGLE:
                 return $this->runItemSearch(
@@ -155,6 +163,11 @@ class ApiRequestMongoDbHandler extends ApiRequestDataHandler
     public function setService(S $service): void
     {
         $this->service = $service;
+    }
+
+    public function getApiRequestSearchService(): ApiRequestSearchService
+    {
+        return $this->apiRequestSearchService;
     }
 
 }

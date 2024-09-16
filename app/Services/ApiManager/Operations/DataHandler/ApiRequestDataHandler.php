@@ -4,6 +4,7 @@ namespace App\Services\ApiManager\Operations\DataHandler;
 
 use App\Models\Provider;
 use App\Models\User;
+use App\Repositories\SrRepository;
 use App\Services\ApiManager\Operations\ApiRequestService;
 use App\Services\ApiManager\Response\Entity\ApiResponse;
 use App\Services\ApiServices\ApiService;
@@ -77,6 +78,8 @@ class ApiRequestDataHandler
         switch ($type) {
             case 'mixed':
             case 'list':
+            case SrRepository::SR_TYPE_DETAIL:
+            case SrRepository::SR_TYPE_SINGLE:
                 $this->buildSrsForList($providers, $type);
                 $this->notFoundProviders = $this->prepareNotFoundProviders($providers);
                 break;

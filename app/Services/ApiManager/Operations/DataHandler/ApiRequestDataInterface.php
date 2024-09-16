@@ -4,6 +4,8 @@ namespace App\Services\ApiManager\Operations\DataHandler;
 
 use App\Http\Resources\ApiMongoDBSearchListResourceCollection;
 use App\Http\Resources\ApiSearchItemResource;
+use App\Models\Provider;
+use App\Models\Sr;
 use App\Models\User;
 use App\Repositories\SrRepository;
 use App\Services\ApiManager\Data\DataConstants;
@@ -18,10 +20,10 @@ class ApiRequestDataInterface
     private User $user;
 
     public function __construct(
-        private ApiRequestMongoDbHandler $apiRequestMongoDbHandler,
+        private ApiRequestMongoDbHandler   $apiRequestMongoDbHandler,
         private ApiRequestApiDirectHandler $apiRequestApiDirectHandler,
-        private ProviderService $providerService,
-        private SrService $srService
+        private ProviderService            $providerService,
+        private SrService                  $srService
     )
     {
     }
@@ -29,7 +31,7 @@ class ApiRequestDataInterface
     public function searchOperation(
         string $fetchType,
         string $serviceType,
-        array $providers,
+        array  $providers,
         string $serviceName,
         ?array $data = []
     )
@@ -49,15 +51,15 @@ class ApiRequestDataInterface
                 $compare = $this->apiRequestMongoDbHandler->compareResultsWithData(
                     $response
                 );
+                dd($compare);
                 if (!count($compare)) {
                     break;
                 }
-                $priority = $this->prioritySearchHandler(
+                $response = $this->prioritySearchHandler(
                     $compare,
                     $response,
                     $data
                 );
-                dd($priority);
                 break;
             case 'database':
                 $response = $this->apiRequestMongoDbHandler->searchOperation(
@@ -76,6 +78,7 @@ class ApiRequestDataInterface
             return false;
         }
         switch ($serviceType) {
+            case SrRepository::SR_TYPE_MIXED:
             case SrRepository::SR_TYPE_LIST:
                 return new ApiMongoDBSearchListResourceCollection($response);
             case SrRepository::SR_TYPE_DETAIL:
@@ -89,7 +92,7 @@ class ApiRequestDataInterface
     private function prioritySearchHandler(array $searchData, Collection|LengthAwarePaginator $results, ?array $data = []): Collection|LengthAwarePaginator
     {
         $this->apiRequestMongoDbHandler->setItemSearchData($searchData);
-
+        $collection = new Collection();
         foreach ($searchData as $searchItem) {
             if (empty($searchItem['ids']) || !is_array($searchItem['ids'])) {
                 continue;
@@ -102,46 +105,132 @@ class ApiRequestDataInterface
             if (!$provider) {
                 continue;
             }
-
-            $srSearchPriorityData = $this->providerService->getProviderPropertyValue(
-                $provider,
-                DataConstants::LIST_ITEM_SEARCH_PRIORITY
-            );
-            foreach ($srSearchPriorityData as $srSearchPriorityDatum) {
-                if (empty($srSearchPriorityDatum[EntityService::ENTITY_SR]) || !is_array($srSearchPriorityDatum[EntityService::ENTITY_SR]) || !count($srSearchPriorityDatum[EntityService::ENTITY_SR])) {
-                    continue;
-                }
-                foreach ($srSearchPriorityDatum[EntityService::ENTITY_SR] as $srSearchPriority) {
-                    if (empty($srSearchPriority['type'])) {
-                        continue;
-                    }
-
-                    switch ($srSearchPriority['type']) {
-                        case SrRepository::SR_TYPE_LIST:
-
-                            $sr = $this->srService->getServiceRequestRepository()->findById($srSearchPriority['id']);
-                            $response = $this->apiRequestApiDirectHandler->searchOperationBySr(
-                                $sr,
-                                $data
-                            );
-                            break;
-                        default:
-
-                            $response = $this->apiRequestMongoDbHandler->runListSearch(
-                                $srSearchPriority['type'],
-                                $srSearchPriority['providers'],
-                                $srSearchPriority['service_name']
-                            );
-                            $response = $this->apiRequestApiDirectHandler->searchOperation(
-                                $serviceType, $providers, $serviceName, $data
-                            );
-                            break;
-                    }
-                }
-                dd($srSearchPriorityData);
+            $response = $this->getProviderSomethingByItemIds($provider, $searchItem['ids']);
+            foreach ($response as $item) {
+                $collection->add($item);
             }
         }
-        dd($this->itemSearchData);
+        dd($collection);
+        return $results;
+    }
+
+    private function getProviderSomethingByItemIds(Provider $provider, array $ids): Collection
+    {
+        $collection = new Collection();
+        $srs = $this->buildSrsPriorityArray($provider);
+        foreach ($ids as $id) {
+            $response = $this->getProviderSomethingByItemId($srs, $id);
+            if ($response) {
+                $collection->add($response);
+            }
+        }
+
+        return $collection;
+    }
+
+    private function getProviderSomethingByItemId(array $srs, string|int $id): array|null
+    {
+        foreach ($srs as $sr) {
+            switch ($sr->type) {
+                case SrRepository::SR_TYPE_LIST:
+                    $response = $this->apiSearchBySr($sr, $id);
+                    if (!$response) {
+                        break;
+                    }
+                    return $response->first();
+                case SrRepository::SR_TYPE_DETAIL:
+                case SrRepository::SR_TYPE_SINGLE:
+                    $response = $this->apiRequestMongoDbHandler->runItemSearch(
+                        $sr->type,
+                        [
+                            [
+                                'provider_name' => $sr->provider->name,
+                                'item_id' => $id
+                            ]
+                        ],
+                    );
+                    if ($response) {
+                        return $response;
+                    }
+                    $response = $this->apiSearchBySr($sr, $id);
+
+                    if ($response) {
+                        return $response;
+                    }
+                    break;
+            }
+
+        }
+        return null;
+    }
+
+    private function apiSearchBySr(Sr $sr, string|int $id): Collection|array|null {
+        $response = $this->apiRequestApiDirectHandler->searchOperationBySr(
+            $sr,
+            ['item_id' => $id]
+        );
+        if (!$response) {
+            return null;
+        }
+        switch ($sr->type) {
+            case SrRepository::SR_TYPE_LIST:
+                if ($response->isEmpty()) {
+                    return null;
+                }
+                $item = $response->first();
+                $itemId = $this->apiRequestMongoDbHandler->findItemId($item);
+                if (!$itemId) {
+                    return null;
+                }
+                if ($itemId !== (int)$id) {
+                    return null;
+                }
+                return $response->first();
+            case SrRepository::SR_TYPE_DETAIL:
+            case SrRepository::SR_TYPE_SINGLE:
+                $itemId = $this->apiRequestMongoDbHandler->findItemId($response);
+                if (!$itemId) {
+                    return null;
+                }
+                if ($itemId !== (int)$id) {
+                    return null;
+                }
+                return $response;
+            default:
+                return null;
+        }
+    }
+
+    private function buildSrsPriorityArray(Provider $provider)
+    {
+
+        $srSearchPriorityData = $this->providerService->getProviderPropertyValue(
+            $provider,
+            DataConstants::LIST_ITEM_SEARCH_PRIORITY
+        );
+        $filtered = array_filter($srSearchPriorityData, function ($srSearchPriorityDatum) {
+            if (
+                empty($srSearchPriorityDatum[EntityService::ENTITY_SR]) ||
+                !is_array($srSearchPriorityDatum[EntityService::ENTITY_SR]) ||
+                !count($srSearchPriorityDatum[EntityService::ENTITY_SR])
+            ) {
+                return false;
+            }
+            $filtered = array_filter($srSearchPriorityDatum[EntityService::ENTITY_SR], function ($srSearchPriority) {
+                return !empty($srSearchPriority['type']) && !empty($srSearchPriority['id']);
+            });
+            return count($filtered);
+        }, ARRAY_FILTER_USE_BOTH);
+        return array_map(function ($srSearchPriorityDatum) {
+            $filtered = array_filter($srSearchPriorityDatum[EntityService::ENTITY_SR], function ($srSearchPriority) {
+                return !empty($srSearchPriority['type']) && !empty($srSearchPriority['id']);
+            });
+            $firstSr = $this->srService->getServiceRequestRepository()->findById($filtered[array_key_first($filtered)]['id']);
+            if (!$firstSr) {
+                return false;
+            }
+            return $firstSr;
+        }, $filtered);
     }
 
     public function setUser(User $user): void
