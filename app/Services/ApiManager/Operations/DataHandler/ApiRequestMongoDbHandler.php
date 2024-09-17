@@ -96,7 +96,7 @@ class ApiRequestMongoDbHandler extends ApiRequestDataHandler
     }
     public function compareResultsWithData(Collection|LengthAwarePaginator $results): array
     {
-        return array_map(function ($searchItem) use ($results) {
+        $mapMissingIds = array_map(function ($searchItem) use ($results) {
             $filterByProvider = $results->where('provider', $searchItem['provider_name']);
             $itemIds = array_map(function ($item) {
                 return $this->findItemId($item);
@@ -115,6 +115,9 @@ class ApiRequestMongoDbHandler extends ApiRequestDataHandler
             }
             return $searchItem;
         }, $this->itemSearchData);
+        return array_filter($mapMissingIds, function ($item) {
+            return !empty($item['ids']);
+        });
     }
 
     public function searchOperation(string $type, array $providers, string $serviceName, ?array $data = [])
@@ -169,5 +172,6 @@ class ApiRequestMongoDbHandler extends ApiRequestDataHandler
     {
         return $this->apiRequestSearchService;
     }
+
 
 }

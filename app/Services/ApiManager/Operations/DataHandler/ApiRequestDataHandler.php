@@ -350,4 +350,9 @@ class ApiRequestDataHandler
         $this->itemSearchData = $itemSearchData;
     }
 
+    public function getItemSearchData(): array
+    {
+        return $this->itemSearchData;
+    }
+
 }

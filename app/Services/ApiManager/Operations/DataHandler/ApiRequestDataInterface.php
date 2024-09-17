@@ -51,7 +51,7 @@ class ApiRequestDataInterface
                 $compare = $this->apiRequestMongoDbHandler->compareResultsWithData(
                     $response
                 );
-                dd($compare);
+
                 if (!count($compare)) {
                     break;
                 }
@@ -74,6 +74,7 @@ class ApiRequestDataInterface
             default:
                 return false;
         }
+
         if (!$response) {
             return false;
         }
@@ -92,7 +93,6 @@ class ApiRequestDataInterface
     private function prioritySearchHandler(array $searchData, Collection|LengthAwarePaginator $results, ?array $data = []): Collection|LengthAwarePaginator
     {
         $this->apiRequestMongoDbHandler->setItemSearchData($searchData);
-        $collection = new Collection();
         foreach ($searchData as $searchItem) {
             if (empty($searchItem['ids']) || !is_array($searchItem['ids'])) {
                 continue;
@@ -107,10 +107,9 @@ class ApiRequestDataInterface
             }
             $response = $this->getProviderSomethingByItemIds($provider, $searchItem['ids']);
             foreach ($response as $item) {
-                $collection->add($item);
+                $results->add($item);
             }
         }
-        dd($collection);
         return $results;
     }
 
