@@ -7,7 +7,7 @@ use App\Models\User;
 use App\Services\Auth\AuthService;
 use App\Services\Permission\PermissionService;
 
-class SPolicy
+class CategoryPolicy
 {
     public function before(User $user, string $ability): bool|null
     {

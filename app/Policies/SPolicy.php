@@ -6,7 +6,6 @@ use App\Models\S;
 use App\Models\User;
 use App\Services\Auth\AuthService;
 use App\Services\Permission\PermissionService;
-use Illuminate\Auth\Access\Response;
 
 class SPolicy
 {
