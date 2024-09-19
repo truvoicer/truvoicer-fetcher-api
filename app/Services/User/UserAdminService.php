@@ -79,9 +79,11 @@ class UserAdminService extends BaseService
     }
     public function createUserToken(User $user, ?string $expiry = self::DEFAULT_TOKEN_EXPIRY)
     {
-        $roles = $user->roles()->get();
-        $roles = $roles->sort(function ($a, $b) {
-            $availableRoles = AuthService::DEFAULT_ROLES;
+        $availableRoles = AuthService::DEFAULT_ROLES;
+        $roles = $user->roles()
+            ->whereIn('name', array_column($availableRoles, 'name'))
+            ->get();
+        $roles = $roles->sort(function ($a, $b) use ($availableRoles) {
             $aRole = array_search($a->name, array_column($availableRoles, 'name'));
             $bRole = array_search($b->name, array_column($availableRoles, 'name'));
             if ($aRole === $bRole) {
@@ -89,6 +91,7 @@ class UserAdminService extends BaseService
             }
             return ($aRole < $bRole) ? -1 : 1;
         });
+
         $role = $roles->first();
         if (!$role instanceof Role) {
             return false;
