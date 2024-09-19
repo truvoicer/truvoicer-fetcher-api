@@ -264,6 +264,24 @@ class SrOperationsService
                     continue;
                 }
 
+                Log::channel(self::LOGGING_NAME)->info(
+                    sprintf(
+                        'runResponseKeySrItem: %s for service request: %s, provider: %s',
+                        $requestItem['action'],
+                        $sr->label,
+                        $provider->label,
+                    ),
+                    [
+                        'data' => $nested['data'],
+                        'request_item' => $requestItem,
+                        'parent_sr' => $parentSr->label,
+                        'buildNestedSrResponseKeyData' => $this->buildNestedSrResponseKeyData(
+                            $this->getRequestResponseKeyNames($requestItem),
+                            $nested['data'],
+                            $data
+                        )
+                    ]
+                );
                 $this->runOperationForSr(
                     $sr,
                     $requestItem['action'],
@@ -487,7 +505,8 @@ class SrOperationsService
         return $this->processByType($sr, $action, $queryData, $apiResponse);
     }
 
-    public function processByType(Sr $sr, string $action, array $queryData, ApiResponse $apiResponse) {
+    public function processByType(Sr $sr, string $action, array $queryData, ApiResponse $apiResponse)
+    {
 
         return match ($sr->type) {
             SrRepository::SR_TYPE_DETAIL, SrRepository::SR_TYPE_SINGLE => $this->processSingleSrData($sr, $action, $queryData, $apiResponse),
