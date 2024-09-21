@@ -207,15 +207,19 @@ class SrService extends BaseService
         }
         return $flatSrs;
     }
-    public function duplicateServiceRequest(Sr $serviceRequest, array $data)
+    public function duplicateServiceRequest(Sr $serviceRequest, string $label, bool $includeChildSrs, ?string $name = null, ?int $parentSrid = null)
     {
-        if (empty($data["label"])) {
+        $parentSr = null;
+        if ($parentSrid) {
+            $parentSr = $this->serviceRequestRepository->findById($parentSrid);
+        }
+        if (empty($label)) {
             throw new BadRequestHttpException("Service request label is not set.");
         }
-        if (empty($data["name"])) {
-            $data['name'] = UtilHelpers::labelToName($data['label'], false, '-');
+        if (empty($name)) {
+            $name = UtilHelpers::labelToName($label, false, '-');
         }
-        return $this->serviceRequestRepository->duplicateServiceRequest($serviceRequest, $data);
+        return $this->serviceRequestRepository->duplicateServiceRequest($serviceRequest, $label, $name, $includeChildSrs, $parentSr);
     }
 
     public function mergeRequestResponseKeys(array $data)

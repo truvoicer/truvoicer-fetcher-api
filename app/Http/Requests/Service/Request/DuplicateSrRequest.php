@@ -36,6 +36,7 @@ class DuplicateSrRequest extends FormRequest
                 Rule::exists(Sr::class, 'id'),
             ],
             'label' => 'required|string',
+            'include_child_srs' => 'sometimes|boolean',
         ];
     }
 }

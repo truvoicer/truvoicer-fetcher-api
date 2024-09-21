@@ -252,7 +252,7 @@ class ServiceRequestController extends Controller
         ) {
             return $this->sendErrorResponse("Access denied");
         }
-        $create = $this->srService->createServiceRequest($provider, $request->all());
+        $create = $this->srService->createServiceRequest($provider, $request->validated());
         if (!$create) {
             return $this->sendErrorResponse("Error inserting service request");
         }
@@ -288,7 +288,7 @@ class ServiceRequestController extends Controller
         ) {
             return $this->sendErrorResponse("Access denied");
         }
-        $create = $this->srService->createChildSr($provider, $serviceRequest, $request->all());
+        $create = $this->srService->createChildSr($provider, $serviceRequest, $request->validated());
         if (!$create) {
             return $this->sendErrorResponse("Error inserting service request");
         }
@@ -351,7 +351,7 @@ class ServiceRequestController extends Controller
             return $this->sendErrorResponse("Access denied");
         }
 
-        $update = $this->srService->updateServiceRequest($serviceRequest, $request->all());
+        $update = $this->srService->updateServiceRequest($serviceRequest, $request->validated());
 
         if (!$update) {
             return $this->sendErrorResponse("Error updating service request");
@@ -427,7 +427,7 @@ class ServiceRequestController extends Controller
         ) {
             return $this->sendErrorResponse("Access denied");
         }
-        $update = $this->srService->updateServiceRequest($childSr, $request->all());
+        $update = $this->srService->updateServiceRequest($childSr, $request->validated());
 
         if (!$update) {
             return $this->sendErrorResponse("Error updating child service request");
@@ -533,7 +533,10 @@ class ServiceRequestController extends Controller
         }
         $update = $this->srService->duplicateServiceRequest(
             $serviceRequest,
-            $this->httpRequestService->getRequestData($request, true)
+            $request->validated('label'),
+            $request->validated('include_child_srs', true),
+            null,
+            $request->validated('parent_sr')
         );
 
         if (!$update) {
@@ -551,7 +554,7 @@ class ServiceRequestController extends Controller
         Provider $provider,
         Sr       $serviceRequest,
         Sr       $childSr,
-        Request  $request
+        DuplicateSrRequest  $request
     ): \Illuminate\Http\JsonResponse
     {
         $this->setAccessControlUser($request->user());
@@ -569,9 +572,11 @@ class ServiceRequestController extends Controller
         }
         $update = $this->srService->duplicateServiceRequest(
             $childSr,
-            $this->httpRequestService->getRequestData($request, true)
+            $request->validated('label'),
+            $request->validated('include_child_srs', true),
+            null,
+            $request->validated('parent_sr')
         );
-
         if (!$update) {
             return $this->sendErrorResponse("Error duplicating service request");
         }
@@ -729,7 +734,15 @@ class ServiceRequestController extends Controller
         return $this->sendSuccessResponse(
             "success",
             new ServiceRequestResource(
-                $serviceRequest->with(['category', 's'])->where('id', $serviceRequest->id)->first()
+                $serviceRequest->with([
+                    'category',
+                    's',
+                    'srChildSr' => function ($query) {
+                        $query->with(['parentSr' => function ($query) {
+                            $query->without(['childSrs']);
+                        }]);
+                    }
+                ])->where('id', $serviceRequest->id)->first()
             )
         );
     }

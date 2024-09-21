@@ -91,13 +91,13 @@ class Sr extends Model
             ->using(SrResponseKeySr::class);
     }
 
-    public function parentSr()
+    public function srChildSr()
     {
-        return $this->hasMany(
+        return $this->hasOne(
             SrChildSr::class,
-            'sr_id',
+            'sr_child_id',
             'id'
-        );
+        )->with('parentSr');
     }
     public function parentSrs()
     {

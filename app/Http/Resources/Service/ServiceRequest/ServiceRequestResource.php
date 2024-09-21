@@ -17,8 +17,8 @@ class ServiceRequestResource extends JsonResource
     {
         $data = parent::toArray($request);
         $data['provider'] = new ProviderMinimalResource($this->provider);
-        $data['pivot'] = $this->pivot;
         $data['hasChildren'] = $this->childSrs->count() > 0;
+        $data['srChildSr'] = $this->whenLoaded('srChildSr');
         return $data;
     }
 }

@@ -17,6 +17,7 @@ use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 class SrRepository extends BaseRepository
 {
     private ProviderRepository $providerRepository;
+    private SrChildSrRepository $srChildSrRepository;
 
     public const SR_TYPE_LIST = 'list';
     public const SR_TYPE_SINGLE = 'single';
@@ -32,6 +33,7 @@ class SrRepository extends BaseRepository
     {
         parent::__construct(Sr::class);
         $this->providerRepository = new ProviderRepository();
+        $this->srChildSrRepository = new SrChildSrRepository();
     }
 
 
@@ -44,7 +46,9 @@ class SrRepository extends BaseRepository
     {
         return $this->findByLabelOrName($query);
     }
-    public function findSrsWithSchedule(Provider $provider) {
+
+    public function findSrsWithSchedule(Provider $provider)
+    {
         return $this->getResults(
             $provider->sr()
                 ->whereHas('srSchedule')
@@ -87,7 +91,9 @@ class SrRepository extends BaseRepository
                 })
         );
     }
-    public function getServiceRequestByProvider(Provider $provider) {
+
+    public function getServiceRequestByProvider(Provider $provider)
+    {
         return $this->getResults(
             $provider->serviceRequest()
                 ->orderBy($this->getSortField(), $this->getOrderDir())
@@ -95,7 +101,9 @@ class SrRepository extends BaseRepository
                 ->without(['childSrs'])
         );
     }
-    public function getChildSrs(Sr $sr, string $sort, string $order, ?int $count = null) {
+
+    public function getChildSrs(Sr $sr, string $sort, string $order, ?int $count = null)
+    {
         return $this->getResults(
             $sr->childSrs()
                 ->orderBy($sort, $order)
@@ -104,7 +112,8 @@ class SrRepository extends BaseRepository
         );
     }
 
-    public static function getSrByName(Provider $provider, string $serviceRequestName) {
+    public static function getSrByName(Provider $provider, string $serviceRequestName)
+    {
         return $provider->serviceRequest()
             ->where('name', $serviceRequestName)
             ->first();
@@ -153,7 +162,9 @@ class SrRepository extends BaseRepository
         }
         return $saveData;
     }
-    public function createServiceRequest(Provider $provider, array $data) {
+
+    public function createServiceRequest(Provider $provider, array $data)
+    {
         if (
             !UtilHelpers::isArrayItemNumeric('service', $data) &&
             !(!empty($data['service']) && !$data['service'] instanceof S)
@@ -168,7 +179,8 @@ class SrRepository extends BaseRepository
         return $this->saveAssociations($create, $data);
     }
 
-    public function saveAssociations(Sr $serviceRequest, array $data) {
+    public function saveAssociations(Sr $serviceRequest, array $data)
+    {
         if (
             UtilHelpers::isArrayItemNumeric('service', $data) &&
             !$this->associateServiceById($serviceRequest, $data['service'])
@@ -184,21 +196,26 @@ class SrRepository extends BaseRepository
         return true;
     }
 
-    public function associateServiceById(Sr $serviceRequest, int $serviceId) {
+    public function associateServiceById(Sr $serviceRequest, int $serviceId)
+    {
         $service = (new SRepository())->findById($serviceId);
         if (!$service instanceof S) {
             return false;
         }
         return $serviceRequest->s()->associate($service)->save();
     }
-    public function associateCategoryById(Sr $serviceRequest, int $categoryId) {
+
+    public function associateCategoryById(Sr $serviceRequest, int $categoryId)
+    {
         $category = (new CategoryRepository())->findById($categoryId);
         if (!$category instanceof Category) {
             return false;
         }
         return $serviceRequest->category()->associate($categoryId)->save();
     }
-    public function saveServiceRequest(Sr $serviceRequest, array $data) {
+
+    public function saveServiceRequest(Sr $serviceRequest, array $data)
+    {
         $this->setModel($serviceRequest);
         if (!$this->save($this->buildSaveData($data))) {
             return false;
@@ -206,7 +223,8 @@ class SrRepository extends BaseRepository
         return $this->saveAssociations($this->getModel(), $data);
     }
 
-    public function saveChildSrOverrides(Sr $serviceRequest, array $data) {
+    public function saveChildSrOverrides(Sr $serviceRequest, array $data)
+    {
         $this->setModel($serviceRequest);
 //        $parentSr = $serviceRequest->parentSrs()->first();
 //
@@ -215,12 +233,13 @@ class SrRepository extends BaseRepository
 //        }
         return $this->getModel()->pivot->update($data);
     }
-    public function duplicateServiceRequest(Sr $serviceRequest, array $data)
+
+    public function duplicateServiceRequest(Sr $serviceRequest, string $label, string $name, bool $includeChildSrs, ?Sr $parentSr = null)
     {
         $this->setModel($serviceRequest->replicate());
         $clone = $this->getModel();
-        $clone->name = $data['name'];
-        $clone->label = $data['label'];
+        $clone->name = $name;
+        $clone->label = $label;
         if (!$clone->save()) {
             return false;
         }
@@ -231,22 +250,67 @@ class SrRepository extends BaseRepository
         ];
         $this->saveAssociations($clone, $assoc);
 
-        $serviceRequest->srResponseKey()->get()->each(function ($item) use ($clone) {
-            $newItem = $item->replicate();
-            $clone->srResponseKey()->save($newItem);
+        $findParentSr = $serviceRequest->parentSrs()->get();
+
+        if (!$parentSr instanceof Sr) {
+            $serviceRequest->srResponseKey()->get()->each(function ($item) use ($clone) {
+                $newItem = $item->replicate();
+                $clone->srResponseKey()->save($newItem);
+            });
+            $serviceRequest->srConfig()->get()->each(function ($item) use ($clone) {
+                $newItem = $item->replicate();
+                $clone->srConfig()->save($newItem);
+            });
+            $serviceRequest->srParameter()->get()->each(function ($item) use ($clone) {
+                $newItem = $item->replicate();
+                $clone->srParameter()->save($newItem);
+            });
+        }
+        $findParentSr->each(function ($item) use ($clone) {
+            $item->childSrs()->save($clone);
         });
-        $serviceRequest->srConfig()->get()->each(function ($item) use ($clone) {
-            $newItem = $item->replicate();
-            $clone->srConfig()->save($newItem);
-        });
-        $serviceRequest->srParameter()->get()->each(function ($item) use ($clone) {
-            $newItem = $item->replicate();
-            $clone->srParameter()->save($newItem);
-        });
-        $serviceRequest->childSrs()->get()->each(function ($item) use ($clone) {
-            $newItem = $item->replicate();
-            $clone->childSrs()->save($newItem);
-        });
+        if ($includeChildSrs) {
+            $serviceRequest->childSrs()->get()->each(function ($item) use ($clone) {
+                $newItem = $item->replicate();
+                $clone->childSrs()->save($newItem);
+            });
+        }
+        if ($parentSr instanceof Sr) {
+            $parentSr->childSrs()->save($clone);
+        }
         return true;
     }
+    private function deleteSingleChildSr(Sr $sr) {
+        $childSrs = $sr->childSrs()->get();
+        if ($childSrs->count() > 0) {
+            $this->deleteChildSrs($childSrs);
+        }
+        $sr->srChildSr()->delete();
+        return $sr->delete();
+    }
+    private function deleteChildSrs(Collection $srs)
+    {
+        $srs->each(function (Sr $sr) {
+            $this->deleteSingleChildSr($sr);
+        });
+    }
+    public function deleteBatch(array $ids)
+    {
+        $ids = array_map('intval', $ids);
+        $this->addWhere('id', $ids, 'IN');
+
+        $this->deleteChildSrs($this->findMany());
+        return true;
+    }
+
+    public function delete()
+    {
+        if (!$this->deleteSingleChildSr($this->model)) {
+            $this->addError('repository_delete_error', 'Error deleting listing');
+            return false;
+        }
+        return true;
+    }
+
+
 }

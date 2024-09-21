@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Service\Request;
 
+use App\Models\Sr;
 use App\Repositories\SrRepository;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -41,6 +42,11 @@ class CreateSrRequest extends FormRequest
             ],
             'query_parameters' => 'array|nullable',
             'default_data' => 'array|nullable',
+            'parent_sr' => [
+                'sometimes',
+                'integer',
+                Rule::exists(Sr::class, 'id'),
+            ],
         ];
     }
 }
