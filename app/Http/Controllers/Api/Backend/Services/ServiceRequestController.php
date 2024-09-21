@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Service\Request\CreateChildSrRequest;
 use App\Http\Requests\Service\Request\CreateSrRequest;
 use App\Http\Requests\Service\Request\DeleteBatchSrRequest;
+use App\Http\Requests\Service\Request\DuplicateSrRequest;
 use App\Http\Requests\Service\Request\OverrideChildSrRequest;
 use App\Http\Requests\Service\Request\UpdateServiceRequest;
 use App\Http\Requests\Service\Request\UpdateSrDefaultsRequest;
@@ -514,7 +515,7 @@ class ServiceRequestController extends Controller
     public function duplicateServiceRequest(
         Provider $provider,
         Sr       $serviceRequest,
-        Request  $request
+        DuplicateSrRequest  $request
     ): \Illuminate\Http\JsonResponse
     {
         $this->setAccessControlUser($request->user());
