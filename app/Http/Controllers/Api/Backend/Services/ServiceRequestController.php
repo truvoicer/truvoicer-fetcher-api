@@ -402,43 +402,6 @@ class ServiceRequestController extends Controller
         );
     }
 
-    /**
-     * Update an api service request based on request POST data
-     * Returns json success message and api service request data on successful update
-     * Returns error response and message on fail
-     *
-     */
-    public function updateChildServiceRequest(
-        Provider        $provider,
-        Sr              $serviceRequest,
-        Sr              $childSr,
-        UpdateSrRequest $request
-    ): \Illuminate\Http\JsonResponse
-    {
-        $this->setAccessControlUser($request->user());
-        if (
-            !$this->accessControlService->checkPermissionsForEntity(
-                $provider,
-                [
-                    PermissionService::PERMISSION_ADMIN,
-                    PermissionService::PERMISSION_UPDATE,
-                ],
-            )
-        ) {
-            return $this->sendErrorResponse("Access denied");
-        }
-        $update = $this->srService->updateServiceRequest($childSr, $request->validated());
-
-        if (!$update) {
-            return $this->sendErrorResponse("Error updating child service request");
-        }
-        return $this->sendSuccessResponse(
-            "Child service request updated",
-            new  ServiceRequestResource(
-                $this->srService->getServiceRequestRepository()->getModel()
-            )
-        );
-    }
     public function runSrRequest(
         Provider        $provider,
         Sr              $serviceRequest,
@@ -650,35 +613,6 @@ class ServiceRequestController extends Controller
         );
     }
 
-    public function deleteChildServiceRequest(
-        Provider $provider,
-        Sr       $serviceRequest,
-        Sr       $childSr,
-        Request  $request
-    ): \Illuminate\Http\JsonResponse
-    {
-        $this->setAccessControlUser($request->user());
-        if (
-            !$this->accessControlService->checkPermissionsForEntity(
-                $provider,
-                [
-                    PermissionService::PERMISSION_ADMIN,
-                    PermissionService::PERMISSION_DELETE,
-                ],
-            )
-        ) {
-            return $this->sendErrorResponse("Access denied");
-        }
-        if (!$this->srService->deleteServiceRequest($childSr)) {
-            return $this->sendErrorResponse(
-                "Error deleting child service request",
-            );
-        }
-        return $this->sendSuccessResponse(
-            "Child service request deleted.",
-        );
-    }
-
     public function deleteBatchServiceRequest(
         Provider             $provider,
         DeleteBatchSrRequest $request
@@ -747,30 +681,4 @@ class ServiceRequestController extends Controller
         );
     }
 
-    public function getChildServiceRequest(
-        Provider $provider,
-        Sr       $serviceRequest,
-        Sr       $childSr,
-        Request  $request
-    ): \Illuminate\Http\JsonResponse
-    {
-        $this->setAccessControlUser($request->user());
-        if (
-            !$this->accessControlService->checkPermissionsForEntity(
-                $provider,
-                [
-                    PermissionService::PERMISSION_ADMIN,
-                    PermissionService::PERMISSION_READ,
-                ],
-            )
-        ) {
-            return $this->sendErrorResponse("Access denied");
-        }
-        return $this->sendSuccessResponse(
-            "success",
-            new ServiceRequestResource(
-                $childSr
-            )
-        );
-    }
 }

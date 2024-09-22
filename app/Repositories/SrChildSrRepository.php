@@ -2,12 +2,8 @@
 
 namespace App\Repositories;
 
-use App\Models\Provider;
 use App\Models\Sr;
 use App\Models\SrChildSr;
-use App\Models\SrResponseKey;
-use App\Models\SrResponseKeySr;
-use App\Models\SResponseKey;
 
 class SrChildSrRepository extends BaseRepository
 {
@@ -32,6 +28,14 @@ class SrChildSrRepository extends BaseRepository
         $parentSr->childSrs()->attach($childSr->id);
         return true;
     }
+    public function saveParentChildSrById(int $parentSrId,  Sr $childSr) {
+        $srRepository = new SrRepository();
+        $parentSr = $srRepository->findById($parentSrId);
+        if (!$parentSr instanceof Sr) {
+            return false;
+        }
+        return $this->saveParentChildSr($parentSr, $childSr);
+    }
     public function saveParentChildSr(Sr $parentSr,  Sr $childSr)
     {
         if (!$parentSr->exists) {
@@ -40,6 +44,9 @@ class SrChildSrRepository extends BaseRepository
         if (!$childSr->exists) {
             return false;
         }
+        $childSr->parentSrs()->get()->each(function ($parentSr) use ($childSr) {
+            $parentSr->childSrs()->detach($childSr->id);
+        });
         $parentSr->childSrs()->attach($childSr->id);
         return true;
     }

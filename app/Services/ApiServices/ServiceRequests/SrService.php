@@ -129,7 +129,19 @@ class SrService extends BaseService
             }
         }
         $saveServiceRequest = $this->serviceRequestRepository->createServiceRequest($provider, $data);
-        if ($saveServiceRequest && $validateConfig) {
+        if (!$saveServiceRequest) {
+            return false;
+        }
+        if(
+            !empty($data['parent_sr']) &&
+            !$this->srChildSrRepository->saveParentChildSrById(
+                (int)$data['parent_sr'],
+                $this->serviceRequestRepository->getModel()
+            )
+        ) {
+            return false;
+        }
+        if ($validateConfig) {
             $requestConfigService = App::make(SrConfigService::class);
             $requestConfigService->requestConfigValidator($this->serviceRequestRepository->getModel());
         }
@@ -146,14 +158,14 @@ class SrService extends BaseService
         if (!$saveServiceRequest) {
             return false;
         }
-        $childSr = $this->serviceRequestRepository->getModel();
-        if (!$childSr instanceof Sr) {
-            return false;
+        if (empty($data['parent_sr'])) {
+            $childSr = $this->serviceRequestRepository->getModel();
+            return $this->srChildSrRepository->saveParentChildSr(
+                $sr,
+                $childSr
+            );
         }
-        return $this->srChildSrRepository->saveParentChildSr(
-            $sr,
-            $childSr
-        );
+        return true;
     }
 
     public function updateSrDefaults(Sr $serviceRequest, array $data)
@@ -182,7 +194,19 @@ class SrService extends BaseService
                 }
             }
         }
-        return $this->serviceRequestRepository->saveServiceRequest($serviceRequest, $data);
+        if (!$this->serviceRequestRepository->saveServiceRequest($serviceRequest, $data)) {
+            return false;
+        }
+        if (
+            !empty($data['parent_sr']) &&
+            !$this->srChildSrRepository->saveParentChildSrById(
+                (int)$data['parent_sr'],
+                $this->serviceRequestRepository->getModel()
+            )
+        ) {
+            return false;
+        }
+        return true;
     }
 
     public function overrideChildSr(Sr $serviceRequest, array $data)
