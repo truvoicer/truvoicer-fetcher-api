@@ -131,6 +131,15 @@ class ApiRequestSearchService
         $reservedKeys = array_column(DataConstants::SERVICE_RESPONSE_KEYS, SResponseKeysService::RESPONSE_KEY_NAME);
         $reservedKeys = array_merge($reservedKeys, self::RESERVED_SEARCH_RESPONSE_KEYS);
         $sort = [];
+        $orderByData = [];
+        if (!empty($queryData['sort_by'])) {
+            $orderByData['sort_by'] = $queryData['sort_by'];
+            unset($queryData['sort_by']);
+        }
+        if (!empty($queryData['sort_order'])) {
+            $orderByData['sort_order'] = $queryData['sort_order'];
+            unset($queryData['sort_order']);
+        }
         foreach ($this->providers as $provider) {
             $whereGroup = [];
             $srs = $this->srService->flattenSrCollection($this->type, $provider->sr);
@@ -148,7 +157,7 @@ class ApiRequestSearchService
 //                    'serviceRequest.name',
 //                    $sr->name,
 //                );
-                list($orderBy, $sortOrder) = $this->getOrderBy($sr, $queryData);
+                list($orderBy, $sortOrder) = $this->getOrderBy($sr, $orderByData);
                 if (!empty($orderBy) && in_array($sortOrder, $this->mongoDBRepository::AVAILABLE_ORDER_DIRECTIONS)) {
                     $sort[] = [$orderBy, $sortOrder];
                 }
@@ -162,14 +171,19 @@ class ApiRequestSearchService
                         'OR'
                     );
                 }
-
+                $excludeKeys = [
+                    'sort_by',
+                    'sort_order',
+                    'page_size',
+                    'page_number',
+                    ...array_map(fn ($val) => $val[SResponseKeysService::RESPONSE_KEY_NAME],
+                        array_merge(array_values(Arr::collapse(DataConstants::S_RESPONSE_KEY_GROUPS)))
+                    )
+                ];
                 $srResponseKeys = $this->srResponseKeyService->findResponseKeysForOperationBySr(
                     $sr,
-                    array_map(fn ($val) => $val[SResponseKeysService::RESPONSE_KEY_NAME],
-                        array_values(Arr::collapse(DataConstants::S_RESPONSE_KEY_GROUPS))
-                    )
+                    $excludeKeys
                 );
-
                 foreach ($queryData as $key => $queryItem) {
                     foreach ($srResponseKeys as $srResponseKey) {
                         if (in_array($srResponseKey->name, $reservedKeys)) {
@@ -197,9 +211,11 @@ class ApiRequestSearchService
                         }
                     }
                 }
-                $whereGroup[] = $this->mongoDBRepository->buildSubWhereGroup(
-                    $responseKeyWhereGroup,
-                );
+                if (count($responseKeyWhereGroup)) {
+                    $whereGroup[] = $this->mongoDBRepository->buildSubWhereGroup(
+                        $responseKeyWhereGroup,
+                    );
+                }
                 $this->mongoDBRepository->addWhereGroup($whereGroup, 'OR');
             }
         }
