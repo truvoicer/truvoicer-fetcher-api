@@ -31,4 +31,8 @@ return [
         'region' => env('AWS_DEFAULT_REGION', 'us-east-1'),
     ],
 
+    'scheduler' => [
+        'schedule_user_email' => env('SCHEDULE_USER_EMAIL'),
+    ],
+
 ];

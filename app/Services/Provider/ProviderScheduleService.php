@@ -6,6 +6,7 @@ use App\Models\Sr;
 use App\Models\SrSchedule;
 use App\Services\ApiServices\ServiceRequests\SrScheduleService;
 use App\Services\ApiServices\ServiceRequests\SrService;
+use App\Traits\User\UserTrait;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Carbon;
@@ -13,6 +14,8 @@ use Illuminate\Support\Facades\Log;
 
 class ProviderScheduleService
 {
+    use UserTrait;
+
     const SCHEDULE_EVERY_MINUTE = 'every_minute';
     const SCHEDULE_EVERY_HOUR = 'every_hour';
     const SCHEDULE_EVERY_DAY = 'every_day';
@@ -57,6 +60,20 @@ class ProviderScheduleService
 
     public function run(): void
     {
+        $scheduleUserEmail = config('services.scheduler.schedule_user_email');
+        if (empty($scheduleUserEmail)) {
+            Log::log('info', 'No schedule user email found');
+            return;
+        }
+        $this->providerService->getUserRepository()->addWhere('email', $scheduleUserEmail);
+        $findUser = $this->providerService->getUserRepository()->findOne();
+        if (!$findUser) {
+            Log::log('info', 'No schedule user found');
+            return;
+        }
+
+        $this->setUser($findUser);
+
         $providers = $this->providerService->getProviderRepository()->findAll();
         foreach ($providers as $provider) {
             $srs = $this->srService->getServiceRequestRepository()->findSrsWithSchedule($provider);
@@ -170,7 +187,7 @@ class ProviderScheduleService
     {
         return $this->schedule->call(
             function () use ($sr, $schedule, $method) {
-                $this->providerEventsService->dispatchSrScheduleOperationEvent($sr, $schedule, $method);
+                $this->providerEventsService->dispatchSrScheduleOperationEvent($this->user, $sr, $schedule, $method);
             },
         );
     }

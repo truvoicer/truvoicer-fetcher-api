@@ -67,6 +67,7 @@ class ProviderEventService
         );
     }
     public function dispatchSrScheduleOperationEvent(
+        User $user,
         Sr     $sr,
         SrSchedule $srSchedule,
         string $method,
