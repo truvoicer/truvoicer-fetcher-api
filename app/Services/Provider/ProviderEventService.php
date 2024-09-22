@@ -74,15 +74,7 @@ class ProviderEventService
         ?array $queryData = SrOperationsService::DEFAULT_QUERY_DATA,
     )
     {
-        Log::info(
-            sprintf(
-                'Dispatching SrOperationEvent for Sr %s | method: %s',
-                $sr->label,
-                $method
-            ),
-            $srSchedule->toArray()
-        );
-        return RunSrOperationEvent::dispatch($sr->id, $queryData);
+        return RunSrOperationEvent::dispatch($user->id, $sr->id, $queryData);
     }
 
 }
