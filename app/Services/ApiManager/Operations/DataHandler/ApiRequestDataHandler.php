@@ -23,6 +23,16 @@ class ApiRequestDataHandler
 {
     use UserTrait;
 
+    public const RESERVED_REQUEST_KEYS = [
+        'provider',
+        'date_key',
+        'service',
+        'api_fetch_type',
+        'item_id',
+        'page_number',
+        'page_size',
+    ];
+
     protected array $notFoundProviders;
     protected array $itemSearchData;
 

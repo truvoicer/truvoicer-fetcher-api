@@ -213,4 +213,9 @@ class DataConstants
             self::RESPONSE_KEY_NAME => "item_repeater_key"
         ],
     ];
+
+    public const S_RESPONSE_KEY_GROUPS = [
+        self::SERVICE_RESPONSE_KEYS,
+        self::XML_SERVICE_RESPONSE_KEYS
+    ];
 }

@@ -694,6 +694,6 @@ class ResponseHandler extends ApiBase
 
     public function setResponseKeysArray(): void
     {
-        $this->responseKeysArray = $this->srResponseKeyService->findConfigForOperationBySr($this->apiService);
+        $this->responseKeysArray = $this->srResponseKeyService->findResponseKeysForOperationBySr($this->apiService);
     }
 }

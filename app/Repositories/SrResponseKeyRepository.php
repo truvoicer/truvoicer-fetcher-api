@@ -96,13 +96,17 @@ class SrResponseKeyRepository extends BaseRepository
         return $this->save($data);
     }
 
-    public function findSrResponseKeysWithRelation(Sr $serviceRequest): LengthAwarePaginator|Collection
+    public function findSrResponseKeysWithRelation(Sr $serviceRequest, ?array $excludeKeys = []): LengthAwarePaginator|Collection
     {
         $service = $serviceRequest->s()->first()->sResponseKey();
+        $service->with(['srResponseKey' => function ($query) use ($serviceRequest) {
+            $query->where('sr_id', '=', $serviceRequest->id);
+        }]);
+        if (!empty($excludeKeys)) {
+            $service->whereNotIn('name', $excludeKeys);
+        }
         return $this->getResults(
-            $service->with(['srResponseKey' => function ($query) use ($serviceRequest) {
-                $query->where('sr_id', '=', $serviceRequest->id);
-            }])
+            $service
         );
     }
 

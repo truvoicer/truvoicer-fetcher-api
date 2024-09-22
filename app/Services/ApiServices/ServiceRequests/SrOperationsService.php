@@ -30,7 +30,7 @@ class SrOperationsService
     const LOGGING_NAME = 'SrMongoOperations';
     const LOGGING_PATH = 'logs/sr_mongo_operations/log.log';
 
-    const REQUIRED_FIELDS = [
+    public const REQUIRED_FIELDS = [
         'item_id',
         'contentType',
         'provider',
@@ -38,7 +38,7 @@ class SrOperationsService
         'service',
         'requestCategory',
     ];
-    const REMOVE_SAVE_DATA_FIELDS = [
+    public const REMOVE_SAVE_DATA_FIELDS = [
         'requestData',
         'apiRequest',
         'response',

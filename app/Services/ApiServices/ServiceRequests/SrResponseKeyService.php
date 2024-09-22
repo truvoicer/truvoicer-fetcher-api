@@ -51,15 +51,15 @@ class SrResponseKeyService extends BaseService
         return $this->SResponseKeyRepository->findMany();
     }
 
-    public function findConfigForOperationBySr(Sr $serviceRequest) {
+    public function findResponseKeysForOperationBySr(Sr $serviceRequest, ?array $excludeKeys = []) {
         $parentServiceRequest = $this->srService->findParentSr($serviceRequest);
         if (!$parentServiceRequest instanceof Sr) {
-            return $this->srResponseKeyRepository->findSrResponseKeysWithRelation($serviceRequest);
+            return $this->srResponseKeyRepository->findSrResponseKeysWithRelation($serviceRequest, $excludeKeys);
         }
         if (empty($serviceRequest->pivot) || empty($serviceRequest->pivot->config_override)) {
-            return $this->srResponseKeyRepository->findSrResponseKeysWithRelation($parentServiceRequest);
+            return $this->srResponseKeyRepository->findSrResponseKeysWithRelation($parentServiceRequest, $excludeKeys);
         }
-        return $this->srResponseKeyRepository->findSrResponseKeysWithRelation($serviceRequest);
+        return $this->srResponseKeyRepository->findSrResponseKeysWithRelation($serviceRequest, $excludeKeys);
     }
 
 

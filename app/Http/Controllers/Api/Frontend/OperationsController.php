@@ -4,12 +4,7 @@ namespace App\Http\Controllers\Api\Frontend;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\OperationsRequest;
-use App\Http\Resources\ApiSearchItemResource;
-use App\Http\Resources\ApiMongoDBSearchListResourceCollection;
-use App\Http\Resources\ApiSearchResource;
-use App\Http\Resources\ApiSearchResourceCollection;
 use App\Services\ApiManager\Operations\DataHandler\ApiRequestDataInterface;
-use App\Services\ApiManager\Operations\DataHandler\ApiRequestMongoDbHandler;
 use App\Services\Permission\AccessControlService;
 use App\Services\Tools\HttpRequestService;
 use App\Services\Tools\SerializerService;
@@ -35,12 +30,13 @@ class OperationsController extends Controller
         $provider = $request->get('provider');
         $service = $request->get('service');
         $apiRequestDataHandler->setUser($request->user());
+
         $results = $apiRequestDataHandler->searchOperation(
             $request->validated('api_fetch_type'),
             $type,
             $provider,
             $service,
-            $request->query->all()
+            $request->all()
         );
         if (!$results) {
             return $this->sendErrorResponse(

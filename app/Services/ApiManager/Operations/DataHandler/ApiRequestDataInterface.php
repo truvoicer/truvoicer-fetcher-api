@@ -39,14 +39,16 @@ class ApiRequestDataInterface
         if (!count($providers)) {
             return false;
         }
-
+        $filteredRequestData = array_filter($data, function ($value) {
+            return !in_array($value, ApiRequestDataHandler::RESERVED_REQUEST_KEYS);
+        }, ARRAY_FILTER_USE_KEY);
         $this->apiRequestMongoDbHandler->setUser($this->user);
         $this->apiRequestApiDirectHandler->setUser($this->user);
 
         switch ($fetchType) {
             case 'mixed':
                 $response = $this->apiRequestMongoDbHandler->searchOperation(
-                    $serviceType, $providers, $serviceName, $data
+                    $serviceType, $providers, $serviceName, $filteredRequestData
                 );
                 $compare = $this->apiRequestMongoDbHandler->compareResultsWithData(
                     $response
@@ -63,7 +65,7 @@ class ApiRequestDataInterface
                 break;
             case 'database':
                 $response = $this->apiRequestMongoDbHandler->searchOperation(
-                    $serviceType, $providers, $serviceName, $data
+                    $serviceType, $providers, $serviceName, $filteredRequestData
                 );
                 break;
             case 'api_direct':

@@ -131,7 +131,6 @@ class ApiRequestMongoDbHandler extends ApiRequestDataHandler
         }
         $this->setService($getService);
 
-
         $providerData = $this->buildProviderData($providers);
         switch ($type) {
             case SrRepository::SR_TYPE_LIST:
@@ -145,8 +144,7 @@ class ApiRequestMongoDbHandler extends ApiRequestDataHandler
             case SrRepository::SR_TYPE_SINGLE:
                 return $this->runItemSearch(
                     $type,
-                    $providerData,
-                    $data['item_id'] ?? null
+                    $providerData
                 );
             default:
                 return false;
