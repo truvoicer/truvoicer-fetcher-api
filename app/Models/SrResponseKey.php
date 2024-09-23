@@ -18,6 +18,7 @@ class SrResponseKey extends Model
         "show_in_response",
         "list_item",
         "custom_value",
+        "searchable",
         "is_date",
         "date_format",
         "append_extra_data_value",

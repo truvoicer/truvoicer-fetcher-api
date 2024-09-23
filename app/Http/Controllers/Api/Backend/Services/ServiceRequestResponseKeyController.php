@@ -205,6 +205,7 @@ class ServiceRequestResponseKeyController extends Controller
             $request->all([
                 'value',
                 'show_in_response',
+                'searchable',
                 'array_keys',
                 'list_item',
                 'append_extra_data_value',

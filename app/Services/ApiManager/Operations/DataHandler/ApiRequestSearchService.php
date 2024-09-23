@@ -182,7 +182,8 @@ class ApiRequestSearchService
                 ];
                 $srResponseKeys = $this->srResponseKeyService->findResponseKeysForOperationBySr(
                     $sr,
-                    $excludeKeys
+                    $excludeKeys,
+                    ['searchable' => true]
                 );
                 foreach ($queryData as $key => $queryItem) {
                     foreach ($srResponseKeys as $srResponseKey) {

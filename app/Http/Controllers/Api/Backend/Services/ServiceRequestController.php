@@ -472,6 +472,46 @@ class ServiceRequestController extends Controller
     }
 
     /**
+     * Runs an api request to a provider based on the request query data
+     *
+     * Required fields in query data:
+     * - request_type
+     * - provider
+     * - (Parameters set for the provider service request)
+     *
+     */
+    public function populateSrResponseKeys(
+        Provider          $provider,
+        Sr                $sr,
+        ApiRequestService $requestOperation,
+        Request           $request
+    ): JsonResponse|\Illuminate\Http\JsonResponse
+    {
+        $this->setAccessControlUser($request->user());
+        if (
+            !$this->accessControlService->checkPermissionsForEntity(
+                $provider,
+                [
+                    PermissionService::PERMISSION_ADMIN,
+                    PermissionService::PERMISSION_READ,
+                ],
+            )
+        ) {
+            return $this->sendErrorResponse("Access denied");
+        }
+
+        $requestOperation->setProviderName($provider->name);
+        $requestOperation->setApiRequestName($sr->name);
+        $requestOperation->setUser($request->user());
+        $runApiRequest = $requestOperation->runOperation($request->query->all());
+
+        return new JsonResponse(
+            $runApiRequest,
+            Response::HTTP_OK
+        );
+    }
+
+    /**
      * Duplicate a providers' service request
      *
      */

@@ -21,6 +21,7 @@ class SrResponseKeyMinimalResource extends JsonResource
             'id' => $this->id,
             'value' => $this->value,
             'show_in_response' => $this->show_in_response,
+            'searchable' => $this->show_in_response,
             'is_service_request' => $this->is_service_request,
             'list_item' => $this->list_item,
             'custom_value' => $this->custom_value,

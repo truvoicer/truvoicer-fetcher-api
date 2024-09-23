@@ -51,15 +51,22 @@ class SrResponseKeyService extends BaseService
         return $this->SResponseKeyRepository->findMany();
     }
 
-    public function findResponseKeysForOperationBySr(Sr $serviceRequest, ?array $excludeKeys = []) {
+    public function findParentSrForResponseKeys(Sr $serviceRequest) {
         $parentServiceRequest = $this->srService->findParentSr($serviceRequest);
         if (!$parentServiceRequest instanceof Sr) {
-            return $this->srResponseKeyRepository->findSrResponseKeysWithRelation($serviceRequest, $excludeKeys);
+            return $serviceRequest;
         }
-        if (empty($serviceRequest->pivot) || empty($serviceRequest->pivot->config_override)) {
-            return $this->srResponseKeyRepository->findSrResponseKeysWithRelation($parentServiceRequest, $excludeKeys);
+        if (empty($serviceRequest->pivot) || empty($serviceRequest->pivot->response_key_override)) {
+            return $parentServiceRequest;
         }
-        return $this->srResponseKeyRepository->findSrResponseKeysWithRelation($serviceRequest, $excludeKeys);
+        return $serviceRequest;
+    }
+
+    public function findResponseKeysForOperationBySr(Sr $serviceRequest, ?array $excludeKeys = [], ?array $conditions = []) {
+        return $this->srResponseKeyRepository->findSrResponseKeysWithRelation(
+            $this->findParentSrForResponseKeys($serviceRequest),
+            $excludeKeys
+        );
     }
 
 
@@ -141,6 +148,7 @@ class SrResponseKeyService extends BaseService
         $fields = [
             "value",
             "show_in_response",
+            "searchable",
             "list_item",
             "custom_value",
             "is_date",
