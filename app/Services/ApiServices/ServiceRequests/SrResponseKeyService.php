@@ -293,20 +293,6 @@ class SrResponseKeyService extends BaseService
         return $this->srResponseKeyRepository->delete();
     }
 
-    public function deleteRequestResponseKeyByServiceResponseKey(Sr $serviceRequest, SResponseKey $serviceResponseKey)
-    {
-        $this->srResponseKeyRepository->addWhere("service_request", $serviceRequest->id);
-        $this->srResponseKeyRepository->addWhere("service_response_key", $serviceResponseKey->id);
-        $requestResponseKey = $this->srResponseKeyRepository->findOne();
-        if ($requestResponseKey !== null) {
-            return $this->srResponseKeyRepository->deleteRequestResponseKeys($requestResponseKey);
-        }
-        throw new BadRequestHttpException(
-            sprintf("Error deleting property value. (Service request id:%s, Response key id:%s)",
-                $requestResponseKey, $serviceResponseKey
-            ));
-    }
-
     public function deleteBatch(array $ids)
     {
         if (!count($ids)) {

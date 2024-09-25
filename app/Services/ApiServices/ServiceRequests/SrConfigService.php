@@ -12,6 +12,7 @@ use App\Services\ApiManager\Data\DefaultData;
 use App\Services\BaseService;
 use App\Services\Property\PropertyService;
 use App\Services\Provider\ProviderService;
+use Illuminate\Support\Facades\App;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 
 class SrConfigService extends BaseService
@@ -188,5 +189,9 @@ class SrConfigService extends BaseService
             throw new BadRequestHttpException("No service request config ids provided.");
         }
         return $this->requestConfigRepo->deleteBatch($ids);
+    }
+
+    public static function getInstance(): self {
+        return App::make(SrConfigService::class);
     }
 }

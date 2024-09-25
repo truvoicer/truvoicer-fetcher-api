@@ -8,6 +8,7 @@ use App\Http\Requests\Service\Request\CreateSrRequest;
 use App\Http\Requests\Service\Request\DeleteBatchSrRequest;
 use App\Http\Requests\Service\Request\DuplicateSrRequest;
 use App\Http\Requests\Service\Request\OverrideChildSrRequest;
+use App\Http\Requests\Service\Request\ResponseKey\PopulateSrResponseKeysRequest;
 use App\Http\Requests\Service\Request\UpdateServiceRequest;
 use App\Http\Requests\Service\Request\UpdateSrDefaultsRequest;
 use App\Http\Requests\Service\Request\UpdateSrRequest;
@@ -20,7 +21,9 @@ use App\Models\Sr;
 use App\Repositories\SrResponseKeySrRepository;
 use App\Services\ApiManager\Operations\ApiRequestService;
 use App\Services\ApiServices\ApiService;
+use App\Services\ApiServices\ServiceRequests\ResponseKeyPopulateService;
 use App\Services\ApiServices\ServiceRequests\SrOperationsService;
+use App\Services\ApiServices\ServiceRequests\SrResponseKeyService;
 use App\Services\ApiServices\ServiceRequests\SrService;
 use App\Services\Permission\AccessControlService;
 use App\Services\Permission\PermissionService;
@@ -483,10 +486,11 @@ class ServiceRequestController extends Controller
     public function populateSrResponseKeys(
         Provider          $provider,
         Sr                $sr,
-        ApiRequestService $requestOperation,
-        Request           $request
+        ResponseKeyPopulateService $responseKeyPopulateService,
+        PopulateSrResponseKeysRequest           $request
     ): JsonResponse|\Illuminate\Http\JsonResponse
     {
+        dd($request->all());
         $this->setAccessControlUser($request->user());
         if (
             !$this->accessControlService->checkPermissionsForEntity(
@@ -499,15 +503,22 @@ class ServiceRequestController extends Controller
         ) {
             return $this->sendErrorResponse("Access denied");
         }
+        $responseKeyPopulateService->setOverwrite($request->validated('overwrite', false));
+        $responseKeyPopulateService->setUser($request->user());
+        $responseKeyPopulateService->run(
+            $sr,
+            $request->validated('srs'),
+            $request->validated('query', [])
+        );
 
-        $requestOperation->setProviderName($provider->name);
-        $requestOperation->setApiRequestName($sr->name);
-        $requestOperation->setUser($request->user());
-        $runApiRequest = $requestOperation->runOperation($request->query->all());
-
-        return new JsonResponse(
-            $runApiRequest,
-            Response::HTTP_OK
+        if ($responseKeyPopulateService->hasErrors()) {
+            return $this->sendErrorResponse(
+                "Error running request",
+                $responseKeyPopulateService->getErrors(),
+            );
+        }
+        return $this->sendSuccessResponse(
+            "Request ran successfully",
         );
     }
 

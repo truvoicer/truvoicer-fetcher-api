@@ -151,7 +151,7 @@ Route::middleware(['auth:sanctum', 'ability:api:admin,api:superuser,api:super_ad
                             Route::patch('/{childSr}/override', [ServiceRequestController::class, 'overrideChildServiceRequest'])->name('override');
                             Route::post('/{childSr}/duplicate', [ServiceRequestController::class, 'duplicateChildServiceRequest'])->name('duplicate');
                         });
-                        Route::get('/populate-response-keys', [ServiceRequestController::class, 'populateSrResponseKeys'])->name('delete');
+                        Route::post('/populate-response-keys', [ServiceRequestController::class, 'populateSrResponseKeys'])->name('populate-response-keys');
                         Route::delete('/delete', [ServiceRequestController::class, 'deleteServiceRequest'])->name('delete');
                         Route::patch('/defaults/update', [ServiceRequestController::class, 'updateSrDefaults'])->name('defaults.update');
                         Route::patch('/update', [ServiceRequestController::class, 'updateServiceRequest'])->name('update');

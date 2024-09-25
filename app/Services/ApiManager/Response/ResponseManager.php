@@ -7,13 +7,16 @@ use App\Models\Sr;
 use App\Models\User;
 use App\Repositories\SrRepository;
 use App\Services\ApiManager\Client\Entity\ApiRequest;
+use App\Services\ApiManager\Data\DataConstants;
 use App\Services\ApiManager\Data\DataProcessor;
 use App\Services\ApiManager\Response\Entity\ApiResponse;
 use App\Services\ApiManager\Response\Handlers\Json\JsonResponseHandler;
 use App\Services\ApiManager\Response\Handlers\Xml\XmlResponseHandler;
+use App\Services\ApiServices\ServiceRequests\SrConfigService;
 use App\Services\BaseService;
 use Exception;
 use Illuminate\Http\Client\Response;
+use Illuminate\Support\Facades\App;
 
 
 class ResponseManager extends BaseService
@@ -66,7 +69,8 @@ class ResponseManager extends BaseService
                 $contentType,
                 $content,
                 [],
-                $apiRequest, $response
+                $apiRequest,
+                $response
             );
         } catch (Exception $exception) {
             return $this->errorResponse($exception, $apiRequest, $response);
@@ -171,12 +175,23 @@ class ResponseManager extends BaseService
 
     private function getContentType(Response $response)
     {
-        $contentTypeArray = [];
-
         if (!empty($this->responseFormat)) {
             return $this->responseFormat;
         }
+        return self::getContentTypeFromResponse($response);
+    }
 
+    public static function getSrResponseContentType(Sr $sr, Response $response): bool|string
+    {
+        $contentType = SrConfigService::getInstance()->getConfigValue($sr, DataConstants::RESPONSE_FORMAT);
+        if ($contentType) {
+            return $contentType;
+        }
+        return self::getContentTypeFromResponse($response);
+    }
+    public static function getContentTypeFromResponse(Response $response): bool|string
+    {
+        $contentTypeArray = [];
         $headers = $response->headers();
 
         foreach ($headers as $key => $item) {
