@@ -101,8 +101,8 @@ class ResponseKeyPopulateService
         }
 
         $this->prepareItemsArrayScoreData($requestData);
-        $itemsArrayValue = $this->getItemsArrayValueFromScoreData($this->score);
-        dd($itemsArrayValue);
+//        $itemsArrayValue = $this->getItemsArrayValueFromScoreData($this->score);
+        dd($this->score);
 //        return $this->srTypeHandler($sr, $value, $itemsArrayValue);
         return false;
     }
@@ -139,9 +139,6 @@ class ResponseKeyPopulateService
     {
         $parentKey = (array_key_exists('key', $parent)) ? $parent['key'] : null;
 
-        if (!array_key_exists($parentKey, $this->score)) {
-            $this->score[$parentKey] = 0;
-        }
 
         foreach ($data as $key => $value) {
             $parent['key'] = $key;
@@ -160,7 +157,14 @@ class ResponseKeyPopulateService
                             continue;
                         }
                         if (array_key_exists($valKey, $values)) {
-                            $this->score[$parentKey]++;
+                            if (!array_key_exists($parentKey, $this->score)) {
+                                $this->score[$parentKey] = [
+                                    'score' => 0,
+                                    'parent' => []
+                                ];
+                            }
+                            $this->score[$parentKey]['score']++;
+                            $this->score[$parentKey]['parent'] = $parent['parent'];
                         }
                     }
                 }
