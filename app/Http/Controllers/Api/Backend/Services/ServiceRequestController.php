@@ -490,7 +490,6 @@ class ServiceRequestController extends Controller
         PopulateSrResponseKeysRequest           $request
     ): JsonResponse|\Illuminate\Http\JsonResponse
     {
-        dd($request->all());
         $this->setAccessControlUser($request->user());
         if (
             !$this->accessControlService->checkPermissionsForEntity(
