@@ -17,6 +17,7 @@ use App\Traits\Error\ErrorTrait;
 use App\Traits\User\UserTrait;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
+use SimpleXMLIterator;
 
 class ResponseKeyPopulateService
 {
@@ -88,43 +89,48 @@ class ResponseKeyPopulateService
         };
     }
 
-    private function handleJsonResponse(Sr $sr)
-    {
 
-        $requestData = $this->response->getRequestData();
-        if (empty($requestData)) {
+    private function extractDataFromScoreData(array $scoreData): array
+    {
+        $itemsArrayData = $this->getItemsArrayValueFromScoreData($scoreData);
+        $resultsTrack = $scoreData[$itemsArrayData['value']];
+
+        return [
+            'value' => $itemsArrayData['items_array_value'],
+            'data' => $this->findByKeyTree($resultsTrack['parent'], $this->response->getRequestData(), false)
+        ];
+    }
+    private function getItemsArrayValueFromScoreData(array $scoreData): array|bool
+    {
+        if (empty($scoreData)) {
             return false;
         }
-
-        if (Arr::isList($requestData)) {
-            return $this->srTypeHandler($sr, $requestData, 'root_items');
+        uasort($scoreData, function ($a, $b) {
+            if ($a['score'] == $b['score']) {
+                return 0;
+            }
+            return ($a['score'] < $b['score']) ? -1 : 1;
+        });
+        $value = array_keys($scoreData)[0];
+        if (is_integer($value)) {
+            return [
+                'items_array_value' => 'root_array',
+                'value' => $value
+            ];
+        } elseif (is_string($value)) {
+            return [
+                'items_array_value' => $value,
+                'value' => $value
+            ];
         }
-
-        $this->prepareItemsArrayScoreData($requestData);
-//        $itemsArrayValue = $this->getItemsArrayValueFromScoreData($this->score);
-        dd($this->score);
-//        return $this->srTypeHandler($sr, $value, $itemsArrayValue);
         return false;
     }
 
-    private function getItemsArrayValueFromScoreData(array $scoreData): ?string
+    private function findByKeyTree(array $data, ?array $requestData = [], ?bool $pop = true): mixed
     {
-        if (empty($scoreData)) {
-            return null;
+        if ($pop) {
+            array_pop($data);
         }
-        arsort($scoreData);
-        $value = array_keys($scoreData)[0];
-        if (is_integer($value)) {
-            return 'root_array';
-        } elseif (is_string($value)) {
-            return $value;
-        }
-        return '';
-    }
-
-    private function findByKeyTree(array $data, ?array $requestData = []): mixed
-    {
-        array_pop($data);
         foreach ($data as $value) {
             array_shift($data);
             if (!isset($requestData[$value])) {
@@ -133,6 +139,23 @@ class ResponseKeyPopulateService
             $requestData = $requestData[$value];
         }
         return $requestData;
+    }
+
+    private function findByKeyTreeForXml(array $data, SimpleXMLIterator $xmlIterator, ?bool $pop = true): mixed
+    {
+//        if ($pop) {
+//            array_pop($data);
+//        }
+
+        foreach ($data as $key => $value) {
+            for ($xmlIterator->rewind(); $xmlIterator->valid(); $xmlIterator->next()) {
+                array_shift($data);
+                if ($xmlIterator->key() === $value) {
+                    return $xmlIterator->current();
+                }
+            }
+        }
+        return false;
     }
 
     private function prepareItemsArrayScoreData(array $data, ?array $parent = []): void
@@ -164,7 +187,9 @@ class ResponseKeyPopulateService
                                 ];
                             }
                             $this->score[$parentKey]['score']++;
-                            $this->score[$parentKey]['parent'] = $parent['parent'];
+                            $parentTrack = $parent['parent'];
+                            array_pop($parentTrack);
+                            $this->score[$parentKey]['parent'] = $parentTrack;
                         }
                     }
                 }
@@ -173,13 +198,91 @@ class ResponseKeyPopulateService
         }
     }
 
-    private function handleXmlResponse(Sr $sr)
+    private function prepareItemsArrayScoreDataForXml(SimpleXMLIterator $xmlIterator, ?array $parent = [], ?String $parentKey = null): void
+    {
+        $parentKey = (array_key_exists('key', $parent)) ? $parent['key'] : null;
+        for ($xmlIterator->rewind(); $xmlIterator->valid(); $xmlIterator->next()) {
+            $parent['key'] = $xmlIterator->key();
+            if (!$xmlIterator->hasChildren()) {
+                continue;
+            }
+            $value = (array)$xmlIterator->current();
+            if (Arr::isAssoc($value)) {
+                if (!array_key_exists('parent', $parent)) {
+                    $parent['parent'] = [];
+                }
+                if ($parentKey) {
+                    $parent['parent'][] = $parentKey;
+                }
+                $parentData = $this->findByKeyTreeForXml(
+                    $parent['parent'],
+                    new SimpleXMLIterator(
+                        $this->response->getResponse()->body()
+                    )
+                );
+                $parentData = (array)$parentData;
+//                dd($parentData, $value, $parent['parent']);
+//
+                foreach ($value as $valKey => $val) {
+                    if ($valKey === 'pubDate') {
+                        dd($parentKey, $value, $parent, $parentData);
+                    }
+//                    foreach ($parentData as $values) {
+//                        if (!is_array($values)) {
+//                            continue;
+//                        }
+//                        if (array_key_exists($valKey, $values)) {
+//                            if (!array_key_exists($parentKey, $this->score)) {
+//                                $this->score[$parentKey] = [
+//                                    'score' => 0,
+//                                    'parent' => []
+//                                ];
+//                            }
+//                            $this->score[$parentKey]['score']++;
+//                            $parentTrack = $parent['parent'];
+//                            array_pop($parentTrack);
+//                            $this->score[$parentKey]['parent'] = $parentTrack;
+//                        }
+//                    }
+                }
+                $this->prepareItemsArrayScoreDataForXml($xmlIterator->current(), $parent, $xmlIterator->key());
+            }
+        }
+    }
+
+    private function handleJsonResponse(Sr $sr)
     {
         $requestData = $this->response->getRequestData();
         if (empty($requestData)) {
             return false;
         }
-        return $this->srTypeHandler($sr);
+
+        if (Arr::isList($requestData)) {
+            return $this->srTypeHandler($sr, $requestData, 'root_items');
+        }
+
+        $this->prepareItemsArrayScoreData($requestData);
+        $extractData = $this->extractDataFromScoreData($this->score);
+        return $this->srTypeHandler($sr, $extractData['data'], $extractData['value']);
+    }
+    private function handleXmlResponse(Sr $sr)
+    {
+        $requestData = $this->response->getResponse()->body();
+        if (empty($requestData)) {
+            return false;
+        }
+
+        $simpleXMLIterator = new SimpleXmlIterator($requestData, null, false);
+
+        $this->prepareItemsArrayScoreDataForXml($simpleXMLIterator);
+        if (Arr::isList($requestData)) {
+            return $this->srTypeHandler($sr, $requestData, 'root_items');
+        }
+
+        $this->prepareItemsArrayScoreData($requestData);
+        $extractData = $this->extractDataFromScoreData($this->score);
+
+        return $this->srTypeHandler($sr, $extractData['data'], $extractData['value']);
     }
 
     private function srTypeHandler(Sr $sr, array $data, string $itemArrayType): bool
