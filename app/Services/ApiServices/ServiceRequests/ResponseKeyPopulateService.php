@@ -206,14 +206,14 @@ class ResponseKeyPopulateService
             if (!$xmlIterator->hasChildren()) {
                 continue;
             }
+            if (!array_key_exists('parent', $parent)) {
+                $parent['parent'] = [];
+            }
+            if ($parentKey) {
+                $parent['parent'][] = $parentKey;
+            }
             $value = (array)$xmlIterator->current();
             if (Arr::isAssoc($value)) {
-                if (!array_key_exists('parent', $parent)) {
-                    $parent['parent'] = [];
-                }
-                if ($parentKey) {
-                    $parent['parent'][] = $parentKey;
-                }
                 $parentData = $this->findByKeyTreeForXml(
                     $parent['parent'],
                     new SimpleXMLIterator(
