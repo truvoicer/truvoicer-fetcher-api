@@ -36,7 +36,7 @@ class SResponseKeyRepository extends BaseRepository
 
     public function createDefaultServiceResponseKeys(S $service, ?string $contentType = 'json', ?bool $requiredOnly = false) {
         $errors = [];
-        $defaultResponseKeys = DefaultData::getServiceResponseKeys($contentType);
+        $defaultResponseKeys = DefaultData::getServiceResponseKeys([$contentType]);
         if ($requiredOnly) {
             $defaultResponseKeys = array_filter($defaultResponseKeys, function ($item) {
                 return $item[SResponseKeysService::RESPONSE_KEY_REQUIRED];

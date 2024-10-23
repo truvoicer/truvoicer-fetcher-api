@@ -72,7 +72,7 @@ class ResponseKeyPopulateService
         $this->requestOperation->setProviderName($provider->name);
         $this->requestOperation->setApiRequestName($sr->name);
         $this->requestOperation->setUser($this->getUser());
-        return $this->requestOperation->getOperationRequestContent($query);
+        return $this->requestOperation->getOperationRequestContent('raw', $query);
     }
 
     public function handleResponse(Sr $sr, ApiResponse $response): bool

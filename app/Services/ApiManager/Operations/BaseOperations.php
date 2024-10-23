@@ -75,6 +75,7 @@ class BaseOperations extends ApiBase
         $this->responseManager->setServiceRequest($this->apiService);
         $this->responseManager->setProvider($this->provider);
         $this->responseManager->setResponseFormat($this->dataProcessor->getConfigValue(DataConstants::RESPONSE_FORMAT));
+        $this->responseManager->setRequestType($requestType);
         $apiResponse = new ApiResponse();
         $apiResponse->setStatus("error");
         $apiResponse = $this->responseManager->setResponseDefaults($apiResponse);
@@ -83,8 +84,9 @@ class BaseOperations extends ApiBase
             return $apiResponse;
         }
         switch ($requestType) {
-            case "json":
+            case "response_keys":
                 return $this->responseManager->processResponse($response, $this->apiRequest);
+            case "json":
             case "raw":
                 return $this->responseManager->getRequestContent($response, $this->apiRequest);
             default:

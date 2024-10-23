@@ -462,10 +462,10 @@ class ServiceRequestController extends Controller
             $requestType = $data['request_type'];
         }
         $requestOperation->setUser($request->user());
-        if ($requestType === 'json') {
+        if ($requestType === 'response_keys') {
             $runApiRequest = $requestOperation->runOperation($data)->toArray();
         } else {
-            $runApiRequest = $requestOperation->getOperationRequestContent($data);
+            $runApiRequest = $requestOperation->getOperationRequestContent($requestType, $data);
         }
 
         return new JsonResponse(

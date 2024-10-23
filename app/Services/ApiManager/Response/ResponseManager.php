@@ -31,6 +31,7 @@ class ResponseManager extends BaseService
     private Sr $serviceRequest;
     private Provider $provider;
     public string $responseFormat;
+    public string $requestType;
 
     public function __construct(
         private readonly JsonResponseHandler $jsonResponseHandler,
@@ -54,18 +55,35 @@ class ResponseManager extends BaseService
         try {
             $contentType = 'unknown';
             $content = [];
-            switch ($this->getContentType($response)) {
-                case self::CONTENT_TYPE_JSON:
-                    $contentType = "json";
-                    $content = $response->json() ?? [];
+
+            switch ($this->requestType) {
+                case 'raw':
+                    switch ($this->getContentType($response)) {
+                        case self::CONTENT_TYPE_JSON:
+                            $contentType = "json";
+                            $content = $response->json() ?? [];
+                            break;
+                        case self::CONTENT_TYPE_XML:
+                            $contentType = "xml";
+                            $content = [$response->body()];
+                            break;
+                    }
                     break;
-                case self::CONTENT_TYPE_XML:
-                    $contentType = "xml";
-                    $content = [$response->body()];
-                    break;
+                case 'json':
+                    switch ($this->getContentType($response)) {
+                        case self::CONTENT_TYPE_JSON:
+                            $contentType = "json";
+                            $content = $response->json() ?? [];
+                            break;
+                        case self::CONTENT_TYPE_XML:
+                            $contentType = "xml";
+                            $content = $this->xmlResponseHandler->convertXmlToArray($response->body());
+                            break;
+                    }
             }
 
-            return $this->successResponse(
+
+            return $this->contentSuccessResponse(
                 $contentType,
                 $content,
                 [],
@@ -115,7 +133,8 @@ class ResponseManager extends BaseService
 
     public function setResponseDefaults(ApiResponse $apiResponse)
     {
-        $apiResponse->setRequestType($this->responseFormat);
+        $apiResponse->setRequestType($this->requestType);
+        $apiResponse->setResponseFormat($this->responseFormat);
         $apiResponse->setServiceRequest([
             'id' => $this->serviceRequest->id,
             'name' => $this->serviceRequest->name,
@@ -147,10 +166,28 @@ class ResponseManager extends BaseService
         return $this->setResponseDefaults($apiResponse);
     }
 
-    private function successResponse(?string $contentType, array $requestData, array $extraData, ApiRequest $apiRequest, Response $response)
+    private function contentSuccessResponse(?string $contentType, array $requestData, array $extraData, ApiRequest $apiRequest, Response $response)
     {
         $apiResponse = new ApiResponse();
         $apiResponse->setContentType($contentType);
+        switch ($contentType) {
+            case 'json':
+                $apiResponse->setRequiredResponseKeys(DataConstants::JSON_SERVICE_RESPONSE_KEYS);
+                break;
+            case 'xml':
+                $apiResponse->setRequiredResponseKeys(DataConstants::XML_SERVICE_RESPONSE_KEYS);
+                break;
+        }
+        $apiResponse->setStatus("success");
+        $apiResponse->setRequestData($requestData);
+        $apiResponse->setExtraData($extraData);
+        $apiResponse->setApiRequest($apiRequest);
+        $apiResponse->setResponse($response);
+        return $this->setResponseDefaults($apiResponse);
+    }
+    private function successResponse(?string $contentType, array $requestData, array $extraData, ApiRequest $apiRequest, Response $response)
+    {
+        $apiResponse = new ApiResponse();
         $apiResponse->setStatus("success");
         $apiResponse->setRequestData($requestData);
         $apiResponse->setExtraData($extraData);
@@ -249,6 +286,11 @@ class ResponseManager extends BaseService
     public function setResponseFormat(string $responseFormat): void
     {
         $this->responseFormat = $responseFormat;
+    }
+
+    public function setRequestType(string $requestType): void
+    {
+        $this->requestType = $requestType;
     }
 
     public function setUser(User $user): void

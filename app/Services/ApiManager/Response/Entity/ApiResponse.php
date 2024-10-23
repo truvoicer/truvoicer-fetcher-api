@@ -11,6 +11,7 @@ class ApiResponse
     use ObjectTrait;
     public string $status;
     public string $requestType;
+    public string $responseFormat;
 
     public string $message;
 
@@ -28,6 +29,8 @@ class ApiResponse
 
     public array $requestData;
 
+    public array $requiredResponseKeys;
+
     public array $extraData = [];
 
     public ?string $paginationType = null;
@@ -42,6 +45,11 @@ class ApiResponse
     public function getServiceRequest(): array
     {
         return $this->serviceRequest;
+    }
+
+    public function setRequiredResponseKeys(array $requiredResponseKeys): void
+    {
+        $this->requiredResponseKeys = $requiredResponseKeys;
     }
 
     public function setServiceRequest(array $serviceRequest): void
@@ -62,6 +70,11 @@ class ApiResponse
     public function setRequestType(string $requestType): void
     {
         $this->requestType = $requestType;
+    }
+
+    public function setResponseFormat(string $responseFormat): void
+    {
+        $this->responseFormat = $responseFormat;
     }
 
     public function getApiRequest(): ?ApiRequest

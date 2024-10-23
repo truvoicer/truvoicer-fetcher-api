@@ -14,14 +14,33 @@ class DefaultData
         'password' => 'password',
     ];
 
-    public static function getServiceResponseKeys(string $contentType = 'json')
+    public static function getServiceResponseKeys(array $contentType = ['json']): array
     {
         $keys = DataConstants::SERVICE_RESPONSE_KEYS;
-        if ($contentType === 'xml') {
-            $keys = array_merge($keys, DataConstants::XML_SERVICE_RESPONSE_KEYS);
+        foreach ($contentType as $type) {
+            switch ($type) {
+                case 'json':
+                    $keys = array_merge(
+                        $keys,
+                        array_filter(array_keys(DataConstants::JSON_SERVICE_RESPONSE_KEYS), function ($key) use ($keys) {
+                            return !in_array($key, array_keys($keys));
+                        }, ARRAY_FILTER_USE_BOTH)
+                    );
+                    break;
+                case 'xml':
+                    $keys = array_merge(
+                        $keys,
+                        array_filter(array_keys(DataConstants::XML_SERVICE_RESPONSE_KEYS), function ($key) use ($keys) {
+                            return !array_key_exists($key, array_keys($keys));
+                        }, ARRAY_FILTER_USE_BOTH)
+                    );
+                    break;
+            }
         }
+
         return $keys;
     }
+
     public static function getPermissions()
     {
         return [
@@ -202,6 +221,7 @@ class DefaultData
             ],
         ];
     }
+
     public static function getServiceRequestBasicAuthConfig()
     {
         return [
@@ -221,6 +241,7 @@ class DefaultData
             ]
         ];
     }
+
     public static function getServiceRequestBearerAuthConfig()
     {
         return [
@@ -233,6 +254,7 @@ class DefaultData
             ]
         ];
     }
+
     public static function getServiceRequestOauthConfig()
     {
         return [

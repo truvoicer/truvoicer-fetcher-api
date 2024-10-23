@@ -178,10 +178,6 @@ class DataConstants
     public const PAGINATION_TYPE = 'pagination_type';
 
     public const SERVICE_RESPONSE_KEYS = [
-        "ITEMS_ARRAY" => [
-            self::RESPONSE_KEY_REQUIRED => true,
-            self::RESPONSE_KEY_NAME => self::ITEMS_ARRAY,
-        ],
         "TOTAL_ITEMS" => [
             self::RESPONSE_KEY_REQUIRED => true,
             self::RESPONSE_KEY_NAME => self::TOTAL_ITEMS,
@@ -212,10 +208,21 @@ class DataConstants
             self::RESPONSE_KEY_REQUIRED => true,
             self::RESPONSE_KEY_NAME => "item_repeater_key"
         ],
+        "ITEMS_ARRAY" => [
+            self::RESPONSE_KEY_REQUIRED => true,
+            self::RESPONSE_KEY_NAME => self::ITEMS_ARRAY,
+        ],
+    ];
+    public const JSON_SERVICE_RESPONSE_KEYS = [
+        "ITEMS_ARRAY" => [
+            self::RESPONSE_KEY_REQUIRED => true,
+            self::RESPONSE_KEY_NAME => self::ITEMS_ARRAY,
+        ],
     ];
 
     public const S_RESPONSE_KEY_GROUPS = [
         self::SERVICE_RESPONSE_KEYS,
-        self::XML_SERVICE_RESPONSE_KEYS
+        self::XML_SERVICE_RESPONSE_KEYS,
+        self::JSON_SERVICE_RESPONSE_KEYS,
     ];
 }

@@ -127,8 +127,10 @@ class ApiRequestSearchService
 
     private function prepareSearchForSavedProviders(array $queryData)
     {
-
-        $reservedKeys = array_column(DataConstants::SERVICE_RESPONSE_KEYS, SResponseKeysService::RESPONSE_KEY_NAME);
+        $reservedKeys = array_column(
+            DefaultData::getServiceResponseKeys(['xml', 'json']),
+            SResponseKeysService::RESPONSE_KEY_NAME
+        );
         $reservedKeys = array_merge($reservedKeys, self::RESERVED_SEARCH_RESPONSE_KEYS);
         $sort = [];
         $orderByData = [];
