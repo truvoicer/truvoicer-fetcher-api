@@ -61,12 +61,16 @@ class ResponseHandler extends ApiBase
         if (empty($responseKeyValue)) {
             throw new BadRequestHttpException("Response key value is empty.");
         }
+        return $this->buildItemListFromResponseArray($responseKeyValue, $this->responseArray);
+    }
 
-        if ($responseKeyValue === "root_items") {
-            return [$this->responseArray];
+    public function buildItemListFromResponseArray(string $itemsArrayValue, array $responseArray)
+    {
+        if ($itemsArrayValue === "root_items") {
+            return [$responseArray];
         }
-        if ($responseKeyValue === "root_array") {
-            return $this->responseArray;
+        if ($itemsArrayValue === "root_array") {
+            return $responseArray;
         }
 
         $itemsArray = array_map(function ($item) {
@@ -75,8 +79,8 @@ class ResponseHandler extends ApiBase
                 return $data["value"];
             }
             return false;
-        }, explode(".", $responseKeyValue));
-        $getArrayItems = $this->getArrayItems($this->responseArray, $itemsArray);
+        }, explode(".", $itemsArrayValue));
+        $getArrayItems = $this->getArrayItems($responseArray, $itemsArray);
         if ($getArrayItems === "") {
             throw new BadRequestHttpException("Items list is empty");
         }
@@ -84,6 +88,7 @@ class ResponseHandler extends ApiBase
         return array_filter((array)$getArrayItems, function ($item) {
             return is_array($item);
         });
+
     }
 
     protected function getParentItemList()
@@ -385,7 +390,7 @@ class ResponseHandler extends ApiBase
         return false;
     }
 
-    protected function filterItemsArrayValue($string)
+    public function filterItemsArrayValue($string)
     {
         if (preg_match_all('~\[(.*?)\]~', $string, $output)) {
             return [

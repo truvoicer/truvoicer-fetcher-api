@@ -220,6 +220,11 @@ class DataConstants
         ],
     ];
 
+    public const CONTENT_TYPE_RESERVED_RESPONSE_KEYS = [
+        self::XML_SERVICE_RESPONSE_KEYS,
+        self::JSON_SERVICE_RESPONSE_KEYS,
+    ];
+
     public const S_RESPONSE_KEY_GROUPS = [
         self::SERVICE_RESPONSE_KEYS,
         self::XML_SERVICE_RESPONSE_KEYS,

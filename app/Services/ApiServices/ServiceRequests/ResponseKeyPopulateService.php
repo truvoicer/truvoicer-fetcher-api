@@ -12,7 +12,9 @@ use App\Repositories\SrResponseKeyRepository;
 use App\Services\ApiManager\Data\DataConstants;
 use App\Services\ApiManager\Operations\ApiRequestService;
 use App\Services\ApiManager\Response\Entity\ApiResponse;
+use App\Services\ApiManager\Response\Handlers\ResponseHandler;
 use App\Services\ApiManager\Response\ResponseManager;
+use App\Services\Tools\XmlService;
 use App\Traits\Error\ErrorTrait;
 use App\Traits\User\UserTrait;
 use Illuminate\Support\Arr;
@@ -30,13 +32,16 @@ class ResponseKeyPopulateService
     private S $destService;
     private ApiResponse $response;
 
+    private ?array $data = [];
     private bool $overwrite = false;
     private array $findItemsArray = [];
     private array $score = [];
 
     public function __construct(
         private ApiRequestService $requestOperation,
-        private SrConfigService   $srConfigService
+        private SrConfigService   $srConfigService,
+        private ResponseHandler  $responseHandler,
+        private XmlService       $xmlService
     )
     {
         $this->srRepository = new SrRepository();
@@ -267,22 +272,39 @@ class ResponseKeyPopulateService
     }
     private function handleXmlResponse(Sr $sr)
     {
-        $requestData = $this->response->getResponse()->body();
-        if (empty($requestData)) {
+        $responseContent = $this->response->getResponse()->body();
+        if (empty($responseContent)) {
             return false;
         }
+        if (!empty($this->data['items_array']) && !empty($this->data['item_repeater_key'])) {
+            $itemsArrayValue = $this->data['items_array'];
+            $itemRepeaterKey = $this->data['item_repeater_key'];
+            $filterItemsArrayValue = $this->responseHandler->filterItemsArrayValue($itemsArrayValue);
+            $responseArray = $this->xmlService->parseXmlContent(
+                $responseContent,
+                $filterItemsArrayValue["value"],
+                $filterItemsArrayValue["brackets"],
+                $this->responseHandler->filterItemsArrayValue($itemRepeaterKey)["value"]
+            );
+            $buildItemList = $this->responseHandler->buildItemListFromResponseArray($itemsArrayValue, $responseArray);
+            return $this->srTypeHandler(
+                $sr,
+                $buildItemList[array_key_first($buildItemList)],
+                $itemsArrayValue
+            );
+        } else {
+            $simpleXMLIterator = new SimpleXmlIterator($responseContent, null, false);
 
-        $simpleXMLIterator = new SimpleXmlIterator($requestData, null, false);
+            $this->prepareItemsArrayScoreDataForXml($simpleXMLIterator);
+            if (Arr::isList($requestData)) {
+                return $this->srTypeHandler($sr, $requestData, 'root_items');
+            }
 
-        $this->prepareItemsArrayScoreDataForXml($simpleXMLIterator);
-        if (Arr::isList($requestData)) {
-            return $this->srTypeHandler($sr, $requestData, 'root_items');
+            $this->prepareItemsArrayScoreData($requestData);
+            $extractData = $this->extractDataFromScoreData($this->score);
+
+            return $this->srTypeHandler($sr, $extractData['data'], $extractData['value']);
         }
-
-        $this->prepareItemsArrayScoreData($requestData);
-        $extractData = $this->extractDataFromScoreData($this->score);
-
-        return $this->srTypeHandler($sr, $extractData['data'], $extractData['value']);
     }
 
     private function srTypeHandler(Sr $sr, array $data, string $itemArrayType): bool
@@ -366,6 +388,11 @@ class ResponseKeyPopulateService
     public function setOverwrite(bool $overwrite): void
     {
         $this->overwrite = $overwrite;
+    }
+
+    public function setData(?array $data): void
+    {
+        $this->data = $data;
     }
 
 }

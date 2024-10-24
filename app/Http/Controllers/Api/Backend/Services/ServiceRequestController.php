@@ -504,6 +504,7 @@ class ServiceRequestController extends Controller
         }
         $responseKeyPopulateService->setOverwrite($request->validated('overwrite', false));
         $responseKeyPopulateService->setUser($request->user());
+        $responseKeyPopulateService->setData($request->validated());
         $responseKeyPopulateService->run(
             $sr,
             $request->validated('srs'),

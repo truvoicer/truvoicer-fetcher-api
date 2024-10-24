@@ -3,6 +3,7 @@
 namespace App\Http\Requests\Service\Request\ResponseKey;
 
 use App\Models\Sr;
+use App\Services\ApiManager\Data\DefaultData;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -23,13 +24,23 @@ class PopulateSrResponseKeysRequest extends FormRequest
      */
     public function rules(): array
     {
-        return [
-            'overwrite' => ['sometimes', 'boolean'],
-            'srs.*' => Rule::forEach(function ($value, string $attribute) {
-                return [
-                    Rule::exists(Sr::class, 'id'),
-                ];
-            })
-        ];
+        $reservedContentTypeKeys = DefaultData::getContentTypeReservedResponseKeys();
+        return array_merge(
+            array_map(
+                fn($data) => ['required', 'string'],
+                array_combine(
+                    array_column($reservedContentTypeKeys, 'name'),
+                    array_values($reservedContentTypeKeys)
+                )
+            ),
+            [
+                'overwrite' => ['sometimes', 'boolean'],
+                'srs.*' => Rule::forEach(function ($value, string $attribute) {
+                    return [
+                        Rule::exists(Sr::class, 'id'),
+                    ];
+                }),
+            ]
+        );
     }
 }
