@@ -9,6 +9,8 @@ use App\Models\Sr;
 use App\Models\SrResponseKey;
 use App\Models\SResponseKey;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
@@ -96,7 +98,7 @@ class SrResponseKeyRepository extends BaseRepository
         return $this->save($data);
     }
 
-    public function findSrResponseKeysWithRelation(Sr $serviceRequest, ?array $excludeKeys = [], ?array $conditions = []): LengthAwarePaginator|Collection
+    public function findSrResponseKeysWithRelationQuery(Sr $serviceRequest, ?array $excludeKeys = [], ?array $conditions = []): HasMany
     {
         $service = $serviceRequest->s()->first()->sResponseKey();
         $service->with(['srResponseKey' => function ($query) use ($serviceRequest) {
@@ -108,9 +110,17 @@ class SrResponseKeyRepository extends BaseRepository
         if (!empty($excludeKeys)) {
             $service->whereNotIn('name', $excludeKeys);
         }
+        return $service;
+    }
+    public function findSrResponseKeysWithRelation(Sr $serviceRequest, ?array $excludeKeys = [], ?array $conditions = []): LengthAwarePaginator|Collection
+    {
         return $this->getResults(
-            $service
+            $this->findSrResponseKeysWithRelationQuery($serviceRequest, $excludeKeys, $conditions)
         );
+    }
+    public function findOneSrResponseKeysWithRelation(Sr $serviceRequest, ?array $excludeKeys = [], ?array $conditions = []): Model|null
+    {
+        return $this->findSrResponseKeysWithRelationQuery($serviceRequest, $excludeKeys, $conditions)->first();
     }
 
     public function findServiceRequestResponseKeys(Sr $serviceRequest, string $sort = "name", string $order = "asc", ?int $count = null)

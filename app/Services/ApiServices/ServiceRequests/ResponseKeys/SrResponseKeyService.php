@@ -1,24 +1,22 @@
 <?php
 
-namespace App\Services\ApiServices\ServiceRequests;
+namespace App\Services\ApiServices\ServiceRequests\ResponseKeys;
 
 //use App\Models\ResponseKeyRequestItem;
 use App\Exceptions\SrValidationException;
-use App\Models\Provider;
 use App\Models\Sr;
-use App\Models\SrConfig;
 use App\Models\SResponseKey;
 use App\Models\SrResponseKey;
 use App\Models\User;
 use App\Repositories\SrConfigRepository;
 use App\Repositories\SResponseKeyRepository;
-use App\Repositories\SrRepository;
 use App\Repositories\SrResponseKeyRepository;
 use App\Repositories\SrResponseKeySrRepository;
 use App\Services\ApiManager\Data\DataConstants;
+use App\Services\ApiServices\ServiceRequests\SrConfigService;
+use App\Services\ApiServices\ServiceRequests\SrService;
 use App\Services\BaseService;
 use App\Services\Permission\AccessControlService;
-use App\Services\Permission\PermissionService;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;

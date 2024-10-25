@@ -1,19 +1,18 @@
 <?php
 
-namespace App\Services\ApiServices\ServiceRequests;
+namespace App\Services\ApiServices\ServiceRequests\ResponseKeys\Populate;
 
 use App\Models\S;
 use App\Models\Sr;
 use App\Models\SResponseKey;
-use App\Models\SrResponseKey;
 use App\Repositories\SResponseKeyRepository;
 use App\Repositories\SrRepository;
 use App\Repositories\SrResponseKeyRepository;
-use App\Services\ApiManager\Data\DataConstants;
 use App\Services\ApiManager\Operations\ApiRequestService;
 use App\Services\ApiManager\Response\Entity\ApiResponse;
 use App\Services\ApiManager\Response\Handlers\ResponseHandler;
 use App\Services\ApiManager\Response\ResponseManager;
+use App\Services\ApiServices\ServiceRequests\SrConfigService;
 use App\Services\Tools\XmlService;
 use App\Traits\Error\ErrorTrait;
 use App\Traits\User\UserTrait;
@@ -322,7 +321,7 @@ class ResponseKeyPopulateService
             return false;
         }
         $responseKeys = $this->srResponseKeyRepository->findSrResponseKeysWithRelation(
-            $this->destSr
+            $this->destSr,
         );
         $itemsArrayResponseKey = $responseKeys->firstWhere('name', 'items_array');
         if ($itemsArrayResponseKey) {

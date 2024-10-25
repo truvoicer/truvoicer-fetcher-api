@@ -21,9 +21,9 @@ use App\Models\Sr;
 use App\Repositories\SrResponseKeySrRepository;
 use App\Services\ApiManager\Operations\ApiRequestService;
 use App\Services\ApiServices\ApiService;
-use App\Services\ApiServices\ServiceRequests\ResponseKeyPopulateService;
+use App\Services\ApiServices\ServiceRequests\ResponseKeys\Populate\PopulateFactory;
+use App\Services\ApiServices\ServiceRequests\ResponseKeys\Populate\ResponseKeyPopulateService;
 use App\Services\ApiServices\ServiceRequests\SrOperationsService;
-use App\Services\ApiServices\ServiceRequests\SrResponseKeyService;
 use App\Services\ApiServices\ServiceRequests\SrService;
 use App\Services\Permission\AccessControlService;
 use App\Services\Permission\PermissionService;
@@ -486,7 +486,7 @@ class ServiceRequestController extends Controller
     public function populateSrResponseKeys(
         Provider          $provider,
         Sr                $sr,
-        ResponseKeyPopulateService $responseKeyPopulateService,
+        PopulateFactory $populateFactory,
         PopulateSrResponseKeysRequest           $request
     ): JsonResponse|\Illuminate\Http\JsonResponse
     {
@@ -502,19 +502,19 @@ class ServiceRequestController extends Controller
         ) {
             return $this->sendErrorResponse("Access denied");
         }
-        $responseKeyPopulateService->setOverwrite($request->validated('overwrite', false));
-        $responseKeyPopulateService->setUser($request->user());
-        $responseKeyPopulateService->setData($request->validated());
-        $responseKeyPopulateService->run(
+        $populateFactory->setOverwrite($request->validated('overwrite', false));
+        $populateFactory->setUser($request->user());
+        $populateFactory->setData($request->validated());
+        $populateFactory->create(
             $sr,
             $request->validated('srs'),
             $request->validated('query', [])
         );
 
-        if ($responseKeyPopulateService->hasErrors()) {
+        if ($populateFactory->hasErrors()) {
             return $this->sendErrorResponse(
                 "Error running request",
-                $responseKeyPopulateService->getErrors(),
+                $populateFactory->getErrors(),
             );
         }
         return $this->sendSuccessResponse(

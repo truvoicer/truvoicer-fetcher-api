@@ -9,13 +9,12 @@ use App\Http\Requests\Service\Request\ResponseKey\UpdateServiceRequestResponseKe
 use App\Http\Resources\Service\ServiceRequest\SrResponseKeyResource;
 use App\Http\Resources\Service\ServiceRequest\SrResponseKeyWithServiceCollection;
 use App\Http\Resources\Service\ServiceRequest\SrResponseKeyWithServiceMinimalCollection;
-use App\Http\Resources\Service\ServiceRequest\SrResponseKeyWithServiceMinimalResource;
 use App\Http\Resources\Service\ServiceRequest\SrResponseKeyWithServiceResource;
 use App\Models\Provider;
 use App\Models\Sr;
 use App\Models\SResponseKey;
 use App\Models\SrResponseKey;
-use App\Services\ApiServices\ServiceRequests\SrResponseKeyService;
+use App\Services\ApiServices\ServiceRequests\ResponseKeys\SrResponseKeyService;
 use App\Services\Permission\AccessControlService;
 use App\Services\Permission\PermissionService;
 use App\Services\Tools\HttpRequestService;
