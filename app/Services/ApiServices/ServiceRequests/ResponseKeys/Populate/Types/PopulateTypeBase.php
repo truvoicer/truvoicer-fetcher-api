@@ -37,7 +37,7 @@ class PopulateTypeBase
     public function __construct(
         protected ApiRequestService $requestOperation,
         protected SrConfigService   $srConfigService,
-        protected ResponseHandler  $responseHandler
+        protected ResponseHandler   $responseHandler
     )
     {
         $this->srRepository = new SrRepository();
@@ -65,54 +65,86 @@ class PopulateTypeBase
 
     protected function parseDataArrayValue(array $data, ?array $keys = []): array
     {
-        foreach ($data as $key => $value) {
-            if (is_array($value)) {
-                $keys[] = $key;
-                $keys = array_merge($keys, $this->parseDataArrayValue($value, $keys));
-                continue;
-            }
-            $keys[] = $key;
-        }
-        return $keys;
+        return array_keys(Arr::dot($data));
     }
+
+    protected function getParsedKeyItem(string $key, mixed $value, ?bool $attribute = false): array
+    {
+        return [
+            'key' => $key,
+            'type' => gettype($value),
+            'attribute' => $attribute
+        ];
+    }
+
     protected function parseResponseKey(array $data): array
     {
         $keys = [];
         foreach ($data as $key => $value) {
             if (is_string($value) || is_numeric($value)) {
-                $keys[] = $key;
+                $keys[] = $this->getParsedKeyItem($key, $value);
                 continue;
             }
             if (is_array($value)) {
                 if (array_key_exists('xml_value_type', $value) && $value['xml_value_type'] === 'attribute') {
                     if (is_array($value['attributes'])) {
-                        $keys[] = sprintf(
-                            '%s.attributes.%s',
-                            $key,
-                            implode('.', $this->parseDataArrayValue($value['attributes']))
-                        );
+                        foreach ($this->parseDataArrayValue($value['attributes']) as $item) {
+                            $keys[] = $this->getParsedKeyItem(
+                                sprintf(
+                                    '%s.attributes.%s',
+                                    $key,
+                                    $item
+                                ),
+                                Arr::get($value['attributes'], $item),
+                                true
+                            );
+                        }
                     }
                     if (is_array($value['values'])) {
-                        $keys[] = sprintf(
-                            '%s.%s',
-                            $key,
-                            implode('.', $this->parseDataArrayValue($value['values']))
-                        );
+                        foreach ($this->parseDataArrayValue($value['values']) as $item) {
+                            $keys[] = $this->getParsedKeyItem(
+                                sprintf(
+                                    '%s.%s',
+                                    $key,
+                                    $item
+                                ),
+                                Arr::get($value['values'], $item),
+                                true
+                            );
+                        }
                     } else {
-                        $keys[] = $key;
+                        $keys[] = $this->getParsedKeyItem(
+                            "{$key}.values",
+                            $value['values'],
+                            true
+                        );
                     }
                     continue;
                 }
-                $keys[] = sprintf(
-                    '%s.%s',
-                    $key,
-                    implode('.', $this->parseDataArrayValue($value))
-                );
+                foreach ($this->parseDataArrayValue($value) as $item) {
+                    $keys[] = $this->getParsedKeyItem(
+                        sprintf(
+                            '%s.%s',
+                            $key,
+                            $item
+                        ),
+                        Arr::get($value, $item)
+                    );
+                }
             }
         }
         return $keys;
     }
-
+    private function removeStringFromKey(string $string, string $haystack): string
+    {
+        $split = explode('.', $haystack);
+        $findAttIndex = array_search($string, $split);
+        if ($findAttIndex !== false) {
+            unset($split[$findAttIndex]);
+            $haystack = implode('.', $split);
+        }
+        return $haystack;
+    }
     protected function populateResponseKeys(array $data): bool
     {
         if (!Arr::isAssoc($data)) {
@@ -122,54 +154,72 @@ class PopulateTypeBase
             $this->destSr,
         );
         $parsedData = $this->parseResponseKey($data);
-        dd($parsedData);
-        foreach ($parsedData as $key) {
+        $srResponseKeySaveData = [
+            'list_item' => true,
+            'show_in_response' => true
+        ];
+        foreach ($parsedData as $item) {
+            $key = $item['key'];
+            $type = $item['type'];
 
             $responseKey = $responseKeys->firstWhere('name', $key);
             if ($responseKey) {
-                $this->saveSrResponseKey($responseKey, $key);
+                $this->saveSrResponseKey($responseKey, $key, $srResponseKeySaveData);
                 continue;
             }
             $toSnake = Str::snake($key);
             $responseKey = $responseKeys->firstWhere('name', $toSnake);
             if ($responseKey) {
-                $this->saveSrResponseKey($responseKey, $key);
+                $this->saveSrResponseKey($responseKey, $key, $srResponseKeySaveData);
                 continue;
             }
             $toCamel = Str::camel($key);
             $responseKey = $responseKeys->firstWhere('name', $toCamel);
             if ($responseKey) {
-                $this->saveSrResponseKey($responseKey, $key);
+                $this->saveSrResponseKey($responseKey, $key, $srResponseKeySaveData);
                 continue;
             }
             $toSlug = Str::slug($key);
             $responseKey = $responseKeys->firstWhere('name', $toSlug);
             if ($responseKey) {
-                $this->saveSrResponseKey($responseKey, $key);
+                $this->saveSrResponseKey($responseKey, $key, $srResponseKeySaveData);
                 continue;
             }
-            $createSResponseKey = $this->responseKeyRepository->createServiceResponseKey(
-                $this->destService,
-                ['name' => $toSnake]
+            if ($item['attribute']) {
+                $toSnake = $this->removeStringFromKey('attributes', $toSnake);
+                $toSnake = $this->removeStringFromKey('values', $toSnake);
+            }
+            $buildName = str_replace(
+                ['.', ' ', '-'],
+                '_',
+                $toSnake
             );
-            if (!$createSResponseKey) {
-                continue;
+            $responseKey = $responseKeys->firstWhere('name', $buildName);
+            if (!$responseKey) {
+                $createSResponseKey = $this->responseKeyRepository->createServiceResponseKey(
+                    $this->destService,
+                    ['name' => $buildName]
+                );
+                if (!$createSResponseKey) {
+                    continue;
+                }
+                $responseKey = $this->responseKeyRepository->getModel();
             }
-            $this->saveSrResponseKey($this->responseKeyRepository->getModel(), $key);
+
+            $this->saveSrResponseKey($responseKey, $key, $srResponseKeySaveData);
         }
-        dd($data);
-        $this->parseResponseKey($data);
 
         return $this->hasErrors();
     }
 
-    protected function saveSrResponseKey(string $name, string $value): bool
+    protected function saveSrResponseKeyByName(string $name, string $value): bool
     {
         $sResponseKey = $this->srResponseKeyRepository->findOneSrResponseKeysWithRelation(
             $this->destSr,
             [],
             ['name' => $name]
         );
+
         if (!$sResponseKey) {
             if (
                 !$this->responseKeyRepository->createServiceResponseKey(
@@ -185,15 +235,21 @@ class PopulateTypeBase
             }
             $sResponseKey = $this->srResponseKeyRepository->getModel();
         }
+        return $this->saveSrResponseKey($sResponseKey, $value);
+    }
 
+    protected function saveSrResponseKey(SResponseKey $sResponseKey, string $value, ?array $data = []): bool
+    {
         $srResponseKey = $sResponseKey->srResponseKey()->first();
         if ($srResponseKey && !empty($srResponseKey->value) && !$this->overwrite) {
             return true;
         }
+
+        $data['value'] = $value;
         $save = $this->srResponseKeyRepository->saveServiceRequestResponseKey(
             $this->destSr,
             $sResponseKey,
-            ['value' => $value]
+            $data
         );
         if (!$save) {
             $this->addError(

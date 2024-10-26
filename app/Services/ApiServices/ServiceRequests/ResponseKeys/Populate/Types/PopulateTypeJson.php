@@ -8,6 +8,7 @@ use App\Models\SResponseKey;
 use App\Repositories\SResponseKeyRepository;
 use App\Repositories\SrRepository;
 use App\Repositories\SrResponseKeyRepository;
+use App\Services\ApiManager\Data\DataConstants;
 use App\Services\ApiManager\Operations\ApiRequestService;
 use App\Services\ApiManager\Response\Entity\ApiResponse;
 use App\Services\ApiManager\Response\Handlers\ResponseHandler;
@@ -23,6 +24,20 @@ use SimpleXMLIterator;
 class PopulateTypeJson extends PopulateTypeBase
 {
 
+    public function __construct(
+        protected ApiRequestService $requestOperation,
+        protected SrConfigService   $srConfigService,
+        protected ResponseHandler   $responseHandler
+    )
+    {
+        parent::__construct($requestOperation, $srConfigService, $responseHandler);
+        $this->setReservedKeys(
+            array_column(
+                DataConstants::JSON_SERVICE_RESPONSE_KEYS,
+                DataConstants::RESPONSE_KEY_NAME
+            )
+        );
+    }
     public function runSrRequest(Sr $sr, ?array $query = []): ApiResponse
     {
         $provider = $sr->provider()->first();
@@ -145,7 +160,7 @@ class PopulateTypeJson extends PopulateTypeBase
         }
 
         if (Arr::isList($requestData)) {
-            if (!$this->saveSrResponseKey('items_array', 'root_items')) {
+            if (!$this->saveSrResponseKeyByName('items_array', 'root_items')) {
                 $this->addError(
                     "error",
                     "Error saving items_array response key."
@@ -157,7 +172,7 @@ class PopulateTypeJson extends PopulateTypeBase
 
         $this->prepareItemsArrayScoreData($requestData);
         $extractData = $this->extractDataFromScoreData($this->score);
-        if (!$this->saveSrResponseKey('items_array', $extractData['value'])) {
+        if (!$this->saveSrResponseKeyByName('items_array', $extractData['value'])) {
             $this->addError(
                 "error",
                 "Error saving items_array response key."

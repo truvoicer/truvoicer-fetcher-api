@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api\Backend\Tools;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Admin\Tools\Export\ExportRequest;
 use App\Services\Permission\AccessControlService;
 use App\Services\Tools\HttpRequestService;
 use App\Services\SecurityService;
@@ -56,9 +57,8 @@ class ImportExportController extends Controller
         );
     }
 
-    public function runExport(Request $request)
+    public function runExport(ExportRequest $request)
     {
-        $requestData = $this->httpRequestService->getRequestData($request, true);
         $xmlDataArray = $this->exportService->getExportXmlDataArray($requestData);
         return $this->sendSuccessResponse(
             "Export Response.",

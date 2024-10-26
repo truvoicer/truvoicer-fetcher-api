@@ -8,11 +8,14 @@ use App\Models\SResponseKey;
 use App\Repositories\SResponseKeyRepository;
 use App\Repositories\SrRepository;
 use App\Repositories\SrResponseKeyRepository;
+use App\Services\ApiManager\Data\DataConstants;
+use App\Services\ApiManager\Data\DefaultData;
 use App\Services\ApiManager\Operations\ApiRequestService;
 use App\Services\ApiManager\Response\Entity\ApiResponse;
 use App\Services\ApiManager\Response\Handlers\ResponseHandler;
 use App\Services\ApiManager\Response\ResponseManager;
 use App\Services\ApiServices\ServiceRequests\SrConfigService;
+use App\Services\ApiServices\SResponseKeysService;
 use App\Services\Tools\XmlService;
 use App\Traits\Error\ErrorTrait;
 use App\Traits\User\UserTrait;
@@ -24,12 +27,23 @@ class PopulateTypeXml extends PopulateTypeBase
 {
     public function __construct(
         protected ApiRequestService $requestOperation,
-        protected SrConfigService $srConfigService,
+        protected SrConfigService   $srConfigService,
         protected ResponseHandler   $responseHandler,
         protected XmlService        $xmlService
     )
     {
         parent::__construct($requestOperation, $srConfigService, $responseHandler);
+        $this->setReservedKeys(
+            array_combine(
+                array_column(
+                    DataConstants::XML_SERVICE_RESPONSE_KEYS,
+                    DataConstants::RESPONSE_KEY_NAME
+                ),
+                array_map(function ($item) {
+                    return null;
+                }, DataConstants::XML_SERVICE_RESPONSE_KEYS)
+            )
+        );
     }
 
 
@@ -66,6 +80,7 @@ class PopulateTypeXml extends PopulateTypeBase
             'data' => $this->findByKeyTreeForXml($resultsTrack['parent'], $this->response->getRequestData(), false)
         ];
     }
+
     private function getItemsArrayValueFromScoreData(array $scoreData): array|bool
     {
         if (empty($scoreData)) {
@@ -109,7 +124,7 @@ class PopulateTypeXml extends PopulateTypeBase
         return false;
     }
 
-    private function prepareItemsArrayScoreDataForXml(SimpleXMLIterator $xmlIterator, ?array $parent = [], ?String $parentKey = null): void
+    private function prepareItemsArrayScoreDataForXml(SimpleXMLIterator $xmlIterator, ?array $parent = [], ?string $parentKey = null): void
     {
         $parentKey = (array_key_exists('key', $parent)) ? $parent['key'] : null;
         for ($xmlIterator->rewind(); $xmlIterator->valid(); $xmlIterator->next()) {
@@ -184,7 +199,7 @@ class PopulateTypeXml extends PopulateTypeBase
             if (!count($buildItemList)) {
                 return false;
             }
-            if (!$this->saveSrResponseKey('items_array', $itemsArrayValue)) {
+            if (!$this->saveSrResponseKeyByName('items_array', $itemsArrayValue)) {
                 $this->addError(
                     "error",
                     "Error saving items_array response key."
@@ -192,7 +207,7 @@ class PopulateTypeXml extends PopulateTypeBase
                 return false;
             }
 
-            if (!$this->saveSrResponseKey('item_repeater_key', $itemRepeaterKey)) {
+            if (!$this->saveSrResponseKeyByName('item_repeater_key', $itemRepeaterKey)) {
                 $this->addError(
                     "error",
                     "Error saving item_repeater_key response key."

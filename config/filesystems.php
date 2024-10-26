@@ -44,6 +44,19 @@ return [
             'throw' => false,
         ],
 
+        'downloads' => [
+            'driver' => 'local',
+            'root' => storage_path('app/public/downloads'),
+            'url' => env('APP_URL').'/storage/downloads',
+            'visibility' => 'public',
+            'throw' => false,
+        ],
+        'uploads' => [
+            'driver' => 'local',
+            'root' => storage_path('app/uploads'),
+            'throw' => false,
+        ],
+
         's3' => [
             'driver' => 's3',
             'key' => env('AWS_ACCESS_KEY_ID'),

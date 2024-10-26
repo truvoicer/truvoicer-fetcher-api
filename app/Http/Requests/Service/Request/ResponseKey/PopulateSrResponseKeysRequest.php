@@ -27,7 +27,7 @@ class PopulateSrResponseKeysRequest extends FormRequest
         $reservedContentTypeKeys = DefaultData::getContentTypeReservedResponseKeys();
         return array_merge(
             array_map(
-                fn($data) => ['required', 'string'],
+                fn($data) => ['sometimes', 'string'],
                 array_combine(
                     array_column($reservedContentTypeKeys, 'name'),
                     array_values($reservedContentTypeKeys)

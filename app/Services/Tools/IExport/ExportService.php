@@ -26,7 +26,11 @@ class ExportService
         DownloadsFileSystemService $downloadsFileSystemService,
         IExportTypeService         $iExportTypeService,
         ServiceFactory             $serviceFactory,
-        AccessControlService       $accessControlService
+        AccessControlService       $accessControlService,
+        private CategoryService    $categoryService,
+        private PropertyService    $propertyService,
+        private ProviderService    $providerService,
+        private ApiService         $apiService
     )
     {
         $this->serializerService = $serializerService;
@@ -38,86 +42,60 @@ class ExportService
 
     public function getExportEntityListData(User $user)
     {
+        $this->accessControlService->setUser($user);
         $exportEntityData = [];
         foreach (IExportTypeService::EXPORT_TYPES as $key => $type) {
             switch ($type) {
                 case IExportTypeService::EXPORT_TYPES["CATEGORIES"]:
-//                    $categoryService = $this->serviceFactory->getService(CategoryService::SERVICE_ALIAS);
-                    array_push($exportEntityData, [
+                    $exportEntityData[] = [
                         "show" => false,
                         "id" => "id",
                         "name" => "categories",
                         "label" => "Categories",
                         "nameField" => "name",
                         "labelField" => "label",
-//                        "data" => $this->serializerService->entityArrayToArray(
-//                            $categoryService->findUserPermittedCategories(
-//                                "name",
-//                                "asc",
-//                                null,
-//                                $user
-//                            ),
-//                            ["list"]
-//                        )
-                    ]);
+                        "data" => $this->categoryService->findUserCategories(
+                            $user,
+                            false
+                        )->toArray()
+                    ];
                     break;
                 case IExportTypeService::EXPORT_TYPES["PROVIDERS"]:
-//                    $providerService = $this->serviceFactory->getService(ProviderService::SERVICE_ALIAS);
-                    array_push($exportEntityData, [
+                    $exportEntityData[] = [
                         "show" => false,
                         "id" => "id",
                         "name" => "providers",
                         "label" => "Providers",
                         "nameField" => "name",
                         "labelField" => "label",
-//                        "data" => $this->serializerService->entityArrayToArray(
-//                            $providerService->findUserPermittedProviders(
-//                                "name",
-//                                "asc",
-//                                null,
-//                                $user
-//                            ),
-//                            ["list"]
-//                        )
-                    ]);
+                        "data" => $this->providerService->findProviders(
+                            $user
+                        )->toArray()
+                    ];
                     break;
                 case IExportTypeService::EXPORT_TYPES["SERVICES"]:
-//                    $apiService = $this->serviceFactory->getService(ApiService::SERVICE_ALIAS);
-                    $data = [];
-//                    if ($this->accessControlService->inAdminGroup()) {
-//                        $data = $this->serializerService->entityArrayToArray(
-//                            $apiService->findByParams(
-//                                "name",
-//                                "asc",
-//                                null
-//                            ),
-//                            ["list"]
-//                        );
-//                    }
-                    array_push($exportEntityData, [
+                    $exportEntityData[] = [
                         "show" => false,
                         "id" => "id",
                         "name" => "services",
                         "label" => "Services",
                         "nameField" => "name",
                         "labelField" => "label",
-                        "data" => $data
-                    ]);
+                        "data" => $this->apiService->findUserServices(
+                            $user,
+                            false
+                        )->toArray()
+                    ];
                     break;
                 case IExportTypeService::EXPORT_TYPES["PROPERTIES"]:
-//                    $propertyService = $this->serviceFactory->getService(PropertyService::SERVICE_ALIAS);
                     $data = [];
-//                    if ($this->accessControlService->inAdminGroup()) {
-//                        $data = $this->serializerService->entityArrayToArray(
-//                            $propertyService->findPropertiesByParams(
-//                                "property_name",
-//                                "asc",
-//                                null
-//                            ),
-//                            ["list"]
-//                        );
-//                    }
-                    array_push($exportEntityData, [
+                    if ($this->accessControlService->inAdminGroup()) {
+                        $data = $this->propertyService->findPropertiesByParams(
+                            $user,
+                            false
+                        )->toArray();
+                    }
+                    $exportEntityData[] = [
                         "show" => false,
                         "id" => "id",
                         "name" => "properties",
@@ -125,7 +103,7 @@ class ExportService
                         "nameField" => "property_name",
                         "labelField" => "label",
                         "data" => $data
-                    ]);
+                    ];
                     break;
             }
         }

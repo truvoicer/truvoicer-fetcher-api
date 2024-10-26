@@ -62,11 +62,13 @@ class ServiceController extends Controller
                 $request->query->filter('pagination', true, FILTER_VALIDATE_BOOLEAN)
             );
         } else {
+
+            $this->apiServicesService->getServiceRepository()->setOrderDir($request->get('order', "asc"));
+            $this->apiServicesService->getServiceRepository()->setSortField($request->get('sort', "name"));
+            $this->apiServicesService->getServiceRepository()->setLimit($request->get('count', -1));
+
             $getServices = $this->apiServicesService->findUserServices(
                 $request->user(),
-                $request->get('sort', "name"),
-                $request->get('order', "asc"),
-                $request->get('count', -1),
                 $request->query->filter('pagination', true, FILTER_VALIDATE_BOOLEAN)
             );
         }

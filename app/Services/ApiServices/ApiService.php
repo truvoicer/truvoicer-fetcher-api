@@ -47,7 +47,7 @@ class ApiService extends BaseService
         return $this->serviceRepository->findMany();
     }
 
-    public function findUserServices(User $user, string $sort, string $order, ?int $count, ?bool $pagination = true)
+    public function findUserServices(User $user, ?bool $pagination = true)
     {
         $this->serviceRepository->setPagination($pagination);
         $this->serviceRepository->setPermissions([
