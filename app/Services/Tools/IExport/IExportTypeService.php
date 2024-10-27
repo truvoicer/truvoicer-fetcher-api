@@ -120,6 +120,7 @@ class IExportTypeService extends BaseService
         }
     }
 
+
     public function getExportTypeData($exportType, $data)
     {
         $this->accessControlService->setUser($this->getUser());
@@ -141,9 +142,14 @@ class IExportTypeService extends BaseService
                     );
                     return $isPermitted ? $category : false;
                 case self::EXPORT_TYPES["PROVIDERS"]:
-                    $provider = $this->providerImporterService->getProviderById($item["id"]);
+                    $provider = $this->providerImporterService->getProviderRepository()->findProviderById(
+                        $item["id"],
+                        (!empty($item["srs"]) && is_array($item["srs"])) ?
+                            $item["srs"] : []
+                    );
+
                     if ($this->accessControlService->inAdminGroup()) {
-                        return $provider;
+                        return $provider->toArray();
                     }
 
                     $isPermitted = $this->accessControlService->checkPermissionsForEntity(
@@ -154,7 +160,7 @@ class IExportTypeService extends BaseService
                         ],
                         false
                     );
-                    return $isPermitted ? $provider : false;
+                    return $isPermitted ? $provider->toArray() : false;
                 case self::EXPORT_TYPES["SERVICES"]:
                     return $this->apiServiceImporterService->getServiceById($item["id"]);
                 case self::EXPORT_TYPES["PROPERTIES"]:

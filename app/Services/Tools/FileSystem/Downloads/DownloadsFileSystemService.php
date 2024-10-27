@@ -4,6 +4,8 @@ namespace App\Services\Tools\FileSystem\Downloads;
 
 use App\Services\Tools\FileSystem\FileSystemService;
 use App\Services\Tools\FileSystem\FileSystemServiceBase;
+use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Storage;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 
 class DownloadsFileSystemService extends FileSystemServiceBase
@@ -21,29 +23,21 @@ class DownloadsFileSystemService extends FileSystemServiceBase
      * @param string $fileName
      * @param string $fileContents
      */
-    public function storeNewDownloadsFile(string $dir, string $fileName, string $fileContents)
+    public function storeNewDownloadsFile(string $dir, string $fileName, string $fileContents): bool
     {
-        if ($this->filesystem->exists($dir)) {
-            return $this->filesystem->update($dir, $fileContents);
-        } else {
-            return $this->filesystem->write($dir, $fileContents);
-        }
+        return $this->filesystem->put($dir, $fileContents);
     }
 
     public function saveDownloadsFileToDatabase( string $dir, string $fileName, string $fileType, string $ext ) {
-        $saveToDatabase = $this->fileSystemService->createFile([
+        return $this->fileSystemService->createFile([
             "file_name" => $fileName,
             "file_path" => $dir,
             "file_type" => $fileType,
             "file_extension" => $ext,
-//            "mime_type" => $this->filesystem->getMimetype($dir),
-//            "file_size" => $this->filesystem->getSize($dir),
+            "mime_type" => File::mimeType($dir),
+            "file_size" => File::size($dir),
             "file_system" => self::FILE_SYSTEM_NAME,
         ]);
-        if (!$saveToDatabase || $saveToDatabase === null) {
-            return false;
-        }
-        return $saveToDatabase;
     }
 
     public function readFileStream(string $path) {

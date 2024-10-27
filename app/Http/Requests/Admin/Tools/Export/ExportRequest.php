@@ -3,6 +3,7 @@
 namespace App\Http\Requests\Admin\Tools\Export;
 
 use App\Services\EntityService;
+use App\Services\Tools\IExport\ExportService;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -24,14 +25,18 @@ class ExportRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'categories' => ['sometimes', 'boolean'],
-            'categoriesData' => ['sometimes', 'array'],
-            'providers' => ['sometimes', 'boolean'],
-            'providersData' => ['sometimes', 'array'],
-            'services' => ['sometimes', 'boolean'],
-            'servicesData' => ['sometimes', 'array'],
-            'properties' => ['sometimes', 'boolean'],
-            'propertiesData' => ['sometimes', 'array'],
+            'data' => ['required', 'array'],
+            'data.*.export_type' => [
+                'required',
+                'string',
+                Rule::in(
+                    array_column(ExportService::getExportEntityFields(), 'name')
+                )
+            ],
+            'data.*.export_data' => [
+                'required',
+                'array',
+            ],
         ];
     }
 }

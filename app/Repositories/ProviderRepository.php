@@ -9,6 +9,9 @@ use App\Models\Provider;
 use App\Models\User;
 use App\Services\Permission\PermissionService;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class ProviderRepository extends BaseRepository
 {
@@ -20,6 +23,37 @@ class ProviderRepository extends BaseRepository
     public function getModel(): Provider
     {
         return parent::getModel();
+    }
+
+    private function buildNestedSrQuery($query, array $srs): HasMany|BelongsToMany
+    {
+        if (!count($srs)) {
+            return $query;
+        }
+        $query->with(['childSrs' => function ($query) use ($srs) {
+            $query->whereIn('sr_id', array_column($srs, 'id'));
+            $childSrs = [];
+            foreach ($srs as $sr) {
+                if (is_array($sr['child_srs'])) {
+                    $childSrs = array_merge($childSrs, $sr['child_srs']);
+                }
+            }
+            $query = $this->buildNestedSrQuery(
+                $query,
+                $childSrs
+            );
+        }]);
+        return $query;
+    }
+
+    public function findProviderById(int $id, ?array $srs = []): Provider|null|Model
+    {
+        return $this->newQuery()
+            ->where('id', $id)
+            ->with(['sr' => function ($query) use ($srs) {
+                $query->whereIn('id', array_column($srs, 'id'));
+                $query = $this->buildNestedSrQuery($query, $srs);
+            }])->first();
     }
 
     public function userPermissionsQuery(User $user, $query)

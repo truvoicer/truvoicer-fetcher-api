@@ -47,6 +47,7 @@ class SrRepository extends BaseRepository
         return $this->findByLabelOrName($query);
     }
 
+
     public function findSrsWithSchedule(Provider $provider)
     {
         return $this->getResults(

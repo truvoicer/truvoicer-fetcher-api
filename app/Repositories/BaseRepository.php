@@ -86,7 +86,7 @@ class BaseRepository
         return $this;
     }
 
-    protected function addWhereDoesntHaveToQuery(Relation $query): Relation
+    protected function addWhereDoesntHaveToQuery(EloquentBuilder|Relation $query): EloquentBuilder|Relation
     {
         $whereDoesntHave = $this->getWhereDoesntHave();
         foreach ($whereDoesntHave as $key => $value) {
@@ -98,7 +98,7 @@ class BaseRepository
         }
         return $query;
     }
-    protected function addWithToQuery(Relation $query): Relation
+    protected function addWithToQuery(EloquentBuilder|Relation $query): EloquentBuilder|Relation
     {
         $query->with($this->getWith());
         return $query;
@@ -253,7 +253,7 @@ class BaseRepository
 
     protected function getResults(Relation|EloquentBuilder $query): Collection|LengthAwarePaginator
     {
-        if ($query instanceof Relation) {
+        if ($query instanceof Relation || $query instanceof EloquentBuilder) {
             $query = $this->addWhereDoesntHaveToQuery($query);
             $query = $this->addWithToQuery($query);
         }

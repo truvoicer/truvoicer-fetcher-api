@@ -12,6 +12,7 @@ use App\Services\Category\CategoryService;
 use App\Services\Permission\AccessControlService;
 use App\Services\Property\PropertyService;
 use App\Services\Tools\IExport\IExportTypeService;
+use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 
 class ProviderImporterService extends ProviderService
 {
@@ -30,6 +31,17 @@ class ProviderImporterService extends ProviderService
             $responseKeysService,
             $accessControlService
         );
+    }
+
+    public function getProviderById(int $providerId, ?array $srIds = [])
+    {
+        $provider = $this->providerRepository->findById($providerId);
+        if ($provider === null) {
+            throw new BadRequestHttpException(sprintf("Provider id:%s not found in database.",
+                $providerId
+            ));
+        }
+        return $provider;
     }
 
     private function buildServiceRequests(Provider $provider, array $mappings)

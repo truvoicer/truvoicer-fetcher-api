@@ -59,7 +59,8 @@ class ImportExportController extends Controller
 
     public function runExport(ExportRequest $request)
     {
-        $xmlDataArray = $this->exportService->getExportXmlDataArray($requestData);
+        $this->exportService->setUser($request->user());
+        $xmlDataArray = $this->exportService->getExportDataArray($request->validated());
         return $this->sendSuccessResponse(
             "Export Response.",
             $this->exportService->storeXmlDataFromArray($xmlDataArray)

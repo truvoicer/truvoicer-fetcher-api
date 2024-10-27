@@ -35,11 +35,12 @@ class ProviderController extends Controller
      * @param SerializerService $serializerService
      */
     public function __construct(
-        HttpRequestService $httpRequestService,
-        SerializerService $serializerService,
-        ProviderService $providerService,
+        HttpRequestService   $httpRequestService,
+        SerializerService    $serializerService,
+        ProviderService      $providerService,
         AccessControlService $accessControlService
-    ) {
+    )
+    {
         parent::__construct($accessControlService, $httpRequestService, $serializerService);
         $this->providerService = $providerService;
     }
@@ -56,8 +57,17 @@ class ProviderController extends Controller
         $this->providerService->getProviderRepository()->setOrderDir($request->get('order', "asc"));
         $this->providerService->getProviderRepository()->setSortField($request->get('sort', "name"));
         $this->providerService->getProviderRepository()->setLimit($request->get('count', -1));
-        $this->providerService->getProviderRepository()->setWith(['categories', 'providerRateLimit']);
+        $with = ['categories', 'providerRateLimit'];
 
+        if ($request->query->getBoolean('show_srs', false)) {
+            $with['srs'] = function ($query) use ($request) {
+                    $query->whereDoesntHave('parentSrs');
+                if ($request->query->getBoolean('show_nested_sr_children', false)) {
+                    $query->with('childSrs');
+                }
+            };
+        }
+        $this->providerService->getProviderRepository()->setWith($with);
         return $this->sendSuccessResponse(
             "success",
             new ProviderCollection(
@@ -138,9 +148,10 @@ class ProviderController extends Controller
             "Provider deleted."
         );
     }
+
     public function deleteBatchProviders(
-        Provider $provider,
-        DeleteBatchProvidersRequest  $request
+        Provider                    $provider,
+        DeleteBatchProvidersRequest $request
     ): \Illuminate\Http\JsonResponse
     {
         $this->setAccessControlUser($request->user());

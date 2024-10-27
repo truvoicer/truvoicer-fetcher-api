@@ -11,10 +11,13 @@ use App\Services\Provider\ProviderService;
 use App\Services\ServiceFactory;
 use App\Services\Tools\FileSystem\Downloads\DownloadsFileSystemService;
 use App\Services\Tools\SerializerService;
+use App\Traits\User\UserTrait;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 
 class ExportService
 {
+    use UserTrait;
+
     private SerializerService $serializerService;
     private DownloadsFileSystemService $downloadsFileSystem;
     private IExportTypeService $iExportTypeService;
@@ -40,9 +43,8 @@ class ExportService
         $this->accessControlService = $accessControlService;
     }
 
-    public function getExportEntityListData(User $user)
+    public static function getExportEntityFields()
     {
-        $this->accessControlService->setUser($user);
         $exportEntityData = [];
         foreach (IExportTypeService::EXPORT_TYPES as $key => $type) {
             switch ($type) {
@@ -54,10 +56,6 @@ class ExportService
                         "label" => "Categories",
                         "nameField" => "name",
                         "labelField" => "label",
-                        "data" => $this->categoryService->findUserCategories(
-                            $user,
-                            false
-                        )->toArray()
                     ];
                     break;
                 case IExportTypeService::EXPORT_TYPES["PROVIDERS"]:
@@ -68,9 +66,6 @@ class ExportService
                         "label" => "Providers",
                         "nameField" => "name",
                         "labelField" => "label",
-                        "data" => $this->providerService->findProviders(
-                            $user
-                        )->toArray()
                     ];
                     break;
                 case IExportTypeService::EXPORT_TYPES["SERVICES"]:
@@ -81,11 +76,45 @@ class ExportService
                         "label" => "Services",
                         "nameField" => "name",
                         "labelField" => "label",
-                        "data" => $this->apiService->findUserServices(
-                            $user,
-                            false
-                        )->toArray()
                     ];
+                    break;
+                case IExportTypeService::EXPORT_TYPES["PROPERTIES"]:
+                    $exportEntityData[] = [
+                        "show" => false,
+                        "id" => "id",
+                        "name" => "properties",
+                        "label" => "Properties",
+                        "nameField" => "property_name",
+                        "labelField" => "label",
+                    ];
+                    break;
+            }
+        }
+        return $exportEntityData;
+    }
+
+    public function getExportEntityListData(User $user)
+    {
+        $this->accessControlService->setUser($user);
+        $exportEntityData = self::getExportEntityFields();
+        foreach ($exportEntityData as $index => $type) {
+            switch ($type['name']) {
+                case IExportTypeService::EXPORT_TYPES["CATEGORIES"]:
+                    $exportEntityData[$index]['data'] = $this->categoryService->findUserCategories(
+                        $user,
+                        false
+                    )->toArray();
+                    break;
+                case IExportTypeService::EXPORT_TYPES["PROVIDERS"]:
+                    $exportEntityData[$index]['data'] = $this->providerService->findProviders(
+                        $user
+                    )->toArray();
+                    break;
+                case IExportTypeService::EXPORT_TYPES["SERVICES"]:
+                    $exportEntityData[$index]['data'] = $this->apiService->findUserServices(
+                        $user,
+                        false
+                    )->toArray();
                     break;
                 case IExportTypeService::EXPORT_TYPES["PROPERTIES"]:
                     $data = [];
@@ -95,15 +124,7 @@ class ExportService
                             false
                         )->toArray();
                     }
-                    $exportEntityData[] = [
-                        "show" => false,
-                        "id" => "id",
-                        "name" => "properties",
-                        "label" => "Properties",
-                        "nameField" => "property_name",
-                        "labelField" => "label",
-                        "data" => $data
-                    ];
+                    $exportEntityData[$index]['data'] = $data;
                     break;
             }
         }
@@ -122,81 +143,58 @@ class ExportService
 
     public function storeXmlDataFromArray(array $xmlArray)
     {
+        if (!count($xmlArray)) {
+            return [
+                "status" => "error",
+                "message" => "Export Store error: No data to export."
+            ];
+        }
         $date = new \DateTime();
         $dateString = $date->format("YmdHis");
-        $rootDir = sprintf("exports/%s", $dateString);
-        return array_map(function ($xmlItem) use ($rootDir) {
-            $responseArray = [];
-            if ($xmlItem["xml"] === "") {
-                return [
-                    "status" => "error",
-                    "message" => sprintf("Export Store item error: Type (%s) empty.",
-                        $xmlItem["type"])
-                ];
-            }
-            $fileName = sprintf("%s.xml", $xmlItem["type"]);
-            $fileDirectory = sprintf("/%s/%s", $rootDir, $fileName);
+        $rootDir = "exports";
+        $responseArray = [];
+        $fileName = sprintf("export-%s.json", $dateString);
 
-            if (!$this->storeXmlData($xmlItem, $fileDirectory, $fileName)) {
-                $responseArray["status"] = "error";
-                $responseArray["message"] = sprintf("Export Store item error: Type (%s) unable to create export file.",
-                    $xmlItem["type"]);
-            }
+        $fileDirectory = sprintf("/%s/%s", $rootDir, $fileName);
 
-            $getSavedData = $this->saveXmlData($fileDirectory, $fileName);
-            if (!$getSavedData) {
-                $responseArray["status"] = "error";
-                $responseArray["message"] = sprintf("Export save item error: Type (%s) unable to save item to database.",
-                    $xmlItem["type"]);
-            } else {
-                $responseArray["status"] = "success";
-                $responseArray["message"] = sprintf("Export file saved: Type (%s)", $xmlItem["type"]);
-                $responseArray["type"] = $xmlItem["type"];
-                $responseArray["data"] = $getSavedData;
-                $responseArray["file_url"] = $this->downloadsFileSystem->getFileDownloadUrl($getSavedData);
-            }
-            return $responseArray;
-        }, $xmlArray);
-    }
-
-    private function storeXmlData(array $xmlItem, string $dir, string $fileName)
-    {
-        return $this->downloadsFileSystem->storeNewDownloadsFile(
-            $dir,
+        $storeData = $this->downloadsFileSystem->storeNewDownloadsFile(
+            $fileDirectory,
             $fileName,
-            $xmlItem["xml"]
+            json_encode($xmlArray)
         );
 
-    }
+        if (!$storeData) {
+            return [
+                "status" => "error",
+                "message" => "Export Store error: Unable to store data."
+            ];
+        }
 
-    private function saveXmlData(string $fileDirectory, string $fileName)
-    {
-        return $this->downloadsFileSystem->saveDownloadsFileToDatabase(
+        $getSavedData = $this->downloadsFileSystem->saveDownloadsFileToDatabase(
             $fileDirectory,
             $fileName,
             "export",
-            "xml"
+            "json"
         );
-
+        if (!$getSavedData) {
+            $responseArray["status"] = "error";
+            $responseArray["message"] = sprintf(
+                "Export save item error: Type (%s) unable to save item to database.",
+                'json'
+            );
+        } else {
+            $responseArray["status"] = "success";
+            $responseArray["message"] = sprintf("Export file saved: Type (%s)", 'json');
+            $responseArray["type"] = 'json';
+            $responseArray["data"] = $getSavedData;
+            $responseArray["file_url"] = $this->downloadsFileSystem->getFileDownloadUrl($getSavedData);
+        }
+        return $responseArray;
     }
 
-    public function getExportXmlDataArray($data)
+    public function getExportDataArray(array $data)
     {
-        $xmlDataArray = array_map(function ($exportItem) {
-            $xmlString = "";
-            if (count($exportItem["data"]) > 0) {
-                $xmlString = $this->serializerService->entityToXml($exportItem["data"], ["export_" . $exportItem["type"]]);
-            }
-            return [
-                "type" => $exportItem["type"],
-                "xml" => $xmlString
-            ];
-        }, $this->getExportDataArray($data));
-        return $xmlDataArray;
-    }
-
-    public function getExportDataArray($data)
-    {
+        $this->iExportTypeService->setUser($this->getUser());
         $this->validateRequest($data);
         return array_map(function ($exportItem) {
             $exportType = $this->getExportType($exportItem);
