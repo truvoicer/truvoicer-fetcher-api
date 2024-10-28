@@ -48,6 +48,7 @@ return [
             'driver' => 'local',
             'root' => storage_path('app/public/downloads'),
             'url' => env('APP_URL').'/storage/downloads',
+            'serve' => true,
             'visibility' => 'public',
             'throw' => false,
         ],

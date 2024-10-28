@@ -3,6 +3,8 @@ namespace App\Services\Tools\FileSystem\Uploads;
 
 use App\Services\Tools\FileSystem\FileSystemService;
 use App\Services\Tools\FileSystem\FileSystemServiceBase;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\File;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 
@@ -26,20 +28,23 @@ class UploadsFileSystemService extends FileSystemServiceBase
         }
     }
 
-    public function saveUploadTempFileToDatabase(string $fileName, string $fileType, string $ext ) {
-        $saveToDatabase = $this->fileSystemService->createFile([
-            "file_name" => $fileName,
-            "file_path" => $fileName,
-            "file_type" => $fileType,
-            "file_extension" => $ext,
-//            "mime_type" => $this->filesystem->getMimetype( $fileName ),
-//            "file_size" => $this->filesystem->getSize( $fileName ),
-            "file_system" => self::FILE_SYSTEM_NAME,
-        ]);
-        if (!$saveToDatabase || $saveToDatabase === null) {
+    public function saveUploadTempFileToDatabase(string $fileName, string $fileType, string $ext ): Model|bool
+    {
+        $fullPath = $this->getFullPath($fileName);
+        $saveToDatabase = $this->fileSystemService->createFile(
+            $fileName,
+            $fullPath,
+            $fileName,
+            $fileType,
+            $ext,
+            File::mimeType($fullPath),
+            File::size($fullPath),
+            self::FILE_SYSTEM_NAME
+        );
+        if (!$saveToDatabase) {
             return false;
         }
-        return $saveToDatabase;
+        return $this->fileSystemService->getFileRepository()->getModel();
     }
 
     public function readTempFile($filePath) {

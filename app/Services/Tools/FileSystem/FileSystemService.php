@@ -38,7 +38,29 @@ class FileSystemService
         return $file;
     }
 
-    private function getFileObject(array $data) {
+    private function getFileObject(
+        string $fileName,
+        string $fullPath,
+        string $relativePath,
+        string $fileType,
+        string $ext,
+        string $mimeType,
+        int $fileSize,
+        string $fileSystem
+    ) {
+//        $this->fileSystemService->createFile([
+//            "file_name" => $fileName,
+//            "file_path" => $dir,
+//            "file_type" => $fileType,
+//            "file_extension" => $ext,
+//            "mime_type" => File::mimeType(
+//                $this->getFullPath($dir)
+//            ),
+//            "file_size" => File::size(
+//                $this->getFullPath($dir)
+//            ),
+//            "file_system" => self::FILE_SYSTEM_NAME,
+//        ]);
         $fileData = [];
         $fileData['file_name'] = $data['filename'];
         $fileData['file_path'] = $data['path'];
@@ -67,16 +89,35 @@ class FileSystemService
         return $data;
     }
 
-    public function createFileDownload(File $file)
+    public function createFileDownload(File $file): bool
     {
-        $fileDownload = $this->getFileDownloadObject($file);
-        return $this->fileDownloadRepository->saveFileDownload($fileDownload);
+        return $this->fileDownloadRepository->saveFileDownload(
+            $file,
+            $this->generateRandomString(16)
+        );
     }
 
-    public function createFile(array $data)
+    public function createFile(
+        string $fileName,
+        string $fullPath,
+        string $relativePath,
+        string $fileType,
+        string $ext,
+        string $mimeType,
+        int $fileSize,
+        string $fileSystem
+    )
     {
-        $file = $this->getFileObject($data);
-        return $this->fileRepository->saveFile($file);
+        return $this->fileRepository->saveFile(
+            $fileName,
+            $fullPath,
+            $relativePath,
+            $fileType,
+            $ext,
+            $mimeType,
+            $fileSize,
+            $fileSystem
+        );
     }
 
     public function updateFile(array $data)

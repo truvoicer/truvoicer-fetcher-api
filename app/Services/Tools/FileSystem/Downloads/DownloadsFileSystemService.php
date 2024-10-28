@@ -29,15 +29,21 @@ class DownloadsFileSystemService extends FileSystemServiceBase
     }
 
     public function saveDownloadsFileToDatabase( string $dir, string $fileName, string $fileType, string $ext ) {
-        return $this->fileSystemService->createFile([
-            "file_name" => $fileName,
-            "file_path" => $dir,
-            "file_type" => $fileType,
-            "file_extension" => $ext,
-            "mime_type" => File::mimeType($dir),
-            "file_size" => File::size($dir),
-            "file_system" => self::FILE_SYSTEM_NAME,
-        ]);
+        $fullPath = $this->getFullPath($dir);
+        $saveToDatabase = $this->fileSystemService->createFile(
+            $fileName,
+            $fullPath,
+            $dir,
+            $fileType,
+            $ext,
+            File::mimeType($fullPath),
+            File::size($fullPath),
+            self::FILE_SYSTEM_NAME
+        );
+        if (!$saveToDatabase) {
+            return false;
+        }
+        return $this->fileSystemService->getFileRepository()->getModel();
     }
 
     public function readFileStream(string $path) {

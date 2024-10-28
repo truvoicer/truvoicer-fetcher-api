@@ -155,7 +155,7 @@ class ExportService
         $responseArray = [];
         $fileName = sprintf("export-%s.json", $dateString);
 
-        $fileDirectory = sprintf("/%s/%s", $rootDir, $fileName);
+        $fileDirectory = sprintf("%s/%s", $rootDir, $fileName);
 
         $storeData = $this->downloadsFileSystem->storeNewDownloadsFile(
             $fileDirectory,
@@ -186,7 +186,7 @@ class ExportService
             $responseArray["status"] = "success";
             $responseArray["message"] = sprintf("Export file saved: Type (%s)", 'json');
             $responseArray["type"] = 'json';
-            $responseArray["data"] = $getSavedData;
+            $responseArray["file"] = $getSavedData;
             $responseArray["file_url"] = $this->downloadsFileSystem->getFileDownloadUrl($getSavedData);
         }
         return $responseArray;

@@ -2,6 +2,7 @@
 
 namespace App\Repositories;
 
+use App\Models\File;
 use App\Models\FileDownload;
 
 class FileDownloadRepository extends BaseRepository
@@ -27,9 +28,16 @@ class FileDownloadRepository extends BaseRepository
         return $this->findAll();
     }
 
-    public function saveFileDownload(array $data)
+    public function saveFileDownload(File $file, string $downloadKey): bool
     {
-        return $this->save($data);
+        $save = $file->fileDownloads()->create(
+            ['download_key' => $downloadKey]
+        );
+        if (!$save->exists) {
+            return false;
+        }
+        $this->setModel($save);
+        return true;
     }
 
     public function deleteFileDownload(FileDownload $fileDownload) {

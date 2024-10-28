@@ -14,12 +14,15 @@ class FileSystemServiceBase extends BaseService
     protected string $fileSystemName;
     protected Filesystem $filesystem;
     public FileSystemService $fileSystemService;
+    protected array $config;
 
     public function __construct(FileSystemService $fileSystemService, string $fileSystemName)
     {
         parent::__construct();
         $this->fileSystemService = $fileSystemService;
-        $this->setFilesystem(Storage::disk($fileSystemName));
+        $fileSystem = Storage::disk($fileSystemName);
+        $this->config = $fileSystem->getConfig();
+        $this->setFilesystem($fileSystem);
     }
 
     public function getFileDownloadUrl(File $file) {
@@ -32,9 +35,24 @@ class FileSystemServiceBase extends BaseService
     }
 
     protected function buildDownloadUrl(FileDownload $fileDownload) {
-        return env('SITE_BASE_URL') . sprintf(
-            self::FILE_DOWNLOAD_ROOT_PATH, $fileDownload->download_key
+        return sprintf(
+            '%s/%s',
+                $this->config['url'],
+                $fileDownload->download_key
             );
+    }
+
+    protected function getRootPath(): string
+    {
+        return $this->config['root'];
+    }
+
+    protected function getFullPath(string $path): string
+    {
+        if (!str_starts_with('/', $path)) {
+            $path = '/' . $path;
+        }
+        return $this->getRootPath() . $path;
     }
 
     public function getFilesystem(): Filesystem

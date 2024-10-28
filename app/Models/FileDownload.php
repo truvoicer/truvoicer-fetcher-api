@@ -11,6 +11,10 @@ class FileDownload extends Model
     use HasFactory;
     public const TABLE_NAME = 'file_downloads';
     public const REPOSITORY = FileDownloadRepository::class;
+
+    protected $fillable = [
+        'download_key'
+    ];
     public function file()
     {
         return $this->belongsTo(File::class);

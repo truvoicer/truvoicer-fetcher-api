@@ -26,9 +26,29 @@ class FileRepository extends BaseRepository
         return $this->findAll();
     }
 
-    public function saveFile(array $data)
+    public function saveFile(
+        string $fileName,
+        string $fullPath,
+        string $relativePath,
+        string $fileType,
+        string $ext,
+        string $mimeType,
+        int $fileSize,
+        string $fileSystem
+    )
     {
-        return $this->save($data);
+        return $this->save(
+            [
+                "filename" => $fileName,
+                "full_path" => $fullPath,
+                "rel_path" => $relativePath,
+                "type" => $fileType,
+                "extension" => $ext,
+                "mime_type" => $mimeType,
+                "size" => $fileSize,
+                "file_system" => $fileSystem
+            ]
+        );
     }
 
     public function deleteFile(File $fileSystemItem) {
