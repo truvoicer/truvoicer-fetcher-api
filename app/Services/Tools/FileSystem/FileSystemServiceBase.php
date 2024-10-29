@@ -34,10 +34,10 @@ class FileSystemServiceBase extends BaseService
         return $this->buildDownloadUrl($this->fileSystemService->getFileDownloadRepository()->getModel());
     }
 
-    protected function buildDownloadUrl(FileDownload $fileDownload) {
+    public function buildDownloadUrl(FileDownload $fileDownload) {
         return sprintf(
             '%s/%s',
-                $this->config['url'],
+                $this->config['file_download_url'],
                 $fileDownload->download_key
             );
     }

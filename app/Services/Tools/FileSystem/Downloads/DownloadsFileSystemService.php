@@ -48,7 +48,7 @@ class DownloadsFileSystemService extends FileSystemServiceBase
 
     public function readFileStream(string $path) {
         $resource = $this->filesystem->readStream($path);
-        if ($resource === false) {
+        if (!$resource) {
             throw new BadRequestHttpException(sprintf("Error opening file stream for path: (%s)", $path));
         }
         return $resource;

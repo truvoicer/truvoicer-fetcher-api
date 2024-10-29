@@ -28,10 +28,14 @@ class FileDownloadRepository extends BaseRepository
         return $this->findAll();
     }
 
-    public function saveFileDownload(File $file, string $downloadKey): bool
+    public function saveFileDownload(File $file, string $downloadKey, string $clientIp, null|string $userAgent = null): bool
     {
         $save = $file->fileDownloads()->create(
-            ['download_key' => $downloadKey]
+            [
+                'download_key' => $downloadKey,
+                'client_ip' => $clientIp,
+                'user_agent' => $userAgent
+            ]
         );
         if (!$save->exists) {
             return false;

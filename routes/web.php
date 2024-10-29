@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\Auth\AuthController;
+use App\Http\Controllers\Files\DownloadFileController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -14,8 +15,4 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::get('/', function () {
-    return view('welcome');
-});
-
-//Route::post('/api/auth/login', [AuthController::class, 'login'])->name('login');
+Route::GET('/download/file/{file_download:download_key}', DownloadFileController::class)->name('download.file');

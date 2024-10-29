@@ -141,55 +141,13 @@ class ExportService
         }
     }
 
-    public function storeXmlDataFromArray(array $xmlArray)
+    public function storeXmlDataFromArray(array $xmlArray, string $fullDir, string $fileName)
     {
-        if (!count($xmlArray)) {
-            return [
-                "status" => "error",
-                "message" => "Export Store error: No data to export."
-            ];
-        }
-        $date = new \DateTime();
-        $dateString = $date->format("YmdHis");
-        $rootDir = "exports";
-        $responseArray = [];
-        $fileName = sprintf("export-%s.json", $dateString);
-
-        $fileDirectory = sprintf("%s/%s", $rootDir, $fileName);
-
-        $storeData = $this->downloadsFileSystem->storeNewDownloadsFile(
-            $fileDirectory,
+        return $this->downloadsFileSystem->storeNewDownloadsFile(
+            $fullDir,
             $fileName,
             json_encode($xmlArray)
         );
-
-        if (!$storeData) {
-            return [
-                "status" => "error",
-                "message" => "Export Store error: Unable to store data."
-            ];
-        }
-
-        $getSavedData = $this->downloadsFileSystem->saveDownloadsFileToDatabase(
-            $fileDirectory,
-            $fileName,
-            "export",
-            "json"
-        );
-        if (!$getSavedData) {
-            $responseArray["status"] = "error";
-            $responseArray["message"] = sprintf(
-                "Export save item error: Type (%s) unable to save item to database.",
-                'json'
-            );
-        } else {
-            $responseArray["status"] = "success";
-            $responseArray["message"] = sprintf("Export file saved: Type (%s)", 'json');
-            $responseArray["type"] = 'json';
-            $responseArray["file"] = $getSavedData;
-            $responseArray["file_url"] = $this->downloadsFileSystem->getFileDownloadUrl($getSavedData);
-        }
-        return $responseArray;
     }
 
     public function getExportDataArray(array $data)
@@ -232,11 +190,17 @@ class ExportService
             throw new BadRequestHttpException("Export data not a valid array.");
         }
         array_walk($data[IExportTypeService::REQUEST_KEYS["EXPORT_DATA"]], function ($item, $key) {
-            if (!array_key_exists("id", $item)) {
+            if (!is_array($item) || !array_key_exists("id", $item)) {
                 throw new BadRequestHttpException(
                     sprintf("Export data error: (id) does not exist in item position (%d)", $key)
                 );
             }
         });
     }
+
+    public function getDownloadsFileSystem(): DownloadsFileSystemService
+    {
+        return $this->downloadsFileSystem;
+    }
+
 }

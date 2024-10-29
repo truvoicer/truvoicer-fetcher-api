@@ -89,11 +89,13 @@ class FileSystemService
         return $data;
     }
 
-    public function createFileDownload(File $file): bool
+    public function createFileDownload(File $file, string $clientIp, null|string $userAgent = null): bool
     {
         return $this->fileDownloadRepository->saveFileDownload(
             $file,
-            $this->generateRandomString(16)
+            $this->generateRandomString(16),
+            $clientIp,
+            $userAgent
         );
     }
 
@@ -158,9 +160,6 @@ class FileSystemService
     }
 
     public function deleteFileDownload(FileDownload $fileDownload) {
-        if ($fileDownload === null) {
-            return false;
-        }
         return $this->fileDownloadRepository->deleteFileDownload($fileDownload);
     }
 

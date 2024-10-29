@@ -13,7 +13,9 @@ class FileDownload extends Model
     public const REPOSITORY = FileDownloadRepository::class;
 
     protected $fillable = [
-        'download_key'
+        'download_key',
+        'client_ip',
+        'user_agent',
     ];
     public function file()
     {

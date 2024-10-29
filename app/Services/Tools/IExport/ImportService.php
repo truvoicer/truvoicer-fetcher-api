@@ -85,7 +85,7 @@ class ImportService
     public function runImporter(Request $request)
     {
         $validateData = $this->validateRequestData($request);
-
+        dd($validateData);
         $storeFile = $this->uploadsFileSystemService->getUploadedFilePath($request->files->get("upload_file"));
         $saveFile = $this->uploadsFileSystemService->saveUploadTempFileToDatabase($storeFile, "import", "xml");
 
