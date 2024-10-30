@@ -6,13 +6,13 @@ use App\Models\Category;
 use App\Models\Property;
 use App\Models\Provider;
 use App\Models\S;
-use App\Services\ApiServices\ApiServiceImporterService;
 use App\Services\BaseService;
-use App\Services\Category\CategoryImporterService;
 use App\Services\Permission\AccessControlService;
 use App\Services\Permission\PermissionService;
-use App\Services\Property\PropertyImporterService;
-use App\Services\Provider\ProviderImporterService;
+use App\Services\Tools\Importer\Entities\ApiServiceImporterService;
+use App\Services\Tools\Importer\Entities\CategoryImporterService;
+use App\Services\Tools\Importer\Entities\PropertyImporterService;
+use App\Services\Tools\Importer\Entities\ProviderImporterService;
 use App\Services\Tools\SerializerService;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 
@@ -119,6 +119,25 @@ class IExportTypeService extends BaseService
                 );
         }
     }
+
+    public function validateType($importType, array $data)
+    {
+        switch ($importType) {
+            case self::IMPORT_TYPES["CATEGORIES"]:
+                return $this->categoryImporterService->validateImportData($data);
+            case self::IMPORT_TYPES["PROVIDERS"]:
+                return $this->providerImporterService->validateImportData($data);
+            case self::IMPORT_TYPES["SERVICES"]:
+                return $this->apiServiceImporterService->validateImportData($data);
+            case self::IMPORT_TYPES["PROPERTIES"]:
+                return $this->propertyImporterService->validateImportData($data);
+            default:
+                throw new BadRequestHttpException(
+                    sprintf("Import type error.")
+                );
+        }
+    }
+
 
 
     public function getExportTypeData($exportType, $data)

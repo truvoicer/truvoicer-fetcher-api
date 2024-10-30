@@ -241,8 +241,11 @@ Route::middleware(['auth:sanctum', 'ability:api:admin,api:superuser,api:super_ad
         Route::prefix('tools')->name('tools.')->group(function () {
             Route::get('/export/list', [ImportExportController::class, 'getExportList'])->name('list');
             Route::post('/export', [ImportExportController::class, 'runExport'])->name('export');
-            Route::post('/import', [ImportExportController::class, 'runImport'])->name('import');
-            Route::post('/import/mappings', [ImportExportController::class, 'runImportMappings'])->name('import.mappings');
+            Route::prefix('/import')->name('import.')->group(function () {
+                Route::post('/parse', [ImportExportController::class, 'parseImport'])->name('parse');
+                Route::post('/run', [ImportExportController::class, 'runImport'])->name('run');
+                Route::post('/mappings', [ImportExportController::class, 'runImportMappings'])->name('mappings');
+            });
             Route::prefix('utils')->name('utils.')->group(function () {
                 Route::get('/variable/list', [UtilsController::class, 'getVariableList'])->name('variable.list');
                 Route::get('/pagination-types', [UtilsController::class, 'getPaginationTypes'])->name('pagination-types');

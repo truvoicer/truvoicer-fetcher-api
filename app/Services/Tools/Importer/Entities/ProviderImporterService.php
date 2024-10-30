@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Services\Provider;
+namespace App\Services\Tools\Importer\Entities;
 
 use App\Models\Provider;
 use App\Models\S;
@@ -11,31 +11,26 @@ use App\Services\ApiServices\SResponseKeysService;
 use App\Services\Category\CategoryService;
 use App\Services\Permission\AccessControlService;
 use App\Services\Property\PropertyService;
+use App\Services\Provider\ProviderService;
 use App\Services\Tools\IExport\IExportTypeService;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 
-class ProviderImporterService extends ProviderService
+class ProviderImporterService extends ImporterBase
 {
 
     public function __construct(
-        PropertyService      $propertyService,
-        CategoryService      $categoryService,
-        ApiService           $apiService,
-        SResponseKeysService $responseKeysService,
-        AccessControlService $accessControlService
+        private ProviderService      $providerService,
+        private PropertyService      $propertyService,
+        private CategoryService      $categoryService,
+        private ApiService           $apiService,
+        private SResponseKeysService $responseKeysService,
     ) {
-        parent::__construct(
-            $propertyService,
-            $categoryService,
-            $apiService,
-            $responseKeysService,
-            $accessControlService
-        );
+        parent::__construct(new Provider());
     }
 
     public function getProviderById(int $providerId, ?array $srIds = [])
     {
-        $provider = $this->providerRepository->findById($providerId);
+        $provider = $this->providerService->getProviderRepository()->findById($providerId);
         if ($provider === null) {
             throw new BadRequestHttpException(sprintf("Provider id:%s not found in database.",
                 $providerId
@@ -224,5 +219,9 @@ class ProviderImporterService extends ProviderService
             ];
             return $mappings;
         }, $data);
+    }
+    public function validateImportData(array $data): bool {
+        dd($data);
+        return [];
     }
 }

@@ -4,7 +4,8 @@ namespace App\Services\Tools\FileSystem\Uploads;
 use App\Services\Tools\FileSystem\FileSystemService;
 use App\Services\Tools\FileSystem\FileSystemServiceBase;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\File as FileFacade;
+use Symfony\Component\HttpFoundation\File\File;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 
@@ -18,27 +19,25 @@ class UploadsFileSystemService extends FileSystemServiceBase
 
     public function getUploadedFilePath(UploadedFile $uploadedFile) {
 
-        $copyToPath = $this->getRootPath() . "/" . $uploadedFile->getFileName() . ".xml";
         try {
-            $this->filesystem->copy($uploadedFile->getRealPath(), $copyToPath);
-            return $uploadedFile->getFileName() . ".xml";
+            return $uploadedFile->move($this->getRootPath(), $uploadedFile->getFileName());
         } catch (\Exception $exception) {
             echo "An error occurred while creating your directory at ".$exception->getPath();
             return false;
         }
     }
 
-    public function saveUploadTempFileToDatabase(string $fileName, string $fileType, string $ext ): Model|bool
+    public function saveUploadTempFileToDatabase(File $fileName, string $fileType, string $ext ): Model|bool
     {
-        $fullPath = $this->getFullPath($fileName);
+        $fullPath = $this->getFullPath($fileName->getFilename());
         $saveToDatabase = $this->fileSystemService->createFile(
             $fileName,
             $fullPath,
             $fileName,
             $fileType,
             $ext,
-            File::mimeType($fullPath),
-            File::size($fullPath),
+            FileFacade::mimeType($fullPath),
+            FileFacade::size($fullPath),
             self::FILE_SYSTEM_NAME
         );
         if (!$saveToDatabase) {

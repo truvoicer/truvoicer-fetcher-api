@@ -117,6 +117,16 @@ class ImportExportController extends Controller
         );
     }
 
+    public function parseImport(Request $request, ImportService $importService)
+    {
+        return $this->sendSuccessResponse(
+            "success",
+            $importService->parseImport(
+                $request->files->get("upload_file")
+            )
+        );
+    }
+
     public function runImport(Request $request, ImportService $importService)
     {
         return $this->sendSuccessResponse(
