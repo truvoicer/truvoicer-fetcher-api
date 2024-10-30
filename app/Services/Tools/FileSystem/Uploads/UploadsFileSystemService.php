@@ -18,7 +18,7 @@ class UploadsFileSystemService extends FileSystemServiceBase
 
     public function getUploadedFilePath(UploadedFile $uploadedFile) {
 
-        $copyToPath = $this->uploadTempDir . "/" . $uploadedFile->getFileName() . ".xml";
+        $copyToPath = $this->getRootPath() . "/" . $uploadedFile->getFileName() . ".xml";
         try {
             $this->filesystem->copy($uploadedFile->getRealPath(), $copyToPath);
             return $uploadedFile->getFileName() . ".xml";

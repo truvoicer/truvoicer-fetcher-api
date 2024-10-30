@@ -6,6 +6,7 @@ use App\Services\Tools\FileSystem\Downloads\DownloadsFileSystemService;
 use App\Services\Tools\FileSystem\Uploads\UploadsFileSystemService;
 use App\Services\Tools\HttpRequestService;
 use App\Services\Tools\SerializerService;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 
@@ -36,24 +37,6 @@ class ImportService
         return $this->uploadsFileSystemService->readTempFile($filePath);
     }
 
-    public function validateRequestData(Request $request)
-    {
-        $requestData = $this->httpRequestService->getRequestData($request, true);
-        if (!array_key_exists("import_type", $requestData)) {
-            throw new BadRequestHttpException("Import type not in request.");
-        }
-        if ($requestData["import_type"] === "" || $requestData["import_type"] === null) {
-            throw new BadRequestHttpException("Import type not valid.");
-        }
-        if (!in_array($requestData["import_type"], IExportTypeService::IMPORT_TYPES)) {
-            throw new BadRequestHttpException("Import type not allowed.");
-        }
-        if ($request->files->get("upload_file") === null) {
-            throw new BadRequestHttpException("Upload file not in request.");
-        }
-        return $requestData;
-    }
-
     public function runMappingsImporter(Request $request)
     {
         $requestData = $this->httpRequestService->getRequestData($request, true);
@@ -82,11 +65,9 @@ class ImportService
         }, $runImportForType);
     }
 
-    public function runImporter(Request $request)
+    public function runImporter(UploadedFile $uploadedFile)
     {
-        $validateData = $this->validateRequestData($request);
-        dd($validateData);
-        $storeFile = $this->uploadsFileSystemService->getUploadedFilePath($request->files->get("upload_file"));
+        $storeFile = $this->uploadsFileSystemService->getUploadedFilePath($uploadedFile);
         $saveFile = $this->uploadsFileSystemService->saveUploadTempFileToDatabase($storeFile, "import", "xml");
 
         $getFileContents = $this->getXmlData($storeFile);
