@@ -60,6 +60,24 @@ class IExportTypeService extends BaseService
         $this->accessControlService = $accessControlService;
     }
 
+    private function getInstance(string $importType)
+    {
+        switch ($importType) {
+            case self::IMPORT_TYPES["CATEGORIES"]:
+                return $this->categoryImporterService;
+            case self::IMPORT_TYPES["PROVIDERS"]:
+                return $this->providerImporterService;
+            case self::IMPORT_TYPES["SERVICES"]:
+                return $this->apiServiceImporterService;
+            case self::IMPORT_TYPES["PROPERTIES"]:
+                return $this->propertyImporterService;
+            default:
+                throw new BadRequestHttpException(
+                    sprintf("Import type error.")
+                );
+        }
+    }
+
     public static function getImportMappingValue(string $importTypeName, string $destEntity, string $sourceEntity,
                                                  string $sourceItemName, array $mappings)
     {
@@ -78,64 +96,17 @@ class IExportTypeService extends BaseService
 
     public function getImportDataMappings($importType, $fileContents)
     {
-        switch ($importType) {
-            case self::IMPORT_TYPES["CATEGORIES"]:
-                $deserializeXmlContent = $this->serializerService->xmlArrayToEntities($fileContents, Category::class);
-                return $this->categoryImporterService->getImportMappings($deserializeXmlContent);
-            case self::IMPORT_TYPES["PROVIDERS"]:
-                $deserializeXmlContent = $this->serializerService->xmlArrayToEntities($fileContents, Provider::class);
-                return $this->providerImporterService->getImportMappings($deserializeXmlContent);
-            case self::IMPORT_TYPES["SERVICES"]:
-                $deserializeXmlContent = $this->serializerService->xmlArrayToEntities($fileContents, S::class);
-                return $this->apiServiceImporterService->getImportMappings($deserializeXmlContent);
-            case self::IMPORT_TYPES["PROPERTIES"]:
-                $deserializeXmlContent = $this->serializerService->xmlArrayToEntities($fileContents, Property::class);
-                return $this->propertyImporterService->getImportMappings($deserializeXmlContent);
-            default:
-                throw new BadRequestHttpException(
-                    sprintf("Import mappings  type error.")
-                );
-        }
+        return $this->getInstance($importType)->getImportMappings($fileContents);
     }
 
     public function runImportForType($importType, $fileContents, array $mappings = [])
     {
-        switch ($importType) {
-            case self::IMPORT_TYPES["CATEGORIES"]:
-                $deserializeXmlContent = $this->serializerService->xmlArrayToEntities($fileContents, Category::class);
-                return $this->categoryImporterService->import($deserializeXmlContent, $mappings);
-            case self::IMPORT_TYPES["PROVIDERS"]:
-                $deserializeXmlContent = $this->serializerService->xmlArrayToEntities($fileContents, Provider::class);
-                return $this->providerImporterService->import($deserializeXmlContent, $mappings);
-            case self::IMPORT_TYPES["SERVICES"]:
-                $deserializeXmlContent = $this->serializerService->xmlArrayToEntities($fileContents, S::class);
-                return $this->apiServiceImporterService->import($deserializeXmlContent, $mappings);
-            case self::IMPORT_TYPES["PROPERTIES"]:
-                $deserializeXmlContent = $this->serializerService->xmlArrayToEntities($fileContents, Property::class);
-                return $this->propertyImporterService->import($deserializeXmlContent, $mappings);
-            default:
-                throw new BadRequestHttpException(
-                    sprintf("Import type error.")
-                );
-        }
+        return $this->getInstance($importType)->import($fileContents, $mappings);
     }
 
     public function validateType($importType, array $data)
     {
-        switch ($importType) {
-            case self::IMPORT_TYPES["CATEGORIES"]:
-                return $this->categoryImporterService->validateImportData($data);
-            case self::IMPORT_TYPES["PROVIDERS"]:
-                return $this->providerImporterService->validateImportData($data);
-            case self::IMPORT_TYPES["SERVICES"]:
-                return $this->apiServiceImporterService->validateImportData($data);
-            case self::IMPORT_TYPES["PROPERTIES"]:
-                return $this->propertyImporterService->validateImportData($data);
-            default:
-                throw new BadRequestHttpException(
-                    sprintf("Import type error.")
-                );
-        }
+        return $this->getInstance($importType)->validateImportData($data);
     }
 
 
