@@ -123,7 +123,8 @@ class ImportExportController extends Controller
             "success",
             $importService->parseImport(
                 $request->files->get("upload_file")
-            )
+            ),
+            $importService->getErrors()
         );
     }
 

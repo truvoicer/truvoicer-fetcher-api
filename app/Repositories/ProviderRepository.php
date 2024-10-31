@@ -25,35 +25,14 @@ class ProviderRepository extends BaseRepository
         return parent::getModel();
     }
 
-    private function buildNestedSrQuery($query, array $srs): HasMany|BelongsToMany
-    {
-        if (!count($srs)) {
-            return $query;
-        }
-        $query->with(['childSrs' => function ($query) use ($srs) {
-            $query->whereIn('sr_id', array_column($srs, 'id'));
-            $childSrs = [];
-            foreach ($srs as $sr) {
-                if (is_array($sr['child_srs'])) {
-                    $childSrs = array_merge($childSrs, $sr['child_srs']);
-                }
-            }
-            $query = $this->buildNestedSrQuery(
-                $query,
-                $childSrs
-            );
-        }]);
-        return $query;
-    }
 
-    public function findProviderById(int $id, ?array $srs = []): Provider|null|Model
+    public function findProviderById(int $id): Provider|null|Model
     {
-        return $this->newQuery()
+        return $this->getResults(
+            $this->newQuery()
             ->where('id', $id)
-            ->with(['sr' => function ($query) use ($srs) {
-                $query->whereIn('id', array_column($srs, 'id'));
-                $query = $this->buildNestedSrQuery($query, $srs);
-            }])->first();
+        )
+            ->first();
     }
 
     public function userPermissionsQuery(User $user, $query)

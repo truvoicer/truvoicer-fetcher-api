@@ -24,9 +24,7 @@ class SrResponseKey extends Model
         "append_extra_data_value",
         "prepend_extra_data_value",
         "is_service_request",
-        "has_array_value",
         "array_keys",
-        "return_data_type"
     ];
     public function sr()
     {

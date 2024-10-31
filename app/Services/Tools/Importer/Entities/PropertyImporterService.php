@@ -22,7 +22,41 @@ class PropertyImporterService extends ImporterBase {
     public function getImportMappings(array $data) {
         return [];
     }
-    public function validateImportData(array $data): bool {
-        return [];
+    public function validateImportData(array $data): void {
+        foreach ($data as $property) {
+            if (empty($property['name'])) {
+                $this->addError(
+                    'import_type_validation',
+                    "Property name is required."
+                );
+            }
+            if (empty($property['label'])) {
+                $this->addError(
+                    'import_type_validation',
+                    "Property label is required."
+                );
+            }
+            if (empty($property['value_type'])) {
+                $this->addError(
+                    'import_type_validation',
+                    "Property value type is required."
+                );
+            }
+        }
     }
+    public function filterImportData(array $data): array {
+        return array_filter($data, function ($property) {
+            return (
+                !empty($property['name']) &&
+                !empty($property['label']) &&
+                !empty($property['value_type'])
+            );
+        }, ARRAY_FILTER_USE_BOTH);
+    }
+
+    public function getPropertyService(): PropertyService
+    {
+        return $this->propertyService;
+    }
+
 }

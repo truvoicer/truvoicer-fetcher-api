@@ -103,49 +103,21 @@ class ImportService
             throw new ImportException("Error parsing file");
         }
 
-        $validateData = $this->importerValidator->validate($getFileContents);
+        $this->importerValidator->validate($getFileContents);
         if ($this->importerValidator->hasErrors()) {
             throw new ImportException(
                 "Error validating file",
                 $this->importerValidator->getErrors());
         }
-        foreach ($getFileContents as $item) {
-            if (!$this->iExportTypeService->validateType($item["type"], $item['data'])) {
-                throw new ImportException(
-                    "Import type error",
-                    $this->iExportTypeService->getErrors()
-                );
-            }
-        }
-        dd(true);
-        $getImportDataMappings = $this->iExportTypeService->getImportDataMappings(
-            $validateData["import_type"],
-            $getFileContents
-        );
-        if (count($getImportDataMappings) > 0) {
-            return [
-                "mappings" => $getImportDataMappings,
-                "file" => $this->serializerService->entityToArray($saveFile, ["single"])
-            ];
-        }
 
-        $runImportForType = $this->iExportTypeService->runImportForType($validateData["import_type"], $getFileContents);
-
-        return array_map(function ($item) {
-            if (is_array($item) && isset($item["status"]) && $item["status"] === "error") {
-                return $item;
-            }
-            if ($item === null) {
-                return [
-                    "status" => "error",
-                    "message" => "Import error: Please try again."
-                ];
-            }
-            return [
-                "status" => "success",
-                "message" => "Import successful"
-            ];
-        }, $runImportForType);
+        $this->iExportTypeService->validateTypeBatch($getFileContents);
+        if ($this->iExportTypeService->hasErrors()) {
+            $this->setErrors(array_merge(
+                $this->getErrors(),
+                $this->iExportTypeService->getErrors()
+            ));
+        }
+        return $this->iExportTypeService->filterImportData($getFileContents);
     }
 
 }

@@ -24,6 +24,7 @@ class ProviderImporterService extends ImporterBase
         private CategoryService      $categoryService,
         private ApiService           $apiService,
         private SResponseKeysService $responseKeysService,
+        private SrImporterService    $srImporterService,
     ) {
         parent::__construct(new Provider());
     }
@@ -220,8 +221,49 @@ class ProviderImporterService extends ImporterBase
             return $mappings;
         }, $data);
     }
-    public function validateImportData(array $data): bool {
-        dd($data);
-        return [];
+    public function validateImportData(array $data): void {
+        foreach ($data as $provider) {
+            if (empty($provider['name'])) {
+                $this->addError(
+                    'import_type_validation',
+                    "Provider name is required."
+                );
+            }
+            if (empty($provider['label'])) {
+                $this->addError(
+                    'import_type_validation',
+                    "Provider label is required."
+                );
+            }
+            if (
+                !empty($data['srs']) &&
+                is_array($data['srs'])
+            ) {
+                $this->srImporterService->validateImportData($data['srs']);
+            }
+        }
+    }
+    public function filterImportData(array $data): array {
+        $filterProviders = array_filter($data, function ($provider) {
+            return (
+                !empty($provider['name']) &&
+                !empty($provider['label'])
+            );
+        }, ARRAY_FILTER_USE_BOTH);
+
+        return array_map(function ($provider) {
+            if (
+                !empty($provider['srs']) &&
+                is_array($provider['srs'])
+            ) {
+                $provider['srs'] = $this->srImporterService->filterImportData($provider['srs']);
+            }
+            return $provider;
+        }, $filterProviders);
+    }
+
+    public function getProviderService(): ProviderService
+    {
+        return $this->providerService;
     }
 }

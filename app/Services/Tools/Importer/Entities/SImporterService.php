@@ -5,7 +5,7 @@ namespace App\Services\Tools\Importer\Entities;
 use App\Models\S;
 use App\Services\ApiServices\ApiService;
 
-class ApiServiceImporterService extends ImporterBase
+class SImporterService extends ImporterBase
 {
 
     public function __construct(
@@ -27,7 +27,18 @@ class ApiServiceImporterService extends ImporterBase
     {
         return [];
     }
-    public function validateImportData(array $data): bool {
-        return $this->compareKeysWithModelFields($data);
+    public function validateImportData(array $data): void {
+        $this->compareKeysWithModelFields($data);
     }
+    public function filterImportData(array $data): array {
+        return array_filter($data, function ($service) {
+            return $this->compareItemKeysWithModelFields($service);
+        });
+    }
+
+    public function getApiService(): ApiService
+    {
+        return $this->apiService;
+    }
+
 }

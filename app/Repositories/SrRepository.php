@@ -12,6 +12,8 @@ use App\Models\User;
 use App\Services\Category\CategoryService;
 use App\Services\Permission\PermissionService;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 
 class SrRepository extends BaseRepository
@@ -47,6 +49,27 @@ class SrRepository extends BaseRepository
         return $this->findByLabelOrName($query);
     }
 
+    public function buildNestedSrQuery($query, array $srs, ?array $with = []): HasMany|BelongsToMany
+    {
+        if (!count($srs)) {
+            return $query->with($with)->without('childSrs');
+        }
+        $query->with(['childSrs' => function ($query) use ($srs, $with) {
+            $query->whereIn('sr_id', array_column($srs, 'id'));
+            $childSrs = [];
+            foreach ($srs as $sr) {
+                if (is_array($sr['child_srs'])) {
+                    $childSrs = array_merge($childSrs, $sr['child_srs']);
+                }
+            }
+            $query = $this->buildNestedSrQuery(
+                $query,
+                $childSrs,
+                $with
+            );
+        }, ...$with]);
+        return $query;
+    }
 
     public function findSrsWithSchedule(Provider $provider)
     {

@@ -76,6 +76,18 @@ class Sr extends Model
             SrResponseKey::TABLE_NAME,
             'sr_id',
             's_response_key_id'
+        )->withPivot(
+            "value",
+            "show_in_response",
+            "list_item",
+            "custom_value",
+            "searchable",
+            "is_date",
+            "date_format",
+            "append_extra_data_value",
+            "prepend_extra_data_value",
+            "is_service_request",
+            "array_keys",
         );
     }
 
@@ -99,6 +111,7 @@ class Sr extends Model
             'id'
         )->with('parentSr');
     }
+
     public function parentSrs()
     {
         return $this->belongsToMany(

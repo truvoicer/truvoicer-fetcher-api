@@ -140,9 +140,8 @@ class BaseRepository
     }
     public function findById(int $id): ?object
     {
-        $find = $this->modelClassName::find($id);
-        $this->reset();
-        return $find;
+        $this->addWhere('id', $id);
+        return $this->findOne();
     }
 
     public function findByName(string $name = null)
@@ -223,7 +222,7 @@ class BaseRepository
     public function findOne(): ?Model
     {
         $this->setQuery($this->buildQuery());
-        $find = $this->getQuery()->first();
+        $find = $this->getOneResult($this->getQuery());
         $this->reset();
         return $find;
     }
@@ -251,7 +250,7 @@ class BaseRepository
         return $this->findMany();
     }
 
-    protected function getResults(Relation|EloquentBuilder $query): Collection|LengthAwarePaginator
+    protected function getResultsQuery(Relation|EloquentBuilder $query)
     {
         if ($query instanceof Relation || $query instanceof EloquentBuilder) {
             $query = $this->addWhereDoesntHaveToQuery($query);
@@ -265,12 +264,20 @@ class BaseRepository
         if (!$this->paginate && $this->limit > -1) {
             $query->limit($this->limit);
         }
+        return $query;
+    }
+    protected function getResults(Relation|EloquentBuilder $query): Collection|LengthAwarePaginator
+    {
         if ($this->paginate) {
             return $query->paginate(
                 ($this->perPage > -1) ? $this->perPage : 10000
             );
         }
-        return $query->get();
+        return $this->getResultsQuery($query)->get();
+    }
+    protected function getOneResult(Relation|EloquentBuilder $query): ?Model
+    {
+        return $this->getResultsQuery($query)->first();
     }
 
     public function applyConditionsToQuery(array $conditions, $query) {

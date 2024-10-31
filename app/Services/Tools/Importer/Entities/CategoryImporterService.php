@@ -30,7 +30,19 @@ class CategoryImporterService extends ImporterBase
         return [];
     }
 
-    public function validateImportData(array $data): bool {
-        return $this->compareKeysWithModelFields($data);
+    public function validateImportData(array $data): void {
+        $this->compareKeysWithModelFields($data);
     }
+
+    public function filterImportData(array $data): array {
+        return array_filter($data, function ($category) {
+            return $this->compareItemKeysWithModelFields($category);
+        });
+    }
+
+    public function getCategoryService(): CategoryService
+    {
+        return $this->categoryService;
+    }
+
 }
