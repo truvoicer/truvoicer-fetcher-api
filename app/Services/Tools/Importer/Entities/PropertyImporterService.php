@@ -2,15 +2,28 @@
 namespace App\Services\Tools\Importer\Entities;
 
 use App\Models\Property;
+use App\Services\Permission\AccessControlService;
+use App\Services\Permission\PermissionService;
 use App\Services\Property\PropertyService;
+use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 
 class PropertyImporterService extends ImporterBase {
 
     public function __construct(
         private PropertyService $propertyService,
+        protected AccessControlService $accessControlService
     )
     {
-        parent::__construct(new Property());
+        $this->setConfig([
+            "show" => false,
+            "id" => "id",
+            "name" => "properties",
+            "label" => "Properties",
+            "nameField" => "property_name",
+            "labelField" => "label",
+            'import_mappings' => [],
+        ]);
+        parent::__construct($accessControlService, new Property());
     }
 
     public function import(array $data, array $mappings = []) {
@@ -54,6 +67,22 @@ class PropertyImporterService extends ImporterBase {
         }, ARRAY_FILTER_USE_BOTH);
     }
 
+    public function getExportData(): array {
+        $data = [];
+        if ($this->accessControlService->inAdminGroup()) {
+            $data = $this->propertyService->findPropertiesByParams(
+                $this->getUser(),
+                false
+            )->toArray();
+        }
+        return $data;
+    }
+
+    public function getExportTypeData($item)
+    {
+        return $this->propertyService->getPropertyById($item["id"]);
+
+    }
     public function getPropertyService(): PropertyService
     {
         return $this->propertyService;

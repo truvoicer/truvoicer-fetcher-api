@@ -6,10 +6,12 @@ use App\Models\Provider;
 use App\Models\S;
 use App\Models\Sr;
 use App\Models\SResponseKey;
+use App\Repositories\SrRepository;
 use App\Services\ApiServices\ApiService;
 use App\Services\ApiServices\SResponseKeysService;
 use App\Services\Category\CategoryService;
 use App\Services\Permission\AccessControlService;
+use App\Services\Permission\PermissionService;
 use App\Services\Property\PropertyService;
 use App\Services\Provider\ProviderService;
 use App\Services\Tools\IExport\IExportTypeService;
@@ -17,7 +19,7 @@ use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 
 class ProviderImporterService extends ImporterBase
 {
-
+    private SrRepository $srRepository;
     public function __construct(
         private ProviderService      $providerService,
         private PropertyService      $propertyService,
@@ -25,8 +27,20 @@ class ProviderImporterService extends ImporterBase
         private ApiService           $apiService,
         private SResponseKeysService $responseKeysService,
         private SrImporterService    $srImporterService,
+        protected AccessControlService $accessControlService
     ) {
-        parent::__construct(new Provider());
+        parent::__construct($accessControlService, new Provider());
+        $this->setConfig([
+            "show" => false,
+            "id" => "id",
+            "name" => "providers",
+            "label" => "Providers",
+            "nameField" => "name",
+            "labelField" => "label",
+            'import_mappings' => [],
+            'children_keys' => ['sr', 'srs', 'child_srs'],
+        ]);
+        $this->srRepository = new SrRepository();
     }
 
     public function getProviderById(int $providerId, ?array $srIds = [])
@@ -262,6 +276,65 @@ class ProviderImporterService extends ImporterBase
         }, $filterProviders);
     }
 
+    public function getExportData(): array {
+        return $this->providerService->findProviders(
+            $this->getUser()
+        )->toArray();
+    }
+
+    public function getExportTypeData($item)
+    {
+        $srs = (!empty($item["srs"]) && is_array($item["srs"])) ?
+            $item["srs"] : [];
+        $this->providerService->getProviderRepository()->setWith([
+            'srs' => function ($query) use ($srs) {
+                $query->whereIn('id', array_column($srs, 'id'));
+
+                $childSrs = [];
+                foreach ($srs as $sr) {
+                    if (is_array($sr['child_srs'])) {
+                        $childSrs = array_merge($childSrs, $sr['child_srs']);
+                    }
+                }
+                $query = $this->srRepository->buildNestedSrQuery(
+                    $query,
+                    $childSrs,
+                    [
+                        'srConfig' => function ($query) {
+                            $query->with('property');
+                        },
+                        'srParameter',
+                        'srSchedule',
+                        'srRateLimit',
+                        'srResponseKeys' => function ($query) {
+                            $query->with('srResponseKeySrs');
+                        },
+                        's',
+                        'category'
+                    ]
+                );
+            },
+            'categories'
+        ]);
+        $provider = $this->providerService->getProviderRepository()->findById(
+            $item["id"],
+        );
+
+        if ($this->accessControlService->inAdminGroup()) {
+            return $provider->toArray();
+        }
+
+        $isPermitted = $this->accessControlService->checkPermissionsForEntity(
+            $provider,
+            [
+                PermissionService::PERMISSION_ADMIN,
+                PermissionService::PERMISSION_READ,
+            ],
+            false
+        );
+        return $isPermitted ? $provider->toArray() : false;
+
+    }
     public function getProviderService(): ProviderService
     {
         return $this->providerService;

@@ -2,15 +2,22 @@
 
 namespace App\Services\Tools\Importer\Entities;
 
+use App\Services\Permission\AccessControlService;
 use App\Traits\Error\ErrorTrait;
+use App\Traits\User\UserTrait;
 use Illuminate\Database\Eloquent\Model;
 
 class ImporterBase
 {
-    use ErrorTrait;
+    use ErrorTrait, UserTrait;
 
     protected Model $model;
-    public function __construct(Model $model)
+    protected array $config;
+
+    public function __construct(
+        protected AccessControlService $accessControlService,
+        Model $model
+    )
     {
         $this->model = $model;
     }
@@ -38,4 +45,24 @@ class ImporterBase
         }
         return true;
     }
+
+    public function getConfig(): array
+    {
+        return $this->config;
+    }
+
+    public function setConfig(array $config): void
+    {
+        $this->config = $config;
+    }
+
+    protected function addConfigItem(string $key, mixed $value): void {
+        $this->config[$key] = $value;
+    }
+
+    public function getAccessControlService(): AccessControlService
+    {
+        return $this->accessControlService;
+    }
+
 }

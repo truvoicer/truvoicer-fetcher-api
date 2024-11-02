@@ -4,15 +4,21 @@ namespace App\Services\Tools\Importer\Entities;
 
 use App\Models\S;
 use App\Services\ApiServices\ServiceRequests\SrScheduleService;
+use App\Services\Permission\AccessControlService;
 
 class SrScheduleImporterService extends ImporterBase
 {
 
     public function __construct(
         private SrScheduleService $srScheduleService,
+        protected AccessControlService $accessControlService
     )
     {
-        parent::__construct(new S());
+        $this->setConfig([
+            'name' => 'sr_schedule',
+            'import_mappings' => [],
+        ]);
+        parent::__construct($accessControlService, new S());
     }
 
     public function import(array $data, array $mappings = [])

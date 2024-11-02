@@ -2,20 +2,15 @@
 
 namespace App\Services\Tools\IExport;
 
-use App\Exceptions\ImportException;
-use App\Models\Category;
-use App\Models\Property;
-use App\Models\Provider;
-use App\Models\S;
 use App\Repositories\SrRepository;
 use App\Services\BaseService;
 use App\Services\Permission\AccessControlService;
-use App\Services\Permission\PermissionService;
 use App\Services\Tools\Importer\Entities\SImporterService;
 use App\Services\Tools\Importer\Entities\CategoryImporterService;
 use App\Services\Tools\Importer\Entities\PropertyImporterService;
 use App\Services\Tools\Importer\Entities\ProviderImporterService;
 use App\Services\Tools\SerializerService;
+use Illuminate\Support\Facades\App;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 
 class IExportTypeService extends BaseService
@@ -35,13 +30,12 @@ class IExportTypeService extends BaseService
 //        'SR_PARAMETER' => 'sr_parameter',
 //        'SR_CONFIG' => 'sr_config',
     ];
-    const EXPORT_TYPES = [
-        "CATEGORIES" => "categories",
-        "PROVIDERS" => "providers",
-        "SERVICES" => "services",
-        "PROPERTIES" => "properties"
+    public const IMPORTERS = [
+        "CATEGORIES" => CategoryImporterService::class,
+        "PROVIDERS" => ProviderImporterService::class,
+        "SERVICES" => SImporterService::class,
+        "PROPERTIES" => PropertyImporterService::class,
     ];
-
     protected CategoryImporterService $categoryImporterService;
     protected ProviderImporterService $providerImporterService;
     protected SImporterService $apiServiceImporterService;
@@ -134,92 +128,53 @@ class IExportTypeService extends BaseService
 
     public function filterImportData(array $data): array
     {
-        return array_filter($data, function ($item) {
+        return array_map(function ($item) {
             $instance = $this->getInstance($item["type"]);
-            return $instance->filterImportData($item['data']);
-        }, ARRAY_FILTER_USE_BOTH);
+            $item['config'] = $instance->getConfig();
+            $item['data'] = $instance->filterImportData($item['data']);
+            return $item;
+        }, $data);
     }
 
 
     public function getExportTypeData($exportType, $data)
     {
-        $this->accessControlService->setUser($this->getUser());
         return array_map(function ($item) use ($exportType) {
-            switch ($exportType) {
-                case self::EXPORT_TYPES["CATEGORIES"]:
-                    $category = $this->categoryImporterService->getCategoryService()->getCategoryById($item["id"]);
-                    if ($this->accessControlService->inAdminGroup()) {
-                        return $category;
-                    }
-
-                    $isPermitted = $this->accessControlService->checkPermissionsForEntity(
-                        $category,
-                        [
-                            PermissionService::PERMISSION_ADMIN,
-                            PermissionService::PERMISSION_READ,
-                        ],
-                        false
-                    );
-                    return $isPermitted ? $category : false;
-                case self::EXPORT_TYPES["PROVIDERS"]:
-                    $srs = (!empty($item["srs"]) && is_array($item["srs"])) ?
-                        $item["srs"] : [];
-                    $this->providerImporterService->getProviderService()->getProviderRepository()->setWith([
-                        'sr' => function ($query) use ($srs) {
-                            $query->whereIn('id', array_column($srs, 'id'));
-
-                            $childSrs = [];
-                            foreach ($srs as $sr) {
-                                if (is_array($sr['child_srs'])) {
-                                    $childSrs = array_merge($childSrs, $sr['child_srs']);
-                                }
-                            }
-                            $query = $this->srRepository->buildNestedSrQuery(
-                                $query,
-                                $childSrs,
-                                [
-                                    'srConfig' => function ($query) {
-                                        $query->with('property');
-                                    },
-                                    'srParameter',
-                                    'srSchedule',
-                                    'srRateLimit',
-                                    'srResponseKeys' => function ($query) {
-                                        $query->with('srResponseKeySrs');
-                                    },
-                                    's',
-                                    'category'
-                                ]
-                            );
-                        },
-                        'categories'
-                    ]);
-                    $provider = $this->providerImporterService->getProviderService()->getProviderRepository()->findById(
-                        $item["id"],
-                    );
-
-                    if ($this->accessControlService->inAdminGroup()) {
-                        return $provider->toArray();
-                    }
-
-                    $isPermitted = $this->accessControlService->checkPermissionsForEntity(
-                        $provider,
-                        [
-                            PermissionService::PERMISSION_ADMIN,
-                            PermissionService::PERMISSION_READ,
-                        ],
-                        false
-                    );
-                    return $isPermitted ? $provider->toArray() : false;
-                case self::EXPORT_TYPES["SERVICES"]:
-                    return $this->apiServiceImporterService->getApiService()->getServiceById($item["id"]);
-                case self::EXPORT_TYPES["PROPERTIES"]:
-                    return $this->propertyImporterService->getPropertyService()->getPropertyById($item["id"]);
-                default:
-                    throw new BadRequestHttpException(
-                        sprintf("Export data validation error:  Type (%s): Error in position id (%d).", $exportType, $item["id"])
-                    );
-            }
+            $instance = $this->getInstance($exportType);
+            $instance->setUser($this->getUser());
+            $instance->getAccessControlService()->setUser($this->getUser());
+            return $instance->getExportTypeData($item);
         }, $data[self::REQUEST_KEYS["EXPORT_DATA"]]);
+    }
+
+    public static function getImporterConfigs(array $importerClassnames): array
+    {
+        $configs = [];
+        foreach ($importerClassnames as $importerClassname) {
+            $instance = App::make($importerClassname);
+            $configs[] = $instance->getConfig();
+        }
+        return $configs;
+    }
+
+    public function getImporterExportData(array $importerClassnames): array
+    {
+        $configs = [];
+        foreach ($importerClassnames as $importerClassname) {
+            $instance = App::make($importerClassname);
+            $instance->setUser($this->getUser());
+            $instance->getAccessControlService()->setUser($this->getUser());
+            $config = $instance->getConfig();
+            $config['data'] = $instance->getExportData();
+            $configs[] = $config;
+        }
+        return $configs;
+    }
+
+    public static function getExportTypes(): array
+    {
+        return array_map(function ($config) {
+            return $config['name'];
+        }, self::getImporterConfigs(self::IMPORTERS));
     }
 }

@@ -5,15 +5,21 @@ namespace App\Services\Tools\Importer\Entities;
 use App\Models\S;
 use App\Models\SrConfig;
 use App\Services\ApiServices\ServiceRequests\SrConfigService;
+use App\Services\Permission\AccessControlService;
 
 class SrConfigImporterService extends ImporterBase
 {
 
     public function __construct(
         private SrConfigService $srConfigService,
+        protected AccessControlService $accessControlService
     )
     {
-        parent::__construct(new SrConfig());
+        $this->setConfig([
+            'name' => 'sr_config',
+            'import_mappings' => [],
+        ]);
+        parent::__construct($accessControlService, new SrConfig());
     }
 
     public function import(array $data, array $mappings = [])

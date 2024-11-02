@@ -10,6 +10,7 @@ use App\Services\ApiServices\ServiceRequests\SrConfigService;
 use App\Services\ApiServices\ServiceRequests\SrParametersService;
 use App\Services\ApiServices\ServiceRequests\SrScheduleService;
 use App\Services\ApiServices\ServiceRequests\SrService;
+use App\Services\Permission\AccessControlService;
 
 class SrImporterService extends ImporterBase
 {
@@ -21,9 +22,14 @@ class SrImporterService extends ImporterBase
         private SrResponseKeysImporterService $srResponseKeysImporterService,
         private SrRateLimitImporterService $srRateLimitImporterService,
         private SrScheduleImporterService $srScheduleImporterService,
+        protected AccessControlService $accessControlService
     )
     {
-        parent::__construct(new S());
+        $this->setConfig([
+            'name' => 'srs',
+            'import_mappings' => [],
+        ]);
+        parent::__construct($accessControlService, new S());
     }
 
     public function import(array $data, array $mappings = [])
@@ -110,6 +116,7 @@ class SrImporterService extends ImporterBase
             return $sr;
         }, $filterSrs);
     }
+
 
     public function getSrService(): SrService
     {

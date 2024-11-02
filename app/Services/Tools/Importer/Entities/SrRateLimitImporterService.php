@@ -4,15 +4,21 @@ namespace App\Services\Tools\Importer\Entities;
 
 use App\Models\S;
 use App\Services\ApiServices\RateLimitService;
+use App\Services\Permission\AccessControlService;
 
 class SrRateLimitImporterService extends ImporterBase
 {
 
     public function __construct(
         private RateLimitService $rateLimitService,
+        protected AccessControlService $accessControlService
     )
     {
-        parent::__construct(new S());
+        $this->setConfig([
+            'name' => 'rate_limit',
+            'import_mappings' => [],
+        ]);
+        parent::__construct($accessControlService, new S());
     }
 
     public function import(array $data, array $mappings = [])

@@ -4,15 +4,28 @@ namespace App\Services\Tools\Importer\Entities;
 
 use App\Models\S;
 use App\Services\ApiServices\ApiService;
+use App\Services\Permission\AccessControlService;
+use App\Services\Permission\PermissionService;
+use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 
 class SImporterService extends ImporterBase
 {
 
     public function __construct(
         private ApiService $apiService,
+        protected AccessControlService $accessControlService
     )
     {
-        parent::__construct(new S());
+        $this->setConfig([
+            "show" => false,
+            "id" => "id",
+            "name" => "services",
+            "label" => "Services",
+            "nameField" => "name",
+            "labelField" => "label",
+            'import_mappings' => [],
+        ]);
+        parent::__construct($accessControlService, new S());
     }
 
     public function import(array $data, array $mappings = [])
@@ -35,7 +48,17 @@ class SImporterService extends ImporterBase
             return $this->compareItemKeysWithModelFields($service);
         });
     }
+    public function getExportData(): array {
+        return $this->apiService->findUserServices(
+            $this->getUser(),
+            false
+        )->toArray();
+    }
 
+    public function getExportTypeData($item)
+    {
+        return $this->apiService->getServiceById($item["id"]);
+    }
     public function getApiService(): ApiService
     {
         return $this->apiService;

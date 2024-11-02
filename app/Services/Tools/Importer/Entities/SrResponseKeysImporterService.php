@@ -5,15 +5,21 @@ namespace App\Services\Tools\Importer\Entities;
 use App\Models\S;
 use App\Models\SrResponseKey;
 use App\Services\ApiServices\ServiceRequests\ResponseKeys\SrResponseKeyService;
+use App\Services\Permission\AccessControlService;
 
 class SrResponseKeysImporterService extends ImporterBase
 {
 
     public function __construct(
         private SrResponseKeyService $responseKeyService,
+        protected AccessControlService $accessControlService
     )
     {
-        parent::__construct(new SrResponseKey());
+        $this->setConfig([
+            'name' => 'sr_response_keys',
+            'import_mappings' => [],
+        ]);
+        parent::__construct($accessControlService, new SrResponseKey());
     }
 
     public function import(array $data, array $mappings = [])

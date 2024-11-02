@@ -45,90 +45,17 @@ class ExportService
 
     public static function getExportEntityFields()
     {
-        $exportEntityData = [];
-        foreach (IExportTypeService::EXPORT_TYPES as $key => $type) {
-            switch ($type) {
-                case IExportTypeService::EXPORT_TYPES["CATEGORIES"]:
-                    $exportEntityData[] = [
-                        "show" => false,
-                        "id" => "id",
-                        "name" => "categories",
-                        "label" => "Categories",
-                        "nameField" => "name",
-                        "labelField" => "label",
-                    ];
-                    break;
-                case IExportTypeService::EXPORT_TYPES["PROVIDERS"]:
-                    $exportEntityData[] = [
-                        "show" => false,
-                        "id" => "id",
-                        "name" => "providers",
-                        "label" => "Providers",
-                        "nameField" => "name",
-                        "labelField" => "label",
-                    ];
-                    break;
-                case IExportTypeService::EXPORT_TYPES["SERVICES"]:
-                    $exportEntityData[] = [
-                        "show" => false,
-                        "id" => "id",
-                        "name" => "services",
-                        "label" => "Services",
-                        "nameField" => "name",
-                        "labelField" => "label",
-                    ];
-                    break;
-                case IExportTypeService::EXPORT_TYPES["PROPERTIES"]:
-                    $exportEntityData[] = [
-                        "show" => false,
-                        "id" => "id",
-                        "name" => "properties",
-                        "label" => "Properties",
-                        "nameField" => "property_name",
-                        "labelField" => "label",
-                    ];
-                    break;
-            }
-        }
-        return $exportEntityData;
+        return IExportTypeService::getImporterConfigs(
+            IExportTypeService::IMPORTERS
+        );
     }
 
     public function getExportEntityListData(User $user)
     {
         $this->accessControlService->setUser($user);
-        $exportEntityData = self::getExportEntityFields();
-        foreach ($exportEntityData as $index => $type) {
-            switch ($type['name']) {
-                case IExportTypeService::EXPORT_TYPES["CATEGORIES"]:
-                    $exportEntityData[$index]['data'] = $this->categoryService->findUserCategories(
-                        $user,
-                        false
-                    )->toArray();
-                    break;
-                case IExportTypeService::EXPORT_TYPES["PROVIDERS"]:
-                    $exportEntityData[$index]['data'] = $this->providerService->findProviders(
-                        $user
-                    )->toArray();
-                    break;
-                case IExportTypeService::EXPORT_TYPES["SERVICES"]:
-                    $exportEntityData[$index]['data'] = $this->apiService->findUserServices(
-                        $user,
-                        false
-                    )->toArray();
-                    break;
-                case IExportTypeService::EXPORT_TYPES["PROPERTIES"]:
-                    $data = [];
-                    if ($this->accessControlService->inAdminGroup()) {
-                        $data = $this->propertyService->findPropertiesByParams(
-                            $user,
-                            false
-                        )->toArray();
-                    }
-                    $exportEntityData[$index]['data'] = $data;
-                    break;
-            }
-        }
-        return $exportEntityData;
+        $this->iExportTypeService->setUser($user);
+        return $this->iExportTypeService->getImporterExportData(IExportTypeService::IMPORTERS);
+
     }
 
     public function validateRequest($data)
@@ -178,7 +105,7 @@ class ExportService
 
     public function validateExportRequest($exportType, $data)
     {
-        if (!in_array($exportType, IExportTypeService::EXPORT_TYPES)) {
+        if (!in_array($exportType, IExportTypeService::getExportTypes())) {
             throw new BadRequestHttpException(
                 sprintf("Export type (%s) not allowed.", $data[IExportTypeService::REQUEST_KEYS["EXPORT_TYPE"]])
             );

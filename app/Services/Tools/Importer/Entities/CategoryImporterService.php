@@ -3,6 +3,8 @@ namespace App\Services\Tools\Importer\Entities;
 
 use App\Models\Category;
 use App\Services\Category\CategoryService;
+use App\Services\Permission\AccessControlService;
+use App\Services\Permission\PermissionService;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 
 class CategoryImporterService extends ImporterBase
@@ -10,8 +12,18 @@ class CategoryImporterService extends ImporterBase
 
     public function __construct(
         private CategoryService $categoryService,
+        protected AccessControlService $accessControlService
     ) {
-        parent::__construct(new Category());
+        $this->setConfig([
+            "show" => false,
+            "id" => "id",
+            "name" => "categories",
+            "label" => "Categories",
+            "nameField" => "name",
+            "labelField" => "label",
+            'import_mappings' => [],
+        ]);
+        parent::__construct($accessControlService, new Category());
     }
 
     public function import(array $data, array $mappings = []) {
@@ -38,6 +50,31 @@ class CategoryImporterService extends ImporterBase
         return array_filter($data, function ($category) {
             return $this->compareItemKeysWithModelFields($category);
         });
+    }
+
+    public function getExportData(): array {
+        return $this->categoryService->findUserCategories(
+            $this->getUser(),
+            false
+        )->toArray();
+    }
+
+    public function getExportTypeData($item)
+    {
+        $category = $this->categoryService->getCategoryById($item["id"]);
+        if ($this->accessControlService->inAdminGroup()) {
+            return $category;
+        }
+
+        $isPermitted = $this->accessControlService->checkPermissionsForEntity(
+            $category,
+            [
+                PermissionService::PERMISSION_ADMIN,
+                PermissionService::PERMISSION_READ,
+            ],
+            false
+        );
+        return $isPermitted ? $category : false;
     }
 
     public function getCategoryService(): CategoryService
