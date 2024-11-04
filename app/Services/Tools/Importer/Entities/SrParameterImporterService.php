@@ -6,6 +6,7 @@ use App\Models\S;
 use App\Models\SrParameter;
 use App\Services\ApiServices\ServiceRequests\SrParametersService;
 use App\Services\Permission\AccessControlService;
+use Illuminate\Database\Eloquent\Model;
 
 class SrParameterImporterService extends ImporterBase
 {
@@ -23,7 +24,7 @@ class SrParameterImporterService extends ImporterBase
         parent::__construct($accessControlService, new SrParameter());
     }
 
-    public function import(array $data, array $mappings = [])
+    public function import(array $data, array $mappings = []): array
     {
         return array_map(function (S $service) {
             $this->srParametersService->getRequestParametersRepo()->setModel($service);
@@ -53,13 +54,27 @@ class SrParameterImporterService extends ImporterBase
     }
 
     public function filterImportData(array $data): array {
-        return array_filter($data, function ($sr) {
+        $filter =  array_filter($data, function ($sr) {
             return (
                 !empty($sr['name']) &&
                 !empty($sr['value'])
             );
         }, ARRAY_FILTER_USE_BOTH);
 
+        return [
+            'type' => 'sr_parameters',
+            'data' => $this->parseEntityBatch($filter)
+        ];
+    }
+    public function parseEntity(array $entity): array {
+        return $entity;
+    }
+
+    public function parseEntityBatch(array $data): array
+    {
+        return array_map(function (array $providerData) {
+            return $this->parseEntity($providerData);
+        }, $data);
     }
 
     public function getSrParametersService(): SrParametersService
@@ -67,4 +82,13 @@ class SrParameterImporterService extends ImporterBase
         return $this->srParametersService;
     }
 
+    public function getExportData(): array
+    {
+        return [];
+    }
+
+    public function getExportTypeData($item): array|bool
+    {
+        return false;
+    }
 }

@@ -117,7 +117,12 @@ class ImportService
                 $this->iExportTypeService->getErrors()
             ));
         }
-        return $this->iExportTypeService->filterImportData($getFileContents);
+        return [
+            'config' => $this->iExportTypeService::getImporterConfigs(
+                $this->iExportTypeService::IMPORTERS
+            ),
+            "data" => $this->iExportTypeService->filterImportData($getFileContents)
+        ];
     }
 
 }

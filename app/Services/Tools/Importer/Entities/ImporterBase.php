@@ -2,12 +2,13 @@
 
 namespace App\Services\Tools\Importer\Entities;
 
+use App\Models\Provider;
 use App\Services\Permission\AccessControlService;
 use App\Traits\Error\ErrorTrait;
 use App\Traits\User\UserTrait;
 use Illuminate\Database\Eloquent\Model;
 
-class ImporterBase
+abstract class ImporterBase
 {
     use ErrorTrait, UserTrait;
 
@@ -21,6 +22,14 @@ class ImporterBase
     {
         $this->model = $model;
     }
+
+    abstract public function import(array $data, array $mappings = []): array;
+    abstract public function validateImportData(array $data): void;
+    abstract public function filterImportData(array $data): array;
+    abstract public function getExportData(): array;
+    abstract public function getExportTypeData($item): array|bool;
+    abstract public function parseEntity(array $entity): array;
+    abstract public function parseEntityBatch(array $data): array;
 
     protected function compareKeysWithModelFields(array $data): bool {
         $modelKeys = $this->model->getFillable();

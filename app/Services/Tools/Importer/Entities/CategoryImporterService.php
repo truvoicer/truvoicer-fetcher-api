@@ -2,9 +2,11 @@
 namespace App\Services\Tools\Importer\Entities;
 
 use App\Models\Category;
+use App\Models\Sr;
 use App\Services\Category\CategoryService;
 use App\Services\Permission\AccessControlService;
 use App\Services\Permission\PermissionService;
+use Illuminate\Database\Eloquent\Model;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 
 class CategoryImporterService extends ImporterBase
@@ -15,18 +17,32 @@ class CategoryImporterService extends ImporterBase
         protected AccessControlService $accessControlService
     ) {
         $this->setConfig([
-            "show" => false,
-            "id" => "id",
+            "show" => true,
             "name" => "categories",
+            "id" => "id",
             "label" => "Categories",
             "nameField" => "name",
             "labelField" => "label",
-            'import_mappings' => [],
+            'children_keys' => [],
+            'import_mappings' => [
+                [
+                    'name' => 'no_children',
+                    'label' => 'No Children',
+                    'source' => 'categories',
+                    'dest' => 'categories',
+                ],
+                [
+                    'name' => 'include_children',
+                    'label' => 'Include Children',
+                    'source' => 'categories',
+                    'dest' => 'categories',
+                ],
+            ],
         ]);
         parent::__construct($accessControlService, new Category());
     }
 
-    public function import(array $data, array $mappings = []) {
+    public function import(array $data, array $mappings = []): array {
         return array_map(function (array $category) {
             if(!$this->categoryService->getCategoryRepository()->saveCategory($category)) {
                 throw new BadRequestHttpException(sprintf("Category id:%s not found in database.",
@@ -47,9 +63,14 @@ class CategoryImporterService extends ImporterBase
     }
 
     public function filterImportData(array $data): array {
-        return array_filter($data, function ($category) {
+        $filter = array_filter($data, function ($category) {
             return $this->compareItemKeysWithModelFields($category);
         });
+
+        return [
+            'type' => 'categories',
+            'data' => $this->parseEntityBatch($filter)
+        ];
     }
 
     public function getExportData(): array {
@@ -59,11 +80,11 @@ class CategoryImporterService extends ImporterBase
         )->toArray();
     }
 
-    public function getExportTypeData($item)
+    public function getExportTypeData($item): array|bool
     {
         $category = $this->categoryService->getCategoryById($item["id"]);
         if ($this->accessControlService->inAdminGroup()) {
-            return $category;
+            return $category->toArray();
         }
 
         $isPermitted = $this->accessControlService->checkPermissionsForEntity(
@@ -74,9 +95,19 @@ class CategoryImporterService extends ImporterBase
             ],
             false
         );
-        return $isPermitted ? $category : false;
+        return $isPermitted ? $category->toArray() : false;
     }
 
+    public function parseEntity(array $entity): array {
+        return $entity;
+    }
+
+    public function parseEntityBatch(array $data): array
+    {
+        return array_map(function (array $providerData) {
+            return $this->parseEntity($providerData);
+        }, $data);
+    }
     public function getCategoryService(): CategoryService
     {
         return $this->categoryService;

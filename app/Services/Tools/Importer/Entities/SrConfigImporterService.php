@@ -6,6 +6,7 @@ use App\Models\S;
 use App\Models\SrConfig;
 use App\Services\ApiServices\ServiceRequests\SrConfigService;
 use App\Services\Permission\AccessControlService;
+use Illuminate\Database\Eloquent\Model;
 
 class SrConfigImporterService extends ImporterBase
 {
@@ -22,7 +23,7 @@ class SrConfigImporterService extends ImporterBase
         parent::__construct($accessControlService, new SrConfig());
     }
 
-    public function import(array $data, array $mappings = [])
+    public function import(array $data, array $mappings = []): array
     {
         return array_map(function (S $service) {
             $this->srConfigService->getRequestConfigRepo()->setModel($service);
@@ -47,7 +48,20 @@ class SrConfigImporterService extends ImporterBase
 
     public function filterImportData(array $data): array
     {
-        return $data;
+        return [
+            'type' => 'sr_config',
+            'data' => $this->parseEntity($data)
+        ];
+    }
+
+    public function parseEntity(array $entity): array {
+        return $entity;
+    }
+    public function parseEntityBatch(array $data): array
+    {
+        return array_map(function (array $providerData) {
+            return $this->parseEntity($providerData);
+        }, $data);
     }
 
     public function getSrConfigService(): SrConfigService
@@ -55,4 +69,13 @@ class SrConfigImporterService extends ImporterBase
         return $this->srConfigService;
     }
 
+    public function getExportData(): array
+    {
+        return [];
+    }
+
+    public function getExportTypeData($item): array|bool
+    {
+        return [];
+    }
 }

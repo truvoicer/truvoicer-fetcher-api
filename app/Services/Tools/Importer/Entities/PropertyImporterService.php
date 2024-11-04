@@ -5,6 +5,7 @@ use App\Models\Property;
 use App\Services\Permission\AccessControlService;
 use App\Services\Permission\PermissionService;
 use App\Services\Property\PropertyService;
+use Illuminate\Database\Eloquent\Model;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 
 class PropertyImporterService extends ImporterBase {
@@ -15,18 +16,33 @@ class PropertyImporterService extends ImporterBase {
     )
     {
         $this->setConfig([
-            "show" => false,
+            "show" => true,
             "id" => "id",
             "name" => "properties",
             "label" => "Properties",
             "nameField" => "property_name",
             "labelField" => "label",
-            'import_mappings' => [],
+            'children_keys' => [],
+            'import_mappings' => [
+                [
+                    'name' => 'no_children',
+                    'label' => 'No Children',
+                    'source' => 'Properties',
+                    'dest' => 'Properties',
+                ],
+                [
+                    'name' => 'include_children',
+                    'label' => 'Include Children',
+                    'source' => 'Properties',
+                    'dest' => 'Properties',
+                ],
+            ],
         ]);
         parent::__construct($accessControlService, new Property());
     }
 
-    public function import(array $data, array $mappings = []) {
+    public function import(array $data, array $mappings = []): array
+    {
         return array_map(function (Property $property) {
             return $this->propertyService->getPropertyRepository()->createProperty($property);
         }, $data);
@@ -58,13 +74,18 @@ class PropertyImporterService extends ImporterBase {
         }
     }
     public function filterImportData(array $data): array {
-        return array_filter($data, function ($property) {
+        $filter = array_filter($data, function ($property) {
             return (
                 !empty($property['name']) &&
                 !empty($property['label']) &&
                 !empty($property['value_type'])
             );
         }, ARRAY_FILTER_USE_BOTH);
+
+        return [
+            'type' => 'properties',
+            'data' => $this->parseEntityBatch($filter)
+        ];
     }
 
     public function getExportData(): array {
@@ -78,10 +99,21 @@ class PropertyImporterService extends ImporterBase {
         return $data;
     }
 
-    public function getExportTypeData($item)
+    public function getExportTypeData($item): bool|array
     {
-        return $this->propertyService->getPropertyById($item["id"]);
+        return $this->propertyService->getPropertyById($item["id"])->toArray();
 
+    }
+
+    public function parseEntity(array $entity): array {
+        return $entity;
+    }
+
+    public function parseEntityBatch(array $data): array
+    {
+        return array_map(function (array $providerData) {
+            return $this->parseEntity($providerData);
+        }, $data);
     }
     public function getPropertyService(): PropertyService
     {

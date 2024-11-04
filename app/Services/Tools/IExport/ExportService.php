@@ -54,7 +54,10 @@ class ExportService
     {
         $this->accessControlService->setUser($user);
         $this->iExportTypeService->setUser($user);
-        return $this->iExportTypeService->getImporterExportData(IExportTypeService::IMPORTERS);
+        return $this->iExportTypeService->getImporterExportData(
+            IExportTypeService::IMPORTERS,
+            ['show' => true]
+        );
 
     }
 

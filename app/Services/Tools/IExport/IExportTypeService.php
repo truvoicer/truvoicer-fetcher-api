@@ -9,6 +9,11 @@ use App\Services\Tools\Importer\Entities\SImporterService;
 use App\Services\Tools\Importer\Entities\CategoryImporterService;
 use App\Services\Tools\Importer\Entities\PropertyImporterService;
 use App\Services\Tools\Importer\Entities\ProviderImporterService;
+use App\Services\Tools\Importer\Entities\SrConfigImporterService;
+use App\Services\Tools\Importer\Entities\SrParameterImporterService;
+use App\Services\Tools\Importer\Entities\SrRateLimitImporterService;
+use App\Services\Tools\Importer\Entities\SrResponseKeysImporterService;
+use App\Services\Tools\Importer\Entities\SrScheduleImporterService;
 use App\Services\Tools\SerializerService;
 use Illuminate\Support\Facades\App;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
@@ -35,6 +40,11 @@ class IExportTypeService extends BaseService
         "PROVIDERS" => ProviderImporterService::class,
         "SERVICES" => SImporterService::class,
         "PROPERTIES" => PropertyImporterService::class,
+        'SR_RATE_LIMIT' => SrRateLimitImporterService::class,
+        'SR_SCHEDULE' => SrScheduleImporterService::class,
+        'SR_RESPONSE_KEYS' => SrResponseKeysImporterService::class,
+        'SR_PARAMETER' => SrParameterImporterService::class,
+        'SR_CONFIG' => SrConfigImporterService::class,
     ];
     protected CategoryImporterService $categoryImporterService;
     protected ProviderImporterService $providerImporterService;
@@ -130,14 +140,12 @@ class IExportTypeService extends BaseService
     {
         return array_map(function ($item) {
             $instance = $this->getInstance($item["type"]);
-            $item['config'] = $instance->getConfig();
-            $item['data'] = $instance->filterImportData($item['data']);
-            return $item;
+            return $instance->filterImportData($item['data']);
         }, $data);
     }
 
 
-    public function getExportTypeData($exportType, $data)
+    public function getExportTypeData($exportType, $data): array
     {
         return array_map(function ($item) use ($exportType) {
             $instance = $this->getInstance($exportType);
@@ -147,17 +155,33 @@ class IExportTypeService extends BaseService
         }, $data[self::REQUEST_KEYS["EXPORT_DATA"]]);
     }
 
-    public static function getImporterConfigs(array $importerClassnames): array
+    private static function filterMatch(?array $filter, array $config): bool{
+        if (count($filter) > 0) {
+            if (
+                array_filter($config, function ($value, $key) use ($filter) {
+                    return in_array($key, array_keys($filter)) && $filter[$key] === $value;
+                }, ARRAY_FILTER_USE_BOTH) === []) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    public static function getImporterConfigs(array $importerClassnames, ?array $filter = []): array
     {
         $configs = [];
         foreach ($importerClassnames as $importerClassname) {
             $instance = App::make($importerClassname);
-            $configs[] = $instance->getConfig();
+            $config = $instance->getConfig();
+            if (!self::filterMatch($filter, $config)) {
+                continue;
+            }
+            $configs[] = $config;
         }
         return $configs;
     }
 
-    public function getImporterExportData(array $importerClassnames): array
+    public function getImporterExportData(array $importerClassnames, ?array $filter = []): array
     {
         $configs = [];
         foreach ($importerClassnames as $importerClassname) {
@@ -165,6 +189,9 @@ class IExportTypeService extends BaseService
             $instance->setUser($this->getUser());
             $instance->getAccessControlService()->setUser($this->getUser());
             $config = $instance->getConfig();
+            if (!self::filterMatch($filter, $config)) {
+                continue;
+            }
             $config['data'] = $instance->getExportData();
             $configs[] = $config;
         }
@@ -175,6 +202,6 @@ class IExportTypeService extends BaseService
     {
         return array_map(function ($config) {
             return $config['name'];
-        }, self::getImporterConfigs(self::IMPORTERS));
+        }, self::getImporterConfigs(self::IMPORTERS, ["show" => true]));
     }
 }

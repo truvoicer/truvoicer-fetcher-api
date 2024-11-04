@@ -11,6 +11,7 @@ use App\Services\ApiServices\ServiceRequests\SrParametersService;
 use App\Services\ApiServices\ServiceRequests\SrScheduleService;
 use App\Services\ApiServices\ServiceRequests\SrService;
 use App\Services\Permission\AccessControlService;
+use Illuminate\Database\Eloquent\Model;
 
 class SrImporterService extends ImporterBase
 {
@@ -26,13 +27,14 @@ class SrImporterService extends ImporterBase
     )
     {
         $this->setConfig([
+            "show" => true,
             'name' => 'srs',
             'import_mappings' => [],
         ]);
         parent::__construct($accessControlService, new S());
     }
 
-    public function import(array $data, array $mappings = [])
+    public function import(array $data, array $mappings = []): array
     {
         return array_map(function (S $service) {
             $this->srService->getServiceRequestRepository()->setModel($service);
@@ -98,7 +100,7 @@ class SrImporterService extends ImporterBase
         }
     }
 
-    public function filterImportData(array $data): array {
+    public function filterData(array $data): array {
         $filterSrs = array_filter($data, function ($sr) {
             return (
                 !empty($sr['name']) &&
@@ -111,10 +113,64 @@ class SrImporterService extends ImporterBase
                 !empty($sr['child_srs']) &&
                 is_array($sr['child_srs'])
             ) {
-                $sr['child_srs'] = $this->filterImportData($sr['child_srs']);
+                $sr['child_srs'] = $this->filterData($sr['child_srs']);
             }
             return $sr;
         }, $filterSrs);
+    }
+    public function filterImportData(array $data): array {
+        return [
+            'type' => 'srs',
+            'data' => $this->parseEntityBatch(
+                $this->filterData($data)
+            )
+        ];
+    }
+    public function parseEntity(array $entity): array {
+        if (
+            !empty($entity['sr_rate_limit']) &&
+            is_array($entity['sr_rate_limit'])
+        ) {
+            $entity['sr_rate_limit'] = $this->srRateLimitImporterService->filterImportData($entity['sr_rate_limit']);
+        }
+        if (
+            !empty($entity['sr_schedule']) &&
+            is_array($entity['sr_schedule'])
+        ) {
+            $entity['sr_schedule'] = $this->srScheduleImporterService->filterImportData($entity['sr_schedule']);
+        }
+        if (
+            !empty($entity['sr_response_keys']) &&
+            is_array($entity['sr_response_keys'])
+        ) {
+            $entity['sr_response_keys'] = $this->srResponseKeysImporterService->filterImportData($entity['sr_response_keys']);
+        }
+        if (
+            !empty($entity['sr_parameter']) &&
+            is_array($entity['sr_parameter'])
+        ) {
+            $entity['sr_parameter'] = $this->srParameterImporterService->filterImportData($entity['sr_parameter']);
+        }
+        if (
+            !empty($entity['sr_config']) &&
+            is_array($entity['sr_config'])
+        ) {
+            $entity['sr_config'] = $this->srConfigImporterService->filterImportData($entity['sr_config']);
+        }
+        if (
+            !empty($entity['child_srs']) &&
+            is_array($entity['child_srs'])
+        ) {
+            $entity['child_srs'] = $this->filterImportData($entity['child_srs']);
+        }
+        return $entity;
+    }
+
+    public function parseEntityBatch(array $data): array
+    {
+        return array_map(function (array $providerData) {
+            return $this->parseEntity($providerData);
+        }, $data);
     }
 
 
@@ -123,4 +179,13 @@ class SrImporterService extends ImporterBase
         return $this->srService;
     }
 
+    public function getExportData(): array
+    {
+        return [];
+    }
+
+    public function getExportTypeData($item): array|bool
+    {
+        return [];
+    }
 }

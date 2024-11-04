@@ -6,6 +6,7 @@ use App\Models\S;
 use App\Models\SrResponseKey;
 use App\Services\ApiServices\ServiceRequests\ResponseKeys\SrResponseKeyService;
 use App\Services\Permission\AccessControlService;
+use Illuminate\Database\Eloquent\Model;
 
 class SrResponseKeysImporterService extends ImporterBase
 {
@@ -22,7 +23,7 @@ class SrResponseKeysImporterService extends ImporterBase
         parent::__construct($accessControlService, new SrResponseKey());
     }
 
-    public function import(array $data, array $mappings = [])
+    public function import(array $data, array $mappings = []): array
     {
         return array_map(function (S $service) {
             $this->responseKeyService->getSrResponseKeyRepository()->setModel($service);
@@ -58,22 +59,24 @@ class SrResponseKeysImporterService extends ImporterBase
     }
 
     public function filterImportData(array $data): array {
-        $filterSrs = array_filter($data, function ($sr) {
-            return (
-                !empty($sr['name']) &&
-                !empty($sr['label'])
-            );
+        $filter = array_filter($data, function ($sr) {
+            return $sr;
         }, ARRAY_FILTER_USE_BOTH);
 
-        return array_map(function ($sr) {
-            if (
-                !empty($sr['child_srs']) &&
-                is_array($sr['child_srs'])
-            ) {
-                $sr['child_srs'] = $this->filterImportData($sr['child_srs']);
-            }
-            return $sr;
-        }, $filterSrs);
+        return [
+            'type' => 'sr_response_keys',
+            'data' => $this->parseEntityBatch($filter)
+        ];
+    }
+    public function parseEntity(array $entity): array {
+        return $entity;
+    }
+
+    public function parseEntityBatch(array $data): array
+    {
+        return array_map(function (array $providerData) {
+            return $this->parseEntity($providerData);
+        }, $data);
     }
 
     public function getResponseKeyService(): SrResponseKeyService
@@ -81,4 +84,13 @@ class SrResponseKeysImporterService extends ImporterBase
         return $this->responseKeyService;
     }
 
+    public function getExportData(): array
+    {
+        return [];
+    }
+
+    public function getExportTypeData($item): array|bool
+    {
+        return false;
+    }
 }
