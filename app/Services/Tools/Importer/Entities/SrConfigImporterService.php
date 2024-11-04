@@ -17,8 +17,26 @@ class SrConfigImporterService extends ImporterBase
     )
     {
         $this->setConfig([
+            "show" => false,
             'name' => 'sr_config',
-            'import_mappings' => [],
+            "label" => "Sr Config",
+            "id" => "id",
+            "nameField" => "name",
+            "labelField" => "label",
+            'import_mappings' => [
+                [
+                    'name' => 'no_children',
+                    'label' => 'No Children',
+                    'source' => 'sr_config',
+                    'dest' => 'sr_config',
+                ],
+                [
+                    'name' => 'include_children',
+                    'label' => 'Include Children',
+                    'source' => 'sr_config',
+                    'dest' => 'sr_config',
+                ],
+            ],
         ]);
         parent::__construct($accessControlService, new SrConfig());
     }

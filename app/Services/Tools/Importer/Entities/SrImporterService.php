@@ -27,9 +27,27 @@ class SrImporterService extends ImporterBase
     )
     {
         $this->setConfig([
-            "show" => true,
+            "show" => false,
             'name' => 'srs',
-            'import_mappings' => [],
+            "label" => "Srs",
+            "id" => "id",
+            "nameField" => "name",
+            "labelField" => "label",
+            'children_keys' => ['child_srs', 'sr_config', 'sr_parameters', 'sr_response_keys', 'sr_rate_limit', 'sr_schedule'],
+            'import_mappings' => [
+                [
+                    'name' => 'no_children',
+                    'label' => 'Import sr (no children) to provider',
+                    'source' => 'srs',
+                    'dest' => 'providers',
+                ],
+                [
+                    'name' => 'include_children',
+                    'label' => ' Import sr (including children) to provider',
+                    'source' => 'srs',
+                    'dest' => 'providers',
+                ],
+            ],
         ]);
         parent::__construct($accessControlService, new S());
     }

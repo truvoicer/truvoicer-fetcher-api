@@ -17,7 +17,24 @@ class SrScheduleImporterService extends ImporterBase
     {
         $this->setConfig([
             'name' => 'sr_schedule',
-            'import_mappings' => [],
+            "label" => "Sr Schedules",
+            "id" => "id",
+            "nameField" => "name",
+            "labelField" => "label",
+            'import_mappings' => [
+                [
+                    'name' => 'no_children',
+                    'label' => 'No Children',
+                    'source' => 'sr_schedule',
+                    'dest' => 'sr_schedule',
+                ],
+                [
+                    'name' => 'include_children',
+                    'label' => 'Include Children',
+                    'source' => 'sr_schedule',
+                    'dest' => 'sr_schedule',
+                ],
+            ],
         ]);
         parent::__construct($accessControlService, new S());
     }

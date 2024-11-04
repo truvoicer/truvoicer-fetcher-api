@@ -18,7 +18,24 @@ class SrResponseKeysImporterService extends ImporterBase
     {
         $this->setConfig([
             'name' => 'sr_response_keys',
-            'import_mappings' => [],
+            "label" => "Sr Response Keys",
+            "id" => "id",
+            "nameField" => "name",
+            "labelField" => "label",
+            'import_mappings' => [
+                [
+                    'name' => 'no_children',
+                    'label' => 'No Children',
+                    'source' => 'sr_response_keys',
+                    'dest' => 'sr_response_keys',
+                ],
+                [
+                    'name' => 'include_children',
+                    'label' => 'Include Children',
+                    'source' => 'sr_response_keys',
+                    'dest' => 'sr_response_keys',
+                ],
+            ],
         ]);
         parent::__construct($accessControlService, new SrResponseKey());
     }

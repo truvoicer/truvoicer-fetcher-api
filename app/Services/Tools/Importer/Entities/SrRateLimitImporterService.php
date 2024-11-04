@@ -17,7 +17,24 @@ class SrRateLimitImporterService extends ImporterBase
     {
         $this->setConfig([
             'name' => 'rate_limit',
-            'import_mappings' => [],
+            "label" => "Rate Limits",
+            "id" => "id",
+            "nameField" => "name",
+            "labelField" => "label",
+            'import_mappings' => [
+                [
+                    'name' => 'no_children',
+                    'label' => 'No Children',
+                    'source' => 'rate_limit',
+                    'dest' => 'rate_limit',
+                ],
+                [
+                    'name' => 'include_children',
+                    'label' => 'Include Children',
+                    'source' => 'rate_limit',
+                    'dest' => 'rate_limit',
+                ],
+            ],
         ]);
         parent::__construct($accessControlService, new S());
     }

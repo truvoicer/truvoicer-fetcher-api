@@ -10,6 +10,7 @@ use App\Services\Tools\Importer\Entities\CategoryImporterService;
 use App\Services\Tools\Importer\Entities\PropertyImporterService;
 use App\Services\Tools\Importer\Entities\ProviderImporterService;
 use App\Services\Tools\Importer\Entities\SrConfigImporterService;
+use App\Services\Tools\Importer\Entities\SrImporterService;
 use App\Services\Tools\Importer\Entities\SrParameterImporterService;
 use App\Services\Tools\Importer\Entities\SrRateLimitImporterService;
 use App\Services\Tools\Importer\Entities\SrResponseKeysImporterService;
@@ -40,6 +41,7 @@ class IExportTypeService extends BaseService
         "PROVIDERS" => ProviderImporterService::class,
         "SERVICES" => SImporterService::class,
         "PROPERTIES" => PropertyImporterService::class,
+        'SRS' => SrImporterService::class,
         'SR_RATE_LIMIT' => SrRateLimitImporterService::class,
         'SR_SCHEDULE' => SrScheduleImporterService::class,
         'SR_RESPONSE_KEYS' => SrResponseKeysImporterService::class,

@@ -18,8 +18,26 @@ class SrParameterImporterService extends ImporterBase
     {
 
         $this->setConfig([
+            "show" => false,
             'name' => 'sr_parameters',
-            'import_mappings' => [],
+            "label" => "Sr Parameters",
+            "id" => "id",
+            "nameField" => "name",
+            "labelField" => "label",
+            'import_mappings' => [
+                [
+                    'name' => 'no_children',
+                    'label' => 'No Children',
+                    'source' => 'sr_parameters',
+                    'dest' => 'sr_parameters',
+                ],
+                [
+                    'name' => 'include_children',
+                    'label' => 'Include Children',
+                    'source' => 'sr_parameters',
+                    'dest' => 'sr_parameters',
+                ],
+            ],
         ]);
         parent::__construct($accessControlService, new SrParameter());
     }
