@@ -104,8 +104,9 @@ class ProviderImporterService extends ImporterBase
     }
     public function filterImportData(array $data): array {
         return [
-            'type' => 'providers',
-            'data' => $this->parseEntityBatch(
+            'import_type' => 'providers',
+            'label' => 'Providers',
+            'children' => $this->parseEntityBatch(
                 $this->filterData($data)
             )
         ];
@@ -177,8 +178,9 @@ class ProviderImporterService extends ImporterBase
             !empty($entity['srs']) &&
             is_array($entity['srs'])
         ) {
-            $entity['srs'] = $this->srImporterService->filterImportData($entity['srs']);
+            $entity['srs'] = [$this->srImporterService->filterImportData($entity['srs'])];
         }
+        $entity['import_type'] = 'providers';
         return $entity;
     }
 

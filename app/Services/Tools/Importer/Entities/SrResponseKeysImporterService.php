@@ -21,7 +21,7 @@ class SrResponseKeysImporterService extends ImporterBase
             "label" => "Sr Response Keys",
             "id" => "id",
             "nameField" => "name",
-            "labelField" => "label",
+            "labelField" => "name",
             'import_mappings' => [
                 [
                     'name' => 'no_children',
@@ -81,11 +81,14 @@ class SrResponseKeysImporterService extends ImporterBase
         }, ARRAY_FILTER_USE_BOTH);
 
         return [
-            'type' => 'sr_response_keys',
-            'data' => $this->parseEntityBatch($filter)
+            'import_type' => 'sr_response_keys',
+            'label' => 'Sr Response Keys',
+            'name' => 'Sr Response Keys',
+            'children' => $this->parseEntityBatch($filter)
         ];
     }
     public function parseEntity(array $entity): array {
+        $entity['import_type'] = 'sr_response_keys';
         return $entity;
     }
 

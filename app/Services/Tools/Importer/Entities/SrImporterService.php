@@ -138,8 +138,9 @@ class SrImporterService extends ImporterBase
     }
     public function filterImportData(array $data): array {
         return [
-            'type' => 'srs',
-            'data' => $this->parseEntityBatch(
+            'import_type' => 'srs',
+            'label' => 'Srs',
+            'children' => $this->parseEntityBatch(
                 $this->filterData($data)
             )
         ];
@@ -149,38 +150,39 @@ class SrImporterService extends ImporterBase
             !empty($entity['sr_rate_limit']) &&
             is_array($entity['sr_rate_limit'])
         ) {
-            $entity['sr_rate_limit'] = $this->srRateLimitImporterService->filterImportData($entity['sr_rate_limit']);
+            $entity['sr_rate_limit'] = [$this->srRateLimitImporterService->filterImportData($entity['sr_rate_limit'])];
         }
         if (
             !empty($entity['sr_schedule']) &&
             is_array($entity['sr_schedule'])
         ) {
-            $entity['sr_schedule'] = $this->srScheduleImporterService->filterImportData($entity['sr_schedule']);
+            $entity['sr_schedule'] = [$this->srScheduleImporterService->filterImportData($entity['sr_schedule'])];
         }
         if (
             !empty($entity['sr_response_keys']) &&
             is_array($entity['sr_response_keys'])
         ) {
-            $entity['sr_response_keys'] = $this->srResponseKeysImporterService->filterImportData($entity['sr_response_keys']);
+            $entity['sr_response_keys'] = [$this->srResponseKeysImporterService->filterImportData($entity['sr_response_keys'])];
         }
         if (
             !empty($entity['sr_parameter']) &&
             is_array($entity['sr_parameter'])
         ) {
-            $entity['sr_parameter'] = $this->srParameterImporterService->filterImportData($entity['sr_parameter']);
+            $entity['sr_parameter'] = [$this->srParameterImporterService->filterImportData($entity['sr_parameter'])];
         }
         if (
             !empty($entity['sr_config']) &&
             is_array($entity['sr_config'])
         ) {
-            $entity['sr_config'] = $this->srConfigImporterService->filterImportData($entity['sr_config']);
+            $entity['sr_config'] = [$this->srConfigImporterService->filterImportData($entity['sr_config'])];
         }
         if (
             !empty($entity['child_srs']) &&
             is_array($entity['child_srs'])
         ) {
-            $entity['child_srs'] = $this->filterImportData($entity['child_srs']);
+            $entity['child_srs'] = [$this->filterImportData($entity['child_srs'])];
         }
+        $entity['import_type'] = 'srs';
         return $entity;
     }
 

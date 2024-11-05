@@ -19,8 +19,6 @@ class SrScheduleImporterService extends ImporterBase
             'name' => 'sr_schedule',
             "label" => "Sr Schedules",
             "id" => "id",
-            "nameField" => "name",
-            "labelField" => "label",
             'import_mappings' => [
                 [
                     'name' => 'no_children',
@@ -57,11 +55,13 @@ class SrScheduleImporterService extends ImporterBase
 
     public function filterImportData(array $data): array {
         return [
-            'type' => 'sr_schedule',
-            'data' => $this->parseEntity($data)
+            'import_type' => 'sr_schedule',
+            'label' => 'Sr Schedules',
+            'children' => [$this->parseEntity($data)]
         ];
     }
     public function parseEntity(array $entity): array {
+        $entity['import_type'] = 'sr_schedule';
         return $entity;
     }
 

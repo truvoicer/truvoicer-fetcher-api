@@ -80,11 +80,14 @@ class SrParameterImporterService extends ImporterBase
         }, ARRAY_FILTER_USE_BOTH);
 
         return [
-            'type' => 'sr_parameters',
-            'data' => $this->parseEntityBatch($filter)
+            'import_type' => 'sr_parameters',
+            'label' => 'Sr Parameters',
+            'children' => $this->parseEntityBatch($filter)
         ];
+
     }
     public function parseEntity(array $entity): array {
+        $entity['import_type'] = 'sr_parameters';
         return $entity;
     }
 

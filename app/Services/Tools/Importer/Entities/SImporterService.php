@@ -62,8 +62,9 @@ class SImporterService extends ImporterBase
             return $this->compareItemKeysWithModelFields($service);
         });
         return [
-            'type' => 'services',
-            'data' => $this->parseEntityBatch($filter)
+            'import_type' => 'services',
+            'label' => 'Services',
+            'children' => $this->parseEntityBatch($filter)
         ];
     }
     public function getExportData(): array {
@@ -79,6 +80,7 @@ class SImporterService extends ImporterBase
     }
 
     public function parseEntity(array $entity): array {
+        $entity['import_type'] = 'services';
         return $entity;
     }
 

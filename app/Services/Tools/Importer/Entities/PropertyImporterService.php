@@ -83,8 +83,9 @@ class PropertyImporterService extends ImporterBase {
         }, ARRAY_FILTER_USE_BOTH);
 
         return [
-            'type' => 'properties',
-            'data' => $this->parseEntityBatch($filter)
+            'import_type' => 'properties',
+            'label' => 'Properties',
+            'children' => $this->parseEntityBatch($filter)
         ];
     }
 
@@ -106,6 +107,7 @@ class PropertyImporterService extends ImporterBase {
     }
 
     public function parseEntity(array $entity): array {
+        $entity['import_type'] = 'properties';
         return $entity;
     }
 

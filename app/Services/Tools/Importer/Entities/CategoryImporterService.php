@@ -66,10 +66,10 @@ class CategoryImporterService extends ImporterBase
         $filter = array_filter($data, function ($category) {
             return $this->compareItemKeysWithModelFields($category);
         });
-
         return [
-            'type' => 'categories',
-            'data' => $this->parseEntityBatch($filter)
+            'import_type' => 'categories',
+            'label' => 'Categories',
+            'children' => $this->parseEntityBatch($filter)
         ];
     }
 
@@ -99,6 +99,7 @@ class CategoryImporterService extends ImporterBase
     }
 
     public function parseEntity(array $entity): array {
+        $entity['import_type'] = 'categories';
         return $entity;
     }
 

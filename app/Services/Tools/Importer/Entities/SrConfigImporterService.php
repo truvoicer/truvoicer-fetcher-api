@@ -21,8 +21,6 @@ class SrConfigImporterService extends ImporterBase
             'name' => 'sr_config',
             "label" => "Sr Config",
             "id" => "id",
-            "nameField" => "name",
-            "labelField" => "label",
             'import_mappings' => [
                 [
                     'name' => 'no_children',
@@ -67,12 +65,14 @@ class SrConfigImporterService extends ImporterBase
     public function filterImportData(array $data): array
     {
         return [
-            'type' => 'sr_config',
-            'data' => $this->parseEntity($data)
+            'import_type' => 'sr_config',
+            'label' => 'Sr Config',
+            'children' => [$this->parseEntity($data)]
         ];
     }
 
     public function parseEntity(array $entity): array {
+        $entity['import_type'] = 'sr_config';
         return $entity;
     }
     public function parseEntityBatch(array $data): array

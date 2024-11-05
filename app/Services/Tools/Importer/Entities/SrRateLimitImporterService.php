@@ -19,8 +19,6 @@ class SrRateLimitImporterService extends ImporterBase
             'name' => 'rate_limit',
             "label" => "Rate Limits",
             "id" => "id",
-            "nameField" => "name",
-            "labelField" => "label",
             'import_mappings' => [
                 [
                     'name' => 'no_children',
@@ -60,13 +58,15 @@ class SrRateLimitImporterService extends ImporterBase
     public function filterImportData(array $data): array
     {
         return [
-            'type' => 'rate_limit',
-            'data' => $this->parseEntity($data)
+            'import_type' => 'rate_limit',
+            'label' => 'Rate Limits',
+            'children' => [$this->parseEntity($data)]
         ];
     }
 
     public function parseEntity(array $entity): array
     {
+        $entity['import_type'] = 'rate_limit';
         return $entity;
     }
 
