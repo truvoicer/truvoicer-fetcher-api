@@ -58,6 +58,11 @@ return [
             'visibility' => 'public',
             'throw' => false,
         ],
+        'imports' => [
+            'driver' => 'local',
+            'root' => storage_path('app/imports'),
+            'throw' => false,
+        ],
 
         's3' => [
             'driver' => 's3',

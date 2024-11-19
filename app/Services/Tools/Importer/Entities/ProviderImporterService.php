@@ -38,19 +38,21 @@ class ProviderImporterService extends ImporterBase
             "label" => "Providers",
             "nameField" => "name",
             "labelField" => "label",
-            'children_keys' => ['sr', 'srs', 'child_srs'],
+            'children_keys' => ['sr', 'srs'],
             'import_mappings' => [
                 [
-                    'name' => 'no_children',
-                    'label' => 'No Children',
+                    'name' => 'provider_no_children',
+                    'label' => 'Import provider (no children)',
                     'source' => 'providers',
-                    'dest' => 'providers',
+                    'dest' => 'root',
+                    'required_fields' => ['id', 'name', 'label'],
                 ],
                 [
-                    'name' => 'include_children',
-                    'label' => 'Include Children',
+                    'name' => 'provider_include_children',
+                    'label' => 'Import provider (including children)',
                     'source' => 'providers',
-                    'dest' => 'providers',
+                    'dest' => 'root',
+                    'required_fields' => ['id', 'name', 'label'],
                 ],
             ],
         ]);
@@ -104,6 +106,7 @@ class ProviderImporterService extends ImporterBase
     }
     public function filterImportData(array $data): array {
         return [
+            'root' => true,
             'import_type' => 'providers',
             'label' => 'Providers',
             'children' => $this->parseEntityBatch(

@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Api\Backend\Tools;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\Tools\Export\ExportRequest;
+use App\Http\Requests\Admin\Tools\Import\ImportMappingsRequest;
+use App\Http\Requests\Admin\Tools\Import\ParseImportRequest;
 use App\Services\Permission\AccessControlService;
 use App\Services\Tools\HttpRequestService;
 use App\Services\SecurityService;
@@ -117,7 +119,7 @@ class ImportExportController extends Controller
         );
     }
 
-    public function parseImport(Request $request, ImportService $importService)
+    public function parseImport(ParseImportRequest $request, ImportService $importService)
     {
         return $this->sendSuccessResponse(
             "success",
@@ -128,19 +130,15 @@ class ImportExportController extends Controller
         );
     }
 
-    public function runImport(Request $request, ImportService $importService)
+    public function runImportMappings(ImportMappingsRequest $request, ImportService $importService)
     {
         return $this->sendSuccessResponse(
             "success",
-            $importService->runImporter(
-                $request->files->get("upload_file")
+            $importService->runMappingsImporter(
+                $request->validated('file_id'),
+                $request->validated('mappings')
             )
         );
-    }
-
-    public function runImportMappings(Request $request, ImportService $importService)
-    {
-        return $this->sendSuccessResponse("success", $importService->runMappingsImporter($request));
     }
 
 }

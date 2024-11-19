@@ -54,8 +54,9 @@ class SrRepository extends BaseRepository
         if (!count($srs)) {
             return $query->with($with)->without('childSrs');
         }
+
         $query->with(['childSrs' => function ($query) use ($srs, $with) {
-            $query->whereIn('sr_id', array_column($srs, 'id'));
+            $query->whereIn('sr_child_id', array_column($srs, 'id'));
             $childSrs = [];
             foreach ($srs as $sr) {
                 if (is_array($sr['child_srs'])) {

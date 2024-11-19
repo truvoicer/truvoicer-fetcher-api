@@ -7,7 +7,7 @@ use App\Services\Tools\IExport\ExportService;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
-class ImportRequest extends FormRequest
+class ImportMappingsRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -25,7 +25,12 @@ class ImportRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'upload_file' => ['required', 'file'],
+            'mappings' => ['required', 'array'],
+            'mappings.*.mapping' => [
+                'required',
+                'array',
+            ],
+            'file_id' => ['required', 'integer', 'exists:files,id'],
         ];
     }
 }

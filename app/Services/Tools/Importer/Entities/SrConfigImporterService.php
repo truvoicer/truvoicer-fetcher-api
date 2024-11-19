@@ -24,15 +24,10 @@ class SrConfigImporterService extends ImporterBase
             'import_mappings' => [
                 [
                     'name' => 'no_children',
-                    'label' => 'No Children',
+                    'label' => 'Import sr config to provider',
                     'source' => 'sr_config',
-                    'dest' => 'sr_config',
-                ],
-                [
-                    'name' => 'include_children',
-                    'label' => 'Include Children',
-                    'source' => 'sr_config',
-                    'dest' => 'sr_config',
+                    'dest' => 'srs',
+                    'required_fields' => ['id'],
                 ],
             ],
         ]);
@@ -65,6 +60,7 @@ class SrConfigImporterService extends ImporterBase
     public function filterImportData(array $data): array
     {
         return [
+            'root' => true,
             'import_type' => 'sr_config',
             'label' => 'Sr Config',
             'children' => [$this->parseEntity($data)]

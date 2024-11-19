@@ -4,6 +4,7 @@ namespace App\Services\Tools\IExport;
 
 use App\Exceptions\ImportException;
 use App\Services\Tools\FileSystem\Downloads\DownloadsFileSystemService;
+use App\Services\Tools\FileSystem\Imports\ImportsFileSystemService;
 use App\Services\Tools\FileSystem\Uploads\UploadsFileSystemService;
 use App\Services\Tools\HttpRequestService;
 use App\Services\Tools\SerializerService;
@@ -22,7 +23,8 @@ class ImportService
         private HttpRequestService $httpRequestService,
         private UploadsFileSystemService $uploadsFileSystemService,
         private IExportTypeService $iExportTypeService,
-        private ImporterValidator $importerValidator
+        private ImporterValidator $importerValidator,
+        private ImportsFileSystemService $importsFileSystemService
     ) {
     }
 
@@ -31,16 +33,15 @@ class ImportService
         return $this->uploadsFileSystemService->readTempFile($filePath);
     }
 
-    public function runMappingsImporter(Request $request)
+    public function runMappingsImporter(int $fileId, array $mappings)
     {
-        $requestData = $this->httpRequestService->getRequestData($request, true);
-        $getFileData = $this->uploadsFileSystemService->fileSystemService->getFileById((int)$requestData["file_id"]);
-        $getFileContents = $this->getXmlData($getFileData->path);
-
+        $getFileData = $this->importsFileSystemService->fileSystemService->getFileById($fileId);
+        $getFileContents = $this->importsFileSystemService->getFilesystem()->get($getFileData->rel_path);
+        if (!$getFileContents) {
+            throw new BadRequestHttpException("Error reading file");
+        }
         $runImportForType = $this->iExportTypeService->runImportForType(
-            $requestData["import_type"],
-            $getFileContents,
-            $requestData["mappings"]
+            json_decode($getFileContents, true),
         );
         return array_map(function ($item) {
             if (is_array($item) && isset($item["status"]) && $item["status"] === "error") {
@@ -98,7 +99,8 @@ class ImportService
 
     public function parseImport(UploadedFile $uploadedFile)
     {
-        $getFileContents = json_decode($uploadedFile->getContent(), true);
+        $contents = $uploadedFile->getContent();
+        $getFileContents = json_decode($contents, true);
         if (!$getFileContents) {
             throw new ImportException("Error parsing file");
         }
@@ -117,7 +119,33 @@ class ImportService
                 $this->iExportTypeService->getErrors()
             ));
         }
+
+        $fileName = sprintf("import-%s.json", (new \DateTime())->format("YmdHis"));
+        $fileDirectory = sprintf("exports/%s", $fileName);
+
+        $store = $this->importsFileSystemService->storeNewFile(
+            $fileName,
+            $fileName,
+            $contents
+        );
+        if (!$store) {
+            throw new ImportException("Error storing file");
+        }
+
+        $getSavedData = $this->importsFileSystemService->saveToDatabase(
+            $fileName,
+            $fileName,
+            "export",
+            "json"
+        );
+        if (!$getSavedData) {
+            throw new ImportException(
+                "Export save item error: Unable to save item to database."
+            );
+        }
+
         return [
+            'file' => $getSavedData,
             'config' => $this->iExportTypeService::getImporterConfigs(
                 $this->iExportTypeService::IMPORTERS
             ),

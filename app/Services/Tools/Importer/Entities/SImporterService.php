@@ -26,16 +26,18 @@ class SImporterService extends ImporterBase
             "labelField" => "label",
             'import_mappings' => [
                 [
-                    'name' => 'no_children',
-                    'label' => 'No Children',
+                    'name' => 'service_no_children',
+                    'label' => 'Import service (no children)',
                     'source' => 'services',
-                    'dest' => 'services',
+                    'dest' => 'root',
+                    'required_fields' => ['id', 'name'],
                 ],
                 [
-                    'name' => 'include_children',
-                    'label' => 'Include Children',
+                    'name' => 'service_include_children',
+                    'label' => 'Import service (including children)',
                     'source' => 'services',
-                    'dest' => 'services',
+                    'dest' => 'root',
+                    'required_fields' => ['id', 'name'],
                 ],
             ],
         ]);
@@ -62,6 +64,7 @@ class SImporterService extends ImporterBase
             return $this->compareItemKeysWithModelFields($service);
         });
         return [
+            'root' => true,
             'import_type' => 'services',
             'label' => 'Services',
             'children' => $this->parseEntityBatch($filter)

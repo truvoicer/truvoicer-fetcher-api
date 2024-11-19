@@ -25,16 +25,11 @@ class PropertyImporterService extends ImporterBase {
             'children_keys' => [],
             'import_mappings' => [
                 [
-                    'name' => 'no_children',
-                    'label' => 'No Children',
-                    'source' => 'Properties',
-                    'dest' => 'Properties',
-                ],
-                [
-                    'name' => 'include_children',
-                    'label' => 'Include Children',
-                    'source' => 'Properties',
-                    'dest' => 'Properties',
+                    'name' => 'property',
+                    'label' => 'Import Property',
+                    'source' => 'properties',
+                    'dest' => 'root',
+                    'required_fields' => ['id', 'name', 'label'],
                 ],
             ],
         ]);
@@ -83,6 +78,7 @@ class PropertyImporterService extends ImporterBase {
         }, ARRAY_FILTER_USE_BOTH);
 
         return [
+            'root' => true,
             'import_type' => 'properties',
             'label' => 'Properties',
             'children' => $this->parseEntityBatch($filter)

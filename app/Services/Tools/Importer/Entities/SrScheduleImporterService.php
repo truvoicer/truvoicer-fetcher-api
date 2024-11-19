@@ -21,16 +21,11 @@ class SrScheduleImporterService extends ImporterBase
             "id" => "id",
             'import_mappings' => [
                 [
-                    'name' => 'no_children',
-                    'label' => 'No Children',
+                    'name' => 'sr_schedule_to_sr',
+                    'label' => 'Import sr schedule to sr',
                     'source' => 'sr_schedule',
-                    'dest' => 'sr_schedule',
-                ],
-                [
-                    'name' => 'include_children',
-                    'label' => 'Include Children',
-                    'source' => 'sr_schedule',
-                    'dest' => 'sr_schedule',
+                    'dest' => 'srs',
+                    'required_fields' => ['id'],
                 ],
             ],
         ]);
@@ -55,6 +50,7 @@ class SrScheduleImporterService extends ImporterBase
 
     public function filterImportData(array $data): array {
         return [
+            'root' => true,
             'import_type' => 'sr_schedule',
             'label' => 'Sr Schedules',
             'children' => [$this->parseEntity($data)]

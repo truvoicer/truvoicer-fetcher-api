@@ -26,16 +26,11 @@ class CategoryImporterService extends ImporterBase
             'children_keys' => [],
             'import_mappings' => [
                 [
-                    'name' => 'no_children',
-                    'label' => 'No Children',
+                    'name' => 'category',
+                    'label' => 'Import category',
                     'source' => 'categories',
-                    'dest' => 'categories',
-                ],
-                [
-                    'name' => 'include_children',
-                    'label' => 'Include Children',
-                    'source' => 'categories',
-                    'dest' => 'categories',
+                    'dest' => 'root',
+                    'required_fields' => ['id', 'name', 'label'],
                 ],
             ],
         ]);
@@ -67,6 +62,7 @@ class CategoryImporterService extends ImporterBase
             return $this->compareItemKeysWithModelFields($category);
         });
         return [
+            'root' => true,
             'import_type' => 'categories',
             'label' => 'Categories',
             'children' => $this->parseEntityBatch($filter)

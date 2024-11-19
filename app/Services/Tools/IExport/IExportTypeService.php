@@ -114,9 +114,12 @@ class IExportTypeService extends BaseService
         return $this->getInstance($importType)->getImportMappings($fileContents);
     }
 
-    public function runImportForType($importType, $fileContents, array $mappings = [])
+    public function runImportForType(array $mappings = [])
     {
-        return $this->getInstance($importType)->import($fileContents, $mappings);
+        return array_map(function ($item) {
+            $instance = $this->getInstance($item["type"]);
+            return $instance->import($item['data']);
+        }, $mappings);
     }
 
     public function validateType($importType, array $data): void

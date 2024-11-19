@@ -26,16 +26,11 @@ class SrParameterImporterService extends ImporterBase
             "labelField" => "label",
             'import_mappings' => [
                 [
-                    'name' => 'no_children',
-                    'label' => 'No Children',
+                    'name' => 'sr_parameter_to_sr',
+                    'label' => 'Import sr parameter to sr',
                     'source' => 'sr_parameters',
-                    'dest' => 'sr_parameters',
-                ],
-                [
-                    'name' => 'include_children',
-                    'label' => 'Include Children',
-                    'source' => 'sr_parameters',
-                    'dest' => 'sr_parameters',
+                    'dest' => 'srs',
+                    'required_fields' => ['id'],
                 ],
             ],
         ]);
@@ -80,6 +75,7 @@ class SrParameterImporterService extends ImporterBase
         }, ARRAY_FILTER_USE_BOTH);
 
         return [
+            'root' => true,
             'import_type' => 'sr_parameters',
             'label' => 'Sr Parameters',
             'children' => $this->parseEntityBatch($filter)

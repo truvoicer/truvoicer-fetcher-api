@@ -24,16 +24,18 @@ class SrResponseKeysImporterService extends ImporterBase
             "labelField" => "name",
             'import_mappings' => [
                 [
-                    'name' => 'no_children',
-                    'label' => 'No Children',
+                    'name' => 'sr_response_key_to_sr_no_children',
+                    'label' => 'Import sr response key to sr (no children)',
                     'source' => 'sr_response_keys',
-                    'dest' => 'sr_response_keys',
+                    'dest' => 'srs',
+                    'required_fields' => ['id'],
                 ],
                 [
-                    'name' => 'include_children',
-                    'label' => 'Include Children',
+                    'name' => 'sr_response_key_to_sr_include_children',
+                    'label' => 'Import sr response key to sr (including children)',
                     'source' => 'sr_response_keys',
-                    'dest' => 'sr_response_keys',
+                    'dest' => 'srs',
+                    'required_fields' => ['id'],
                 ],
             ],
         ]);
@@ -81,6 +83,7 @@ class SrResponseKeysImporterService extends ImporterBase
         }, ARRAY_FILTER_USE_BOTH);
 
         return [
+            'root' => true,
             'import_type' => 'sr_response_keys',
             'label' => 'Sr Response Keys',
             'name' => 'Sr Response Keys',
