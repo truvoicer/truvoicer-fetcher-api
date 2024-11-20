@@ -17,21 +17,28 @@ abstract class ImporterBase
 
     public function __construct(
         protected AccessControlService $accessControlService,
-        Model $model
+        Model                          $model
     )
     {
         $this->model = $model;
     }
 
     abstract public function import(array $data, array $mappings = []): array;
+
     abstract public function validateImportData(array $data): void;
+
     abstract public function filterImportData(array $data): array;
+
     abstract public function getExportData(): array;
+
     abstract public function getExportTypeData($item): array|bool;
+
     abstract public function parseEntity(array $entity): array;
+
     abstract public function parseEntityBatch(array $data): array;
 
-    protected function compareKeysWithModelFields(array $data): bool {
+    protected function compareKeysWithModelFields(array $data): bool
+    {
         $modelKeys = $this->model->getFillable();
         //validate data has same keys as model
         foreach ($data as $category) {
@@ -47,12 +54,20 @@ abstract class ImporterBase
         return true;
     }
 
-    protected function compareItemKeysWithModelFields(array $data): bool {
+    protected function compareItemKeysWithModelFields(array $data): bool
+    {
         $modelKeys = $this->model->getFillable();
         if (count(array_diff($modelKeys, array_keys($data))) > 0) {
             return false;
         }
         return true;
+    }
+
+    protected function filterMapData(array $map): array
+    {
+        return array_filter($map, function ($key) {
+            return $key !== 'mapping';
+        }, ARRAY_FILTER_USE_KEY);
     }
 
     public function getConfig(): array
@@ -65,7 +80,8 @@ abstract class ImporterBase
         $this->config = $config;
     }
 
-    protected function addConfigItem(string $key, mixed $value): void {
+    protected function addConfigItem(string $key, mixed $value): void
+    {
         $this->config[$key] = $value;
     }
 

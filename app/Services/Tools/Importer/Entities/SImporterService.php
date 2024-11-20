@@ -46,10 +46,56 @@ class SImporterService extends ImporterBase
 
     public function import(array $data, array $mappings = []): array
     {
-        return array_map(function (S $service) {
-            $this->apiService->getServiceRepository()->setModel($service);
-            return $this->apiService->getServiceRepository()->save($service);
-        }, $data);
+        return array_map(function (array $map) {
+            return match ($map['mapping']['name']) {
+                'service_no_children' => $this->importServiceNoChildren($this->filterMapData($map)),
+                'service_include_children' => $this->importServiceIncludeChildren($this->filterMapData($map)),
+                default => [
+                    'success' => false,
+                    'data' => $map['data'],
+                ],
+            };
+        }, $mappings);
+    }
+
+    public function importServiceNoChildren(array $data): array
+    {
+        try {
+            $this->apiService->createService(
+                $this->getUser(),
+                $data
+            );
+            return [
+                'success' => true,
+                'data' => $this->apiService->getServiceRepository()->getModel()
+            ];
+        } catch (\Exception $e) {
+            return [
+                'success' => false,
+                'data' => $data,
+                'error' => $e->getMessage()
+            ];
+        }
+    }
+    public function importServiceIncludeChildren(array $data): array
+    {
+        try {
+            $this->apiService->createService(
+                $this->getUser(),
+                $data
+            );
+
+            return [
+                'success' => true,
+                'data' => $this->apiService->getServiceRepository()->getModel()
+            ];
+        } catch (\Exception $e) {
+            return [
+                'success' => false,
+                'data' => $data,
+                'error' => $e->getMessage()
+            ];
+        }
     }
 
     public function getImportMappings(array $data)

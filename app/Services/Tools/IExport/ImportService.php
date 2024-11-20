@@ -42,6 +42,7 @@ class ImportService
         }
         $runImportForType = $this->iExportTypeService->runImportForType(
             json_decode($getFileContents, true),
+            $mappings
         );
         return array_map(function ($item) {
             if (is_array($item) && isset($item["status"]) && $item["status"] === "error") {

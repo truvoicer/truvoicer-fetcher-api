@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Services\Tools\Importer\Entities;
 
 use App\Models\Category;
@@ -13,9 +14,10 @@ class CategoryImporterService extends ImporterBase
 {
 
     public function __construct(
-        private CategoryService $categoryService,
+        private CategoryService        $categoryService,
         protected AccessControlService $accessControlService
-    ) {
+    )
+    {
         $this->setConfig([
             "show" => true,
             "name" => "categories",
@@ -37,27 +39,51 @@ class CategoryImporterService extends ImporterBase
         parent::__construct($accessControlService, new Category());
     }
 
-    public function import(array $data, array $mappings = []): array {
-        return array_map(function (array $category) {
-            if(!$this->categoryService->getCategoryRepository()->saveCategory($category)) {
-                throw new BadRequestHttpException(sprintf("Category id:%s not found in database.",
-                    $category->id
-                ));
-            }
-//            $this->userCategoryRepository->createUserCategory($this->user, $createCategory);
-            return $this->categoryService->getCategoryRepository()->getModel();
-        }, $data);
+    public function import(array $data, array $mappings = []): array
+    {
+        return array_map(function (array $map) {
+            return match ($map['mapping']['name']) {
+                'category' => $this->importCategory($this->filterMapData($map)),
+                default => [
+                    'success' => false,
+                    'data' => $map['data'],
+                ],
+            };
+        }, $mappings);
     }
 
-    public function getImportMappings(array $data) {
+    public function importCategory(array $data): array
+    {
+        try {
+            $this->categoryService->createCategory(
+                $this->getUser(),
+                $data
+            );
+            return [
+                'success' => true,
+                'data' => $this->categoryService->getCategoryRepository()->getModel()
+            ];
+        } catch (\Exception $e) {
+            return [
+                'success' => false,
+                'data' => $data,
+                'error' => $e->getMessage()
+            ];
+        }
+    }
+
+    public function getImportMappings(array $data)
+    {
         return [];
     }
 
-    public function validateImportData(array $data): void {
+    public function validateImportData(array $data): void
+    {
         $this->compareKeysWithModelFields($data);
     }
 
-    public function filterImportData(array $data): array {
+    public function filterImportData(array $data): array
+    {
         $filter = array_filter($data, function ($category) {
             return $this->compareItemKeysWithModelFields($category);
         });
@@ -69,7 +95,8 @@ class CategoryImporterService extends ImporterBase
         ];
     }
 
-    public function getExportData(): array {
+    public function getExportData(): array
+    {
         return $this->categoryService->findUserCategories(
             $this->getUser(),
             false
@@ -94,7 +121,8 @@ class CategoryImporterService extends ImporterBase
         return $isPermitted ? $category->toArray() : false;
     }
 
-    public function parseEntity(array $entity): array {
+    public function parseEntity(array $entity): array
+    {
         $entity['import_type'] = 'categories';
         return $entity;
     }
@@ -105,6 +133,7 @@ class CategoryImporterService extends ImporterBase
             return $this->parseEntity($providerData);
         }, $data);
     }
+
     public function getCategoryService(): CategoryService
     {
         return $this->categoryService;

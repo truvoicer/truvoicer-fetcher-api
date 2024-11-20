@@ -114,12 +114,26 @@ class IExportTypeService extends BaseService
         return $this->getInstance($importType)->getImportMappings($fileContents);
     }
 
-    public function runImportForType(array $mappings = [])
+    private function getMappingsByType(string $type, array $mappings): array
     {
-        return array_map(function ($item) {
+        return array_filter($mappings, function ($mapping) use ($type) {
+            if (empty($mapping['mapping']['source'])) {
+                return false;
+            }
+            return $mapping['mapping']['source'] === $type;
+        });
+    }
+
+    public function runImportForType(array $contents, array $mappings)
+    {
+        return array_map(function ($item) use($mappings) {
+            $getMappingsByType = $this->getMappingsByType($item["type"], $mappings);
+            $filteredMappings = array_filter($getMappingsByType, function ($mapping) {
+                return !empty($mapping['mapping']['source']);
+            });
             $instance = $this->getInstance($item["type"]);
-            return $instance->import($item['data']);
-        }, $mappings);
+            return $instance->import($item['data'], $filteredMappings);
+        }, $contents);
     }
 
     public function validateType($importType, array $data): void
