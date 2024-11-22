@@ -29,7 +29,14 @@ class ImporterValidator
                 !is_string($row['type']) ||
                 !in_array($row['type'], array_column(ExportService::getExportEntityFields(), 'name'))
             ) {
-                $this->addError('data_row', 'Data row must contain a type key with a string value');
+                $this->addError(
+                    'data_row',
+                    sprintf(
+                        'Data row type (%s) is not one of the following: %s',
+                        empty($row['type']) ? 'null' : $row['type'],
+                        implode(', ', array_column(ExportService::getExportEntityFields(), 'name'))
+                    )
+                );
                 return false;
             }
             if (empty($row['data']) || !is_array($row['data'])) {

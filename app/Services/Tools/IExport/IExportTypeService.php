@@ -2,6 +2,7 @@
 
 namespace App\Services\Tools\IExport;
 
+use App\Enums\Import\ImportType;
 use App\Repositories\SrRepository;
 use App\Services\BaseService;
 use App\Services\Permission\AccessControlService;
@@ -78,13 +79,13 @@ class IExportTypeService extends BaseService
     private function getInstance(string $importType)
     {
         switch ($importType) {
-            case self::IMPORT_TYPES["CATEGORIES"]:
+            case ImportType::CATEGORY->value:
                 return $this->categoryImporterService;
-            case self::IMPORT_TYPES["PROVIDERS"]:
+            case ImportType::PROVIDER->value:
                 return $this->providerImporterService;
-            case self::IMPORT_TYPES["SERVICES"]:
+            case ImportType::SERVICE->value:
                 return $this->apiServiceImporterService;
-            case self::IMPORT_TYPES["PROPERTIES"]:
+            case ImportType::PROPERTY->value:
                 return $this->propertyImporterService;
             default:
                 throw new BadRequestHttpException(

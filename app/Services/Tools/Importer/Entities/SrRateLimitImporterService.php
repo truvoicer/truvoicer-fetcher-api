@@ -2,6 +2,9 @@
 
 namespace App\Services\Tools\Importer\Entities;
 
+use App\Enums\Import\ImportConfig;
+use App\Enums\Import\ImportMappingType;
+use App\Enums\Import\ImportType;
 use App\Models\S;
 use App\Services\ApiServices\RateLimitService;
 use App\Services\Permission\AccessControlService;
@@ -15,28 +18,39 @@ class SrRateLimitImporterService extends ImporterBase
         protected AccessControlService $accessControlService
     )
     {
-        $this->setConfig([
-            'name' => 'rate_limit',
-            "label" => "Rate Limits",
-            "id" => "id",
-            'import_mappings' => [
-                [
-                    'name' => 'rate_limit_to_provider',
-                    'label' => 'Import rate limit to provider',
-                    'source' => 'rate_limit',
-                    'dest' => 'providers',
-                    'required_fields' => ['id'],
-                ],
-                [
-                    'name' => 'rate_limit_to_sr',
-                    'label' => 'Import rate limit to sr',
-                    'source' => 'rate_limit',
-                    'dest' => 'srs',
-                    'required_fields' => ['id'],
-                ],
-            ],
-        ]);
         parent::__construct($accessControlService, new S());
+    }
+
+    protected function setConfig(): void
+    {
+        $this->buildConfig(
+            false,
+            'id',
+            ImportType::SR_RATE_LIMIT->value,
+            'Rate Limits',
+            null,
+            null,
+            null,
+            [],
+        );
+    }
+
+    protected function setMappings(): void
+    {
+        $this->mappings = [
+            [
+                'name' => ImportMappingType::SELF_NO_CHILDREN->value,
+                'label' => 'Import rate limit to provider',
+                'dest' => ImportType::PROVIDER->value,
+                'required_fields' => ['id'],
+            ],
+            [
+                'name' => ImportMappingType::SELF_NO_CHILDREN->value,
+                'label' => 'Import rate limit to sr',
+                'dest' => ImportType::SR->value,
+                'required_fields' => ['id'],
+            ],
+        ];
     }
 
     public function import(array $data, array $mappings = []): array
@@ -61,15 +75,15 @@ class SrRateLimitImporterService extends ImporterBase
     {
         return [
             'root' => true,
-            'import_type' => 'rate_limit',
-            'label' => 'Rate Limits',
+            'import_type' => $this->getConfigItem(ImportConfig::NAME),
+            'label' => $this->getConfigItem(ImportConfig::LABEL),
             'children' => [$this->parseEntity($data)]
         ];
     }
 
     public function parseEntity(array $entity): array
     {
-        $entity['import_type'] = 'rate_limit';
+        $entity['import_type'] = $this->getConfigItem(ImportConfig::NAME);
         return $entity;
     }
 

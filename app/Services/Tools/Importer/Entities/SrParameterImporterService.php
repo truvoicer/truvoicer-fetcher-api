@@ -2,6 +2,9 @@
 
 namespace App\Services\Tools\Importer\Entities;
 
+use App\Enums\Import\ImportConfig;
+use App\Enums\Import\ImportMappingType;
+use App\Enums\Import\ImportType;
 use App\Models\S;
 use App\Models\SrParameter;
 use App\Services\ApiServices\ServiceRequests\SrParametersService;
@@ -16,25 +19,33 @@ class SrParameterImporterService extends ImporterBase
         protected AccessControlService $accessControlService
     )
     {
-
-        $this->setConfig([
-            "show" => false,
-            'name' => 'sr_parameters',
-            "label" => "Sr Parameters",
-            "id" => "id",
-            "nameField" => "name",
-            "labelField" => "label",
-            'import_mappings' => [
-                [
-                    'name' => 'sr_parameter_to_sr',
-                    'label' => 'Import sr parameter to sr',
-                    'source' => 'sr_parameters',
-                    'dest' => 'srs',
-                    'required_fields' => ['id'],
-                ],
-            ],
-        ]);
         parent::__construct($accessControlService, new SrParameter());
+    }
+
+    protected function setConfig(): void
+    {
+        $this->buildConfig(
+            false,
+            'id',
+            ImportType::SR_PARAMETER->value,
+            'Sr Parameters',
+            'name',
+            'label',
+            'label',
+            [],
+        );
+    }
+
+    protected function setMappings(): void
+    {
+        $this->mappings = [
+            [
+                'name' => ImportMappingType::SELF_NO_CHILDREN->value,
+                'label' => 'Import sr parameter to sr',
+                'dest' => ImportType::SR->value,
+                'required_fields' => ['id'],
+            ],
+        ];
     }
 
     public function import(array $data, array $mappings = []): array
@@ -76,14 +87,14 @@ class SrParameterImporterService extends ImporterBase
 
         return [
             'root' => true,
-            'import_type' => 'sr_parameters',
-            'label' => 'Sr Parameters',
+            'import_type' => $this->getConfigItem(ImportConfig::NAME),
+            'label' => $this->getConfigItem(ImportConfig::LABEL),
             'children' => $this->parseEntityBatch($filter)
         ];
 
     }
     public function parseEntity(array $entity): array {
-        $entity['import_type'] = 'sr_parameters';
+        $entity['import_type'] = $this->getConfigItem(ImportConfig::NAME);
         return $entity;
     }
 

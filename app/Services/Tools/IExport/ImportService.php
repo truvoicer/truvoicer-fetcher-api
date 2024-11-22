@@ -7,6 +7,7 @@ use App\Services\Tools\FileSystem\Downloads\DownloadsFileSystemService;
 use App\Services\Tools\FileSystem\Imports\ImportsFileSystemService;
 use App\Services\Tools\FileSystem\Uploads\UploadsFileSystemService;
 use App\Services\Tools\HttpRequestService;
+use App\Services\Tools\Importer\Entities\PropertyImporterService;
 use App\Services\Tools\SerializerService;
 use App\Traits\Error\ErrorTrait;
 use Symfony\Component\HttpFoundation\File\UploadedFile;

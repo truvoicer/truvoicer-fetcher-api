@@ -2,6 +2,9 @@
 
 namespace App\Services\Tools\Importer\Entities;
 
+use App\Enums\Import\ImportConfig;
+use App\Enums\Import\ImportMappingType;
+use App\Enums\Import\ImportType;
 use App\Models\S;
 use App\Services\ApiServices\ApiService;
 use App\Services\Permission\AccessControlService;
@@ -17,31 +20,39 @@ class SImporterService extends ImporterBase
         protected AccessControlService $accessControlService
     )
     {
-        $this->setConfig([
-            "show" => true,
-            "id" => "id",
-            "name" => "services",
-            "label" => "Services",
-            "nameField" => "name",
-            "labelField" => "label",
-            'import_mappings' => [
-                [
-                    'name' => 'service_no_children',
-                    'label' => 'Import service (no children)',
-                    'source' => 'services',
-                    'dest' => 'root',
-                    'required_fields' => ['id', 'name'],
-                ],
-                [
-                    'name' => 'service_include_children',
-                    'label' => 'Import service (including children)',
-                    'source' => 'services',
-                    'dest' => 'root',
-                    'required_fields' => ['id', 'name'],
-                ],
-            ],
-        ]);
         parent::__construct($accessControlService, new S());
+    }
+
+    protected function setConfig(): void
+    {
+        $this->buildConfig(
+            true,
+            'id',
+            ImportType::SERVICE->value,
+            'Services',
+            'name',
+            'label',
+            'label',
+            [],
+        );
+    }
+
+    protected function setMappings(): void
+    {
+        $this->mappings = [
+            [
+                'name' => ImportMappingType::SELF_NO_CHILDREN->value,
+                'label' => 'Import service (no children)',
+                'dest' => 'root',
+                'required_fields' => ['id', 'name'],
+            ],
+            [
+                'name' => ImportMappingType::SELF_WITH_CHILDREN->value,
+                'label' => 'Import service (including children)',
+                'dest' => 'root',
+                'required_fields' => ['id', 'name'],
+            ],
+        ];
     }
 
     public function import(array $data, array $mappings = []): array
@@ -111,8 +122,8 @@ class SImporterService extends ImporterBase
         });
         return [
             'root' => true,
-            'import_type' => 'services',
-            'label' => 'Services',
+            'import_type' => $this->getConfigItem(ImportConfig::NAME),
+            'label' => $this->getConfigItem(ImportConfig::LABEL),
             'children' => $this->parseEntityBatch($filter)
         ];
     }
@@ -129,7 +140,7 @@ class SImporterService extends ImporterBase
     }
 
     public function parseEntity(array $entity): array {
-        $entity['import_type'] = 'services';
+        $entity['import_type'] = $this->getConfigItem(ImportConfig::NAME);
         return $entity;
     }
 

@@ -2,6 +2,9 @@
 
 namespace App\Services\Tools\Importer\Entities;
 
+use App\Enums\Import\ImportConfig;
+use App\Enums\Import\ImportMappingType;
+use App\Enums\Import\ImportType;
 use App\Models\S;
 use App\Models\SrConfig;
 use App\Services\ApiServices\ServiceRequests\SrConfigService;
@@ -16,22 +19,33 @@ class SrConfigImporterService extends ImporterBase
         protected AccessControlService $accessControlService
     )
     {
-        $this->setConfig([
-            "show" => false,
-            'name' => 'sr_config',
-            "label" => "Sr Config",
-            "id" => "id",
-            'import_mappings' => [
-                [
-                    'name' => 'no_children',
-                    'label' => 'Import sr config to provider',
-                    'source' => 'sr_config',
-                    'dest' => 'srs',
-                    'required_fields' => ['id'],
-                ],
-            ],
-        ]);
         parent::__construct($accessControlService, new SrConfig());
+    }
+
+    protected function setConfig(): void
+    {
+        $this->buildConfig(
+            false,
+            'id',
+            ImportType::SR_CONFIG->value,
+            'Sr Config',
+            null,
+            null,
+            null,
+            [],
+        );
+    }
+
+    protected function setMappings(): void
+    {
+        $this->mappings = [
+            [
+                'name' => ImportMappingType::SELF_NO_CHILDREN->value,
+                'label' => 'Import sr config to provider',
+                'dest' => ImportType::SR->value,
+                'required_fields' => ['id'],
+            ],
+        ];
     }
 
     public function import(array $data, array $mappings = []): array
@@ -61,14 +75,14 @@ class SrConfigImporterService extends ImporterBase
     {
         return [
             'root' => true,
-            'import_type' => 'sr_config',
-            'label' => 'Sr Config',
+            'import_type' => $this->getConfigItem(ImportConfig::NAME),
+            'label' => $this->getConfigItem(ImportConfig::LABEL),
             'children' => [$this->parseEntity($data)]
         ];
     }
 
     public function parseEntity(array $entity): array {
-        $entity['import_type'] = 'sr_config';
+        $entity['import_type'] = $this->getConfigItem(ImportConfig::NAME);
         return $entity;
     }
     public function parseEntityBatch(array $data): array

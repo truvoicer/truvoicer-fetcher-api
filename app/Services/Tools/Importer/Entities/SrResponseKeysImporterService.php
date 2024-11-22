@@ -2,6 +2,9 @@
 
 namespace App\Services\Tools\Importer\Entities;
 
+use App\Enums\Import\ImportConfig;
+use App\Enums\Import\ImportMappingType;
+use App\Enums\Import\ImportType;
 use App\Models\S;
 use App\Models\SrResponseKey;
 use App\Services\ApiServices\ServiceRequests\ResponseKeys\SrResponseKeyService;
@@ -16,30 +19,39 @@ class SrResponseKeysImporterService extends ImporterBase
         protected AccessControlService $accessControlService
     )
     {
-        $this->setConfig([
-            'name' => 'sr_response_keys',
-            "label" => "Sr Response Keys",
-            "id" => "id",
-            "nameField" => "name",
-            "labelField" => "name",
-            'import_mappings' => [
-                [
-                    'name' => 'sr_response_key_to_sr_no_children',
-                    'label' => 'Import sr response key to sr (no children)',
-                    'source' => 'sr_response_keys',
-                    'dest' => 'srs',
-                    'required_fields' => ['id'],
-                ],
-                [
-                    'name' => 'sr_response_key_to_sr_include_children',
-                    'label' => 'Import sr response key to sr (including children)',
-                    'source' => 'sr_response_keys',
-                    'dest' => 'srs',
-                    'required_fields' => ['id'],
-                ],
-            ],
-        ]);
         parent::__construct($accessControlService, new SrResponseKey());
+    }
+
+    protected function setConfig(): void
+    {
+        $this->buildConfig(
+            false,
+            'id',
+            ImportType::SR_RESPONSE_KEY->value,
+            'Sr Response Keys',
+            'name',
+            'name',
+            'label',
+            [],
+        );
+    }
+
+    protected function setMappings(): void
+    {
+        $this->mappings = [
+            [
+                'name' => ImportMappingType::SELF_NO_CHILDREN->value,
+                'label' => 'Import sr response key to sr (no children)',
+                'dest' => ImportType::SR->value,
+                'required_fields' => ['id'],
+            ],
+            [
+                'name' => ImportMappingType::SELF_WITH_CHILDREN->value,
+                'label' => 'Import sr response key to sr (including children)',
+                'dest' => ImportType::SR->value,
+                'required_fields' => ['id'],
+            ],
+        ];
     }
 
     public function import(array $data, array $mappings = []): array
@@ -84,14 +96,13 @@ class SrResponseKeysImporterService extends ImporterBase
 
         return [
             'root' => true,
-            'import_type' => 'sr_response_keys',
-            'label' => 'Sr Response Keys',
-            'name' => 'Sr Response Keys',
+            'import_type' => $this->getConfigItem(ImportConfig::NAME),
+            'label' => $this->getConfigItem(ImportConfig::LABEL),
             'children' => $this->parseEntityBatch($filter)
         ];
     }
     public function parseEntity(array $entity): array {
-        $entity['import_type'] = 'sr_response_keys';
+        $entity['import_type'] = $this->getConfigItem(ImportConfig::NAME);
         return $entity;
     }
 

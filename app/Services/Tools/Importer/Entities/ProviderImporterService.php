@@ -2,6 +2,9 @@
 
 namespace App\Services\Tools\Importer\Entities;
 
+use App\Enums\Import\ImportConfig;
+use App\Enums\Import\ImportMappingType;
+use App\Enums\Import\ImportType;
 use App\Models\Provider;
 use App\Models\S;
 use App\Models\Sr;
@@ -31,32 +34,39 @@ class ProviderImporterService extends ImporterBase
         protected AccessControlService $accessControlService
     ) {
         parent::__construct($accessControlService, new Provider());
-        $this->setConfig([
-            "show" => true,
-            "name" => "providers",
-            "id" => "id",
-            "label" => "Providers",
-            "nameField" => "name",
-            "labelField" => "label",
-            'children_keys' => ['sr', 'srs'],
-            'import_mappings' => [
-                [
-                    'name' => 'provider_no_children',
-                    'label' => 'Import provider (no children)',
-                    'source' => 'providers',
-                    'dest' => 'root',
-                    'required_fields' => ['id', 'name', 'label'],
-                ],
-                [
-                    'name' => 'provider_include_children',
-                    'label' => 'Import provider (including children)',
-                    'source' => 'providers',
-                    'dest' => 'root',
-                    'required_fields' => ['id', 'name', 'label'],
-                ],
-            ],
-        ]);
         $this->srRepository = new SrRepository();
+    }
+
+    protected function setConfig(): void
+    {
+        $this->buildConfig(
+            true,
+            'id',
+            ImportType::PROVIDER->value,
+            'Providers',
+            'name',
+            'label',
+            'label',
+            ['sr', 'srs'],
+        );
+    }
+
+    protected function setMappings(): void
+    {
+        $this->mappings = [
+            [
+                'name' => ImportMappingType::SELF_NO_CHILDREN->value,
+                'label' => 'Import provider (no children)',
+                'dest' => null,
+                'required_fields' => ['id', 'name', 'label'],
+            ],
+            [
+                'name' => ImportMappingType::SELF_WITH_CHILDREN->value,
+                'label' => 'Import provider (including children)',
+                'dest' => null,
+                'required_fields' => ['id', 'name', 'label'],
+            ],
+        ];
     }
 
     public function import(array $data, array $mappings = []): array
@@ -107,8 +117,8 @@ class ProviderImporterService extends ImporterBase
     public function filterImportData(array $data): array {
         return [
             'root' => true,
-            'import_type' => 'providers',
-            'label' => 'Providers',
+            'import_type' => $this->getConfigItem(ImportConfig::NAME),
+            'label' => $this->getConfigItem(ImportConfig::LABEL),
             'children' => $this->parseEntityBatch(
                 $this->filterData($data)
             )
@@ -183,7 +193,7 @@ class ProviderImporterService extends ImporterBase
         ) {
             $entity['srs'] = [$this->srImporterService->filterImportData($entity['srs'])];
         }
-        $entity['import_type'] = 'providers';
+        $entity['import_type'] = $this->getConfigItem(ImportConfig::NAME);
         return $entity;
     }
 

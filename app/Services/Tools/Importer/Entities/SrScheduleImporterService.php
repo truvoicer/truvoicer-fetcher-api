@@ -2,6 +2,9 @@
 
 namespace App\Services\Tools\Importer\Entities;
 
+use App\Enums\Import\ImportConfig;
+use App\Enums\Import\ImportMappingType;
+use App\Enums\Import\ImportType;
 use App\Models\S;
 use App\Services\ApiServices\ServiceRequests\SrScheduleService;
 use App\Services\Permission\AccessControlService;
@@ -15,21 +18,33 @@ class SrScheduleImporterService extends ImporterBase
         protected AccessControlService $accessControlService
     )
     {
-        $this->setConfig([
-            'name' => 'sr_schedule',
-            "label" => "Sr Schedules",
-            "id" => "id",
-            'import_mappings' => [
-                [
-                    'name' => 'sr_schedule_to_sr',
-                    'label' => 'Import sr schedule to sr',
-                    'source' => 'sr_schedule',
-                    'dest' => 'srs',
-                    'required_fields' => ['id'],
-                ],
-            ],
-        ]);
         parent::__construct($accessControlService, new S());
+    }
+
+    protected function setConfig(): void
+    {
+        $this->buildConfig(
+            false,
+            'id',
+            ImportType::SR_SCHEDULE->value,
+            'Sr Schedules',
+            null,
+            null,
+            null,
+            [],
+        );
+    }
+
+    protected function setMappings(): void
+    {
+        $this->mappings = [
+            [
+                'name' => ImportMappingType::SELF_NO_CHILDREN->value,
+                'label' => 'Import sr schedule to sr',
+                'dest' => ImportType::SR->value,
+                'required_fields' => ['id'],
+            ],
+        ];
     }
 
     public function import(array $data, array $mappings = []): array
@@ -51,13 +66,13 @@ class SrScheduleImporterService extends ImporterBase
     public function filterImportData(array $data): array {
         return [
             'root' => true,
-            'import_type' => 'sr_schedule',
-            'label' => 'Sr Schedules',
+            'import_type' => $this->getConfigItem(ImportConfig::NAME),
+            'label' => $this->getConfigItem(ImportConfig::LABEL),
             'children' => [$this->parseEntity($data)]
         ];
     }
     public function parseEntity(array $entity): array {
-        $entity['import_type'] = 'sr_schedule';
+        $entity['import_type'] = $this->getConfigItem(ImportConfig::NAME);
         return $entity;
     }
 

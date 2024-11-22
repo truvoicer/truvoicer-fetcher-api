@@ -1,6 +1,9 @@
 <?php
 namespace App\Services\Tools\Importer\Entities;
 
+use App\Enums\Import\ImportConfig;
+use App\Enums\Import\ImportMappingType;
+use App\Enums\Import\ImportType;
 use App\Models\Property;
 use App\Services\Permission\AccessControlService;
 use App\Services\Permission\PermissionService;
@@ -15,25 +18,34 @@ class PropertyImporterService extends ImporterBase {
         protected AccessControlService $accessControlService
     )
     {
-        $this->setConfig([
-            "show" => true,
-            "id" => "id",
-            "name" => "properties",
-            "label" => "Properties",
-            "nameField" => "property_name",
-            "labelField" => "label",
-            'children_keys' => [],
-            'import_mappings' => [
-                [
-                    'name' => 'property',
-                    'label' => 'Import Property',
-                    'source' => 'properties',
-                    'dest' => 'root',
-                    'required_fields' => ['id', 'name', 'label'],
-                ],
-            ],
-        ]);
         parent::__construct($accessControlService, new Property());
+    }
+
+    protected function setConfig(): void
+    {
+        $this->buildConfig(
+            true,
+            'id',
+            ImportType::PROPERTY->value,
+            'Properties',
+            'name',
+            'label',
+            'label',
+            [],
+
+        );
+    }
+
+    protected function setMappings(): void
+    {
+        $this->mappings = [
+            [
+                'name' => ImportMappingType::SELF_NO_CHILDREN->value,
+                'label' => 'Import Property',
+                'dest' => null,
+                'required_fields' => ['id', 'name', 'label'],
+            ],
+        ];
     }
 
     public function import(array $data, array $mappings = []): array
@@ -79,8 +91,8 @@ class PropertyImporterService extends ImporterBase {
 
         return [
             'root' => true,
-            'import_type' => 'properties',
-            'label' => 'Properties',
+            'import_type' => $this->getConfigItem(ImportConfig::NAME),
+            'label' => $this->getConfigItem(ImportConfig::LABEL),
             'children' => $this->parseEntityBatch($filter)
         ];
     }
@@ -103,7 +115,7 @@ class PropertyImporterService extends ImporterBase {
     }
 
     public function parseEntity(array $entity): array {
-        $entity['import_type'] = 'properties';
+        $entity['import_type'] = $this->getConfigItem(ImportConfig::NAME);
         return $entity;
     }
 

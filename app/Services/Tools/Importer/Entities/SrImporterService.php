@@ -2,6 +2,9 @@
 
 namespace App\Services\Tools\Importer\Entities;
 
+use App\Enums\Import\ImportConfig;
+use App\Enums\Import\ImportMappingType;
+use App\Enums\Import\ImportType;
 use App\Models\S;
 use App\Services\ApiServices\ApiService;
 use App\Services\ApiServices\RateLimitService;
@@ -26,32 +29,39 @@ class SrImporterService extends ImporterBase
         protected AccessControlService $accessControlService
     )
     {
-        $this->setConfig([
-            "show" => false,
-            'name' => 'srs',
-            "label" => "Srs",
-            "id" => "id",
-            "nameField" => "name",
-            "labelField" => "label",
-            'children_keys' => ['children'],
-            'import_mappings' => [
-                [
-                    'name' => 'sr_to_provider_no_children',
-                    'label' => 'Import sr (no children) to provider',
-                    'source' => 'srs',
-                    'dest' => 'providers',
-                    'required_fields' => ['id', 'name', 'label'],
-                ],
-                [
-                    'name' => 'sr_to_provider_include_children',
-                    'label' => ' Import sr (including children) to provider',
-                    'source' => 'srs',
-                    'dest' => 'providers',
-                    'required_fields' => ['id', 'name', 'label'],
-                ],
-            ],
-        ]);
         parent::__construct($accessControlService, new S());
+    }
+
+    protected function setConfig(): void
+    {
+        $this->buildConfig(
+            false,
+            'id',
+            ImportType::SR->value,
+            'Srs',
+            'name',
+            'label',
+            'label',
+            ['children'],
+        );
+    }
+
+    protected function setMappings(): void
+    {
+        $this->mappings = [
+            [
+                'name' => ImportMappingType::SELF_NO_CHILDREN->value,
+                'label' => 'Import sr (no children) to provider',
+                'dest' => ImportType::PROVIDER->value,
+                'required_fields' => ['id', 'name', 'label'],
+            ],
+            [
+                'name' => ImportMappingType::SELF_NO_CHILDREN->value,
+                'label' => ' Import sr (including children) to provider',
+                'dest' => ImportType::PROVIDER->value,
+                'required_fields' => ['id', 'name', 'label'],
+            ],
+        ];
     }
 
     public function import(array $data, array $mappings = []): array
@@ -141,8 +151,8 @@ class SrImporterService extends ImporterBase
     public function filterImportData(array $data): array {
         return [
             'root' => true,
-            'import_type' => 'srs',
-            'label' => 'Srs',
+            'import_type' => $this->getConfigItem(ImportConfig::NAME),
+            'label' => $this->getConfigItem(ImportConfig::LABEL),
             'children' => $this->parseEntityBatch(
                 $this->filterData($data)
             )
@@ -193,7 +203,7 @@ class SrImporterService extends ImporterBase
 //            $entity['child_srs'] = [$this->filterImportData($entity['child_srs'])];
             $entity['children'][] = $this->filterImportData($entity['child_srs']);
         }
-        $entity['import_type'] = 'srs';
+        $entity['import_type'] = $this->getConfigItem(ImportConfig::NAME);
         return $entity;
     }
 

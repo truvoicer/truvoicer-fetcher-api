@@ -2,13 +2,13 @@
 
 namespace App\Services\Tools\Importer\Entities;
 
+use App\Enums\Import\ImportConfig;
+use App\Enums\Import\ImportMappingType;
+use App\Enums\Import\ImportType;
 use App\Models\Category;
-use App\Models\Sr;
 use App\Services\Category\CategoryService;
 use App\Services\Permission\AccessControlService;
 use App\Services\Permission\PermissionService;
-use Illuminate\Database\Eloquent\Model;
-use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 
 class CategoryImporterService extends ImporterBase
 {
@@ -18,32 +18,41 @@ class CategoryImporterService extends ImporterBase
         protected AccessControlService $accessControlService
     )
     {
-        $this->setConfig([
-            "show" => true,
-            "name" => "categories",
-            "id" => "id",
-            "label" => "Categories",
-            "nameField" => "name",
-            "labelField" => "label",
-            'children_keys' => [],
-            'import_mappings' => [
-                [
-                    'name' => 'category',
-                    'label' => 'Import category',
-                    'source' => 'categories',
-                    'dest' => 'root',
-                    'required_fields' => ['id', 'name', 'label'],
-                ],
-            ],
-        ]);
         parent::__construct($accessControlService, new Category());
+    }
+
+    protected function setConfig(): void
+    {
+        $this->buildConfig(
+            true,
+            'id',
+            ImportType::CATEGORY->value,
+            'Categories',
+            'name',
+            'label',
+            'label',
+            [],
+        );
+    }
+
+    protected function setMappings(): void
+    {
+        $this->mappings = [
+            [
+                'name' => ImportMappingType::SELF_NO_CHILDREN->value,
+                'label' => 'Import category',
+                'dest' => null,
+                'required_fields' => ['id', 'name', 'label'],
+            ],
+        ];
     }
 
     public function import(array $data, array $mappings = []): array
     {
+        dd($data);
         return array_map(function (array $map) {
             return match ($map['mapping']['name']) {
-                'category' => $this->importCategory($this->filterMapData($map)),
+                ImportMappingType::SELF_NO_CHILDREN->value => $this->importCategory($map),
                 default => [
                     'success' => false,
                     'data' => $map['data'],
@@ -54,6 +63,7 @@ class CategoryImporterService extends ImporterBase
 
     public function importCategory(array $data): array
     {
+        dd($data);
         try {
             $this->categoryService->createCategory(
                 $this->getUser(),
@@ -89,8 +99,8 @@ class CategoryImporterService extends ImporterBase
         });
         return [
             'root' => true,
-            'import_type' => 'categories',
-            'label' => 'Categories',
+            'import_type' => $this->getConfigItem(ImportConfig::NAME),
+            'label' => $this->getConfigItem(ImportConfig::LABEL),
             'children' => $this->parseEntityBatch($filter)
         ];
     }
@@ -123,7 +133,7 @@ class CategoryImporterService extends ImporterBase
 
     public function parseEntity(array $entity): array
     {
-        $entity['import_type'] = 'categories';
+        $entity['import_type'] = $this->getConfigItem(ImportConfig::NAME);
         return $entity;
     }
 
