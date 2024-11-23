@@ -25,7 +25,7 @@ class ParseImportRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'upload_file' => ['required', 'file', 'mimes:txt'],
+            'upload_file' => ['required', 'file', 'mimetypes:application/json'],
         ];
     }
 }

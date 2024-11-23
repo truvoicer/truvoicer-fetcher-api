@@ -6,31 +6,20 @@ use App\Enums\Import\ImportConfig;
 use App\Enums\Import\ImportMappingType;
 use App\Enums\Import\ImportType;
 use App\Models\Provider;
-use App\Models\S;
-use App\Models\Sr;
-use App\Models\SResponseKey;
 use App\Repositories\SrRepository;
-use App\Services\ApiServices\ApiService;
-use App\Services\ApiServices\SResponseKeysService;
-use App\Services\Category\CategoryService;
-use App\Services\Permission\AccessControlService;
 use App\Services\Permission\PermissionService;
-use App\Services\Property\PropertyService;
 use App\Services\Provider\ProviderService;
-use App\Services\Tools\IExport\IExportTypeService;
-use Illuminate\Database\Eloquent\Model;
-use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
+use App\Services\Permission\AccessControlService;
 
 class ProviderImporterService extends ImporterBase
 {
     private SrRepository $srRepository;
     public function __construct(
         private ProviderService      $providerService,
-        private PropertyService      $propertyService,
-        private CategoryService      $categoryService,
-        private ApiService           $apiService,
-        private SResponseKeysService $responseKeysService,
         private SrImporterService    $srImporterService,
+        private ProviderPropertiesImporterService    $providerPropertiesImporterService,
+        private ProviderRateLimitImporterService    $providerRateLimitImporterService,
+        private CategoryImporterService    $categoryImporterService,
         protected AccessControlService $accessControlService
     ) {
         parent::__construct($accessControlService, new Provider());
@@ -47,7 +36,7 @@ class ProviderImporterService extends ImporterBase
             'name',
             'label',
             'label',
-            ['sr', 'srs'],
+            ['children'],
         );
     }
 
@@ -72,6 +61,20 @@ class ProviderImporterService extends ImporterBase
     public function import(array $data, array $mappings = []): array
     {
         return [];
+    }
+
+    public function importSelfNoChildren(array $map, array $data): array {
+
+        return [
+            'success' => true,
+        ];
+    }
+
+    public function importSelfWithChildren(array $map, array $data): array {
+
+        return [
+            'success' => true,
+        ];
     }
 
     public function validateImportData(array $data): void {
@@ -161,7 +164,9 @@ class ProviderImporterService extends ImporterBase
                     ]
                 );
             },
-            'categories'
+            'categories',
+            'properties',
+            'providerRateLimit'
         ]);
         $provider = $this->providerService->getProviderRepository()->findById(
             $item["id"],
@@ -170,6 +175,7 @@ class ProviderImporterService extends ImporterBase
         if (!$provider) {
             return false;
         }
+
         if ($this->accessControlService->inAdminGroup()) {
             return $provider->toArray();
         }
@@ -187,11 +193,30 @@ class ProviderImporterService extends ImporterBase
     }
 
     public function parseEntity(array $entity): array {
+        $entity['children'] = [];
         if (
             !empty($entity['srs']) &&
             is_array($entity['srs'])
         ) {
-            $entity['srs'] = [$this->srImporterService->filterImportData($entity['srs'])];
+            $entity['children'][] = $this->srImporterService->filterImportData($entity['srs']);
+        }
+        if (
+            !empty($entity['properties']) &&
+            is_array($entity['properties'])
+        ) {
+            $entity['children'][] = $this->providerPropertiesImporterService->filterImportData($entity['properties']);
+        }
+        if (
+            !empty($entity['provider_rate_limit']) &&
+            is_array($entity['provider_rate_limit'])
+        ) {
+            $entity['children'][] = $this->providerRateLimitImporterService->filterImportData($entity['provider_rate_limit']);
+        }
+        if (
+            !empty($entity['categories']) &&
+            is_array($entity['categories'])
+        ) {
+            $entity['children'][] = $this->categoryImporterService->filterImportData($entity['categories']);
         }
         $entity['import_type'] = $this->getConfigItem(ImportConfig::NAME);
         return $entity;

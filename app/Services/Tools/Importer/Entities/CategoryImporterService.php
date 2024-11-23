@@ -47,19 +47,6 @@ class CategoryImporterService extends ImporterBase
         ];
     }
 
-    public function import(array $data, array $mappings = []): array
-    {
-        dd($data);
-        return array_map(function (array $map) {
-            return match ($map['mapping']['name']) {
-                ImportMappingType::SELF_NO_CHILDREN->value => $this->importCategory($map),
-                default => [
-                    'success' => false,
-                    'data' => $map['data'],
-                ],
-            };
-        }, $mappings);
-    }
 
     public function importCategory(array $data): array
     {
@@ -80,6 +67,20 @@ class CategoryImporterService extends ImporterBase
                 'error' => $e->getMessage()
             ];
         }
+    }
+
+    public function importSelfNoChildren(array $map, array $data): array {
+
+        return [
+            'success' => true,
+        ];
+    }
+
+    public function importSelfWithChildren(array $map, array $data): array {
+
+        return [
+            'success' => true,
+        ];
     }
 
     public function getImportMappings(array $data)

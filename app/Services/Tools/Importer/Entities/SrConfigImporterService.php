@@ -29,9 +29,9 @@ class SrConfigImporterService extends ImporterBase
             'id',
             ImportType::SR_CONFIG->value,
             'Sr Config',
-            null,
-            null,
-            null,
+            'value',
+            '{property.label}: {value}',
+            'label',
             [],
         );
     }
@@ -41,7 +41,7 @@ class SrConfigImporterService extends ImporterBase
         $this->mappings = [
             [
                 'name' => ImportMappingType::SELF_NO_CHILDREN->value,
-                'label' => 'Import sr config to provider',
+                'label' => 'Import sr config to sr',
                 'dest' => ImportType::SR->value,
                 'required_fields' => ['id'],
             ],
@@ -54,6 +54,20 @@ class SrConfigImporterService extends ImporterBase
             $this->srConfigService->getRequestConfigRepo()->setModel($service);
             return $this->srConfigService->getRequestConfigRepo()->save($service);
         }, $data);
+    }
+
+    public function importSelfNoChildren(array $map, array $data): array {
+
+        return [
+            'success' => true,
+        ];
+    }
+
+    public function importSelfWithChildren(array $map, array $data): array {
+
+        return [
+            'success' => true,
+        ];
     }
 
     public function getImportMappings(array $data)
@@ -77,7 +91,7 @@ class SrConfigImporterService extends ImporterBase
             'root' => true,
             'import_type' => $this->getConfigItem(ImportConfig::NAME),
             'label' => $this->getConfigItem(ImportConfig::LABEL),
-            'children' => [$this->parseEntity($data)]
+            'children' => $this->parseEntityBatch($data)
         ];
     }
 

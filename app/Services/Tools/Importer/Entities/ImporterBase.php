@@ -32,6 +32,9 @@ abstract class ImporterBase
 
     abstract public function import(array $data, array $mappings = []): array;
 
+    abstract public function importSelfNoChildren(array $map, array $data): array;
+    abstract public function importSelfWithChildren(array $map, array $data): array;
+
     abstract public function validateImportData(array $data): void;
 
     abstract public function filterImportData(array $data): array;
@@ -43,6 +46,7 @@ abstract class ImporterBase
     abstract public function parseEntity(array $entity): array;
 
     abstract public function parseEntityBatch(array $data): array;
+
 
     protected function compareKeysWithModelFields(array $data): bool
     {

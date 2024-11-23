@@ -2,10 +2,13 @@
 
 namespace App\Services\Tools\IExport;
 
+use App\Enums\Import\ImportMappingType;
 use App\Enums\Import\ImportType;
 use App\Repositories\SrRepository;
 use App\Services\BaseService;
 use App\Services\Permission\AccessControlService;
+use App\Services\Tools\Importer\Entities\ProviderPropertiesImporterService;
+use App\Services\Tools\Importer\Entities\ProviderRateLimitImporterService;
 use App\Services\Tools\Importer\Entities\SImporterService;
 use App\Services\Tools\Importer\Entities\CategoryImporterService;
 use App\Services\Tools\Importer\Entities\PropertyImporterService;
@@ -48,6 +51,8 @@ class IExportTypeService extends BaseService
         'SR_RESPONSE_KEYS' => SrResponseKeysImporterService::class,
         'SR_PARAMETER' => SrParameterImporterService::class,
         'SR_CONFIG' => SrConfigImporterService::class,
+        'PROVIDER_RATE_LIMIT' => ProviderRateLimitImporterService::class,
+        'PROVIDER_PROPERTIES' => ProviderPropertiesImporterService::class,
     ];
     protected CategoryImporterService $categoryImporterService;
     protected ProviderImporterService $providerImporterService;
@@ -127,14 +132,64 @@ class IExportTypeService extends BaseService
 
     public function runImportForType(array $contents, array $mappings)
     {
+//        [ // app/Services/Tools/IExport/IExportTypeService.php:134
+//            0 => "category"
+//          1 => "provider"
+//          2 => "service"
+//          3 => "property"
+//        ]
         return array_map(function ($item) use($mappings) {
             $getMappingsByType = $this->getMappingsByType($item["type"], $mappings);
             $filteredMappings = array_filter($getMappingsByType, function ($mapping) {
                 return !empty($mapping['mapping']['source']);
             });
             $instance = $this->getInstance($item["type"]);
-            return $instance->import($item['data'], $filteredMappings);
+            return $this->import($item['data'], $filteredMappings);
         }, $contents);
+    }
+
+    public function import(array $data, array $mappings = []): array
+    {
+        return array_map(function (array $map) use($data) {
+            dd($map, $data);
+            return $this->destInterface($map);
+        }, $mappings);
+    }
+
+    protected function destInterface(array $map, array $data): array
+    {
+        if (empty($map['mapping']['dest']) && empty($map['mapping']['source'])) {
+            return [
+                'success' => false,
+                'error' => 'No source or destination found.',
+            ];
+        }
+        if (empty($map['mapping']['dest']) && !empty($map['mapping']['source'])) {
+            $instance = $this->getInstance($map['mapping']['source']);
+            if (!method_exists($instance, 'import')) {
+                return [
+                    'success' => false,
+                    'data' => $map['data'],
+                ];
+            }
+            return $instance->import($map, $data);
+        }
+
+        $instance = $this->getInstance($map['mapping']['dest']);
+        if (!method_exists($instance, 'import')) {
+            return [
+                'success' => false,
+                'data' => $map['data'],
+            ];
+        }
+        return match ($map['mapping']['name']) {
+            ImportMappingType::SELF_NO_CHILDREN->value => $instance->importSelfNoChildren($map, $data),
+            ImportMappingType::SELF_WITH_CHILDREN->value => $instance->importSelfWithChildren($map, $data),
+            default => [
+                'success' => false,
+                'data' => $map['data'],
+            ],
+        };
     }
 
     public function validateType($importType, array $data): void

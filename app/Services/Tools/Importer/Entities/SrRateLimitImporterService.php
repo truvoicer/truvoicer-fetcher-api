@@ -61,6 +61,20 @@ class SrRateLimitImporterService extends ImporterBase
         }, $data);
     }
 
+    public function importSelfNoChildren(array $map, array $data): array {
+
+        return [
+            'success' => true,
+        ];
+    }
+
+    public function importSelfWithChildren(array $map, array $data): array {
+
+        return [
+            'success' => true,
+        ];
+    }
+
     public function getImportMappings(array $data)
     {
         return [];

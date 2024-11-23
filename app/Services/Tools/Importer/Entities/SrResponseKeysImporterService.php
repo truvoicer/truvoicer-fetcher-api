@@ -30,7 +30,7 @@ class SrResponseKeysImporterService extends ImporterBase
             ImportType::SR_RESPONSE_KEY->value,
             'Sr Response Keys',
             'name',
-            'name',
+            '{name}: {pivot.value}',
             'label',
             [],
         );
@@ -60,6 +60,20 @@ class SrResponseKeysImporterService extends ImporterBase
             $this->responseKeyService->getSrResponseKeyRepository()->setModel($service);
             return $this->responseKeyService->getSrResponseKeyRepository()->save($service);
         }, $data);
+    }
+
+    public function importSelfNoChildren(array $map, array $data): array {
+
+        return [
+            'success' => true,
+        ];
+    }
+
+    public function importSelfWithChildren(array $map, array $data): array {
+
+        return [
+            'success' => true,
+        ];
     }
 
     public function getImportMappings(array $data)

@@ -81,6 +81,11 @@ class Provider extends Model
             ProviderProperty::TABLE_NAME,
             'provider_id',
             'property_id'
+        )->withPivot(
+            'provider_id',
+            'property_id',
+            'value',
+            'array_value'
         );
     }
     public function oauthAccessToken()

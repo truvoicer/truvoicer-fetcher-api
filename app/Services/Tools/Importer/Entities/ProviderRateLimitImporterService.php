@@ -6,15 +6,15 @@ use App\Enums\Import\ImportConfig;
 use App\Enums\Import\ImportMappingType;
 use App\Enums\Import\ImportType;
 use App\Models\S;
-use App\Services\ApiServices\ServiceRequests\SrScheduleService;
+use App\Services\ApiServices\RateLimitService;
 use App\Services\Permission\AccessControlService;
 use Illuminate\Database\Eloquent\Model;
 
-class SrScheduleImporterService extends ImporterBase
+class ProviderRateLimitImporterService extends ImporterBase
 {
 
     public function __construct(
-        private SrScheduleService $srScheduleService,
+        private RateLimitService       $rateLimitService,
         protected AccessControlService $accessControlService
     )
     {
@@ -26,8 +26,8 @@ class SrScheduleImporterService extends ImporterBase
         $this->buildConfig(
             false,
             'id',
-            ImportType::SR_SCHEDULE->value,
-            'Sr Schedules',
+            ImportType::PROVIDER_RATE_LIMIT->value,
+            'Rate Limits',
             null,
             null,
             null,
@@ -40,7 +40,13 @@ class SrScheduleImporterService extends ImporterBase
         $this->mappings = [
             [
                 'name' => ImportMappingType::SELF_NO_CHILDREN->value,
-                'label' => 'Import sr schedule to sr',
+                'label' => 'Import rate limit to provider',
+                'dest' => ImportType::PROVIDER->value,
+                'required_fields' => ['id'],
+            ],
+            [
+                'name' => ImportMappingType::SELF_NO_CHILDREN->value,
+                'label' => 'Import rate limit to sr',
                 'dest' => ImportType::SR->value,
                 'required_fields' => ['id'],
             ],
@@ -50,8 +56,8 @@ class SrScheduleImporterService extends ImporterBase
     public function import(array $data, array $mappings = []): array
     {
         return array_map(function (S $service) {
-            $this->srScheduleService->getServiceRequestRepository()->setModel($service);
-            return $this->srScheduleService->getServiceRequestRepository()->save($service);
+            $this->rateLimitService->getSrRateLimitRepository()->setModel($service);
+            return $this->rateLimitService->getSrRateLimitRepository()->save($service);
         }, $data);
     }
 
@@ -73,11 +79,14 @@ class SrScheduleImporterService extends ImporterBase
     {
         return [];
     }
-    public function validateImportData(array $data): void {
+
+    public function validateImportData(array $data): void
+    {
 
     }
 
-    public function filterImportData(array $data): array {
+    public function filterImportData(array $data): array
+    {
         return [
             'root' => true,
             'import_type' => $this->getConfigItem(ImportConfig::NAME),
@@ -85,7 +94,9 @@ class SrScheduleImporterService extends ImporterBase
             'children' => [$this->parseEntity($data)]
         ];
     }
-    public function parseEntity(array $entity): array {
+
+    public function parseEntity(array $entity): array
+    {
         $entity['import_type'] = $this->getConfigItem(ImportConfig::NAME);
         return $entity;
     }
@@ -97,9 +108,9 @@ class SrScheduleImporterService extends ImporterBase
         }, $data);
     }
 
-    public function getSrScheduleService(): SrScheduleService
+    public function getRateLimitService(): RateLimitService
     {
-        return $this->srScheduleService;
+        return $this->rateLimitService;
     }
 
     public function getExportData(): array
@@ -109,6 +120,6 @@ class SrScheduleImporterService extends ImporterBase
 
     public function getExportTypeData($item): array|bool
     {
-        return [];
+        return false;
     }
 }
