@@ -64,26 +64,38 @@ class SrImporterService extends ImporterBase
         ];
     }
 
-    public function import(array $data, array $mappings = []): array
+    public function import(array $data, bool $withChildren): array
     {
-        return array_map(function (S $service) {
-            $this->srService->getServiceRequestRepository()->setModel($service);
-            return $this->srService->getServiceRequestRepository()->save($service);
-        }, $data);
+        try {
+            if (!$this->srService->createServiceRequest($this->getUser(), $data)) {
+                return [
+                    'success' => false,
+                    'data' => "Failed to create provider."
+                ];
+            }
+            $response = [];
+            $data['provider'] = $this->providerService->getProviderRepository()->getModel();
+
+            return [
+                'success' => true,
+                'data' => $response,
+            ];
+        } catch (\Exception $e) {
+            return [
+                'success' => false,
+                'data' => $data,
+                'error' => $e->getMessage()
+            ];
+        }
     }
 
     public function importSelfNoChildren(array $map, array $data): array {
-
-        return [
-            'success' => true,
-        ];
+        return $this->importSelf($map, $data, false);
     }
 
     public function importSelfWithChildren(array $map, array $data): array {
 
-        return [
-            'success' => true,
-        ];
+        return $this->importSelf($map, $data, true);
     }
 
     public function getImportMappings(array $data)

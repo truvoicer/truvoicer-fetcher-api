@@ -7,6 +7,7 @@ use App\Enums\Import\ImportType;
 use App\Repositories\SrRepository;
 use App\Services\BaseService;
 use App\Services\Permission\AccessControlService;
+use App\Services\Tools\Importer\Entities\ImporterBase;
 use App\Services\Tools\Importer\Entities\ProviderPropertiesImporterService;
 use App\Services\Tools\Importer\Entities\ProviderRateLimitImporterService;
 use App\Services\Tools\Importer\Entities\SImporterService;
@@ -85,34 +86,22 @@ class IExportTypeService extends BaseService
     {
         switch ($importType) {
             case ImportType::CATEGORY->value:
+                $this->categoryImporterService->setUser($this->getUser());
                 return $this->categoryImporterService;
             case ImportType::PROVIDER->value:
+                $this->providerImporterService->setUser($this->getUser());
                 return $this->providerImporterService;
             case ImportType::SERVICE->value:
+                $this->apiServiceImporterService->setUser($this->getUser());
                 return $this->apiServiceImporterService;
             case ImportType::PROPERTY->value:
+                $this->propertyImporterService->setUser($this->getUser());
                 return $this->propertyImporterService;
             default:
                 throw new BadRequestHttpException(
                     sprintf("Import type error.")
                 );
         }
-    }
-
-    public static function getImportMappingValue(string $importTypeName, string $destEntity, string $sourceEntity,
-                                                 string $sourceItemName, array $mappings)
-    {
-        if (count($mappings) === 0) {
-            return null;
-        }
-        if (isset($mappings[$importTypeName][$sourceEntity][$destEntity][$sourceItemName])) {
-            $mappingValue = $mappings[$importTypeName][$sourceEntity][$destEntity][$sourceItemName];
-            if ($mappingValue === null || $mappingValue === "") {
-                return null;
-            }
-            return $mappingValue;
-        }
-        return null;
     }
 
     public function getImportDataMappings($importType, $fileContents)
@@ -143,7 +132,6 @@ class IExportTypeService extends BaseService
             $filteredMappings = array_filter($getMappingsByType, function ($mapping) {
                 return !empty($mapping['mapping']['source']);
             });
-            $instance = $this->getInstance($item["type"]);
             return $this->import($item['data'], $filteredMappings);
         }, $contents);
     }
@@ -151,8 +139,7 @@ class IExportTypeService extends BaseService
     public function import(array $data, array $mappings = []): array
     {
         return array_map(function (array $map) use($data) {
-            dd($map, $data);
-            return $this->destInterface($map);
+            return $this->destInterface($map, $data);
         }, $mappings);
     }
 
@@ -165,24 +152,17 @@ class IExportTypeService extends BaseService
             ];
         }
         if (empty($map['mapping']['dest']) && !empty($map['mapping']['source'])) {
-            $instance = $this->getInstance($map['mapping']['source']);
-            if (!method_exists($instance, 'import')) {
-                return [
-                    'success' => false,
-                    'data' => $map['data'],
-                ];
-            }
-            return $instance->import($map, $data);
+            $importType = $map['mapping']['source'];
+        }   else {
+            $importType = $map['mapping']['dest'];
         }
+        $instance = $this->getInstance($importType);
+        return $this->importMapInterface($instance, $map['mapping']['name'], $map, $data);
+    }
 
-        $instance = $this->getInstance($map['mapping']['dest']);
-        if (!method_exists($instance, 'import')) {
-            return [
-                'success' => false,
-                'data' => $map['data'],
-            ];
-        }
-        return match ($map['mapping']['name']) {
+    private function importMapInterface(ImporterBase $instance, string $mapName, array $map, array $data): array
+    {
+        return match ($mapName) {
             ImportMappingType::SELF_NO_CHILDREN->value => $instance->importSelfNoChildren($map, $data),
             ImportMappingType::SELF_WITH_CHILDREN->value => $instance->importSelfWithChildren($map, $data),
             default => [

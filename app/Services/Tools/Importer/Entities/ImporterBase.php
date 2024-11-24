@@ -30,7 +30,7 @@ abstract class ImporterBase
     abstract protected function setConfig(): void;
     abstract protected function setMappings(): void;
 
-    abstract public function import(array $data, array $mappings = []): array;
+    abstract public function import(array $data, bool $withChildren): array;
 
     abstract public function importSelfNoChildren(array $map, array $data): array;
     abstract public function importSelfWithChildren(array $map, array $data): array;
@@ -47,6 +47,14 @@ abstract class ImporterBase
 
     abstract public function parseEntityBatch(array $data): array;
 
+    protected function batchImport(array $data, bool $withChildren): array
+    {
+        $response = [];
+        foreach ($data as $provider) {
+            $response[] = $this->import($provider, $withChildren);
+        }
+        return $response;
+    }
 
     protected function compareKeysWithModelFields(array $data): bool
     {
@@ -128,6 +136,26 @@ abstract class ImporterBase
     public function getAccessControlService(): AccessControlService
     {
         return $this->accessControlService;
+    }
+
+    protected function importSelf(array $map, array $data, bool $withChildren): array {
+        if (!empty($map['root']) && !empty($map['children']) && is_array($map['children']) && count($map['children'])) {
+            return [
+                'success' => true,
+                'data' => array_map(function ($category) use ($data) {
+                    return $this->importSelfNoChildren($category, $data);
+                }, $map['children'])
+            ];
+        }
+        $findItemIndex = array_search($map['id'], array_column($data, 'id'));
+        if ($findItemIndex === false) {
+            return [
+                'success' => false,
+                'data' => $map,
+                'error' => 'Category not found'
+            ];
+        }
+        return $this->import($data[$findItemIndex], $withChildren);
     }
 
 }

@@ -10,18 +10,21 @@ use App\Repositories\SrRepository;
 use App\Services\Permission\PermissionService;
 use App\Services\Provider\ProviderService;
 use App\Services\Permission\AccessControlService;
+use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 
 class ProviderImporterService extends ImporterBase
 {
     private SrRepository $srRepository;
+
     public function __construct(
-        private ProviderService      $providerService,
-        private SrImporterService    $srImporterService,
-        private ProviderPropertiesImporterService    $providerPropertiesImporterService,
-        private ProviderRateLimitImporterService    $providerRateLimitImporterService,
-        private CategoryImporterService    $categoryImporterService,
-        protected AccessControlService $accessControlService
-    ) {
+        private ProviderService                   $providerService,
+        private SrImporterService                 $srImporterService,
+        private ProviderPropertiesImporterService $providerPropertiesImporterService,
+        private ProviderRateLimitImporterService  $providerRateLimitImporterService,
+        private CategoryImporterService           $categoryImporterService,
+        protected AccessControlService            $accessControlService
+    )
+    {
         parent::__construct($accessControlService, new Provider());
         $this->srRepository = new SrRepository();
     }
@@ -58,26 +61,100 @@ class ProviderImporterService extends ImporterBase
         ];
     }
 
-    public function import(array $data, array $mappings = []): array
+    public function import(array $data, bool $withChildren): array
     {
-        return [];
+        try {
+            $checkProvider = $this->providerService->getProviderRepository()->findUserModelQuery(
+                new Provider(),
+                $this->getUser(),
+                [['name', '=', $data['name']]],
+                false
+            );
+            if ($checkProvider->first() instanceof Provider) {
+                $data['label'] = $data['name'] = $this->providerService->getProviderRepository()->buildCloneEntityStr(
+                    $checkProvider,
+                    'name',
+                    $data['name']
+                );
+            }
+            if (!$this->providerService->createProvider($this->getUser(), $data)) {
+                return [
+                    'success' => false,
+                    'data' => "Failed to create provider."
+                ];
+            }
+            $response = [];
+            $data['provider'] = $this->providerService->getProviderRepository()->getModel();
+            if (
+                !empty($data['srs']) &&
+                is_array($data['srs'])
+            ) {
+                $response = array_merge(
+                    $response,
+                    $this->srImporterService->batchImport(
+                        $data['srs'],
+                        $withChildren
+                    )
+                );
+            }
+            if (
+                !empty($data['properties']) &&
+                is_array($data['properties'])
+            ) {
+                $response = array_merge(
+                    $response,
+                    $this->providerPropertiesImporterService->batchImport(
+                        $data['properties'],
+                        $withChildren
+                    )
+                );
+            }
+            if (
+                !empty($data['provider_rate_limit']) &&
+                is_array($data['provider_rate_limit'])
+            ) {
+                $response[] = $this->providerRateLimitImporterService->import(
+                    $data['provider_rate_limit'],
+                    $withChildren
+                );
+            }
+            if (
+                !empty($data['categories']) &&
+                is_array($data['categories'])
+            ) {
+                $response = array_merge(
+                    $response,
+                    $this->categoryImporterService->batchImport(
+                        $data['categories'],
+                        $withChildren
+                    )
+                );
+            }
+            return [
+                'success' => true,
+                'data' => $response,
+            ];
+        } catch (\Exception $e) {
+            return [
+                'success' => false,
+                'data' => $data,
+                'error' => $e->getMessage()
+            ];
+        }
     }
 
-    public function importSelfNoChildren(array $map, array $data): array {
-
-        return [
-            'success' => true,
-        ];
+    public function importSelfNoChildren(array $map, array $data): array
+    {
+        return $this->importSelf($map, $data, false);
     }
 
-    public function importSelfWithChildren(array $map, array $data): array {
-
-        return [
-            'success' => true,
-        ];
+    public function importSelfWithChildren(array $map, array $data): array
+    {
+        return $this->importSelf($map, $data, true);
     }
 
-    public function validateImportData(array $data): void {
+    public function validateImportData(array $data): void
+    {
         foreach ($data as $provider) {
             if (empty($provider['name'])) {
                 $this->addError(
@@ -99,7 +176,9 @@ class ProviderImporterService extends ImporterBase
             }
         }
     }
-    public function filterData(array $data): array {
+
+    public function filterData(array $data): array
+    {
         $filterProviders = array_filter($data, function ($provider) {
             return (
                 !empty($provider['name']) &&
@@ -117,7 +196,9 @@ class ProviderImporterService extends ImporterBase
             return $provider;
         }, $filterProviders);
     }
-    public function filterImportData(array $data): array {
+
+    public function filterImportData(array $data): array
+    {
         return [
             'root' => true,
             'import_type' => $this->getConfigItem(ImportConfig::NAME),
@@ -128,7 +209,8 @@ class ProviderImporterService extends ImporterBase
         ];
     }
 
-    public function getExportData(): array {
+    public function getExportData(): array
+    {
         return $this->providerService->findProviders(
             $this->getUser()
         )->toArray();
@@ -192,7 +274,8 @@ class ProviderImporterService extends ImporterBase
 
     }
 
-    public function parseEntity(array $entity): array {
+    public function parseEntity(array $entity): array
+    {
         $entity['children'] = [];
         if (
             !empty($entity['srs']) &&

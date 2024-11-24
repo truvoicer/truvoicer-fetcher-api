@@ -42,6 +42,18 @@ class ImportMappingsRequest extends FormRequest
                 'sometimes',
                 'string',
             ],
+            'mappings.*.root' => [
+                'sometimes',
+                'boolean',
+            ],
+            'mappings.*.import_type' => [
+                'sometimes',
+                'string',
+            ],
+            'mappings.*.children' => [
+                'sometimes',
+                'array',
+            ],
             'file_id' => ['required', 'integer', 'exists:files,id'],
         ];
     }

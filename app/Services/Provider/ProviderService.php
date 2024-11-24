@@ -36,8 +36,6 @@ use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 
 class ProviderService extends BaseService
 {
-
-
     protected ProviderRepository $providerRepository;
     protected PermissionRepository $permissionRepository;
     protected ProviderUserRepository $userProviderRepository;

@@ -10,13 +10,14 @@ use App\Services\Tools\HttpRequestService;
 use App\Services\Tools\Importer\Entities\PropertyImporterService;
 use App\Services\Tools\SerializerService;
 use App\Traits\Error\ErrorTrait;
+use App\Traits\User\UserTrait;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 
 class ImportService
 {
-    use ErrorTrait;
+    use ErrorTrait, UserTrait;
 
     public function __construct(
         private SerializerService $serializerService,
@@ -36,6 +37,7 @@ class ImportService
 
     public function runMappingsImporter(int $fileId, array $mappings)
     {
+        $this->iExportTypeService->setUser($this->getUser());
         $getFileData = $this->importsFileSystemService->fileSystemService->getFileById($fileId);
         $getFileContents = $this->importsFileSystemService->getFilesystem()->get($getFileData->rel_path);
         if (!$getFileContents) {

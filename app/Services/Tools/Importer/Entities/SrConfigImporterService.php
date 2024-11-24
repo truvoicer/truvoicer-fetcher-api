@@ -48,7 +48,7 @@ class SrConfigImporterService extends ImporterBase
         ];
     }
 
-    public function import(array $data, array $mappings = []): array
+    public function import(array $data, bool $withChildren): array
     {
         return array_map(function (S $service) {
             $this->srConfigService->getRequestConfigRepo()->setModel($service);
@@ -57,17 +57,11 @@ class SrConfigImporterService extends ImporterBase
     }
 
     public function importSelfNoChildren(array $map, array $data): array {
-
-        return [
-            'success' => true,
-        ];
+        return $this->importSelf($map, $data, false);
     }
 
     public function importSelfWithChildren(array $map, array $data): array {
-
-        return [
-            'success' => true,
-        ];
+        return $this->importSelf($map, $data, true);
     }
 
     public function getImportMappings(array $data)

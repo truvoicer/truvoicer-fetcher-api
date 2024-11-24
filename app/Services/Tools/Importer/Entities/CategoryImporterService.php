@@ -48,9 +48,8 @@ class CategoryImporterService extends ImporterBase
     }
 
 
-    public function importCategory(array $data): array
+    public function import(array $data, bool $withChildren): array
     {
-        dd($data);
         try {
             $this->categoryService->createCategory(
                 $this->getUser(),
@@ -70,17 +69,11 @@ class CategoryImporterService extends ImporterBase
     }
 
     public function importSelfNoChildren(array $map, array $data): array {
-
-        return [
-            'success' => true,
-        ];
+        return $this->importSelf($map, $data, false);
     }
 
     public function importSelfWithChildren(array $map, array $data): array {
-
-        return [
-            'success' => true,
-        ];
+        return $this->importSelf($map, $data, true);
     }
 
     public function getImportMappings(array $data)

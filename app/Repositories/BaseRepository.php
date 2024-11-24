@@ -53,6 +53,30 @@ class BaseRepository
         $this->dbHelpers = new DbHelpers();
     }
 
+    public function buildCloneEntityStr($query, string $field, string $str, string $separator = '-cloned-'): string{
+
+        $all = $query->pluck($field)->toArray();
+        $mapNumber = array_map(function($item) use ($separator) {
+            preg_match('/^.+?(\d{1,10})$/', $item, $matches);
+            if (empty($matches)) {
+                return false;
+            }
+            return (int)$matches[1];
+        }, $all);
+
+        $mapNumber = array_filter($mapNumber, fn ($item) => $item !== false);
+        $max = 0;
+        if (!empty($mapNumber)) {
+            $max = max($mapNumber);
+        }
+        $counter = $max;
+        while ($this->model->where($field, $str)->exists()) {
+            $counter++;
+            $str = $str . $separator . $counter;
+        }
+        return $str;
+    }
+
     public function getWhereDoesntHave(): array
     {
         return $this->whereDoesntHave;
