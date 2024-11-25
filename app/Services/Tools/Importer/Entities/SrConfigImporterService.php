@@ -6,16 +6,21 @@ use App\Enums\Import\ImportConfig;
 use App\Enums\Import\ImportMappingType;
 use App\Enums\Import\ImportType;
 use App\Models\S;
+use App\Models\Sr;
 use App\Models\SrConfig;
 use App\Services\ApiServices\ServiceRequests\SrConfigService;
+use App\Services\ApiServices\ServiceRequests\SrService;
 use App\Services\Permission\AccessControlService;
+use App\Services\Property\PropertyService;
 use Illuminate\Database\Eloquent\Model;
 
 class SrConfigImporterService extends ImporterBase
 {
 
     public function __construct(
+        private SrService $srService,
         private SrConfigService $srConfigService,
+        private PropertyImporterService $propertyImporterService,
         protected AccessControlService $accessControlService
     )
     {
@@ -50,10 +55,50 @@ class SrConfigImporterService extends ImporterBase
 
     public function import(array $data, bool $withChildren): array
     {
-        return array_map(function (S $service) {
-            $this->srConfigService->getRequestConfigRepo()->setModel($service);
-            return $this->srConfigService->getRequestConfigRepo()->save($service);
-        }, $data);
+        if (!empty($data['sr'])) {
+            $sr = $data['sr'];
+        } elseif (!empty($data['sr_id'])) {
+            $sr = $this->srService->getServiceRequestById((int)$data['sr_id']);
+        } else {
+            return [
+                'success' => false,
+                'data' => "Sr is required."
+            ];
+        }
+        if (!$sr instanceof Sr) {
+            return [
+                'success' => false,
+                'data' => "Sr not found."
+            ];
+        }
+        if (empty($data['property'])) {
+            return [
+                'success' => false,
+                'data' => "Property is required."
+            ];
+        }
+        $this->propertyImporterService->getPropertyService()->getPropertyRepository()->addWhere(
+            'name',
+            $data['property']['name']
+        );
+        $property = $this->propertyImporterService->getPropertyService()->getPropertyRepository()->findOne();
+        if (!$property instanceof Model) {
+            $property = $this->propertyImporterService->import($data['property'], false);
+            if (!$property['success']) {
+                return $property;
+            }
+            $property = $this->propertyImporterService->getPropertyService()->getPropertyRepository()->getModel();
+        }
+        if (!$this->srConfigService->saveRequestConfig($sr, $property, $data)) {
+            return [
+                'success' => false,
+                'data' => "Failed to create sr config."
+            ];
+        }
+        return [
+            'success' => true,
+            'message' => "Sr Config for Sr {$sr->name} imported successfully."
+        ];
     }
 
     public function importSelfNoChildren(array $map, array $data): array {

@@ -127,6 +127,7 @@ class IExportTypeService extends BaseService
 //          2 => "service"
 //          3 => "property"
 //        ]
+        dd($contents);
         return array_map(function ($item) use($mappings) {
             $getMappingsByType = $this->getMappingsByType($item["type"], $mappings);
             $filteredMappings = array_filter($getMappingsByType, function ($mapping) {

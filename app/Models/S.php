@@ -22,6 +22,10 @@ class S extends Model
     {
         return $this->hasMany(Sr::class);
     }
+    public function sResponseKeys()
+    {
+        return $this->hasMany(SResponseKey::class);
+    }
     public function sResponseKey()
     {
         return $this->hasMany(SResponseKey::class);

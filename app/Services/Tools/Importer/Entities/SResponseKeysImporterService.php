@@ -5,25 +5,28 @@ namespace App\Services\Tools\Importer\Entities;
 use App\Enums\Import\ImportConfig;
 use App\Enums\Import\ImportMappingType;
 use App\Enums\Import\ImportType;
+use App\Models\Provider;
+use App\Models\S;
 use App\Models\Sr;
 use App\Models\SResponseKey;
 use App\Models\SrResponseKey;
+use App\Services\ApiServices\ApiService;
 use App\Services\ApiServices\ServiceRequests\ResponseKeys\SrResponseKeyService;
 use App\Services\ApiServices\ServiceRequests\SrService;
+use App\Services\ApiServices\SResponseKeysService;
 use App\Services\Permission\AccessControlService;
 use Illuminate\Database\Eloquent\Model;
 
-class SrResponseKeysImporterService extends ImporterBase
+class SResponseKeysImporterService extends ImporterBase
 {
 
     public function __construct(
-        private SResponseKeysImporterService   $sResponseKeysImporterService,
-        private SrResponseKeyService   $srResponseKeyService,
-        private SrService              $srService,
-        protected AccessControlService $accessControlService
+        private ApiService                  $apiService,
+        private SResponseKeysService        $sResponseKeysService,
+        protected AccessControlService       $accessControlService
     )
     {
-        parent::__construct($accessControlService, new SrResponseKey());
+        parent::__construct($accessControlService, new SResponseKey());
     }
 
     protected function setConfig(): void
@@ -32,9 +35,9 @@ class SrResponseKeysImporterService extends ImporterBase
             false,
             'id',
             ImportType::SR_RESPONSE_KEY->value,
-            'Sr Response Keys',
+            'S Response Keys',
             'name',
-            '{name}: {pivot.value}',
+            'name',
             'label',
             [],
         );
@@ -45,14 +48,14 @@ class SrResponseKeysImporterService extends ImporterBase
         $this->mappings = [
             [
                 'name' => ImportMappingType::SELF_NO_CHILDREN->value,
-                'label' => 'Import sr response key to sr (no children)',
-                'dest' => ImportType::SR->value,
+                'label' => 'Import s response key to sr (no children)',
+                'dest' => ImportType::SR_RESPONSE_KEY->value,
                 'required_fields' => ['id'],
             ],
             [
                 'name' => ImportMappingType::SELF_WITH_CHILDREN->value,
-                'label' => 'Import sr response key to sr (including children)',
-                'dest' => ImportType::SR->value,
+                'label' => 'Import s response key to sr (including children)',
+                'dest' => ImportType::SR_RESPONSE_KEY->value,
                 'required_fields' => ['id'],
             ],
         ];
@@ -60,57 +63,37 @@ class SrResponseKeysImporterService extends ImporterBase
 
     public function import(array $data, bool $withChildren): array
     {
-        if (!empty($data['sr'])) {
-            $sr = $data['sr'];
-        } elseif (!empty($data['sr_id'])) {
-            $sr = $this->srService->getServiceRequestById((int)$data['sr_id']);
+        if (!empty($data['service'])) {
+            $service = $data['service'];
+        } elseif (!empty($data['s_id'])) {
+            $service = $this->apiService->getServiceById((int)$data['s_id']);
         } else {
             return [
                 'success' => false,
-                'data' => "Sr is required."
+                'data' => "Service is required."
             ];
         }
-        if (!$sr instanceof Sr) {
+        if (!$service instanceof S) {
             return [
                 'success' => false,
-                'data' => "Sr not found."
+                'data' => "Service not found."
             ];
         }
 
-        if (empty($data['name'])) {
-            return [
-                'success' => false,
-                'data' => "S response key name is required."
-            ];
-        }
-        $this->sResponseKeysImporterService->getSResponseKeyService()->getResponseKeyRepository()->addWhere(
-            'name',
-            $data['name']
-        );
-        $responseKey = $this->sResponseKeysImporterService->getSResponseKeyService()->getResponseKeyRepository()->findOne();
-        if (!$responseKey instanceof SResponseKey) {
-            $responseKey = $this->sResponseKeysImporterService->import($data, false);
-            if (!$responseKey['success']) {
-                return $responseKey;
-            }
-            $responseKey = $this->sResponseKeysImporterService->getSResponseKeyService()->getResponseKeyRepository()->getModel();
-        }
         if (
-            !$this->srResponseKeyService->createSrResponseKey(
-                $this->getUser(),
-                $sr,
-                $responseKey->name,
+            !$this->sResponseKeysService->createServiceResponseKeys(
+                $service,
                 $data
             )
         ) {
             return [
                 'success' => false,
-                'data' => "Failed to create sr response key."
+                'data' => "Failed to create service response key."
             ];
         }
         return [
             'success' => true,
-            'message' => "Sr response key({$responseKey->name}) for Sr {$sr->name} imported successfully."
+            'message' => "Service response key({$data['name']}) for Sr {$service->name} imported successfully."
         ];
     }
 
@@ -135,20 +118,8 @@ class SrResponseKeysImporterService extends ImporterBase
             if (empty($sr['name'])) {
                 $this->addError(
                     'import_type_validation',
-                    "Service Request name is required."
+                    "Service name is required."
                 );
-            }
-            if (empty($sr['label'])) {
-                $this->addError(
-                    'import_type_validation',
-                    "Service Request label is required."
-                );
-            }
-            if (
-                !empty($sr['child_srs']) &&
-                is_array($sr['child_srs'])
-            ) {
-                $this->validateImportData($sr['child_srs']);
             }
         }
     }
@@ -180,9 +151,9 @@ class SrResponseKeysImporterService extends ImporterBase
         }, $data);
     }
 
-    public function getSrResponseKeyService(): SrResponseKeyService
+    public function getSResponseKeyService(): SResponseKeysService
     {
-        return $this->srResponseKeyService;
+        return $this->sResponseKeysService;
     }
 
     public function getExportData(): array

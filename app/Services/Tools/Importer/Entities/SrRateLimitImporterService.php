@@ -5,8 +5,11 @@ namespace App\Services\Tools\Importer\Entities;
 use App\Enums\Import\ImportConfig;
 use App\Enums\Import\ImportMappingType;
 use App\Enums\Import\ImportType;
+use App\Models\Provider;
 use App\Models\S;
+use App\Models\Sr;
 use App\Services\ApiServices\RateLimitService;
+use App\Services\ApiServices\ServiceRequests\SrService;
 use App\Services\Permission\AccessControlService;
 use Illuminate\Database\Eloquent\Model;
 
@@ -15,6 +18,7 @@ class SrRateLimitImporterService extends ImporterBase
 
     public function __construct(
         private RateLimitService       $rateLimitService,
+        private SrService $srService,
         protected AccessControlService $accessControlService
     )
     {
@@ -55,10 +59,32 @@ class SrRateLimitImporterService extends ImporterBase
 
     public function import(array $data, bool $withChildren): array
     {
-        return array_map(function (S $service) {
-            $this->rateLimitService->getSrRateLimitRepository()->setModel($service);
-            return $this->rateLimitService->getSrRateLimitRepository()->save($service);
-        }, $data);
+        if (!empty($data['sr'])) {
+            $sr = $data['sr'];
+        } elseif (!empty($data['sr_id'])) {
+            $sr = $this->srService->getServiceRequestById((int)$data['sr_id']);
+        } else {
+            return [
+                'success' => false,
+                'data' => "Sr is required."
+            ];
+        }
+        if (!$sr instanceof Sr) {
+            return [
+                'success' => false,
+                'data' => "Sr not found."
+            ];
+        }
+        if (!$this->rateLimitService->createSrRateLimit($sr, $data)) {
+            return [
+                'success' => false,
+                'data' => "Failed to create sr rate limit."
+            ];
+        }
+        return [
+            'success' => true,
+            'message' => "Sr rate limit for Sr {$sr->name} imported successfully."
+        ];
     }
 
     public function importSelfNoChildren(array $map, array $data): array {

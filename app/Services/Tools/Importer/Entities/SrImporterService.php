@@ -5,6 +5,7 @@ namespace App\Services\Tools\Importer\Entities;
 use App\Enums\Import\ImportConfig;
 use App\Enums\Import\ImportMappingType;
 use App\Enums\Import\ImportType;
+use App\Models\Provider;
 use App\Models\S;
 use App\Services\ApiServices\ApiService;
 use App\Services\ApiServices\RateLimitService;
@@ -14,12 +15,14 @@ use App\Services\ApiServices\ServiceRequests\SrParametersService;
 use App\Services\ApiServices\ServiceRequests\SrScheduleService;
 use App\Services\ApiServices\ServiceRequests\SrService;
 use App\Services\Permission\AccessControlService;
+use App\Services\Provider\ProviderService;
 use Illuminate\Database\Eloquent\Model;
 
 class SrImporterService extends ImporterBase
 {
 
     public function __construct(
+        private ProviderService $providerService,
         private SrService $srService,
         private SrConfigImporterService $srConfigImporterService,
         private SrParameterImporterService $srParameterImporterService,
@@ -67,15 +70,102 @@ class SrImporterService extends ImporterBase
     public function import(array $data, bool $withChildren): array
     {
         try {
-            if (!$this->srService->createServiceRequest($this->getUser(), $data)) {
+            if (!empty($data['provider'])) {
+                $provider = $data['provider'];
+            } elseif (!empty($data['pivot']['provider_id'])) {
+                $provider = $this->providerService->getProviderById($data['pivot']['provider_id']);
+            } elseif (!empty($data['provider_id'])) {
+                $provider = $this->providerService->getProviderById($data['provider_id']);
+            } else {
+                return [
+                    'success' => false,
+                    'data' => "Provider is required."
+                ];
+            }
+            if (!$provider instanceof Provider) {
+                return [
+                    'success' => false,
+                    'data' => "Provider not found."
+                ];
+            }
+            if (!$this->srService->createServiceRequest($provider, $data)) {
                 return [
                     'success' => false,
                     'data' => "Failed to create provider."
                 ];
             }
             $response = [];
-            $data['provider'] = $this->providerService->getProviderRepository()->getModel();
-
+            $data['sr'] = $this->srService->getServiceRequestRepository()->getModel();
+            $data['sr_id'] = $data['sr']->id;
+            if (
+                !empty($data['sr_rate_limit']) &&
+                is_array($data['sr_rate_limit'])
+            ) {
+                $response[] = $this->srRateLimitImporterService->import(
+                    $data['sr_rate_limit'],
+                    $withChildren
+                );
+            }
+            if (
+                !empty($data['sr_schedule']) &&
+                is_array($data['sr_schedule'])
+            ) {
+                $response[] = $this->srScheduleImporterService->import(
+                    $data['sr_schedule'],
+                    $withChildren
+                );
+            }
+            if (
+                !empty($data['sr_response_keys']) &&
+                is_array($data['sr_response_keys'])
+            ) {
+                $response = array_merge(
+                    $response,
+                    $this->srResponseKeysImporterService->batchImport(
+                        array_map(function ($parameter) use ($data) {
+                            $parameter['sr_id'] = $data['sr_id'];
+                            return $parameter;
+                        }, $data['sr_response_keys']),
+                        $withChildren
+                    )
+                );
+            }
+            if (
+                !empty($data['sr_parameter']) &&
+                is_array($data['sr_parameter'])
+            ) {
+                $response = array_merge(
+                    $response,
+                    $this->srParameterImporterService->batchImport(
+                        array_map(function ($parameter) use ($data) {
+                            $parameter['sr_id'] = $data['sr_id'];
+                            return $parameter;
+                        }, $data['sr_parameter']),
+                        $withChildren
+                    )
+                );
+            }
+            if (
+                !empty($data['sr_config']) &&
+                is_array($data['sr_config'])
+            ) {
+                $response[] = $this->srConfigImporterService->import(
+                    $data['sr_config'],
+                    $withChildren
+                );
+            }
+            if (
+                !empty($data['child_srs']) &&
+                is_array($data['child_srs'])
+            ) {
+                $response = array_merge(
+                    $response,
+                    $this->batchImport(
+                        $data['child_srs'],
+                        $withChildren
+                    )
+                );
+            }
             return [
                 'success' => true,
                 'data' => $response,

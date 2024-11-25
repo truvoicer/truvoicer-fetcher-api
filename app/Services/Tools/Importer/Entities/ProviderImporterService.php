@@ -241,7 +241,9 @@ class ProviderImporterService extends ImporterBase
                         'srSchedule',
                         'srRateLimit',
                         'srResponseKeys',
-                        's',
+                        's' => function ($query) {
+                            $query->with('sResponseKeys');
+                        },
                         'category'
                     ]
                 );
