@@ -61,7 +61,7 @@ class SResponseKeysImporterService extends ImporterBase
         ];
     }
 
-    public function import(array $data, bool $withChildren): array
+    public function import(string $action, array $data, bool $withChildren): array
     {
         if (!empty($data['service'])) {
             $service = $data['service'];
@@ -70,13 +70,13 @@ class SResponseKeysImporterService extends ImporterBase
         } else {
             return [
                 'success' => false,
-                'data' => "Service is required."
+                'message' => "Service is required."
             ];
         }
         if (!$service instanceof S) {
             return [
                 'success' => false,
-                'data' => "Service not found."
+                'message' => "Service not found."
             ];
         }
 
@@ -88,7 +88,7 @@ class SResponseKeysImporterService extends ImporterBase
         ) {
             return [
                 'success' => false,
-                'data' => "Failed to create service response key."
+                'message' => "Failed to create service response key."
             ];
         }
         return [
@@ -97,14 +97,14 @@ class SResponseKeysImporterService extends ImporterBase
         ];
     }
 
-    public function importSelfNoChildren(array $map, array $data): array
+    public function importSelfNoChildren(string $action, array $map, array $data): array
     {
-        return $this->importSelf($map, $data, false);
+        return $this->importSelf($action, $map, $data, false);
     }
 
-    public function importSelfWithChildren(array $map, array $data): array
+    public function importSelfWithChildren(string $action, array $map, array $data): array
     {
-        return $this->importSelf($map, $data, true);
+        return $this->importSelf($action, $map, $data, true);
     }
 
     public function getImportMappings(array $data)

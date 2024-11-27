@@ -103,6 +103,7 @@ class ImportService
 
     public function parseImport(UploadedFile $uploadedFile)
     {
+        $this->iExportTypeService->setUser($this->getUser());
         $contents = $uploadedFile->getContent();
         $getFileContents = json_decode($contents, true);
         if (!$getFileContents) {

@@ -53,7 +53,7 @@ class SrConfigImporterService extends ImporterBase
         ];
     }
 
-    public function import(array $data, bool $withChildren): array
+    public function import(string $action, array $data, bool $withChildren): array
     {
         if (!empty($data['sr'])) {
             $sr = $data['sr'];
@@ -62,19 +62,19 @@ class SrConfigImporterService extends ImporterBase
         } else {
             return [
                 'success' => false,
-                'data' => "Sr is required."
+                'message' => "Sr is required."
             ];
         }
         if (!$sr instanceof Sr) {
             return [
                 'success' => false,
-                'data' => "Sr not found."
+                'message' => "Sr not found."
             ];
         }
         if (empty($data['property'])) {
             return [
                 'success' => false,
-                'data' => "Property is required."
+                'message' => "Property is required."
             ];
         }
         $this->propertyImporterService->getPropertyService()->getPropertyRepository()->addWhere(
@@ -83,30 +83,39 @@ class SrConfigImporterService extends ImporterBase
         );
         $property = $this->propertyImporterService->getPropertyService()->getPropertyRepository()->findOne();
         if (!$property instanceof Model) {
-            $property = $this->propertyImporterService->import($data['property'], false);
+            $property = $this->propertyImporterService->import(
+                $action, $data['property'], false);
             if (!$property['success']) {
                 return $property;
             }
             $property = $this->propertyImporterService->getPropertyService()->getPropertyRepository()->getModel();
         }
+        try {
+
         if (!$this->srConfigService->saveRequestConfig($sr, $property, $data)) {
             return [
                 'success' => false,
-                'data' => "Failed to create sr config."
+                'message' => "Failed to create sr config for Sr {$sr->name}"
             ];
         }
         return [
             'success' => true,
             'message' => "Sr Config for Sr {$sr->name} imported successfully."
         ];
+        } catch (\Exception $e) {
+            return [
+                'success' => false,
+                'message' => $e->getMessage()
+            ];
+        }
     }
 
-    public function importSelfNoChildren(array $map, array $data): array {
-        return $this->importSelf($map, $data, false);
+    public function importSelfNoChildren(string $action, array $map, array $data): array {
+        return $this->importSelf($action, $map, $data, false);
     }
 
-    public function importSelfWithChildren(array $map, array $data): array {
-        return $this->importSelf($map, $data, true);
+    public function importSelfWithChildren(string $action, array $map, array $data): array {
+        return $this->importSelf($action, $map, $data, true);
     }
 
     public function getImportMappings(array $data)

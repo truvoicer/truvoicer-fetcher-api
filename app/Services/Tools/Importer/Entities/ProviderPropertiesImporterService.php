@@ -5,6 +5,7 @@ namespace App\Services\Tools\Importer\Entities;
 use App\Enums\Import\ImportConfig;
 use App\Enums\Import\ImportMappingType;
 use App\Enums\Import\ImportType;
+use App\Models\Provider;
 use App\Models\ProviderProperty;
 use App\Models\S;
 use App\Models\SrConfig;
@@ -18,6 +19,7 @@ class ProviderPropertiesImporterService extends ImporterBase
 
     public function __construct(
         private ProviderService $providerService,
+        private PropertyImporterService $propertyImporterService,
         protected AccessControlService $accessControlService
     )
     {
@@ -50,17 +52,68 @@ class ProviderPropertiesImporterService extends ImporterBase
         ];
     }
 
-    public function import(array $data, bool $withChildren): array
+    public function import(string $action, array $data, bool $withChildren): array
     {
-        return [];
+        if (!empty($data['provider'])) {
+            $provider = $data['provider'];
+        } elseif (!empty($data['provider_id'])) {
+            $provider = $this->providerService->getProviderById((int)$data['provider_id']);
+        } else {
+            return [
+                'success' => false,
+                'message' => "Provider is required for provider id: {$data['provider_id']} property: {$data['name']}."
+            ];
+        }
+        if (!$provider instanceof Provider) {
+            return [
+                'success' => false,
+                'message' => "Provider not found for provider id: {$data['provider_id']} property: {$data['name']}"
+            ];
+        }
+
+        if (empty($data['name'])) {
+            return [
+                'success' => false,
+                'message' => "Provider property key name is required for provider {$provider->name} property: {$data['name']}."
+            ];
+        }
+        if (empty($data['pivot']) || !is_array($data['pivot']) || !count($data['pivot'])) {
+            return [
+                'success' => false,
+                'message' => "Provider property pivot is required for provider {$provider->name} property: {$data['name']}."
+            ];
+        }
+        $this->propertyImporterService->getPropertyService()->getPropertyRepository()->addWhere(
+            'name',
+            $data['name']
+        );
+        $property = $this->propertyImporterService->getPropertyService()->getPropertyRepository()->findOne();
+        if (!$property instanceof Model) {
+            $property = $this->propertyImporterService->import(
+                $action, $data, false);
+            if (!$property['success']) {
+                return $property;
+            }
+            $property = $this->propertyImporterService->getPropertyService()->getPropertyRepository()->getModel();
+        }
+        if (!$this->providerService->createProviderProperty($provider, $property, $data['pivot'])) {
+            return [
+                'success' => false,
+                'message' => "Failed to create provider property: {$data['name']} for provider {$provider->name}."
+            ];
+        }
+        return [
+            'success' => true,
+            'message' => "Provider property: {$data['name']} for provider {$provider->name} imported successfully."
+        ];
     }
 
-    public function importSelfNoChildren(array $map, array $data): array {
-        return $this->importSelf($map, $data, false);
+    public function importSelfNoChildren(string $action, array $map, array $data): array {
+        return $this->importSelf($action, $map, $data, false);
     }
 
-    public function importSelfWithChildren(array $map, array $data): array {
-        return $this->importSelf($map, $data, true);
+    public function importSelfWithChildren(string $action, array $map, array $data): array {
+        return $this->importSelf($action, $map, $data, true);
     }
 
     public function getImportMappings(array $data)

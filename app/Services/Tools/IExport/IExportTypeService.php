@@ -2,6 +2,7 @@
 
 namespace App\Services\Tools\IExport;
 
+use App\Enums\Import\ImportAction;
 use App\Enums\Import\ImportMappingType;
 use App\Enums\Import\ImportType;
 use App\Repositories\SrRepository;
@@ -127,7 +128,6 @@ class IExportTypeService extends BaseService
 //          2 => "service"
 //          3 => "property"
 //        ]
-        dd($contents);
         return array_map(function ($item) use($mappings) {
             $getMappingsByType = $this->getMappingsByType($item["type"], $mappings);
             $filteredMappings = array_filter($getMappingsByType, function ($mapping) {
@@ -163,9 +163,22 @@ class IExportTypeService extends BaseService
 
     private function importMapInterface(ImporterBase $instance, string $mapName, array $map, array $data): array
     {
+        if (empty($map['action'])) {
+            return [
+                'success' => false,
+                'error' => 'No action found.',
+            ];
+        }
+        $action = ImportAction::tryFrom($map['action']);
+        if (!$action) {
+            return [
+                'success' => false,
+                'error' => 'Invalid action found.',
+            ];
+        }
         return match ($mapName) {
-            ImportMappingType::SELF_NO_CHILDREN->value => $instance->importSelfNoChildren($map, $data),
-            ImportMappingType::SELF_WITH_CHILDREN->value => $instance->importSelfWithChildren($map, $data),
+            ImportMappingType::SELF_NO_CHILDREN->value => $instance->importSelfNoChildren($action, $map, $data),
+            ImportMappingType::SELF_WITH_CHILDREN->value => $instance->importSelfWithChildren($action, $map, $data),
             default => [
                 'success' => false,
                 'data' => $map['data'],

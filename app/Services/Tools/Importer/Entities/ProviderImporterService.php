@@ -61,7 +61,7 @@ class ProviderImporterService extends ImporterBase
         ];
     }
 
-    public function import(array $data, bool $withChildren): array
+    public function import(string $action, array $data, bool $withChildren): array
     {
         try {
             $checkProvider = $this->providerService->getProviderRepository()->findUserModelQuery(
@@ -80,7 +80,7 @@ class ProviderImporterService extends ImporterBase
             if (!$this->providerService->createProvider($this->getUser(), $data)) {
                 return [
                     'success' => false,
-                    'data' => "Failed to create provider."
+                    'message' => "Failed to create provider {$data['name']}."
                 ];
             }
             $response = [];
@@ -92,6 +92,7 @@ class ProviderImporterService extends ImporterBase
                 $response = array_merge(
                     $response,
                     $this->srImporterService->batchImport(
+                        $action,
                         $data['srs'],
                         $withChildren
                     )
@@ -104,6 +105,7 @@ class ProviderImporterService extends ImporterBase
                 $response = array_merge(
                     $response,
                     $this->providerPropertiesImporterService->batchImport(
+                        $action,
                         $data['properties'],
                         $withChildren
                     )
@@ -114,6 +116,7 @@ class ProviderImporterService extends ImporterBase
                 is_array($data['provider_rate_limit'])
             ) {
                 $response[] = $this->providerRateLimitImporterService->import(
+                    $action,
                     $data['provider_rate_limit'],
                     $withChildren
                 );
@@ -125,6 +128,7 @@ class ProviderImporterService extends ImporterBase
                 $response = array_merge(
                     $response,
                     $this->categoryImporterService->batchImport(
+                        $action,
                         $data['categories'],
                         $withChildren
                     )
@@ -143,14 +147,14 @@ class ProviderImporterService extends ImporterBase
         }
     }
 
-    public function importSelfNoChildren(array $map, array $data): array
+    public function importSelfNoChildren(string $action, array $map, array $data): array
     {
-        return $this->importSelf($map, $data, false);
+        return $this->importSelf($action, $map, $data, false);
     }
 
-    public function importSelfWithChildren(array $map, array $data): array
+    public function importSelfWithChildren(string $action, array $map, array $data): array
     {
-        return $this->importSelf($map, $data, true);
+        return $this->importSelf($action, $map, $data, true);
     }
 
     public function validateImportData(array $data): void

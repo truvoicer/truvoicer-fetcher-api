@@ -56,9 +56,9 @@ class RateLimitService extends BaseService
     {
         return $this->srRateLimitRepository->deleteSrRateLimit($srSchedule);
     }
-    public function createProviderRateLimit(Provider $serviceRequest, array $data)
+    public function createProviderRateLimit(Provider $provider, array $data)
     {
-        return $this->providerRateLimitRepository->createProviderRateLimit($serviceRequest, $data);
+        return $this->providerRateLimitRepository->createProviderRateLimit($provider, $data);
     }
     public function saveProviderRateLimit(ProviderRateLimit $srSchedule, array $data)
     {

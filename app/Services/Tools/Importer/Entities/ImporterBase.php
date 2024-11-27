@@ -30,10 +30,10 @@ abstract class ImporterBase
     abstract protected function setConfig(): void;
     abstract protected function setMappings(): void;
 
-    abstract public function import(array $data, bool $withChildren): array;
+    abstract public function import(string $action, array $data, bool $withChildren): array;
 
-    abstract public function importSelfNoChildren(array $map, array $data): array;
-    abstract public function importSelfWithChildren(array $map, array $data): array;
+    abstract public function importSelfNoChildren(string $action, array $map, array $data): array;
+    abstract public function importSelfWithChildren(string $action, array $map, array $data): array;
 
     abstract public function validateImportData(array $data): void;
 
@@ -47,11 +47,11 @@ abstract class ImporterBase
 
     abstract public function parseEntityBatch(array $data): array;
 
-    protected function batchImport(array $data, bool $withChildren): array
+    protected function batchImport(string $action, array $data, bool $withChildren): array
     {
         $response = [];
         foreach ($data as $provider) {
-            $response[] = $this->import($provider, $withChildren);
+            $response[] = $this->import($action, $provider, $withChildren);
         }
         return $response;
     }
@@ -138,12 +138,12 @@ abstract class ImporterBase
         return $this->accessControlService;
     }
 
-    protected function importSelf(array $map, array $data, bool $withChildren): array {
+    protected function importSelf(string $action, array $map, array $data, bool $withChildren): array {
         if (!empty($map['root']) && !empty($map['children']) && is_array($map['children']) && count($map['children'])) {
             return [
                 'success' => true,
-                'data' => array_map(function ($category) use ($data) {
-                    return $this->importSelfNoChildren($category, $data);
+                'data' => array_map(function ($category) use ($data, $action) {
+                    return $this->importSelfNoChildren($action, $category, $data);
                 }, $map['children'])
             ];
         }
@@ -155,7 +155,7 @@ abstract class ImporterBase
                 'error' => 'Category not found'
             ];
         }
-        return $this->import($data[$findItemIndex], $withChildren);
+        return $this->import($action, $data[$findItemIndex], $withChildren);
     }
 
 }

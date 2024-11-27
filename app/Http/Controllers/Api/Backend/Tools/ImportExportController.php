@@ -121,6 +121,7 @@ class ImportExportController extends Controller
 
     public function parseImport(ParseImportRequest $request, ImportService $importService)
     {
+        $importService->setUser($request->user());
         return $this->sendSuccessResponse(
             "success",
             $importService->parseImport(

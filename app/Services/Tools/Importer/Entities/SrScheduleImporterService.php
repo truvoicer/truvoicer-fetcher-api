@@ -50,7 +50,7 @@ class SrScheduleImporterService extends ImporterBase
         ];
     }
 
-    public function import(array $data, bool $withChildren): array
+    public function import(string $action, array $data, bool $withChildren): array
     {
         if (!empty($data['sr'])) {
             $sr = $data['sr'];
@@ -59,33 +59,33 @@ class SrScheduleImporterService extends ImporterBase
         } else {
             return [
                 'success' => false,
-                'data' => "Sr is required."
+                'message' => "Sr is required."
             ];
         }
         if (!$sr instanceof Sr) {
             return [
                 'success' => false,
-                'data' => "Sr not found."
+                'message' => "Sr not found."
+            ];
+        }
+        if (!$this->srScheduleService->createSrSchedule($this->getUser(), $sr, $data)) {
+            return [
+                'success' => false,
+                'message' => "Failed to create sr schedule."
             ];
         }
         return [
             'success' => true,
-            'message' => "Sr Config for Sr {$sr->name} imported successfully."
+            'message' => "Sr schedule for Sr {$sr->name} imported successfully."
         ];
-        if (!$this->srService->createServiceRequest($provider, $data)) {
-            return [
-                'success' => false,
-                'data' => "Failed to create provider."
-            ];
-        }
     }
 
-    public function importSelfNoChildren(array $map, array $data): array {
-        return $this->importSelf($map, $data, false);
+    public function importSelfNoChildren(string $action, array $map, array $data): array {
+        return $this->importSelf($action, $map, $data, false);
     }
 
-    public function importSelfWithChildren(array $map, array $data): array {
-        return $this->importSelf($map, $data, true);
+    public function importSelfWithChildren(string $action, array $map, array $data): array {
+        return $this->importSelf($action, $map, $data, true);
     }
 
     public function getImportMappings(array $data)

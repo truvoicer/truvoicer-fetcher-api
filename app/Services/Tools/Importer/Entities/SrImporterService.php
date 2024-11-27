@@ -67,7 +67,7 @@ class SrImporterService extends ImporterBase
         ];
     }
 
-    public function import(array $data, bool $withChildren): array
+    public function import(string $action, array $data, bool $withChildren): array
     {
         try {
             if (!empty($data['provider'])) {
@@ -79,19 +79,19 @@ class SrImporterService extends ImporterBase
             } else {
                 return [
                     'success' => false,
-                    'data' => "Provider is required."
+                    'message' => "Provider is required."
                 ];
             }
             if (!$provider instanceof Provider) {
                 return [
                     'success' => false,
-                    'data' => "Provider not found."
+                    'message' => "Provider not found."
                 ];
             }
             if (!$this->srService->createServiceRequest($provider, $data)) {
                 return [
                     'success' => false,
-                    'data' => "Failed to create provider."
+                    'message' => "Failed to create provider."
                 ];
             }
             $response = [];
@@ -102,6 +102,7 @@ class SrImporterService extends ImporterBase
                 is_array($data['sr_rate_limit'])
             ) {
                 $response[] = $this->srRateLimitImporterService->import(
+                    $action,
                     $data['sr_rate_limit'],
                     $withChildren
                 );
@@ -111,6 +112,7 @@ class SrImporterService extends ImporterBase
                 is_array($data['sr_schedule'])
             ) {
                 $response[] = $this->srScheduleImporterService->import(
+                    $action,
                     $data['sr_schedule'],
                     $withChildren
                 );
@@ -122,6 +124,7 @@ class SrImporterService extends ImporterBase
                 $response = array_merge(
                     $response,
                     $this->srResponseKeysImporterService->batchImport(
+                        $action,
                         array_map(function ($parameter) use ($data) {
                             $parameter['sr_id'] = $data['sr_id'];
                             return $parameter;
@@ -137,6 +140,7 @@ class SrImporterService extends ImporterBase
                 $response = array_merge(
                     $response,
                     $this->srParameterImporterService->batchImport(
+                        $action,
                         array_map(function ($parameter) use ($data) {
                             $parameter['sr_id'] = $data['sr_id'];
                             return $parameter;
@@ -150,6 +154,7 @@ class SrImporterService extends ImporterBase
                 is_array($data['sr_config'])
             ) {
                 $response[] = $this->srConfigImporterService->import(
+                    $action,
                     $data['sr_config'],
                     $withChildren
                 );
@@ -161,6 +166,7 @@ class SrImporterService extends ImporterBase
                 $response = array_merge(
                     $response,
                     $this->batchImport(
+                        $action,
                         $data['child_srs'],
                         $withChildren
                     )
@@ -174,18 +180,18 @@ class SrImporterService extends ImporterBase
             return [
                 'success' => false,
                 'data' => $data,
-                'error' => $e->getMessage()
+                'message' => $e->getMessage()
             ];
         }
     }
 
-    public function importSelfNoChildren(array $map, array $data): array {
-        return $this->importSelf($map, $data, false);
+    public function importSelfNoChildren(string $action, array $map, array $data): array {
+        return $this->importSelf($action, $map, $data, false);
     }
 
-    public function importSelfWithChildren(array $map, array $data): array {
+    public function importSelfWithChildren(string $action, array $map, array $data): array {
 
-        return $this->importSelf($map, $data, true);
+        return $this->importSelf($action, $map, $data, true);
     }
 
     public function getImportMappings(array $data)

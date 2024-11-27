@@ -48,19 +48,50 @@ class PropertyImporterService extends ImporterBase {
         ];
     }
 
-    public function import(array $data, bool $withChildren): array
+    public function import(string $action, array $data, bool $withChildren): array
     {
-        return array_map(function (Property $property) {
-            return $this->propertyService->getPropertyRepository()->createProperty($property);
-        }, $data);
+        try {
+            $checkProvider = $this->propertyService->getPropertyRepository()->addWhere(
+                'name',
+                $data['name']
+            );
+            $this->propertyService->getPropertyRepository()->addWhere(
+                'label',
+                $data['label']
+            );
+            $property = $this->propertyService->getPropertyRepository()->findOne();
+            if (!$property) {
+                $data['label'] = $data['name'] = $this->propertyService->getPropertyRepository()->buildCloneEntityStr(
+                    $checkProvider,
+                    'name',
+                    $data['name']
+                );
+            }
+            if (!$this->propertyService->createProperty($data)) {
+                return [
+                    'success' => false,
+                    'message' => "Failed to create property {$data['name']}."
+                ];
+            }
+            return [
+                'success' => true,
+                'message' => "Property {$data['name']} imported successfully."
+            ];
+        } catch (\Exception $e) {
+            return [
+                'success' => false,
+                'data' => $data,
+                'message' => $e->getMessage()
+            ];
+        }
     }
 
-    public function importSelfNoChildren(array $map, array $data): array {
-        return $this->importSelf($map, $data, false);
+    public function importSelfNoChildren(string $action, array $map, array $data): array {
+        return $this->importSelf($action, $map, $data, false);
     }
 
-    public function importSelfWithChildren(array $map, array $data): array {
-        return $this->importSelf($map, $data, true);
+    public function importSelfWithChildren(string $action, array $map, array $data): array {
+        return $this->importSelf($action, $map, $data, true);
     }
 
     public function getImportMappings(array $data) {

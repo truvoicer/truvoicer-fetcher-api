@@ -55,26 +55,39 @@ class SImporterService extends ImporterBase
         ];
     }
 
-    public function import(array $data, bool $withChildren): array
+    public function import(string $action, array $data, bool $withChildren): array
     {
-        return array_map(function (array $map) {
-            return match ($map['mapping']['name']) {
-                'service_no_children' => $this->importServiceNoChildren($this->filterMapData($map)),
-                'service_include_children' => $this->importServiceIncludeChildren($this->filterMapData($map)),
-                default => [
+        try {
+            if (
+                !$this->apiService->createService(
+                    $this->getUser(),
+                    $data
+                )
+            ) {
+                return [
                     'success' => false,
-                    'data' => $map['data'],
-                ],
-            };
-        }, $mappings);
+                    'message' => "Error creating service {$data['name']}."
+                ];
+            }
+            return [
+                'success' => true,
+                'message' => "Service {$data['name']} imported successfully,"
+            ];
+        } catch (\Exception $e) {
+            return [
+                'success' => false,
+                'data' => $data,
+                'error' => $e->getMessage()
+            ];
+        }
     }
 
-    public function importSelfNoChildren(array $map, array $data): array {
-        return $this->importSelf($map, $data, false);
+    public function importSelfNoChildren(string $action, array $map, array $data): array {
+        return $this->importSelf($action, $map, $data, false);
     }
 
-    public function importSelfWithChildren(array $map, array $data): array {
-        return $this->importSelf($map, $data, true);
+    public function importSelfWithChildren(string $action, array $map, array $data): array {
+        return $this->importSelf($action, $map, $data, true);
     }
 
     public function importServiceNoChildren(array $data): array
@@ -92,7 +105,7 @@ class SImporterService extends ImporterBase
             return [
                 'success' => false,
                 'data' => $data,
-                'error' => $e->getMessage()
+                'message' => $e->getMessage()
             ];
         }
     }
@@ -112,7 +125,7 @@ class SImporterService extends ImporterBase
             return [
                 'success' => false,
                 'data' => $data,
-                'error' => $e->getMessage()
+                'message' => $e->getMessage()
             ];
         }
     }
