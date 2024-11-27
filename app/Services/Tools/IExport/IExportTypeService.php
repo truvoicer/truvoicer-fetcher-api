@@ -189,7 +189,6 @@ class IExportTypeService extends BaseService
 
     private function importMapInterface(ImporterBase $instance, string $mapName, array $map, array $data): array
     {
-        dd($map);
         if (empty($map['action'])) {
             return [
                 'success' => false,

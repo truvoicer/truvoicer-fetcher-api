@@ -48,10 +48,8 @@ class CategoryImporterService extends ImporterBase
         ];
     }
 
-
-    public function import(ImportAction $action, array $data, bool $withChildren): array
+    private function createCategory(array $data): array
     {
-        dd($action);
         try {
             $this->categoryService->createCategory(
                 $this->getUser(),
@@ -67,6 +65,36 @@ class CategoryImporterService extends ImporterBase
                 'data' => $data,
                 'message' => $e->getMessage()
             ];
+        }
+    }
+
+    private function overwriteCategory(array $data): array
+    {
+        try {
+            $this->categoryService->createCategory(
+                $this->getUser(),
+                $data
+            );
+            return [
+                'success' => true,
+                'message' => $this->categoryService->getCategoryRepository()->getModel()
+            ];
+        } catch (\Exception $e) {
+            return [
+                'success' => false,
+                'data' => $data,
+                'message' => $e->getMessage()
+            ];
+        }
+    }
+
+    public function import(ImportAction $action, array $data, bool $withChildren): array
+    {
+        switch ($action) {
+            case ImportAction::CREATE:
+                return $this->createCategory($data);
+            case ImportAction::OVERWRITE:
+                return $this->overwriteCategory($data);
         }
     }
 

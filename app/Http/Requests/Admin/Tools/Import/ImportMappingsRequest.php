@@ -46,6 +46,10 @@ class ImportMappingsRequest extends FormRequest
                 'sometimes',
                 'boolean',
             ],
+            'mappings.*.action' => [
+                'sometimes',
+                'string',
+            ],
             'mappings.*.import_type' => [
                 'sometimes',
                 'string',
