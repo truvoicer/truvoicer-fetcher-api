@@ -87,22 +87,48 @@ class IExportTypeService extends BaseService
     {
         switch ($importType) {
             case ImportType::CATEGORY->value:
-                $this->categoryImporterService->setUser($this->getUser());
-                return $this->categoryImporterService;
+                $instance = App::make(CategoryImporterService::class);
+                break;
             case ImportType::PROVIDER->value:
-                $this->providerImporterService->setUser($this->getUser());
-                return $this->providerImporterService;
+                $instance = App::make(ProviderImporterService::class);
+                break;
             case ImportType::SERVICE->value:
-                $this->apiServiceImporterService->setUser($this->getUser());
-                return $this->apiServiceImporterService;
+                $instance = App::make(SImporterService::class);
+                break;
             case ImportType::PROPERTY->value:
-                $this->propertyImporterService->setUser($this->getUser());
-                return $this->propertyImporterService;
+                $instance = App::make(PropertyImporterService::class);
+                break;
+            case ImportType::SR->value:
+                $instance = App::make(SrImporterService::class);
+                break;
+            case ImportType::SR_RATE_LIMIT->value:
+                $instance = App::make(SrRateLimitImporterService::class);
+                break;
+            case ImportType::SR_SCHEDULE->value:
+                $instance = App::make(SrScheduleImporterService::class);
+                break;
+            case ImportType::SR_RESPONSE_KEY->value:
+                $instance = App::make(SrResponseKeysImporterService::class);
+                break;
+            case ImportType::SR_PARAMETER->value:
+                $instance = App::make(SrParameterImporterService::class);
+                break;
+            case ImportType::SR_CONFIG->value:
+                $instance = App::make(SrConfigImporterService::class);
+                break;
+            case ImportType::PROVIDER_RATE_LIMIT->value:
+                $instance = App::make(ProviderRateLimitImporterService::class);
+                break;
+            case ImportType::PROVIDER_PROPERTY->value:
+                $instance = App::make(ProviderPropertiesImporterService::class);
+                break;
             default:
                 throw new BadRequestHttpException(
-                    sprintf("Import type error.")
+                    sprintf("Import type error. %s", $importType)
                 );
         }
+        $instance->setUser($this->getUser());
+        return $instance;
     }
 
     public function getImportDataMappings($importType, $fileContents)
@@ -152,7 +178,7 @@ class IExportTypeService extends BaseService
                 'error' => 'No source or destination found.',
             ];
         }
-        if (empty($map['mapping']['dest']) && !empty($map['mapping']['source'])) {
+        if ((!empty($map['mapping']['dest']) && $map['mapping']['dest'] === 'root') || (empty($map['mapping']['dest']) && !empty($map['mapping']['source']))) {
             $importType = $map['mapping']['source'];
         }   else {
             $importType = $map['mapping']['dest'];
@@ -163,6 +189,7 @@ class IExportTypeService extends BaseService
 
     private function importMapInterface(ImporterBase $instance, string $mapName, array $map, array $data): array
     {
+        dd($map);
         if (empty($map['action'])) {
             return [
                 'success' => false,

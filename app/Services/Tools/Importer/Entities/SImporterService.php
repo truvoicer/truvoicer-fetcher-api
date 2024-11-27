@@ -2,6 +2,7 @@
 
 namespace App\Services\Tools\Importer\Entities;
 
+use App\Enums\Import\ImportAction;
 use App\Enums\Import\ImportConfig;
 use App\Enums\Import\ImportMappingType;
 use App\Enums\Import\ImportType;
@@ -55,7 +56,7 @@ class SImporterService extends ImporterBase
         ];
     }
 
-    public function import(string $action, array $data, bool $withChildren): array
+    public function import(ImportAction $action, array $data, bool $withChildren): array
     {
         try {
             if (
@@ -82,11 +83,11 @@ class SImporterService extends ImporterBase
         }
     }
 
-    public function importSelfNoChildren(string $action, array $map, array $data): array {
+    public function importSelfNoChildren(ImportAction $action, array $map, array $data): array {
         return $this->importSelf($action, $map, $data, false);
     }
 
-    public function importSelfWithChildren(string $action, array $map, array $data): array {
+    public function importSelfWithChildren(ImportAction $action, array $map, array $data): array {
         return $this->importSelf($action, $map, $data, true);
     }
 

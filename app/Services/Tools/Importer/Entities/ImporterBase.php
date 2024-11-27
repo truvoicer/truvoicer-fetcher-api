@@ -2,6 +2,7 @@
 
 namespace App\Services\Tools\Importer\Entities;
 
+use App\Enums\Import\ImportAction;
 use App\Enums\Import\ImportConfig;
 use App\Models\Provider;
 use App\Services\Permission\AccessControlService;
@@ -30,10 +31,10 @@ abstract class ImporterBase
     abstract protected function setConfig(): void;
     abstract protected function setMappings(): void;
 
-    abstract public function import(string $action, array $data, bool $withChildren): array;
+    abstract public function import(ImportAction $action, array $data, bool $withChildren): array;
 
-    abstract public function importSelfNoChildren(string $action, array $map, array $data): array;
-    abstract public function importSelfWithChildren(string $action, array $map, array $data): array;
+    abstract public function importSelfNoChildren(ImportAction $action, array $map, array $data): array;
+    abstract public function importSelfWithChildren(ImportAction $action, array $map, array $data): array;
 
     abstract public function validateImportData(array $data): void;
 
@@ -47,7 +48,7 @@ abstract class ImporterBase
 
     abstract public function parseEntityBatch(array $data): array;
 
-    protected function batchImport(string $action, array $data, bool $withChildren): array
+    protected function batchImport(ImportAction $action, array $data, bool $withChildren): array
     {
         $response = [];
         foreach ($data as $provider) {
@@ -138,7 +139,7 @@ abstract class ImporterBase
         return $this->accessControlService;
     }
 
-    protected function importSelf(string $action, array $map, array $data, bool $withChildren): array {
+    protected function importSelf(ImportAction $action, array $map, array $data, bool $withChildren): array {
         if (!empty($map['root']) && !empty($map['children']) && is_array($map['children']) && count($map['children'])) {
             return [
                 'success' => true,
