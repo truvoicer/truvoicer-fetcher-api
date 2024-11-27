@@ -48,30 +48,58 @@ class PropertyImporterService extends ImporterBase {
             ],
         ];
     }
+    private function findProperty(array $params): ?Model
+    {
+        foreach ($params as $key => $value) {
+            $this->propertyService->getPropertyRepository()->addWhere($key, $value);
+        }
+        return $this->propertyService->getPropertyRepository()->findOne();
+    }
 
-    public function import(ImportAction $action, array $data, bool $withChildren): array
+    protected function create(array $data, bool $withChildren): array
     {
         try {
-            $checkProvider = $this->propertyService->getPropertyRepository()->addWhere(
-                'name',
-                $data['name']
-            );
-            $this->propertyService->getPropertyRepository()->addWhere(
-                'label',
-                $data['label']
-            );
-            $property = $this->propertyService->getPropertyRepository()->findOne();
-            if (!$property) {
-                $data['label'] = $data['name'] = $this->propertyService->getPropertyRepository()->buildCloneEntityStr(
-                    $checkProvider,
-                    'name',
-                    $data['name']
-                );
+            $property = $this->findProperty(['name' => $data['name']]);
+            if ($property) {
+                return [
+                    'success' => false,
+                    'message' => "Property {$data['name']} already exists."
+                ];
             }
             if (!$this->propertyService->createProperty($data)) {
                 return [
                     'success' => false,
                     'message' => "Failed to create property {$data['name']}."
+                ];
+            }
+            return [
+                'success' => true,
+                'message' => "Property {$data['name']} imported successfully."
+            ];
+        } catch (\Exception $e) {
+            return [
+                'success' => false,
+                'data' => $data,
+                'message' => $e->getMessage()
+            ];
+        }
+    }
+
+
+    protected function overwrite(array $data, bool $withChildren): array
+    {
+        try {
+            $property = $this->findProperty(['name' => $data['name']]);
+            if (!$property) {
+                return [
+                    'success' => false,
+                    'message' => "Property {$data['name']} not found."
+                ];
+            }
+            if (!$this->propertyService->updateProperty($property, $data)) {
+                return [
+                    'success' => false,
+                    'message' => "Failed to update property {$data['name']}."
                 ];
             }
             return [

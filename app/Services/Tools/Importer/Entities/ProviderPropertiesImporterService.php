@@ -6,6 +6,7 @@ use App\Enums\Import\ImportAction;
 use App\Enums\Import\ImportConfig;
 use App\Enums\Import\ImportMappingType;
 use App\Enums\Import\ImportType;
+use App\Models\Property;
 use App\Models\Provider;
 use App\Models\ProviderProperty;
 use App\Models\S;
@@ -19,9 +20,9 @@ class ProviderPropertiesImporterService extends ImporterBase
 {
 
     public function __construct(
-        private ProviderService $providerService,
+        private ProviderService         $providerService,
         private PropertyImporterService $propertyImporterService,
-        protected AccessControlService $accessControlService
+        protected AccessControlService  $accessControlService
     )
     {
         parent::__construct($accessControlService, new ProviderProperty());
@@ -53,7 +54,7 @@ class ProviderPropertiesImporterService extends ImporterBase
         ];
     }
 
-    public function import(ImportAction $action, array $data, bool $withChildren): array
+    private function findProvider(array $data): array
     {
         if (!empty($data['provider'])) {
             $provider = $data['provider'];
@@ -71,7 +72,37 @@ class ProviderPropertiesImporterService extends ImporterBase
                 'message' => "Provider not found for provider id: {$data['provider_id']} property: {$data['name']}"
             ];
         }
+        return [
+            'success' => true,
+            'provider' => $provider
+        ];
+    }
+    private function saveProviderProperty(array $data): array{
+        $provider = $this->findProvider($data);
+        if (!$provider['success']) {
+            return $provider;
+        }
+        $provider = $provider['provider'];
 
+        $property = $this->findProperty($provider, $data);
+        if (!$property['success']) {
+            return $property;
+        }
+        $property = $property['property'];
+
+        if (!$this->providerService->createProviderProperty($provider, $property, $data['pivot'])) {
+            return [
+                'success' => false,
+                'message' => "Failed to create provider property: {$data['name']} for provider {$provider->name}."
+            ];
+        }
+        return [
+            'success' => true,
+            'message' => "Provider property: {$data['name']} for provider {$provider->name} imported successfully."
+        ];
+    }
+    private function findProperty(Provider $provider, array $data): array
+    {
         if (empty($data['name'])) {
             return [
                 'success' => false,
@@ -91,29 +122,54 @@ class ProviderPropertiesImporterService extends ImporterBase
         $property = $this->propertyImporterService->getPropertyService()->getPropertyRepository()->findOne();
         if (!$property instanceof Model) {
             $property = $this->propertyImporterService->import(
-                $action, $data, false);
+                ImportAction::OVERWRITE,
+                $data,
+                false
+            );
             if (!$property['success']) {
                 return $property;
             }
             $property = $this->propertyImporterService->getPropertyService()->getPropertyRepository()->getModel();
         }
-        if (!$this->providerService->createProviderProperty($provider, $property, $data['pivot'])) {
-            return [
-                'success' => false,
-                'message' => "Failed to create provider property: {$data['name']} for provider {$provider->name}."
-            ];
-        }
         return [
             'success' => true,
-            'message' => "Provider property: {$data['name']} for provider {$provider->name} imported successfully."
+            'property' => $property
         ];
     }
 
-    public function importSelfNoChildren(ImportAction $action, array $map, array $data): array {
+    protected function overwrite(array $data, bool $withChildren): array
+    {
+        try {
+            return $this->saveProviderProperty($data);
+        } catch (\Exception $e) {
+            return [
+                'success' => false,
+                'data' => $data,
+                'message' => $e->getMessage()
+            ];
+        }
+    }
+
+    protected function create(array $data, bool $withChildren): array
+    {
+        try {
+            return $this->saveProviderProperty($data);
+        } catch (\Exception $e) {
+            return [
+                'success' => false,
+                'data' => $data,
+                'message' => $e->getMessage()
+            ];
+        }
+    }
+
+    public function importSelfNoChildren(ImportAction $action, array $map, array $data): array
+    {
         return $this->importSelf($action, $map, $data, false);
     }
 
-    public function importSelfWithChildren(ImportAction $action, array $map, array $data): array {
+    public function importSelfWithChildren(ImportAction $action, array $map, array $data): array
+    {
         return $this->importSelf($action, $map, $data, true);
     }
 
@@ -142,10 +198,12 @@ class ProviderPropertiesImporterService extends ImporterBase
         ];
     }
 
-    public function parseEntity(array $entity): array {
+    public function parseEntity(array $entity): array
+    {
         $entity['import_type'] = $this->getConfigItem(ImportConfig::NAME);
         return $entity;
     }
+
     public function parseEntityBatch(array $data): array
     {
         return array_map(function (array $providerData) {

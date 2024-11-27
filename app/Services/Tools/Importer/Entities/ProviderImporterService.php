@@ -62,9 +62,74 @@ class ProviderImporterService extends ImporterBase
         ];
     }
 
-    public function import(ImportAction $action, array $data, bool $withChildren): array
+    private function importChildren(ImportAction $action, Provider $provider, array $data)
     {
-        dd($action);
+        $response = [];
+        if (
+            !empty($data['srs']) &&
+            is_array($data['srs'])
+        ) {
+            $response = array_merge(
+                $response,
+                $this->srImporterService->batchImport(
+                    $action,
+                    array_map(function ($sr) use ($provider) {
+                        $sr['provider_id'] = $provider->id;
+                        return $sr;
+                    }, $data['srs']),
+                    true
+                )
+            );
+        }
+        if (
+            !empty($data['properties']) &&
+            is_array($data['properties'])
+        ) {
+            $response = array_merge(
+                $response,
+                $this->providerPropertiesImporterService->batchImport(
+                    $action,
+                    array_map(function ($property) use ($provider) {
+                        $property['provider_id'] = $provider->id;
+                        return $property;
+                    }, $data['properties']),
+                    true
+                )
+            );
+        }
+        if (
+            !empty($data['provider_rate_limit']) &&
+            is_array($data['provider_rate_limit'])
+        ) {
+            $data['provider_rate_limit']['provider'] = $provider;
+            $data['provider_rate_limit']['provider_id'] = $provider->id;
+            $response[] = $this->providerRateLimitImporterService->import(
+                $action,
+                $data['provider_rate_limit'],
+                true
+            );
+        }
+        if (
+            !empty($data['categories']) &&
+            is_array($data['categories'])
+        ) {
+            $response = array_merge(
+                $response,
+                $this->categoryImporterService->batchImport(
+                    $action,
+                    array_map(function ($category) use ($provider) {
+                        $category['provider_id'] = $provider->id;
+                        return $category;
+                    }, $data['categories']),
+                    true
+                )
+            );
+        }
+        return $response;
+    }
+
+    protected function create(array $data, bool $withChildren): array
+    {
         try {
             $checkProvider = $this->providerService->getProviderRepository()->findUserModelQuery(
                 new Provider(),
@@ -72,12 +137,11 @@ class ProviderImporterService extends ImporterBase
                 [['name', '=', $data['name']]],
                 false
             );
-            if ($checkProvider->first() instanceof Provider) {
-                $data['label'] = $data['name'] = $this->providerService->getProviderRepository()->buildCloneEntityStr(
-                    $checkProvider,
-                    'name',
-                    $data['name']
-                );
+            if (!$checkProvider->first() instanceof Provider) {
+                return [
+                    'success' => false,
+                    'message' => "Provider {$data['name']} not found."
+                ];
             }
             if (!$this->providerService->createProvider($this->getUser(), $data)) {
                 return [
@@ -85,56 +149,17 @@ class ProviderImporterService extends ImporterBase
                     'message' => "Failed to create provider {$data['name']}."
                 ];
             }
-            $response = [];
-            $data['provider'] = $this->providerService->getProviderRepository()->getModel();
-            if (
-                !empty($data['srs']) &&
-                is_array($data['srs'])
-            ) {
-                $response = array_merge(
-                    $response,
-                    $this->srImporterService->batchImport(
-                        $action,
-                        $data['srs'],
-                        $withChildren
-                    )
+            if ($withChildren) {
+                $response = $this->importChildren(
+                    ImportAction::CREATE,
+                    $this->providerService->getProviderRepository()->getModel(),
+                    $data
                 );
-            }
-            if (
-                !empty($data['properties']) &&
-                is_array($data['properties'])
-            ) {
-                $response = array_merge(
-                    $response,
-                    $this->providerPropertiesImporterService->batchImport(
-                        $action,
-                        $data['properties'],
-                        $withChildren
-                    )
-                );
-            }
-            if (
-                !empty($data['provider_rate_limit']) &&
-                is_array($data['provider_rate_limit'])
-            ) {
-                $response[] = $this->providerRateLimitImporterService->import(
-                    $action,
-                    $data['provider_rate_limit'],
-                    $withChildren
-                );
-            }
-            if (
-                !empty($data['categories']) &&
-                is_array($data['categories'])
-            ) {
-                $response = array_merge(
-                    $response,
-                    $this->categoryImporterService->batchImport(
-                        $action,
-                        $data['categories'],
-                        $withChildren
-                    )
-                );
+            } else {
+                $response = [
+                    'success' => true,
+                    'message' => "Provider {$data['name']} imported successfully. No children imported."
+                ];
             }
             return [
                 'success' => true,
@@ -148,6 +173,53 @@ class ProviderImporterService extends ImporterBase
             ];
         }
     }
+
+    protected function overwrite(array $data, bool $withChildren): array
+    {
+        try {
+            $checkProvider = $this->providerService->getProviderRepository()->findUserModelQuery(
+                new Provider(),
+                $this->getUser(),
+                [['name', '=', $data['name']]],
+                false
+            );
+            if (!$checkProvider->first() instanceof Provider) {
+                return [
+                    'success' => false,
+                    'message' => "Provider {$data['name']} not found."
+                ];
+            }
+            if (!$this->providerService->updateProvider($this->getUser(), $checkProvider,  $data)) {
+                return [
+                    'success' => false,
+                    'message' => "Failed to create provider {$data['name']}."
+                ];
+            }
+            if ($withChildren) {
+                $response = $this->importChildren(
+                    ImportAction::OVERWRITE,
+                    $this->providerService->getProviderRepository()->getModel(),
+                    $data
+                );
+            } else {
+                $response = [
+                    'success' => true,
+                    'message' => "Provider {$data['name']} imported successfully. No children imported."
+                ];
+            }
+            return [
+                'success' => true,
+                'data' => $response,
+            ];
+        } catch (\Exception $e) {
+            return [
+                'success' => false,
+                'data' => $data,
+                'error' => $e->getMessage()
+            ];
+        }
+    }
+
 
     public function importSelfNoChildren(ImportAction $action, array $map, array $data): array
     {

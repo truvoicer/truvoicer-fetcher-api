@@ -31,7 +31,6 @@ abstract class ImporterBase
     abstract protected function setConfig(): void;
     abstract protected function setMappings(): void;
 
-    abstract public function import(ImportAction $action, array $data, bool $withChildren): array;
 
     abstract public function importSelfNoChildren(ImportAction $action, array $map, array $data): array;
     abstract public function importSelfWithChildren(ImportAction $action, array $map, array $data): array;
@@ -47,6 +46,19 @@ abstract class ImporterBase
     abstract public function parseEntity(array $entity): array;
 
     abstract public function parseEntityBatch(array $data): array;
+
+    abstract protected function overwrite(array $data, bool $withChildren): array;
+    abstract protected function create(array $data, bool $withChildren): array;
+
+    public function import(ImportAction $action, array $data, bool $withChildren): array
+    {
+        switch ($action) {
+            case ImportAction::CREATE:
+                return $this->create($data, $withChildren);
+            case ImportAction::OVERWRITE:
+                return $this->overwrite($data, $withChildren);
+        }
+    }
 
     protected function batchImport(ImportAction $action, array $data, bool $withChildren): array
     {

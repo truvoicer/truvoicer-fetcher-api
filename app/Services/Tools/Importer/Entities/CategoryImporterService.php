@@ -10,6 +10,7 @@ use App\Models\Category;
 use App\Services\Category\CategoryService;
 use App\Services\Permission\AccessControlService;
 use App\Services\Permission\PermissionService;
+use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 
 class CategoryImporterService extends ImporterBase
 {
@@ -48,7 +49,7 @@ class CategoryImporterService extends ImporterBase
         ];
     }
 
-    private function createCategory(array $data): array
+    protected function create(array $data, bool $withChildren): array
     {
         try {
             $this->categoryService->createCategory(
@@ -68,16 +69,38 @@ class CategoryImporterService extends ImporterBase
         }
     }
 
-    private function overwriteCategory(array $data): array
+    protected function overwrite(array $data, bool $withChildren): array
     {
         try {
-            $this->categoryService->createCategory(
+            $checkCategory = $this->categoryService->getUserCategoryRepository()->findUserModelBy(
+                new Category(),
                 $this->getUser(),
-                $data
+                [
+                    ['name', '=', $data['name']]
+                ],
+                false
             );
+
+            if (!$checkCategory instanceof Category) {
+                return [
+                    'success' => false,
+                    'message' => "Category {$data['name']} not found."
+                ];
+            }
+            if (
+                !$this->categoryService->updateCategory(
+                    $checkCategory,
+                    $data
+                )
+            ) {
+                return [
+                    'success' => false,
+                    'message' => "Failed to update category {$data['name']}."
+                ];
+            }
             return [
                 'success' => true,
-                'message' => $this->categoryService->getCategoryRepository()->getModel()
+                'message' => "Category {$data['name']} updated successfully."
             ];
         } catch (\Exception $e) {
             return [
@@ -88,21 +111,14 @@ class CategoryImporterService extends ImporterBase
         }
     }
 
-    public function import(ImportAction $action, array $data, bool $withChildren): array
-    {
-        switch ($action) {
-            case ImportAction::CREATE:
-                return $this->createCategory($data);
-            case ImportAction::OVERWRITE:
-                return $this->overwriteCategory($data);
-        }
-    }
 
-    public function importSelfNoChildren(ImportAction $action, array $map, array $data): array {
+    public function importSelfNoChildren(ImportAction $action, array $map, array $data): array
+    {
         return $this->importSelf($action, $map, $data, false);
     }
 
-    public function importSelfWithChildren(ImportAction $action, array $map, array $data): array {
+    public function importSelfWithChildren(ImportAction $action, array $map, array $data): array
+    {
         return $this->importSelf($action, $map, $data, true);
     }
 
