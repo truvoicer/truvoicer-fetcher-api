@@ -26,6 +26,7 @@ class ProviderPropertiesImporterService extends ImporterBase
     )
     {
         parent::__construct($accessControlService, new ProviderProperty());
+        $this->providerService->setThrowException(false);
     }
 
     protected function setConfig(): void
@@ -90,7 +91,7 @@ class ProviderPropertiesImporterService extends ImporterBase
         }
         $property = $property['property'];
 
-        if (!$this->providerService->createProviderProperty($provider, $property, $data['pivot'])) {
+        if (!$this->providerService->createProviderProperty($provider, $property, $data['pivot'], false)) {
             return [
                 'success' => false,
                 'message' => "Failed to create provider property: {$data['name']} for provider {$provider->name}."
@@ -103,6 +104,7 @@ class ProviderPropertiesImporterService extends ImporterBase
     }
     private function findProperty(Provider $provider, array $data): array
     {
+        $this->propertyImporterService->setUser($this->getUser());
         if (empty($data['name'])) {
             return [
                 'success' => false,

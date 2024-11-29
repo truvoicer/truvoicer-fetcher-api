@@ -111,7 +111,10 @@ class SrService extends BaseService
     public function createServiceRequest(Provider $provider, array $data, ?bool $validateConfig = true)
     {
         if (empty($data["label"])) {
-            throw new BadRequestHttpException("Service request label is not set.");
+            if ($this->throwException) {
+                throw new BadRequestHttpException("Service request label is not set.");
+            }
+            return false;
         }
         if (empty($data["name"])) {
             $data['name'] = UtilHelpers::labelToName($data['label'], false, '-');

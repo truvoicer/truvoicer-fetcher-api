@@ -28,6 +28,7 @@ class ProviderImporterService extends ImporterBase
     {
         parent::__construct($accessControlService, new Provider());
         $this->srRepository = new SrRepository();
+        $this->providerService->setThrowException(false);
     }
 
     protected function setConfig(): void
@@ -64,6 +65,9 @@ class ProviderImporterService extends ImporterBase
 
     private function importChildren(ImportAction $action, Provider $provider, array $data)
     {
+        $this->providerPropertiesImporterService->setUser($this->getUser());
+        $this->providerRateLimitImporterService->setUser($this->getUser());
+        $this->categoryImporterService->setUser($this->getUser());
         $response = [];
         if (
             !empty($data['srs']) &&
@@ -138,10 +142,11 @@ class ProviderImporterService extends ImporterBase
                 false
             );
             if (!$checkProvider->first() instanceof Provider) {
-                return [
-                    'success' => false,
-                    'message' => "Provider {$data['name']} not found."
-                ];
+                $data['label'] = $data['name'] = $this->providerService->getProviderRepository()->buildCloneEntityStr(
+                    $checkProvider,
+                    'name',
+                    $data['name']
+                );
             }
             if (!$this->providerService->createProvider($this->getUser(), $data)) {
                 return [
@@ -192,7 +197,7 @@ class ProviderImporterService extends ImporterBase
             if (!$this->providerService->updateProvider($this->getUser(), $checkProvider,  $data)) {
                 return [
                     'success' => false,
-                    'message' => "Failed to create provider {$data['name']}."
+                    'message' => "Failed to update provider {$data['name']}."
                 ];
             }
             if ($withChildren) {
@@ -219,7 +224,6 @@ class ProviderImporterService extends ImporterBase
             ];
         }
     }
-
 
     public function importSelfNoChildren(ImportAction $action, array $map, array $data): array
     {

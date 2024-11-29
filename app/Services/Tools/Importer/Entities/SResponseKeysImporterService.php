@@ -22,12 +22,14 @@ class SResponseKeysImporterService extends ImporterBase
 {
 
     public function __construct(
-        private ApiService                  $apiService,
-        private SResponseKeysService        $sResponseKeysService,
-        protected AccessControlService       $accessControlService
+        private ApiService             $apiService,
+        private SResponseKeysService   $sResponseKeysService,
+        protected AccessControlService $accessControlService
     )
     {
         parent::__construct($accessControlService, new SResponseKey());
+        $this->apiService->setThrowException(false);
+        $this->sResponseKeysService->setThrowException(false);
     }
 
     protected function setConfig(): void
@@ -62,7 +64,92 @@ class SResponseKeysImporterService extends ImporterBase
         ];
     }
 
-    public function import(ImportAction $action, array $data, bool $withChildren): array
+    protected function overwrite(array $data, bool $withChildren): array
+    {
+        try {
+            $service = $this->findService($data, $withChildren);
+            if (!$service['success']) {
+                return $service;
+            }
+
+            $service = $service['service'];
+            $responseKey = $this->sResponseKeysService->getServiceResponseKeyByName(
+                $service,
+                $data['name']
+            );
+            if (!$responseKey) {
+                return [
+                    'success' => false,
+                    'message' => "Service response key ({$data['name']}) not found for Sr {$service->name}."
+                ];
+            }
+            if (
+                !$this->sResponseKeysService->updateServiceResponseKeys(
+                    $responseKey,
+                    $data
+                )
+            ) {
+                return [
+                    'success' => false,
+                    'message' => "Failed to update service response key ({$data['name']}) for Sr {$service->name}."
+                ];
+            }
+            return [
+                'success' => true,
+                'message' => "Service response key({$data['name']}) for Sr {$service->name} imported successfully."
+            ];
+        } catch (\Exception $e) {
+            return [
+                'success' => false,
+                'data' => $data,
+                'message' => $e->getMessage()
+            ];
+        }
+    }
+
+    protected function create(array $data, bool $withChildren): array
+    {
+        try {
+            $service = $this->findService($data, $withChildren);
+            if (!$service['success']) {
+                return $service;
+            }
+            $service = $service['service'];
+            $responseKey = $this->sResponseKeysService->getServiceResponseKeyByName(
+                $service,
+                $data['name']
+            );
+            if ($responseKey) {
+                return [
+                    'success' => false,
+                    'message' => "Service response key ({$data['name']}) already exists for Sr {$service->name}."
+                ];
+            }
+            if (
+                !$this->sResponseKeysService->createServiceResponseKeys(
+                    $service,
+                    $data
+                )
+            ) {
+                return [
+                    'success' => false,
+                    'message' => "Failed to create service response key ({$data['name']}) for Sr {$service->name}."
+                ];
+            }
+            return [
+                'success' => true,
+                'message' => "Service response key({$data['name']}) for Sr {$service->name} imported successfully."
+            ];
+        } catch (\Exception $e) {
+            return [
+                'success' => false,
+                'data' => $data,
+                'message' => $e->getMessage()
+            ];
+        }
+    }
+
+    public function findService(array $data): array
     {
         if (!empty($data['service'])) {
             $service = $data['service'];
@@ -71,30 +158,18 @@ class SResponseKeysImporterService extends ImporterBase
         } else {
             return [
                 'success' => false,
-                'message' => "Service is required."
+                'message' => "Service is required for response key {$data['name']}."
             ];
         }
         if (!$service instanceof S) {
             return [
                 'success' => false,
-                'message' => "Service not found."
-            ];
-        }
-
-        if (
-            !$this->sResponseKeysService->createServiceResponseKeys(
-                $service,
-                $data
-            )
-        ) {
-            return [
-                'success' => false,
-                'message' => "Failed to create service response key."
+                'message' => "Service not found for response key {$data['name']}"
             ];
         }
         return [
             'success' => true,
-            'message' => "Service response key({$data['name']}) for Sr {$service->name} imported successfully."
+            'service' => $service
         ];
     }
 

@@ -153,7 +153,10 @@ class CategoryService extends BaseService
     public function createCategory(User $user, array $data)
     {
         if (empty($data['label'])) {
-            throw new BadRequestHttpException("Category label is required.");
+            if ($this->throwException) {
+                throw new BadRequestHttpException("Category label is required.");
+            }
+            return false;
         }
         if (empty($data['name'])) {
             $data['name'] = UtilHelpers::labelToName($data['label'], false, '-');
@@ -164,22 +167,28 @@ class CategoryService extends BaseService
         ], false);
 
         if ($checkCategory instanceof Category) {
-            throw new BadRequestHttpException(sprintf("Category (%s) already exists.", $data['name']));
+            if ($this->throwException) {
+                throw new BadRequestHttpException(sprintf("Category (%s) already exists.", $data['name']));
+            }
+            return false;
         }
         $categoryData = $this->getCategoryObject($data);
 
         $createCategory = $this->categoryRepository->save($categoryData);
 
         if (!$createCategory) {
-            throw new BadRequestHttpException(
-                "Error creating category"
-            );
+            if ($this->throwException) {
+                throw new BadRequestHttpException(
+                    "Error creating category"
+                );
+            }
+            return false;
         }
 
-        return $this->permissionEntities->saveUserEntityPermissions(
+        return $this->permissionEntities->setThrowException($this->throwException)->saveUserEntityPermissions(
             $user,
             $this->categoryRepository->getModel(),
-            ['name' => PermissionService::PERMISSION_ADMIN]
+            ['name' => PermissionService::PERMISSION_ADMIN],
         );
     }
 

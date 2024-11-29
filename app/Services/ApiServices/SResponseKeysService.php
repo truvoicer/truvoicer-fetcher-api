@@ -128,16 +128,6 @@ class SResponseKeysService extends BaseService
         return $this->responseKeyRepository->delete();
     }
 
-    public function getRequestResponseKey(Sr $serviceRequest, SResponseKey $responseKey) {
-        $getRequestResponseKey = $this->responseKeyRepository->getRequestResponseKey($serviceRequest, $responseKey);
-        if ($getRequestResponseKey === null) {
-            return [
-                "service_response_key" => $responseKey
-            ];
-        }
-        return $getRequestResponseKey;
-    }
-
     public function getServiceResponseKeyByName(S $service, string $responseKeyName)
     {
         return $this->responseKeyRepository->getServiceResponseKeyByName($service, $responseKeyName);

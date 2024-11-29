@@ -20,6 +20,7 @@ class PropertyImporterService extends ImporterBase {
     )
     {
         parent::__construct($accessControlService, new Property());
+        $this->propertyService->setThrowException(false);
     }
 
     protected function setConfig(): void

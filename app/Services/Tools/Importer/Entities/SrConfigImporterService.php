@@ -19,13 +19,15 @@ class SrConfigImporterService extends ImporterBase
 {
 
     public function __construct(
-        private SrService $srService,
-        private SrConfigService $srConfigService,
+        private SrService               $srService,
+        private SrConfigService         $srConfigService,
         private PropertyImporterService $propertyImporterService,
-        protected AccessControlService $accessControlService
+        protected AccessControlService  $accessControlService
     )
     {
         parent::__construct($accessControlService, new SrConfig());
+        $this->srService->setThrowException(false);
+        $this->srConfigService->setThrowException(false);
     }
 
     protected function setConfig(): void
@@ -54,55 +56,38 @@ class SrConfigImporterService extends ImporterBase
         ];
     }
 
-    public function import(ImportAction $action, array $data, bool $withChildren): array
+    protected function overwrite(array $data, bool $withChildren): array
     {
-        if (!empty($data['sr'])) {
-            $sr = $data['sr'];
-        } elseif (!empty($data['sr_id'])) {
-            $sr = $this->srService->getServiceRequestById((int)$data['sr_id']);
-        } else {
-            return [
-                'success' => false,
-                'message' => "Sr is required."
-            ];
-        }
-        if (!$sr instanceof Sr) {
-            return [
-                'success' => false,
-                'message' => "Sr not found."
-            ];
-        }
-        if (empty($data['property'])) {
-            return [
-                'success' => false,
-                'message' => "Property is required."
-            ];
-        }
-        $this->propertyImporterService->getPropertyService()->getPropertyRepository()->addWhere(
-            'name',
-            $data['property']['name']
-        );
-        $property = $this->propertyImporterService->getPropertyService()->getPropertyRepository()->findOne();
-        if (!$property instanceof Model) {
-            $property = $this->propertyImporterService->import(
-                $action, $data['property'], false);
-            if (!$property['success']) {
-                return $property;
-            }
-            $property = $this->propertyImporterService->getPropertyService()->getPropertyRepository()->getModel();
-        }
+        $this->propertyImporterService->setUser($this->getUser());
         try {
+            $sr = $this->findSr($data);
+            if (!$sr['success']) {
+                return $sr;
+            }
 
-        if (!$this->srConfigService->saveRequestConfig($sr, $property, $data)) {
+            $sr = $sr['sr'];
+            $property = $this->findProperty($sr, $data);
+            if (!$property['success']) {
+                $property = $this->propertyImporterService->import(
+                    ImportAction::CREATE, $data['property'], $withChildren);
+                if (!$property['success']) {
+                    return $property;
+                }
+                $property = $this->propertyImporterService->getPropertyService()->getPropertyRepository()->getModel();
+            } else {
+                $property = $property['property'];
+            }
+
+            if (!$this->srConfigService->saveRequestConfig($sr, $property, $data)) {
+                return [
+                    'success' => false,
+                    'message' => "Failed to create sr config for Sr {$sr->name}"
+                ];
+            }
             return [
-                'success' => false,
-                'message' => "Failed to create sr config for Sr {$sr->name}"
+                'success' => true,
+                'message' => "Sr Config for Sr {$sr->name} imported successfully."
             ];
-        }
-        return [
-            'success' => true,
-            'message' => "Sr Config for Sr {$sr->name} imported successfully."
-        ];
         } catch (\Exception $e) {
             return [
                 'success' => false,
@@ -111,11 +96,97 @@ class SrConfigImporterService extends ImporterBase
         }
     }
 
-    public function importSelfNoChildren(ImportAction $action, array $map, array $data): array {
+    protected function create(array $data, bool $withChildren): array
+    {
+        try {
+            $sr = $this->findSr($data);
+            if (!$sr['success']) {
+                return $sr;
+            }
+            $sr = $sr['sr'];
+            $property = $this->findProperty($sr, $data);
+            if (!$property['success']) {
+                return [
+                    'success' => false,
+                    'message' => "Failed to create sr config for Sr {$sr->name}"
+                ];
+            }
+
+            if (!$this->srConfigService->saveRequestConfig($sr, $property, $data)) {
+                return [
+                    'success' => false,
+                    'message' => "Failed to create sr config for Sr {$sr->name}"
+                ];
+            }
+            return [
+                'success' => true,
+                'message' => "Sr Config for Sr {$sr->name} imported successfully."
+            ];
+        } catch (\Exception $e) {
+            return [
+                'success' => false,
+                'message' => $e->getMessage()
+            ];
+        }
+    }
+
+
+    public function findSr(array $data): array
+    {
+        if (!empty($data['sr'])) {
+            $sr = $data['sr'];
+        } elseif (!empty($data['sr_id'])) {
+            $sr = $this->srService->getServiceRequestById((int)$data['sr_id']);
+        } else {
+            return [
+                'success' => false,
+                'message' => "Sr is required for sr config."
+            ];
+        }
+        if (!$sr instanceof Sr) {
+            return [
+                'success' => false,
+                'message' => "Sr not found for sr config."
+            ];
+        }
+        return [
+            'success' => true,
+            'sr' => $sr
+        ];
+    }
+    public function findProperty(Sr $sr, array $data): array
+    {
+        if (empty($data['property'])) {
+            return [
+                'success' => false,
+                'message' => "Sr config property is required for sr id: {$sr->id}."
+            ];
+        }
+        $this->propertyImporterService->getPropertyService()->getPropertyRepository()->addWhere(
+            'name',
+            $data['property']['name']
+        );
+        $property = $this->propertyImporterService->getPropertyService()->getPropertyRepository()->findOne();
+        if (!$property instanceof Model) {
+            return [
+                'success' => false,
+                'message' => "Sr config property not found for property name: {$data['property']['name']}"
+            ];
+        }
+        return [
+            'success' => true,
+            'property' => $property
+        ];
+    }
+
+
+    public function importSelfNoChildren(ImportAction $action, array $map, array $data): array
+    {
         return $this->importSelf($action, $map, $data, false);
     }
 
-    public function importSelfWithChildren(ImportAction $action, array $map, array $data): array {
+    public function importSelfWithChildren(ImportAction $action, array $map, array $data): array
+    {
         return $this->importSelf($action, $map, $data, true);
     }
 
@@ -144,10 +215,12 @@ class SrConfigImporterService extends ImporterBase
         ];
     }
 
-    public function parseEntity(array $entity): array {
+    public function parseEntity(array $entity): array
+    {
         $entity['import_type'] = $this->getConfigItem(ImportConfig::NAME);
         return $entity;
     }
+
     public function parseEntityBatch(array $data): array
     {
         return array_map(function (array $providerData) {

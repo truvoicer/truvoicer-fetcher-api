@@ -157,7 +157,10 @@ class SrConfigService extends BaseService
     public function saveRequestConfig(Sr $serviceRequest, Property $property, array $data)
     {
         if (empty($data['value_type'])) {
-            throw new BadRequestHttpException("Value type is required.");
+            if ($this->throwException) {
+                throw new BadRequestHttpException("Value type is required.");
+            }
+            return false;
         }
         return match ($data['value_type']) {
             'text', 'choice' => $this->requestConfigRepo->saveSrConfigProperty($serviceRequest, $property, [
@@ -168,7 +171,7 @@ class SrConfigService extends BaseService
                 'array_value' => $data['array_value'],
                 'value' => null,
             ]),
-            default => throw new BadRequestHttpException("Invalid value type."),
+            default => ($this->throwException)? throw new BadRequestHttpException("Invalid value type.") : false
         };
     }
 
@@ -186,7 +189,10 @@ class SrConfigService extends BaseService
     public function deleteBatch(array $ids)
     {
         if (!count($ids)) {
-            throw new BadRequestHttpException("No service request config ids provided.");
+            if ($this->throwException) {
+                throw new BadRequestHttpException("No service request config ids provided.");
+            }
+            return false;
         }
         return $this->requestConfigRepo->deleteBatch($ids);
     }

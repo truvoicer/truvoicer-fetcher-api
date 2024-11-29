@@ -23,6 +23,8 @@ class SrScheduleImporterService extends ImporterBase
     )
     {
         parent::__construct($accessControlService, new S());
+        $this->srService->setThrowException(false);
+        $this->srScheduleService->setThrowException(false);
     }
 
     protected function setConfig(): void
@@ -51,24 +53,18 @@ class SrScheduleImporterService extends ImporterBase
         ];
     }
 
-    public function import(ImportAction $action, array $data, bool $withChildren): array
+    protected function overwrite(array $data, bool $withChildren): array
     {
-        if (!empty($data['sr'])) {
-            $sr = $data['sr'];
-        } elseif (!empty($data['sr_id'])) {
-            $sr = $this->srService->getServiceRequestById((int)$data['sr_id']);
-        } else {
-            return [
-                'success' => false,
-                'message' => "Sr is required."
-            ];
+        return $this->create($data, $withChildren);
+    }
+
+    protected function create(array $data, bool $withChildren): array
+    {
+        $sr = $this->findSr($data);
+        if (!$sr['success']) {
+            return $sr;
         }
-        if (!$sr instanceof Sr) {
-            return [
-                'success' => false,
-                'message' => "Sr not found."
-            ];
-        }
+        $sr = $sr['sr'];
         if (!$this->srScheduleService->createSrSchedule($this->getUser(), $sr, $data)) {
             return [
                 'success' => false,
@@ -81,6 +77,29 @@ class SrScheduleImporterService extends ImporterBase
         ];
     }
 
+    public function findSr(array $data): array
+    {
+        if (!empty($data['sr'])) {
+            $sr = $data['sr'];
+        } elseif (!empty($data['sr_id'])) {
+            $sr = $this->srService->getServiceRequestById((int)$data['sr_id']);
+        } else {
+            return [
+                'success' => false,
+                'message' => "Sr is required for sr schedule."
+            ];
+        }
+        if (!$sr instanceof Sr) {
+            return [
+                'success' => false,
+                'message' => "Sr not found for sr schedule."
+            ];
+        }
+        return [
+            'success' => true,
+            'sr' => $sr
+        ];
+    }
     public function importSelfNoChildren(ImportAction $action, array $map, array $data): array {
         return $this->importSelf($action, $map, $data, false);
     }

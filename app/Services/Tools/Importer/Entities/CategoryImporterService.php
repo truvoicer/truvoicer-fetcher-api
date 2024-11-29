@@ -21,6 +21,7 @@ class CategoryImporterService extends ImporterBase
     )
     {
         parent::__construct($accessControlService, new Category());
+        $this->categoryService->setThrowException(false);
     }
 
     protected function setConfig(): void
@@ -52,6 +53,21 @@ class CategoryImporterService extends ImporterBase
     protected function create(array $data, bool $withChildren): array
     {
         try {
+            $checkCategory = $this->categoryService->getUserCategoryRepository()->findUserModelBy(
+                new Category(),
+                $this->getUser(),
+                [
+                    ['name', '=', $data['name']]
+                ],
+                false
+            );
+
+            if ($checkCategory instanceof Category) {
+                return [
+                    'success' => false,
+                    'message' => "Category {$data['name']} already exists."
+                ];
+            }
             $this->categoryService->createCategory(
                 $this->getUser(),
                 $data
@@ -110,7 +126,6 @@ class CategoryImporterService extends ImporterBase
             ];
         }
     }
-
 
     public function importSelfNoChildren(ImportAction $action, array $map, array $data): array
     {

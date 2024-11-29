@@ -48,7 +48,17 @@ abstract class ImporterBase
     abstract public function parseEntityBatch(array $data): array;
 
     abstract protected function overwrite(array $data, bool $withChildren): array;
+
     abstract protected function create(array $data, bool $withChildren): array;
+
+    protected function overwriteOrCreate(array $data, bool $withChildren): array
+    {
+        $overwrite = $this->overwrite($data, $withChildren);
+        if ($overwrite['success']) {
+            return $overwrite;
+        }
+        return $this->create($data, $withChildren);
+    }
 
     public function import(ImportAction $action, array $data, bool $withChildren): array
     {
@@ -57,6 +67,8 @@ abstract class ImporterBase
                 return $this->create($data, $withChildren);
             case ImportAction::OVERWRITE:
                 return $this->overwrite($data, $withChildren);
+            case ImportAction::OVERWRITE_OR_CREATE:
+                return $this->overwriteOrCreate($data, $withChildren);
         }
     }
 

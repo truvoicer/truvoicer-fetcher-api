@@ -200,26 +200,25 @@ class ProviderService extends BaseService
     public function createProvider(User $user, array $data)
     {
         if (empty($data['label'])) {
-            throw new BadRequestHttpException("Provider label is required.");
+            if ($this->throwException) {
+                throw new BadRequestHttpException("Provider label is required.");
+            }
+            return false;
         }
         if (empty($data['name'])) {
             $data['name'] = UtilHelpers::labelToName($data['label'], false, '-');
         }
 
-        $checkProvider = $this->providerRepository->findUserModelBy(new Provider(), $user, [
-            ['name', '=', $data['name']]
-        ], false);
-
-        if ($checkProvider instanceof Provider) {
-            throw new BadRequestHttpException(sprintf("Provider (%s) already exists.", $data['name']));
-        }
         $providerData = $this->setProviderObject($data);
 
         if (!$this->providerRepository->createProvider($providerData)) {
-            throw new BadRequestHttpException(sprintf("Error creating provider: %s", $data['name']));
+            if ($this->throwException) {
+                throw new BadRequestHttpException(sprintf("Error creating provider: %s", $data['name']));
+            }
+            return false;
         }
 
-        if (!$this->permissionEntities->saveUserEntityPermissions(
+        if (!$this->permissionEntities->setThrowException($this->throwException)->saveUserEntityPermissions(
             $user,
             $this->providerRepository->getModel(),
             ['name' => PermissionService::PERMISSION_ADMIN]
@@ -227,7 +226,7 @@ class ProviderService extends BaseService
             throw new BadRequestHttpException("Error creating provider permissions.");
         }
 
-        return $this->permissionEntities->saveRelatedEntity(
+        return $this->permissionEntities->setThrowException($this->throwException)->saveRelatedEntity(
             $this->providerRepository->getModel(),
             Category::class,
             (!empty($providerData['categories']) && is_array($providerData['categories'])) ? $providerData['categories'] : []
@@ -248,15 +247,21 @@ class ProviderService extends BaseService
             ], false);
 
             if ($checkProvider instanceof Provider) {
-                throw new BadRequestHttpException(sprintf("Provider (%s) already exists.", $providerData['name']));
+                if ($this->throwException) {
+                    throw new BadRequestHttpException(sprintf("Provider (%s) already exists.", $providerData['name']));
+                }
+                return false;
             }
         }
 
         $update = $this->providerRepository->updateProvider($provider, $providerData);
         if (!$update) {
-            throw new BadRequestHttpException(sprintf("Error updating provider: %s", $providerData['name']));
+            if ($this->throwException) {
+                throw new BadRequestHttpException(sprintf("Error updating provider: %s", $providerData['name']));
+            }
+            return false;
         }
-        return $this->permissionEntities->saveRelatedEntity(
+        return $this->permissionEntities->setThrowException($this->throwException)->saveRelatedEntity(
             $provider,
             Category::class,
             (!empty($providerData['categories']) && is_array($providerData['categories'])) ? $providerData['categories'] : []
@@ -266,7 +271,10 @@ class ProviderService extends BaseService
     public function createProviderProperty(Provider $provider, Property $property, array $data)
     {
         if (empty($data['value_type'])) {
-            throw new BadRequestHttpException("Value type is required.");
+            if ($this->throwException) {
+                throw new BadRequestHttpException("Value type is required.");
+            }
+            return false;
         }
         return match ($data['value_type']) {
             DataConstants::REQUEST_CONFIG_VALUE_TYPE_TEXT,
@@ -279,7 +287,7 @@ class ProviderService extends BaseService
                 'array_value' => $data['array_value'],
                 'value' => null,
             ]),
-            default => throw new BadRequestHttpException("Invalid value type."),
+            default => ($this->throwException)? throw new BadRequestHttpException("Invalid value type.") : false,
         };
     }
 

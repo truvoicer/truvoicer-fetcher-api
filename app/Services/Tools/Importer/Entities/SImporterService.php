@@ -22,6 +22,7 @@ class SImporterService extends ImporterBase
     )
     {
         parent::__construct($accessControlService, new S());
+        $this->apiService->setThrowException(false);
     }
 
     protected function setConfig(): void
@@ -56,9 +57,57 @@ class SImporterService extends ImporterBase
         ];
     }
 
-    public function import(ImportAction $action, array $data, bool $withChildren): array
+    protected function overwrite(array $data, bool $withChildren): array
+    {
+
+        try {
+            $checkService = $this->apiService->getServiceRepository()->findUserModelBy(new S(), $this->getUser(), [
+                ['name', '=', $data['name']]
+            ], false);
+
+            if (!$checkService instanceof S) {
+                return [
+                    'success' => false,
+                    'message' => "Service {$data['name']} not found."
+                ];
+            }
+            if (
+                !$this->apiService->updateService(
+                    $checkService,
+                    $data
+                )
+            ) {
+                return [
+                    'success' => false,
+                    'message' => "Error updating service {$data['name']}."
+                ];
+            }
+            return [
+                'success' => true,
+                'message' => "Service {$data['name']} imported successfully,"
+            ];
+        } catch (\Exception $e) {
+            return [
+                'success' => false,
+                'data' => $data,
+                'error' => $e->getMessage()
+            ];
+        }
+    }
+
+    protected function create(array $data, bool $withChildren): array
     {
         try {
+            $checkService = $this->apiService->getServiceRepository()->findUserModelBy(new S(), $this->getUser(), [
+                ['name', '=', $data['name']]
+            ], false);
+
+            if ($checkService instanceof S) {
+                return [
+                    'success' => false,
+                    'message' => "Service {$data['name']} already exists."
+                ];
+            }
             if (
                 !$this->apiService->createService(
                     $this->getUser(),

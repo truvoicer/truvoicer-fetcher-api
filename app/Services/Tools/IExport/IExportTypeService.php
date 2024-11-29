@@ -148,12 +148,6 @@ class IExportTypeService extends BaseService
 
     public function runImportForType(array $contents, array $mappings)
     {
-//        [ // app/Services/Tools/IExport/IExportTypeService.php:134
-//            0 => "category"
-//          1 => "provider"
-//          2 => "service"
-//          3 => "property"
-//        ]
         return array_map(function ($item) use($mappings) {
             $getMappingsByType = $this->getMappingsByType($item["type"], $mappings);
             $filteredMappings = array_filter($getMappingsByType, function ($mapping) {

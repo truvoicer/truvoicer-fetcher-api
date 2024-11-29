@@ -47,6 +47,7 @@ class ImportService
             json_decode($getFileContents, true),
             $mappings
         );
+        dd($runImportForType);
         return array_map(function ($item) {
             if (is_array($item) && isset($item["status"]) && $item["status"] === "error") {
                 return $item;

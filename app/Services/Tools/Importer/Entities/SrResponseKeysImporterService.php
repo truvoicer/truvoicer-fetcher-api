@@ -25,6 +25,8 @@ class SrResponseKeysImporterService extends ImporterBase
     )
     {
         parent::__construct($accessControlService, new SrResponseKey());
+        $this->srService->setThrowException(false);
+        $this->srResponseKeyService->setThrowException(false);
     }
 
     protected function setConfig(): void
@@ -59,24 +61,57 @@ class SrResponseKeysImporterService extends ImporterBase
         ];
     }
 
-    public function import(ImportAction $action, array $data, bool $withChildren): array
+    protected function overwrite(array $data, bool $withChildren): array
     {
-        if (!empty($data['sr'])) {
-            $sr = $data['sr'];
-        } elseif (!empty($data['sr_id'])) {
-            $sr = $this->srService->getServiceRequestById((int)$data['sr_id']);
-        } else {
+        $sr = $this->findSr($data);
+        if (!$sr['success']) {
+            return $sr;
+        }
+        $sr = $sr['sr'];
+
+        if (empty($data['name'])) {
             return [
                 'success' => false,
-                'message' => "Sr is required."
+                'message' => "S response key name is required for sr {$sr->name}."
             ];
         }
-        if (!$sr instanceof Sr) {
+        $this->sResponseKeysImporterService->getSResponseKeyService()->getResponseKeyRepository()->addWhere(
+            'name',
+            $data['name']
+        );
+        $responseKey = $this->sResponseKeysImporterService->getSResponseKeyService()->getResponseKeyRepository()->findOne();
+        if (!$responseKey instanceof SResponseKey) {
             return [
                 'success' => false,
-                'message' => "Sr not found."
+                'message' => "S response key {$data['name']} not found for sr {$sr->name}."
             ];
         }
+        if (
+            !$this->srResponseKeyService->createSrResponseKey(
+                $this->getUser(),
+                $sr,
+                $responseKey->name,
+                $data
+            )
+        ) {
+            return [
+                'success' => false,
+                'message' => "Failed to create sr response key."
+            ];
+        }
+        return [
+            'success' => true,
+            'message' => "Sr response key({$responseKey->name}) for Sr {$sr->name} imported successfully."
+        ];
+    }
+
+    protected function create(array $data, bool $withChildren): array
+    {
+       $sr = $this->findSr($data);
+        if (!$sr['success']) {
+            return $sr;
+        }
+        $sr = $sr['sr'];
 
         if (empty($data['name'])) {
             return [
@@ -90,8 +125,10 @@ class SrResponseKeysImporterService extends ImporterBase
         );
         $responseKey = $this->sResponseKeysImporterService->getSResponseKeyService()->getResponseKeyRepository()->findOne();
         if (!$responseKey instanceof SResponseKey) {
-            $responseKey = $this->sResponseKeysImporterService->import(
-                $action,$data, false);
+            $responseKey = $this->sResponseKeysImporterService->create(
+                $data,
+                $withChildren
+            );
             if (!$responseKey['success']) {
                 return $responseKey;
             }
@@ -116,6 +153,29 @@ class SrResponseKeysImporterService extends ImporterBase
         ];
     }
 
+    public function findSr(array $data): array
+    {
+        if (!empty($data['sr'])) {
+            $sr = $data['sr'];
+        } elseif (!empty($data['sr_id'])) {
+            $sr = $this->srService->getServiceRequestById((int)$data['sr_id']);
+        } else {
+            return [
+                'success' => false,
+                'message' => "Sr is required for response key {$data['name']}."
+            ];
+        }
+        if (!$sr instanceof Sr) {
+            return [
+                'success' => false,
+                'message' => "Sr not found for response key {$data['name']}."
+            ];
+        }
+        return [
+            'success' => true,
+            'sr' => $sr
+        ];
+    }
     public function importSelfNoChildren(ImportAction $action, array $map, array $data): array
     {
         return $this->importSelf($action, $map, $data, false);

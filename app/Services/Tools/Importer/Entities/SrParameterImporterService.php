@@ -24,6 +24,8 @@ class SrParameterImporterService extends ImporterBase
     )
     {
         parent::__construct($accessControlService, new SrParameter());
+        $this->srService->setThrowException(false);
+        $this->srParametersService->setThrowException(false);
     }
 
     protected function setConfig(): void
@@ -52,7 +54,90 @@ class SrParameterImporterService extends ImporterBase
         ];
     }
 
-    public function import(ImportAction $action, array $data, bool $withChildren): array
+    protected function overwrite(array $data, bool $withChildren): array
+    {
+        try {
+            $sr = $this->findSr($data);
+            if (!$sr['success']) {
+                return $sr;
+            }
+            $sr = $sr['sr'];
+            $query = $sr->srParameter()->where('name', $data['name']);
+            $count = $query->count();
+            if (!$count) {
+                return [
+                    'success' => false,
+                    'message' => "Sr parameter for parameter {$data['name']} not found for sr {$sr->name}."
+                ];
+            }
+            if ($count === 1) {
+                $srParameter = $query->first();
+                if (!$this->srParametersService->updateRequestParameter($srParameter, $data)) {
+                    return [
+                        'success' => false,
+                        'message' => "Failed to create sr parameter {$data['name']} for sr {$sr->name}.."
+                    ];
+                } else {
+                    return [
+                        'success' => true,
+                        'message' => "Sr parameter {$data['name']} imported successfully for sr {$sr->name}."
+                    ];
+                }
+            }
+            if (!$this->srParametersService->createRequestParameter($sr, $data)) {
+                return [
+                    'success' => false,
+                    'message' => "Failed to create sr parameter {$data['name']} for sr {$sr->name}.."
+                ];
+            }
+            return [
+                'success' => true,
+                'message' => "Sr parameter {$sr->name} imported successfully for sr {$sr->name}.."
+            ];
+        } catch (\Exception $e) {
+            return [
+                'success' => false,
+                'message' => $e->getMessage(),
+                'data' => $data
+            ];
+        }
+    }
+
+    protected function create(array $data, bool $withChildren): array
+    {
+        try {
+            $sr = $this->findSr($data);
+            if (!$sr['success']) {
+                return $sr;
+            }
+            $sr = $sr['sr'];
+            $srParameter = $sr->srParameter()->where('name', $data['name'])->first();
+            if (!$srParameter) {
+                return [
+                    'success' => false,
+                    'message' => "Sr parameter {$data['name']} not found for sr {$sr->name}."
+                ];
+            }
+            if (!$this->srParametersService->createRequestParameter($sr, $data)) {
+                return [
+                    'success' => false,
+                    'message' => "Failed to create sr parameter {$data['name']} for sr {$sr->name}.."
+                ];
+            }
+            return [
+                'success' => true,
+                'message' => "Sr parameter {$data['name']} imported successfully for sr {$sr->name}.."
+            ];
+        } catch (\Exception $e) {
+            return [
+                'success' => false,
+                'message' => $e->getMessage(),
+                'data' => $data
+            ];
+        }
+    }
+
+    public function findSr(array $data): array
     {
         if (!empty($data['sr'])) {
             $sr = $data['sr'];
@@ -70,18 +155,11 @@ class SrParameterImporterService extends ImporterBase
                 'message' => "Sr not found for parameter {$data['name']}."
             ];
         }
-        if (!$this->srParametersService->createRequestParameter($sr, $data)) {
-            return [
-                'success' => false,
-                'message' => "Failed to create sr parameter for parameter {$data['name']}."
-            ];
-        }
         return [
             'success' => true,
-            'message' => "Sr parameter for parameter {$sr->name} imported successfully."
+            'sr' => $sr
         ];
     }
-
     public function importSelfNoChildren(ImportAction $action, array $map, array $data): array {
         return $this->importSelf($action, $map, $data, false);
     }

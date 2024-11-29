@@ -8,6 +8,7 @@ use App\Enums\Import\ImportMappingType;
 use App\Enums\Import\ImportType;
 use App\Models\Provider;
 use App\Models\S;
+use App\Models\Sr;
 use App\Services\ApiServices\ApiService;
 use App\Services\ApiServices\RateLimitService;
 use App\Services\ApiServices\ServiceRequests\ResponseKeys\SrResponseKeyService;
@@ -34,6 +35,8 @@ class SrImporterService extends ImporterBase
     )
     {
         parent::__construct($accessControlService, new S());
+        $this->providerService->setThrowException(false);
+        $this->srService->setThrowException(false);
     }
 
     protected function setConfig(): void
@@ -68,9 +71,90 @@ class SrImporterService extends ImporterBase
         ];
     }
 
-    public function import(ImportAction $action, array $data, bool $withChildren): array
+    protected function overwrite(array $data, bool $withChildren): array
     {
         try {
+            $provider = $this->findProvider($data);
+            if (!$provider['success']) {
+                return $provider;
+            }
+            $provider = $provider['provider'];
+            $sr = $this->srService->getRequestByName($provider, $data['name']);
+            if (!$sr instanceof Sr) {
+                return [
+                    'success' => false,
+                    'message' => "Service Request {$data['name']} not found for {$provider->name}."
+                ];
+            }
+            if (!$this->srService->updateServiceRequest($sr, $data)) {
+                return [
+                    'success' => false,
+                    'message' => "Failed to update sr {$data['name']} for {$provider->name}."
+                ];
+            }
+            if ($withChildren) {
+                return [
+                    'success' => true,
+                    'message' => "Service Request {$data['name']} update for {$provider->name}.",
+                    'data' => $this->importSrChildren(ImportAction::OVERWRITE, $sr, $data, true),
+                ];
+            }
+            return [
+                'success' => true,
+                'message' => "Service Request {$data['name']} update for {$provider->name}."
+            ];
+        } catch (\Exception $e) {
+            return [
+                'success' => false,
+                'data' => $data,
+                'message' => $e->getMessage()
+            ];
+        }
+    }
+
+    protected function create(array $data, bool $withChildren): array
+    {
+        try {
+            $provider = $this->findProvider($data);
+            if (!$provider['success']) {
+                return $provider;
+            }
+            $provider = $provider['provider'];
+            $sr = $this->srService->getRequestByName($provider, $data['name']);
+            if ($sr instanceof Sr) {
+                return [
+                    'success' => false,
+                    'message' => "Service Request {$data['name']} already exists for {$provider->name}."
+                ];
+            }
+            if (!$this->srService->createServiceRequest($provider, $data)) {
+                return [
+                    'success' => false,
+                    'message' => "Failed to create provider."
+                ];
+            }
+            if ($withChildren) {
+                return [
+                    'success' => true,
+                    'message' => "Service Request {$data['name']} created for {$provider->name}.",
+                    'data' => $this->importSrChildren(ImportAction::CREATE, $sr, $data, true),
+                ];
+            }
+            return [
+                'success' => true,
+                'message' => "Service Request {$data['name']} created for {$provider->name}."
+            ];
+        } catch (\Exception $e) {
+            return [
+                'success' => false,
+                'data' => $data,
+                'message' => $e->getMessage()
+            ];
+        }
+    }
+
+    private function findProvider(array $data)
+    {
             if (!empty($data['provider'])) {
                 $provider = $data['provider'];
             } elseif (!empty($data['pivot']['provider_id'])) {
@@ -89,19 +173,24 @@ class SrImporterService extends ImporterBase
                     'message' => "Provider not found."
                 ];
             }
-            if (!$this->srService->createServiceRequest($provider, $data)) {
-                return [
-                    'success' => false,
-                    'message' => "Failed to create provider."
-                ];
-            }
+            return [
+                'success' => true,
+                'provider' => $provider
+            ];
+    }
+
+    public function importSrChildren(ImportAction $action, Sr $sr, array $data, bool $withChildren): array
+    {
             $response = [];
-            $data['sr'] = $this->srService->getServiceRequestRepository()->getModel();
-            $data['sr_id'] = $data['sr']->id;
+            $data['sr'] = $sr;
+            $data['sr_id'] = $sr->id;
             if (
                 !empty($data['sr_rate_limit']) &&
                 is_array($data['sr_rate_limit'])
             ) {
+                $data['sr_rate_limit']['sr'] = $sr;
+                $data['sr_rate_limit']['sr_id'] = $sr->id;
+                $this->srRateLimitImporterService->setUser($this->getUser());
                 $response[] = $this->srRateLimitImporterService->import(
                     $action,
                     $data['sr_rate_limit'],
@@ -112,6 +201,9 @@ class SrImporterService extends ImporterBase
                 !empty($data['sr_schedule']) &&
                 is_array($data['sr_schedule'])
             ) {
+                $data['sr_schedule']['sr'] = $sr;
+                $data['sr_schedule']['sr_id'] = $sr->id;
+                $this->srScheduleImporterService->setUser($this->getUser());
                 $response[] = $this->srScheduleImporterService->import(
                     $action,
                     $data['sr_schedule'],
@@ -154,6 +246,9 @@ class SrImporterService extends ImporterBase
                 !empty($data['sr_config']) &&
                 is_array($data['sr_config'])
             ) {
+                $data['sr_config']['sr'] = $sr;
+                $data['sr_config']['sr_id'] = $sr->id;
+                $this->srConfigImporterService->setUser($this->getUser());
                 $response[] = $this->srConfigImporterService->import(
                     $action,
                     $data['sr_config'],
@@ -177,13 +272,6 @@ class SrImporterService extends ImporterBase
                 'success' => true,
                 'data' => $response,
             ];
-        } catch (\Exception $e) {
-            return [
-                'success' => false,
-                'data' => $data,
-                'message' => $e->getMessage()
-            ];
-        }
     }
 
     public function importSelfNoChildren(ImportAction $action, array $map, array $data): array {

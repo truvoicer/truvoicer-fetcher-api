@@ -94,7 +94,10 @@ class ApiService extends BaseService
     public function createService(User $user, array $data)
     {
         if (empty($data['label'])) {
-            throw new BadRequestHttpException("Label is required.");
+            if ($this->throwException) {
+                throw new BadRequestHttpException("Label is required.");
+            }
+            return false;
         }
         if (empty($data['name'])) {
             $data['name'] = UtilHelpers::labelToName($data['label'], false, '-');
@@ -104,13 +107,16 @@ class ApiService extends BaseService
         ], false);
 
         if ($checkService instanceof S) {
-            throw new BadRequestHttpException(sprintf("Service (%s) already exists.", $data['name']));
+            if ($this->throwException) {
+                throw new BadRequestHttpException(sprintf("Service (%s) already exists.", $data['name']));
+            }
+            return false;
         }
         $createService = $this->serviceRepository->insert($data);
         if (!$createService) {
             return false;
         }
-        $addRelations = $this->permissionEntities->saveUserEntityPermissions(
+        $addRelations = $this->permissionEntities->setThrowException($this->throwException)->saveUserEntityPermissions(
             $user,
             $this->serviceRepository->getModel(),
             ['name' => PermissionService::PERMISSION_ADMIN]
@@ -118,6 +124,7 @@ class ApiService extends BaseService
         if (!$addRelations) {
             return false;
         }
+        $this->responseKeysService->setThrowException($this->throwException);
         return $this->responseKeysService->createDefaultServiceResponseKeys($this->serviceRepository->getModel());
     }
 

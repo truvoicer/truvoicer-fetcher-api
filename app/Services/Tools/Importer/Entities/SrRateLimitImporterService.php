@@ -24,6 +24,8 @@ class SrRateLimitImporterService extends ImporterBase
     )
     {
         parent::__construct($accessControlService, new S());
+        $this->srService->setThrowException(false);
+        $this->rateLimitService->setThrowException(false);
     }
 
     protected function setConfig(): void
@@ -58,7 +60,38 @@ class SrRateLimitImporterService extends ImporterBase
         ];
     }
 
-    public function import(ImportAction $action, array $data, bool $withChildren): array
+    protected function overwrite(array $data, bool $withChildren): array
+    {
+        return $this->create($data, $withChildren);
+    }
+
+    protected function create(array $data, bool $withChildren): array
+    {
+        try {
+            $sr = $this->findSr($data);
+            if (!$sr['success']) {
+                return $sr;
+            }
+            $sr = $sr['sr'];
+            if (!$this->rateLimitService->createSrRateLimit($sr, $data)) {
+                return [
+                    'success' => false,
+                    'message' => "Failed to create sr rate limit for Sr {$sr->name}."
+                ];
+            }
+            return [
+                'success' => true,
+                'message' => "Sr rate limit for Sr {$sr->name} imported successfully."
+            ];
+        } catch (\Exception $e) {
+            return [
+                'success' => false,
+                'message' => $e->getMessage()
+            ];
+        }
+    }
+
+    public function findSr(array $data): array
     {
         if (!empty($data['sr'])) {
             $sr = $data['sr'];
@@ -67,26 +100,21 @@ class SrRateLimitImporterService extends ImporterBase
         } else {
             return [
                 'success' => false,
-                'message' => "Sr is required."
+                'message' => "Sr is required for rate limit."
             ];
         }
         if (!$sr instanceof Sr) {
             return [
                 'success' => false,
-                'message' => "Sr not found."
-            ];
-        }
-        if (!$this->rateLimitService->createSrRateLimit($sr, $data)) {
-            return [
-                'success' => false,
-                'message' => "Failed to create sr rate limit."
+                'message' => "Sr not found for rate limit."
             ];
         }
         return [
             'success' => true,
-            'message' => "Sr rate limit for Sr {$sr->name} imported successfully."
+            'sr' => $sr
         ];
     }
+
 
     public function importSelfNoChildren(ImportAction $action, array $map, array $data): array {
         return $this->importSelf($action, $map, $data, false);

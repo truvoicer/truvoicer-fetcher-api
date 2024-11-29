@@ -17,12 +17,14 @@ class ProviderRateLimitImporterService extends ImporterBase
 {
 
     public function __construct(
-        private ProviderService $providerService,
+        private ProviderService        $providerService,
         private RateLimitService       $rateLimitService,
         protected AccessControlService $accessControlService
     )
     {
         parent::__construct($accessControlService, new S());
+        $this->providerService->setThrowException(false);
+        $this->rateLimitService->setThrowException(false);
     }
 
     protected function setConfig(): void
@@ -59,49 +61,69 @@ class ProviderRateLimitImporterService extends ImporterBase
 
     protected function overwrite(array $data, bool $withChildren): array
     {
-        // TODO: Implement overwrite() method.
+        return $this->import(ImportAction::OVERWRITE, $data, $withChildren);
     }
 
     protected function create(array $data, bool $withChildren): array
     {
-        // TODO: Implement create() method.
+        return $this->import(ImportAction::CREATE, $data, $withChildren);
     }
 
     public function import(ImportAction $action, array $data, bool $withChildren): array
     {
-        if (!empty($data['provider'])) {
-            $provider = $data['provider'];
-        } elseif (!empty($data['provider_id'])) {
-            $provider = $this->providerService->getProviderById((int)$data['provider_id']);
-        } else {
+        try {
+            if (!empty($data['provider'])) {
+                $provider = $data['provider'];
+            } elseif (!empty($data['provider_id'])) {
+                $provider = $this->providerService->getProviderById((int)$data['provider_id']);
+            } else {
+                return [
+                    'success' => false,
+                    'message' => "Provider {$data['name']} is required."
+                ];
+            }
+            if (!$provider instanceof Provider) {
+                return [
+                    'success' => false,
+                    'message' => "Provider {$data['name']} not found."
+                ];
+            }
+            $rateLimit = $provider->providerRateLimit()->first();
+            if (
+                !$rateLimit &&
+                !$this->rateLimitService->createProviderRateLimit($provider, $data)
+            ) {
+                return [
+                    'success' => false,
+                    'message' => "Failed to create provider rate limit for provider {$provider->name}."
+                ];
+            }
+            if (!$this->rateLimitService->saveProviderRateLimit($rateLimit, $data)) {
+                return [
+                    'success' => false,
+                    'message' => "Failed to update provider rate limit for provider {$provider->name}."
+                ];
+            }
+            return [
+                'success' => true,
+                'message' => "Sr rate limit for provider {$provider->name} imported successfully."
+            ];
+        } catch (\Exception $e) {
             return [
                 'success' => false,
-                'message' => "Provider is required."
+                'data' => $data,
+                'message' => $e->getMessage()
             ];
         }
-        if (!$provider instanceof Provider) {
-            return [
-                'success' => false,
-                'message' => "Provider not found."
-            ];
-        }
-        if (!$this->rateLimitService->createProviderRateLimit($provider, $data)) {
-            return [
-                'success' => false,
-                'message' => "Failed to create provider rate limit."
-            ];
-        }
-        return [
-            'success' => true,
-            'message' => "Sr rate limit for provider {$provider->name} imported successfully."
-        ];
     }
 
-    public function importSelfNoChildren(ImportAction $action, array $map, array $data): array {
+    public function importSelfNoChildren(ImportAction $action, array $map, array $data): array
+    {
         return $this->importSelf($action, $map, $data, false);
     }
 
-    public function importSelfWithChildren(ImportAction $action, array $map, array $data): array {
+    public function importSelfWithChildren(ImportAction $action, array $map, array $data): array
+    {
         return $this->importSelf($action, $map, $data, true);
     }
 

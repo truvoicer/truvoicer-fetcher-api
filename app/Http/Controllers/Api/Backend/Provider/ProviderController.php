@@ -16,6 +16,7 @@ use App\Services\Tools\HttpRequestService;
 use App\Services\Provider\ProviderService;
 use App\Services\Tools\SerializerService;
 use Illuminate\Http\Request;
+use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 
 /**
  * Contains api endpoint functions for provider related tasks
@@ -96,6 +97,16 @@ class ProviderController extends Controller
      */
     public function createProvider(CreateProviderRequest $request): \Illuminate\Http\JsonResponse
     {
+        $name = $request->validated('name');
+        $user = $request->user();
+        $checkProvider = $this->providerRepository->findUserModelBy(new Provider(), $user, [
+            ['name', '=', $name]
+        ], false);
+
+        if ($checkProvider instanceof Provider) {
+            throw new BadRequestHttpException(sprintf("Provider (%s) already exists.", $name));
+        }
+
         $createProvider = $this->providerService->createProvider(
             $request->user(),
             $request->validated()

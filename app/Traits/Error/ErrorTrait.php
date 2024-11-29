@@ -5,6 +5,7 @@ namespace App\Traits\Error;
 trait ErrorTrait
 {
     private array $errors;
+    protected ?bool $throwException = true;
 
     /**
      * @return bool
@@ -47,5 +48,10 @@ trait ErrorTrait
         $this->errors = $errors;
     }
 
+    public function setThrowException(?bool $throwException): self
+    {
+        $this->throwException = $throwException;
+        return $this;
+    }
 
 }
