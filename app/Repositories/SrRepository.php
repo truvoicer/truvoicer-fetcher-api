@@ -194,7 +194,12 @@ class SrRepository extends BaseRepository
             !UtilHelpers::isArrayItemNumeric('service', $data) &&
             !(!empty($data['service']) && !$data['service'] instanceof S)
         ) {
-            throw new BadRequestHttpException('Service id is required');
+            throw new BadRequestHttpException(sprintf(
+                "Service id is required for service request: %s | provider id: %s | provider name: %s",
+                (!empty($data['name'])) ? $data['name'] : 'N/A',
+                $provider->id,
+                $provider->name
+            ));
         }
         $create = $provider->serviceRequest()->create($this->buildSaveData($data));
         if (!$create->exists) {

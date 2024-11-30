@@ -91,7 +91,7 @@ class ProviderPropertiesImporterService extends ImporterBase
         }
         $property = $property['property'];
 
-        if (!$this->providerService->createProviderProperty($provider, $property, $data['pivot'], false)) {
+        if (!$this->providerService->createProviderProperty($provider, $property, array_merge($data, $data['pivot']))) {
             return [
                 'success' => false,
                 'message' => "Failed to create provider property: {$data['name']} for provider {$provider->name}."

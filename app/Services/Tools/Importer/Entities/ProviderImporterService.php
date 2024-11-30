@@ -68,6 +68,7 @@ class ProviderImporterService extends ImporterBase
         $this->providerPropertiesImporterService->setUser($this->getUser());
         $this->providerRateLimitImporterService->setUser($this->getUser());
         $this->categoryImporterService->setUser($this->getUser());
+        $this->srImporterService->setUser($this->getUser());
         $response = [];
         if (
             !empty($data['srs']) &&
@@ -135,6 +136,7 @@ class ProviderImporterService extends ImporterBase
     protected function create(array $data, bool $withChildren): array
     {
         try {
+//            dd((new Provider)->newFromBuilder($data));
             $checkProvider = $this->providerService->getProviderRepository()->findUserModelQuery(
                 new Provider(),
                 $this->getUser(),
@@ -304,8 +306,23 @@ class ProviderImporterService extends ImporterBase
             $item["srs"] : [];
         $this->providerService->getProviderRepository()->setWith([
             'srs' => function ($query) use ($srs) {
+                if (empty($srs)) {
+                    $query->with([
+                        'srConfig' => function ($query) {
+                            $query->with('property');
+                        },
+                        'srParameter',
+                        'srSchedule',
+                        'srRateLimit',
+                        'srResponseKeys',
+                        's' => function ($query) {
+                            $query->with('sResponseKeys');
+                        },
+                        'category'
+                    ]);
+                    return;
+                }
                 $query->whereIn('id', array_column($srs, 'id'));
-
                 $childSrs = [];
                 foreach ($srs as $sr) {
                     if (is_array($sr['child_srs'])) {

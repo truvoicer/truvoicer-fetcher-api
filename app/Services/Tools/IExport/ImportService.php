@@ -43,63 +43,10 @@ class ImportService
         if (!$getFileContents) {
             throw new BadRequestHttpException("Error reading file");
         }
-        $runImportForType = $this->iExportTypeService->runImportForType(
+        return $this->iExportTypeService->runImportForType(
             json_decode($getFileContents, true),
             $mappings
         );
-        dd($runImportForType);
-        return array_map(function ($item) {
-            if (is_array($item) && isset($item["status"]) && $item["status"] === "error") {
-                return $item;
-            }
-            if ($item === null) {
-                return [
-                    "status" => "error",
-                    "message" => "Import error: Please try again."
-                ];
-            }
-            return [
-                "status" => "success",
-                "message" => "Import successful"
-            ];
-        }, $runImportForType);
-    }
-
-    public function runImporter(UploadedFile $uploadedFile)
-    {
-        $storeFile = $this->uploadsFileSystemService->getUploadedFilePath($uploadedFile);
-        $saveFile = $this->uploadsFileSystemService->saveUploadTempFileToDatabase($storeFile, "import", "xml");
-
-        $getFileContents = $this->getXmlData($storeFile);
-
-        $getImportDataMappings = $this->iExportTypeService->getImportDataMappings(
-            $validateData["import_type"],
-            $getFileContents
-        );
-        if (count($getImportDataMappings) > 0) {
-            return [
-                "mappings" => $getImportDataMappings,
-                "file" => $this->serializerService->entityToArray($saveFile, ["single"])
-            ];
-        }
-
-        $runImportForType = $this->iExportTypeService->runImportForType($validateData["import_type"], $getFileContents);
-
-        return array_map(function ($item) {
-            if (is_array($item) && isset($item["status"]) && $item["status"] === "error") {
-                return $item;
-            }
-            if ($item === null) {
-                return [
-                    "status" => "error",
-                    "message" => "Import error: Please try again."
-                ];
-            }
-            return [
-                "status" => "success",
-                "message" => "Import successful"
-            ];
-        }, $runImportForType);
     }
 
     public function parseImport(UploadedFile $uploadedFile)

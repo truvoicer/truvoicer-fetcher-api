@@ -31,12 +31,15 @@ class SrImporterService extends ImporterBase
         private SrResponseKeysImporterService $srResponseKeysImporterService,
         private SrRateLimitImporterService $srRateLimitImporterService,
         private SrScheduleImporterService $srScheduleImporterService,
+        private SImporterService $sImporterService,
+        private ApiService $apiService,
         protected AccessControlService $accessControlService
     )
     {
         parent::__construct($accessControlService, new S());
         $this->providerService->setThrowException(false);
         $this->srService->setThrowException(false);
+        $this->apiService->setThrowException(false);
     }
 
     protected function setConfig(): void
@@ -73,12 +76,27 @@ class SrImporterService extends ImporterBase
 
     protected function overwrite(array $data, bool $withChildren): array
     {
+        $this->apiService->setUser($this->getUser());
+
         try {
             $provider = $this->findProvider($data);
             if (!$provider['success']) {
                 return $provider;
             }
             $provider = $provider['provider'];
+
+
+            $serviceData = $this->getServiceData($data);
+            if (!$serviceData['success']) {
+                return $serviceData;
+            }
+            $service = $this->getService($serviceData['service']);
+            if (!$service['success']) {
+                return $service;
+            }
+            $service = $service['service'];
+            $data['service'] = $service->id;
+
             $sr = $this->srService->getRequestByName($provider, $data['name']);
             if (!$sr instanceof Sr) {
                 return [
@@ -86,6 +104,7 @@ class SrImporterService extends ImporterBase
                     'message' => "Service Request {$data['name']} not found for {$provider->name}."
                 ];
             }
+
             if (!$this->srService->updateServiceRequest($sr, $data)) {
                 return [
                     'success' => false,
@@ -112,8 +131,46 @@ class SrImporterService extends ImporterBase
         }
     }
 
+    private function getService(array $data)
+    {
+        $service = $this->apiService->getServiceRepository()->findUserModelBy(new S(), $this->getUser(), [
+            ['name', '=', $data['name']]
+        ], false);
+
+        if (!$service instanceof S) {
+            return [
+                'success' => false,
+                'message' => "Service {$data['name']} not found."
+            ];
+        }
+        return [
+            'success' => true,
+            'service' => $service
+        ];
+    }
+    private function getServiceData(array $data)
+    {
+        if (empty($data['s'])) {
+            return [
+                'success' => false,
+                'message' => "Service is required for sr {$data['name']}."
+            ];
+        }
+        if (empty($data['s']['name'])) {
+            return [
+                'success' => false,
+                'message' => "Service name is required for sr {$data['name']}."
+            ];
+        }
+        return [
+            'success' => true,
+            'service' => $data['s']
+        ];
+    }
+
     protected function create(array $data, bool $withChildren): array
     {
+        $this->apiService->setUser($this->getUser());
         try {
             $provider = $this->findProvider($data);
             if (!$provider['success']) {
@@ -127,6 +184,21 @@ class SrImporterService extends ImporterBase
                     'message' => "Service Request {$data['name']} already exists for {$provider->name}."
                 ];
             }
+            $serviceData = $this->getServiceData($data);
+            if (!$serviceData['success']) {
+                $service = $this->sImporterService->create($serviceData['service'], $withChildren);
+                if (!$service['success']) {
+                    return $service;
+                }
+                $service = $this->sImporterService->getApiService()->getServiceRepository()->getModel();
+            } else {
+                $service = $this->getService($serviceData['service']);
+                if (!$service['success']) {
+                    return $service;
+                }
+                $service = $service['service'];
+            }
+            $data['service'] = $service->id;
             if (!$this->srService->createServiceRequest($provider, $data)) {
                 return [
                     'success' => false,

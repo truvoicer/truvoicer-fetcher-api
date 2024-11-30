@@ -148,20 +148,21 @@ class IExportTypeService extends BaseService
 
     public function runImportForType(array $contents, array $mappings)
     {
-        return array_map(function ($item) use($mappings) {
+        $response = [];
+        foreach ($contents as $item) {
             $getMappingsByType = $this->getMappingsByType($item["type"], $mappings);
             $filteredMappings = array_filter($getMappingsByType, function ($mapping) {
                 return !empty($mapping['mapping']['source']);
             });
-            return $this->import($item['data'], $filteredMappings);
-        }, $contents);
-    }
-
-    public function import(array $data, array $mappings = []): array
-    {
-        return array_map(function (array $map) use($data) {
-            return $this->destInterface($map, $data);
-        }, $mappings);
+            $data = $item['data'];
+            $import = array_map(function (array $map) use($data) {
+                return $this->destInterface($map, $data);
+            }, array_values($filteredMappings));
+            foreach ($import as $importItem) {
+                $response[] = $importItem;
+            }
+        }
+        return $response;
     }
 
     protected function destInterface(array $map, array $data): array
