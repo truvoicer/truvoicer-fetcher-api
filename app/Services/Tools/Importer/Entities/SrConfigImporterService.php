@@ -6,13 +6,13 @@ use App\Enums\Import\ImportAction;
 use App\Enums\Import\ImportConfig;
 use App\Enums\Import\ImportMappingType;
 use App\Enums\Import\ImportType;
+use App\Models\Property;
 use App\Models\S;
 use App\Models\Sr;
 use App\Models\SrConfig;
 use App\Services\ApiServices\ServiceRequests\SrConfigService;
 use App\Services\ApiServices\ServiceRequests\SrService;
 use App\Services\Permission\AccessControlService;
-use App\Services\Property\PropertyService;
 use Illuminate\Database\Eloquent\Model;
 
 class SrConfigImporterService extends ImporterBase
@@ -26,8 +26,14 @@ class SrConfigImporterService extends ImporterBase
     )
     {
         parent::__construct($accessControlService, new SrConfig());
+    }
+
+    protected function loadDependencies(): void
+    {
         $this->srService->setThrowException(false);
         $this->srConfigService->setThrowException(false);
+        $this->propertyImporterService->setThrowException(false);
+        $this->propertyImporterService->setUser($this->getUser());
     }
 
     protected function setConfig(): void
@@ -55,10 +61,23 @@ class SrConfigImporterService extends ImporterBase
             ],
         ];
     }
+    private function saveSrConfig(Sr $sr, Property $property, array $data)
+    {
+        if (!$this->srConfigService->saveRequestConfig($sr, $property, array_merge($data, $data['property']))) {
+            return [
+                'success' => false,
+                'message' => "Failed to create sr config for Sr {$sr->name}",
+                'data' => $data
+            ];
+        }
+        return [
+            'success' => true,
+            'message' => "Sr Config for Sr {$sr->name} imported successfully."
+        ];
+    }
 
     protected function overwrite(array $data, bool $withChildren): array
     {
-        $this->propertyImporterService->setUser($this->getUser());
         try {
             $sr = $this->findSr($data);
             if (!$sr['success']) {
@@ -78,20 +97,12 @@ class SrConfigImporterService extends ImporterBase
                 $property = $property['property'];
             }
 
-            if (!$this->srConfigService->saveRequestConfig($sr, $property, $data)) {
-                return [
-                    'success' => false,
-                    'message' => "Failed to create sr config for Sr {$sr->name}"
-                ];
-            }
-            return [
-                'success' => true,
-                'message' => "Sr Config for Sr {$sr->name} imported successfully."
-            ];
+            return $this->saveSrConfig($sr, $property, $data);
         } catch (\Exception $e) {
             return [
                 'success' => false,
-                'message' => $e->getMessage()
+                'message' => $e->getMessage(),
+                'data' => $data
             ];
         }
     }
@@ -108,24 +119,17 @@ class SrConfigImporterService extends ImporterBase
             if (!$property['success']) {
                 return [
                     'success' => false,
-                    'message' => "Failed to create sr config for Sr {$sr->name}"
+                    'message' => "Failed to find property for Sr {$sr->name}",
+                    'data' => $data
                 ];
             }
-
-            if (!$this->srConfigService->saveRequestConfig($sr, $property, $data)) {
-                return [
-                    'success' => false,
-                    'message' => "Failed to create sr config for Sr {$sr->name}"
-                ];
-            }
-            return [
-                'success' => true,
-                'message' => "Sr Config for Sr {$sr->name} imported successfully."
-            ];
+            $property = $property['property'];
+            return $this->saveSrConfig($sr, $property, $data);
         } catch (\Exception $e) {
             return [
                 'success' => false,
-                'message' => $e->getMessage()
+                'message' => $e->getMessage(),
+                'data' => $data
             ];
         }
     }

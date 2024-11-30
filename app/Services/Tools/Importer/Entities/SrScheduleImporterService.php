@@ -23,6 +23,10 @@ class SrScheduleImporterService extends ImporterBase
     )
     {
         parent::__construct($accessControlService, new S());
+    }
+
+    protected function loadDependencies(): void
+    {
         $this->srService->setThrowException(false);
         $this->srScheduleService->setThrowException(false);
     }

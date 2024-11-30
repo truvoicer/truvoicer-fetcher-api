@@ -2,6 +2,7 @@
 
 namespace App\Repositories;
 
+use App\Helpers\Tools\DateHelpers;
 use App\Models\Provider;
 use App\Models\Sr;
 use App\Models\SrSchedule;
@@ -41,7 +42,7 @@ class SrScheduleRepository extends BaseRepository
                         ->orWhereDate('start_date', '>=', $today);
                 }
                 $query->where('disabled', false)
-                ->where('locked', false);
+                    ->where('locked', false);
             });
         return $this->getResults(
             $serviceRequests
@@ -53,10 +54,15 @@ class SrScheduleRepository extends BaseRepository
         $saveData = [];
         foreach (SrSchedule::FIELDS as $field) {
             if (array_key_exists($field, $data)) {
-                $saveData[$field] = $data[$field];
+                $saveData[$field] = match ($field) {
+                    'month' => (is_string($data[$field]))
+                        ? DateHelpers::convertMonthToInteger($data[$field])
+                        : $data[$field],
+                    default => $data[$field],
+                };
             }
+            return $saveData;
         }
-        return $saveData;
     }
 
     public function createSrSchedule(Sr $serviceRequest, array $data)
@@ -67,12 +73,14 @@ class SrScheduleRepository extends BaseRepository
         return $this->getModel()->exists;
     }
 
-    public function saveSrSchedule(array $data)
+    public
+    function saveSrSchedule(array $data)
     {
         return $this->save($data);
     }
 
-    public function deleteSrSchedule(SrSchedule $srSchedule)
+    public
+    function deleteSrSchedule(SrSchedule $srSchedule)
     {
         $this->setModel($srSchedule);
         return $this->delete();

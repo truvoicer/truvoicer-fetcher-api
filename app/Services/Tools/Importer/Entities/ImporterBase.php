@@ -30,10 +30,7 @@ abstract class ImporterBase
 
     abstract protected function setConfig(): void;
     abstract protected function setMappings(): void;
-
-
-    abstract public function importSelfNoChildren(ImportAction $action, array $map, array $data): array;
-    abstract public function importSelfWithChildren(ImportAction $action, array $map, array $data): array;
+    abstract protected function loadDependencies(): void;
 
     abstract public function validateImportData(array $data): void;
 
@@ -50,6 +47,16 @@ abstract class ImporterBase
     abstract protected function overwrite(array $data, bool $withChildren): array;
 
     abstract protected function create(array $data, bool $withChildren): array;
+
+    public function importSelfNoChildren(ImportAction $action, array $map, array $data): array
+    {
+        return $this->importSelf($action, $map, $data, false);
+    }
+
+    public function importSelfWithChildren(ImportAction $action, array $map, array $data): array
+    {
+        return $this->importSelf($action, $map, $data, true);
+    }
 
     protected function overwriteOrCreate(array $data, bool $withChildren): array
     {
@@ -164,6 +171,7 @@ abstract class ImporterBase
     }
 
     protected function importSelf(ImportAction $action, array $map, array $data, bool $withChildren): array {
+        $this->loadDependencies();
         if (!empty($map['root']) && !empty($map['children']) && is_array($map['children']) && count($map['children'])) {
             return [
                 'success' => true,

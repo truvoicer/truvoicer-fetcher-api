@@ -25,8 +25,13 @@ class SrResponseKeysImporterService extends ImporterBase
     )
     {
         parent::__construct($accessControlService, new SrResponseKey());
+    }
+
+    protected function loadDependencies(): void
+    {
         $this->srService->setThrowException(false);
         $this->srResponseKeyService->setThrowException(false);
+        $this->sResponseKeysImporterService->setThrowException(false)->setUser($this->getUser());
     }
 
     protected function setConfig(): void

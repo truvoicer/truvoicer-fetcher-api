@@ -23,8 +23,6 @@ class ProviderRateLimitImporterService extends ImporterBase
     )
     {
         parent::__construct($accessControlService, new S());
-        $this->providerService->setThrowException(false);
-        $this->rateLimitService->setThrowException(false);
     }
 
     protected function setConfig(): void
@@ -57,6 +55,13 @@ class ProviderRateLimitImporterService extends ImporterBase
                 'required_fields' => ['id'],
             ],
         ];
+    }
+
+    protected function loadDependencies(): void
+    {
+        $this->providerService->setThrowException(false);
+        $this->rateLimitService->setThrowException(false);
+        $this->rateLimitService->setUser($this->getUser());
     }
 
     protected function overwrite(array $data, bool $withChildren): array

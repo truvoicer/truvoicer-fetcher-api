@@ -28,7 +28,6 @@ class ProviderImporterService extends ImporterBase
     {
         parent::__construct($accessControlService, new Provider());
         $this->srRepository = new SrRepository();
-        $this->providerService->setThrowException(false);
     }
 
     protected function setConfig(): void
@@ -63,29 +62,19 @@ class ProviderImporterService extends ImporterBase
         ];
     }
 
-    private function importChildren(ImportAction $action, Provider $provider, array $data)
+    protected function loadDependencies(): void
     {
+        $this->providerService->setThrowException(false);
         $this->providerPropertiesImporterService->setUser($this->getUser());
         $this->providerRateLimitImporterService->setUser($this->getUser());
         $this->categoryImporterService->setUser($this->getUser());
         $this->srImporterService->setUser($this->getUser());
+    }
+
+
+    private function importChildren(ImportAction $action, Provider $provider, array $data)
+    {
         $response = [];
-        if (
-            !empty($data['srs']) &&
-            is_array($data['srs'])
-        ) {
-            $response = array_merge(
-                $response,
-                $this->srImporterService->batchImport(
-                    $action,
-                    array_map(function ($sr) use ($provider) {
-                        $sr['provider_id'] = $provider->id;
-                        return $sr;
-                    }, $data['srs']),
-                    true
-                )
-            );
-        }
         if (
             !empty($data['properties']) &&
             is_array($data['properties'])
@@ -130,6 +119,22 @@ class ProviderImporterService extends ImporterBase
                 )
             );
         }
+        if (
+            !empty($data['srs']) &&
+            is_array($data['srs'])
+        ) {
+            $response = array_merge(
+                $response,
+                $this->srImporterService->batchImport(
+                    $action,
+                    array_map(function ($sr) use ($provider) {
+                        $sr['provider_id'] = $provider->id;
+                        return $sr;
+                    }, $data['srs']),
+                    true
+                )
+            );
+        }
         return $response;
     }
 
@@ -143,7 +148,7 @@ class ProviderImporterService extends ImporterBase
                 [['name', '=', $data['name']]],
                 false
             );
-            if (!$checkProvider->first() instanceof Provider) {
+            if ($checkProvider->first() instanceof Provider) {
                 $data['label'] = $data['name'] = $this->providerService->getProviderRepository()->buildCloneEntityStr(
                     $checkProvider,
                     'name',
@@ -227,15 +232,6 @@ class ProviderImporterService extends ImporterBase
         }
     }
 
-    public function importSelfNoChildren(ImportAction $action, array $map, array $data): array
-    {
-        return $this->importSelf($action, $map, $data, false);
-    }
-
-    public function importSelfWithChildren(ImportAction $action, array $map, array $data): array
-    {
-        return $this->importSelf($action, $map, $data, true);
-    }
 
     public function validateImportData(array $data): void
     {

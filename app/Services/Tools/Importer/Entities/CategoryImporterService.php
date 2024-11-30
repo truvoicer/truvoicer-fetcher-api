@@ -21,7 +21,6 @@ class CategoryImporterService extends ImporterBase
     )
     {
         parent::__construct($accessControlService, new Category());
-        $this->categoryService->setThrowException(false);
     }
 
     protected function setConfig(): void
@@ -50,6 +49,10 @@ class CategoryImporterService extends ImporterBase
         ];
     }
 
+    protected function loadDependencies(): void
+    {
+        $this->categoryService->setThrowException(false);
+    }
     protected function create(array $data, bool $withChildren): array
     {
         try {

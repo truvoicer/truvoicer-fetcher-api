@@ -28,6 +28,10 @@ class SResponseKeysImporterService extends ImporterBase
     )
     {
         parent::__construct($accessControlService, new SResponseKey());
+    }
+
+    protected function loadDependencies(): void
+    {
         $this->apiService->setThrowException(false);
         $this->sResponseKeysService->setThrowException(false);
     }

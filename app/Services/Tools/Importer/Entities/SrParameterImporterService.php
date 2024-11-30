@@ -24,6 +24,10 @@ class SrParameterImporterService extends ImporterBase
     )
     {
         parent::__construct($accessControlService, new SrParameter());
+    }
+
+    protected function loadDependencies(): void
+    {
         $this->srService->setThrowException(false);
         $this->srParametersService->setThrowException(false);
     }

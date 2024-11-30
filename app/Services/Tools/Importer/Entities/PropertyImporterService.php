@@ -20,7 +20,6 @@ class PropertyImporterService extends ImporterBase {
     )
     {
         parent::__construct($accessControlService, new Property());
-        $this->propertyService->setThrowException(false);
     }
 
     protected function setConfig(): void
@@ -49,6 +48,12 @@ class PropertyImporterService extends ImporterBase {
             ],
         ];
     }
+
+    protected function loadDependencies(): void
+    {
+        $this->propertyService->setThrowException(false);
+    }
+
     private function findProperty(array $params): ?Model
     {
         foreach ($params as $key => $value) {

@@ -26,7 +26,6 @@ class ProviderPropertiesImporterService extends ImporterBase
     )
     {
         parent::__construct($accessControlService, new ProviderProperty());
-        $this->providerService->setThrowException(false);
     }
 
     protected function setConfig(): void
@@ -54,6 +53,13 @@ class ProviderPropertiesImporterService extends ImporterBase
             ],
         ];
     }
+
+    protected function loadDependencies(): void
+    {
+        $this->providerService->setThrowException(false);
+        $this->propertyImporterService->setUser($this->getUser());
+    }
+
 
     private function findProvider(array $data): array
     {
@@ -104,7 +110,6 @@ class ProviderPropertiesImporterService extends ImporterBase
     }
     private function findProperty(Provider $provider, array $data): array
     {
-        $this->propertyImporterService->setUser($this->getUser());
         if (empty($data['name'])) {
             return [
                 'success' => false,

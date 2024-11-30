@@ -28,6 +28,12 @@ class SrRateLimitImporterService extends ImporterBase
         $this->rateLimitService->setThrowException(false);
     }
 
+    protected function loadDependencies(): void
+    {
+        $this->srService->setThrowException(false);
+        $this->rateLimitService->setThrowException(false);
+    }
+
     protected function setConfig(): void
     {
         $this->buildConfig(

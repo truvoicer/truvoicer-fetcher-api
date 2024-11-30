@@ -22,7 +22,6 @@ class SImporterService extends ImporterBase
     )
     {
         parent::__construct($accessControlService, new S());
-        $this->apiService->setThrowException(false);
     }
 
     protected function setConfig(): void
@@ -55,6 +54,11 @@ class SImporterService extends ImporterBase
                 'required_fields' => ['id', 'name'],
             ],
         ];
+    }
+
+    protected function loadDependencies(): void
+    {
+        $this->apiService->setThrowException(false);
     }
 
     protected function overwrite(array $data, bool $withChildren): array

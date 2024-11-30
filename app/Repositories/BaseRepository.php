@@ -65,14 +65,19 @@ class BaseRepository
         }, $all);
 
         $mapNumber = array_filter($mapNumber, fn ($item) => $item !== false);
-        $max = 0;
+        $max = 1;
         if (!empty($mapNumber)) {
             $max = max($mapNumber);
         }
         $counter = $max;
         while ($this->model->where($field, $str)->exists()) {
-            $counter++;
+            if (str_ends_with($str, $separator . $counter - 1)) {
+                $str = substr($str, 0, -strlen($separator . $counter - 1));
+            }
             $str = $str . $separator . $counter;
+
+
+            $counter++;
         }
         return $str;
     }
