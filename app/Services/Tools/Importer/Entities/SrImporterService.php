@@ -10,15 +10,9 @@ use App\Models\Provider;
 use App\Models\S;
 use App\Models\Sr;
 use App\Services\ApiServices\ApiService;
-use App\Services\ApiServices\RateLimitService;
-use App\Services\ApiServices\ServiceRequests\ResponseKeys\SrResponseKeyService;
-use App\Services\ApiServices\ServiceRequests\SrConfigService;
-use App\Services\ApiServices\ServiceRequests\SrParametersService;
-use App\Services\ApiServices\ServiceRequests\SrScheduleService;
 use App\Services\ApiServices\ServiceRequests\SrService;
 use App\Services\Permission\AccessControlService;
 use App\Services\Provider\ProviderService;
-use Illuminate\Database\Eloquent\Model;
 
 class SrImporterService extends ImporterBase
 {
@@ -32,6 +26,7 @@ class SrImporterService extends ImporterBase
         private SrRateLimitImporterService    $srRateLimitImporterService,
         private SrScheduleImporterService     $srScheduleImporterService,
         private SImporterService              $sImporterService,
+        private CategoryImporterService       $categoryImporterService,
         private ApiService                    $apiService,
         protected AccessControlService        $accessControlService
     )
@@ -50,6 +45,7 @@ class SrImporterService extends ImporterBase
         $this->srScheduleImporterService->setThrowException(false)->setUser($this->getUser());
         $this->srResponseKeysImporterService->setThrowException(false)->setUser($this->getUser());
         $this->srConfigImporterService->setThrowException(false)->setUser($this->getUser());
+        $this->categoryImporterService->setThrowException(false)->setUser($this->getUser());
     }
 
     protected function setConfig(): void

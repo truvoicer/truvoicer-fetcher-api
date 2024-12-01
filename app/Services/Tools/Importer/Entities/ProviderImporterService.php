@@ -161,6 +161,7 @@ class ProviderImporterService extends ImporterBase
                     'message' => "Failed to create provider {$data['name']}."
                 ];
             }
+
             if ($withChildren) {
                 $response = $this->importChildren(
                     ImportAction::CREATE,

@@ -178,33 +178,7 @@ class IExportTypeService extends BaseService
         }   else {
             $importType = $map['mapping']['dest'];
         }
-        $instance = $this->getInstance($importType);
-        return $this->importMapInterface($instance, $map['mapping']['name'], $map, $data);
-    }
-
-    private function importMapInterface(ImporterBase $instance, string $mapName, array $map, array $data): array
-    {
-        if (empty($map['action'])) {
-            return [
-                'success' => false,
-                'error' => 'No action found.',
-            ];
-        }
-        $action = ImportAction::tryFrom($map['action']);
-        if (!$action) {
-            return [
-                'success' => false,
-                'error' => 'Invalid action found.',
-            ];
-        }
-        return match ($mapName) {
-            ImportMappingType::SELF_NO_CHILDREN->value => $instance->importSelfNoChildren($action, $map, $data),
-            ImportMappingType::SELF_WITH_CHILDREN->value => $instance->importSelfWithChildren($action, $map, $data),
-            default => [
-                'success' => false,
-                'data' => $map['data'],
-            ],
-        };
+        return $this->getInstance($importType)->importMapFactory($map, $data);
     }
 
     public function validateType($importType, array $data): void

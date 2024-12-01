@@ -103,6 +103,7 @@ class ProviderRateLimitImporterService extends ImporterBase
                     'message' => "Failed to create provider rate limit for provider {$provider->name}."
                 ];
             }
+            $rateLimit = $this->rateLimitService->getProviderRateLimitRepository()->getModel();
             if (!$this->rateLimitService->saveProviderRateLimit($rateLimit, $data)) {
                 return [
                     'success' => false,

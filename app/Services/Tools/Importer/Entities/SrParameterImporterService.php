@@ -40,7 +40,7 @@ class SrParameterImporterService extends ImporterBase
             ImportType::SR_PARAMETER->value,
             'Sr Parameters',
             'name',
-            'label',
+            '{name}: {value}',
             'label',
             [],
         );
@@ -116,12 +116,13 @@ class SrParameterImporterService extends ImporterBase
             }
             $sr = $sr['sr'];
             $srParameter = $sr->srParameter()->where('name', $data['name'])->first();
-            if (!$srParameter) {
+            if ($srParameter) {
                 return [
                     'success' => false,
-                    'message' => "Sr parameter {$data['name']} not found for sr {$sr->name}."
+                    'message' => "Sr parameter {$data['name']} already exists for sr {$sr->name}."
                 ];
             }
+
             if (!$this->srParametersService->createRequestParameter($sr, $data)) {
                 return [
                     'success' => false,

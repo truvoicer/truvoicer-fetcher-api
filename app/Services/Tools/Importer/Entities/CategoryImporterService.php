@@ -10,7 +10,6 @@ use App\Models\Category;
 use App\Services\Category\CategoryService;
 use App\Services\Permission\AccessControlService;
 use App\Services\Permission\PermissionService;
-use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 
 class CategoryImporterService extends ImporterBase
 {

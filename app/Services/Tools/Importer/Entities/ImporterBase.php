@@ -4,6 +4,7 @@ namespace App\Services\Tools\Importer\Entities;
 
 use App\Enums\Import\ImportAction;
 use App\Enums\Import\ImportConfig;
+use App\Enums\Import\ImportMappingType;
 use App\Models\Provider;
 use App\Services\Permission\AccessControlService;
 use App\Traits\Error\ErrorTrait;
@@ -69,14 +70,42 @@ abstract class ImporterBase
 
     public function import(ImportAction $action, array $data, bool $withChildren): array
     {
-        switch ($action) {
-            case ImportAction::CREATE:
-                return $this->create($data, $withChildren);
-            case ImportAction::OVERWRITE:
-                return $this->overwrite($data, $withChildren);
-            case ImportAction::OVERWRITE_OR_CREATE:
-                return $this->overwriteOrCreate($data, $withChildren);
+        return match ($action) {
+            ImportAction::CREATE => $this->create($data, $withChildren),
+            ImportAction::OVERWRITE => $this->overwrite($data, $withChildren),
+            ImportAction::OVERWRITE_OR_CREATE => $this->overwriteOrCreate($data, $withChildren),
+            default => [
+                'success' => false,
+                'data' => $data,
+                'error' => 'Invalid action.'
+            ],
+        };
+    }
+
+    public function importMapFactory(array $map, array $data): array
+    {
+        if (empty($map['action'])) {
+            return [
+                'success' => false,
+                'error' => 'No action found.',
+            ];
         }
+        $action = ImportAction::tryFrom($map['action']);
+        if (!$action) {
+            return [
+                'success' => false,
+                'error' => 'Invalid action found.',
+            ];
+        }
+
+        return match ($map['mapping']['name']) {
+            ImportMappingType::SELF_NO_CHILDREN->value => $this->importSelfNoChildren($action, $map, $data),
+            ImportMappingType::SELF_WITH_CHILDREN->value => $this->importSelfWithChildren($action, $map, $data),
+            default => [
+                'success' => false,
+                'data' => $map['data'],
+            ],
+        };
     }
 
     protected function batchImport(ImportAction $action, array $data, bool $withChildren): array
@@ -175,8 +204,9 @@ abstract class ImporterBase
         if (!empty($map['root']) && !empty($map['children']) && is_array($map['children']) && count($map['children'])) {
             return [
                 'success' => true,
-                'data' => array_map(function ($category) use ($data, $action) {
-                    return $this->importSelfNoChildren($action, $category, $data);
+                'data' => array_map(function ($map) use ($data, $action) {
+                    $map['action'] = $action->value;
+                    return $this->importMapFactory($map, $data);
                 }, $map['children'])
             ];
         }
