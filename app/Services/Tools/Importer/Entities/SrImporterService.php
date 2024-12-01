@@ -13,6 +13,7 @@ use App\Services\ApiServices\ApiService;
 use App\Services\ApiServices\ServiceRequests\SrService;
 use App\Services\Permission\AccessControlService;
 use App\Services\Provider\ProviderService;
+use Illuminate\Database\Eloquent\Model;
 
 class SrImporterService extends ImporterBase
 {
@@ -102,6 +103,11 @@ class SrImporterService extends ImporterBase
             $service = $service['service'];
             $data['service'] = $service->id;
 
+            $category = $this->createCategory($data, $withChildren);
+            if ($category) {
+                $data['category'] = $category->id;
+            }
+
             $sr = $this->srService->getRequestByName($provider, $data['name']);
             if (!$sr instanceof Sr) {
                 return [
@@ -173,7 +179,32 @@ class SrImporterService extends ImporterBase
             'service' => $data['s']
         ];
     }
+    private function createCategory(array $data, bool $withChildren): Model|bool{
+        if (
+            empty($data['category']) ||
+            is_array($data['category'])
+        ) {
+            return false;
+        }
+        $category = $this->categoryImporterService->getCategoryService()->getCategoryRepository()->findUserCategoryByName(
+            $this->getUser(),
+            $data['category']['name']
+        );
 
+        if ($category) {
+            return $category;
+        }
+        if (
+            !$this->categoryImporterService->import(
+                ImportAction::CREATE,
+                $data['category'],
+                $withChildren
+            )['success']
+        ) {
+            return false;
+        }
+        return $this->categoryImporterService->getCategoryService()->getCategoryRepository()->getModel();
+    }
     protected function create(array $data, bool $withChildren): array
     {
         try {
@@ -204,6 +235,12 @@ class SrImporterService extends ImporterBase
                 $service = $service['service'];
             }
             $data['service'] = $service->id;
+
+            $category = $this->createCategory($data, $withChildren);
+            if ($category) {
+                $data['category'] = $category->id;
+            }
+
             if (!$this->srService->createServiceRequest($provider, $data)) {
                 return [
                     'success' => false,
@@ -222,7 +259,8 @@ class SrImporterService extends ImporterBase
                 'success' => true,
                 'message' => "Service Request {$data['name']} created for {$provider->name}."
             ];
-        } catch (\Exception $e) {
+        } catch
+        (\Exception $e) {
             return [
                 'success' => false,
                 'data' => $data,

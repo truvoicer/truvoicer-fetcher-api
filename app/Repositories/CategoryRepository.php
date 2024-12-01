@@ -24,7 +24,17 @@ class CategoryRepository extends BaseRepository
     public function getAllCategoriesArray() {
         return $this->findAll();
     }
-
+    public function findUserCategoryByName(User $user, string $name)
+    {
+       return $this->findUserModelBy(
+            new Category(),
+            $user,
+            [
+                ['name', '=', $name]
+            ],
+            false
+        );
+    }
     public function findByQuery($query)
     {
         return $this->findByLabelOrName($query);
