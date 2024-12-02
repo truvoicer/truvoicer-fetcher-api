@@ -9,6 +9,8 @@ use App\Enums\Import\ImportType;
 use App\Models\Provider;
 use App\Models\S;
 use App\Models\Sr;
+use App\Models\SResponseKey;
+use App\Models\SrResponseKey;
 use App\Services\ApiServices\ApiService;
 use App\Services\ApiServices\ServiceRequests\SrService;
 use App\Services\Permission\AccessControlService;
@@ -32,7 +34,7 @@ class SrImporterService extends ImporterBase
         protected AccessControlService        $accessControlService
     )
     {
-        parent::__construct($accessControlService, new S());
+        parent::__construct($accessControlService, new SResponseKey());
     }
 
     protected function loadDependencies(): void
@@ -182,7 +184,7 @@ class SrImporterService extends ImporterBase
     private function createCategory(array $data, bool $withChildren): Model|bool{
         if (
             empty($data['category']) ||
-            is_array($data['category'])
+            !is_array($data['category'])
         ) {
             return false;
         }
@@ -237,10 +239,10 @@ class SrImporterService extends ImporterBase
             $data['service'] = $service->id;
 
             $category = $this->createCategory($data, $withChildren);
+
             if ($category) {
                 $data['category'] = $category->id;
             }
-
             if (!$this->srService->createServiceRequest($provider, $data)) {
                 return [
                     'success' => false,

@@ -9,6 +9,7 @@ use App\Enums\Import\ImportType;
 use App\Models\Provider;
 use App\Models\S;
 use App\Models\Sr;
+use App\Models\SrRateLimit;
 use App\Services\ApiServices\RateLimitService;
 use App\Services\ApiServices\ServiceRequests\SrService;
 use App\Services\Permission\AccessControlService;
@@ -23,7 +24,7 @@ class SrRateLimitImporterService extends ImporterBase
         protected AccessControlService $accessControlService
     )
     {
-        parent::__construct($accessControlService, new S());
+        parent::__construct($accessControlService, new SrRateLimit());
         $this->srService->setThrowException(false);
         $this->rateLimitService->setThrowException(false);
     }

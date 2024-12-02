@@ -113,10 +113,10 @@ class ProviderScheduleService
                 return;
             }
         }
-        if (!empty($schedule->start_date) && $schedule->start_date <= $this->today->toDateString()) {
+        if (!empty($schedule->has_start_date) && !empty($schedule->start_date) && $schedule->start_date <= $this->today->toDateString()) {
             return;
         }
-        if (!empty($schedule->end_date) && $schedule->end_date >= $this->today->toDateString()) {
+        if (!empty($schedule->has_end_date) && !empty($schedule->end_date) && $schedule->end_date >= $this->today->toDateString()) {
             return;
         }
 

@@ -8,6 +8,7 @@ use App\Enums\Import\ImportMappingType;
 use App\Enums\Import\ImportType;
 use App\Models\S;
 use App\Models\Sr;
+use App\Models\SrSchedule;
 use App\Services\ApiServices\ServiceRequests\SrScheduleService;
 use App\Services\ApiServices\ServiceRequests\SrService;
 use App\Services\Permission\AccessControlService;
@@ -22,7 +23,7 @@ class SrScheduleImporterService extends ImporterBase
         protected AccessControlService $accessControlService
     )
     {
-        parent::__construct($accessControlService, new S());
+        parent::__construct($accessControlService, new SrSchedule());
     }
 
     protected function loadDependencies(): void
@@ -64,6 +65,7 @@ class SrScheduleImporterService extends ImporterBase
 
     protected function create(array $data, bool $withChildren): array
     {
+        dd($data);
         $sr = $this->findSr($data);
         if (!$sr['success']) {
             return $sr;

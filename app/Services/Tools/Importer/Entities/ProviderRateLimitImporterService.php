@@ -7,6 +7,7 @@ use App\Enums\Import\ImportConfig;
 use App\Enums\Import\ImportMappingType;
 use App\Enums\Import\ImportType;
 use App\Models\Provider;
+use App\Models\ProviderRateLimit;
 use App\Models\S;
 use App\Services\ApiServices\RateLimitService;
 use App\Services\Permission\AccessControlService;
@@ -22,7 +23,7 @@ class ProviderRateLimitImporterService extends ImporterBase
         protected AccessControlService $accessControlService
     )
     {
-        parent::__construct($accessControlService, new S());
+        parent::__construct($accessControlService, new ProviderRateLimit());
     }
 
     protected function setConfig(): void

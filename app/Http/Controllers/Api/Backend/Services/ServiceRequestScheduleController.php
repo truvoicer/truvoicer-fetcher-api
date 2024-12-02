@@ -144,7 +144,7 @@ class ServiceRequestScheduleController extends Controller
         $update = $this->srScheduleService->saveSrSchedule(
             $request->user(),
             $srSchedule,
-            $request->all()
+            $request->validated()
         );
 
         if (!$update) {

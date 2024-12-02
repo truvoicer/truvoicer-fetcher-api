@@ -36,10 +36,20 @@ class SrScheduleRepository extends BaseRepository
             ->whereHas('srSchedule', function (Builder $query) use ($interval, $today, $executeImmediately) {
                 if (!$executeImmediately) {
                     $query->where($interval, '=', true)
-                        ->whereNull('end_date')
-                        ->orWhereDate('end_date', '<=', $today)
-                        ->whereNull('start_date')
-                        ->orWhereDate('start_date', '>=', $today);
+                        ->where(function (Builder $query) use ($today) {
+                            $query->whereNull('end_date')
+                                ->orWhere(function (Builder $query) use ($today) {
+                                    $query->where('has_end_date', true);
+                                    $query->whereDate('end_date', '<=', $today);
+                                });
+                        })
+                        ->where(function (Builder $query) use ($today) {
+                            $query->whereNull('start_date')
+                                ->orWhere(function (Builder $query) use ($today) {
+                                    $query->where('has_start_date', true);
+                                    $query->whereDate('start_date', '>=', $today);
+                                });
+                        });
                 }
                 $query->where('disabled', false)
                     ->where('locked', false);

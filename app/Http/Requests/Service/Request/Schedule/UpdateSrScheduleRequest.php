@@ -27,7 +27,7 @@ class UpdateSrScheduleRequest extends FormRequest
             'forever' => 'boolean|nullable',
             'disabled' => 'boolean|nullable',
             'disable_child_srs' => 'boolean|nullable',
-            'priority' => 'boolean|nullable',
+            'priority' => 'integer|nullable',
             'start_date' => 'date|nullable',
             'end_date' => 'date|nullable',
             'use_cron_expression' => 'boolean|nullable',
