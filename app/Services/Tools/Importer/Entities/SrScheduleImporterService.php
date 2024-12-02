@@ -65,11 +65,11 @@ class SrScheduleImporterService extends ImporterBase
 
     protected function create(array $data, bool $withChildren): array
     {
-        dd($data);
         $sr = $this->findSr($data);
         if (!$sr['success']) {
             return $sr;
         }
+        $data['execute_immediately'] = false;
         $sr = $sr['sr'];
         if (!$this->srScheduleService->createSrSchedule($this->getUser(), $sr, $data)) {
             return [
@@ -77,6 +77,7 @@ class SrScheduleImporterService extends ImporterBase
                 'message' => "Failed to create sr schedule."
             ];
         }
+
         return [
             'success' => true,
             'message' => "Sr schedule for Sr {$sr->name} imported successfully."

@@ -71,8 +71,8 @@ class SrScheduleRepository extends BaseRepository
                     default => $data[$field],
                 };
             }
-            return $saveData;
         }
+        return $saveData;
     }
 
     public function createSrSchedule(Sr $serviceRequest, array $data)
