@@ -23,8 +23,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('sr_response_keys', function (Blueprint $table) {
-            $table->dropColumn('is_date');
-            $table->dropColumn('date_format');
+            $table->dropColumn(['is_date', 'date_format']);
         });
     }
 };

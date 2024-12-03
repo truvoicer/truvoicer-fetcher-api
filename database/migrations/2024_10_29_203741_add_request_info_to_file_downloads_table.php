@@ -23,8 +23,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('file_downloads', function (Blueprint $table) {
-            $table->dropColumn('client_ip');
-            $table->dropColumn('user_agent');
+            $table->dropColumn(['client_ip', 'user_agent']);
         });
     }
 };

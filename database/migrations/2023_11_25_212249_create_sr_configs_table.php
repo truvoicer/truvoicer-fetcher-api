@@ -14,11 +14,10 @@ return new class extends Migration
         Schema::create('sr_configs', function (Blueprint $table) {
             $table->id();
             $table->foreignId('sr_id')->constrained('srs')->onDelete('cascade');
+            $table->bigInteger('property_id')->nullable()->unsigned()->after('id');
+            $table->foreign('property_id')->references('id')->on('properties')->onDelete('cascade');
             $table->string('name');
             $table->string('value')->nullable();
-            $table->string('value_type');
-            $table->json('array_value')->nullable();
-            $table->json('value_choices')->nullable();
             $table->timestamps();
         });
     }

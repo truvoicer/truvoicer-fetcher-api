@@ -26,11 +26,13 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('sr_child_srs', function (Blueprint $table) {
-            $table->dropColumn('response_key_override');
-            $table->dropColumn('config_override');
-            $table->dropColumn('parameter_override');
-            $table->dropColumn('scheduler_override');
-            $table->dropColumn('rate_limits_override');
+            $table->dropColumn([
+                'response_key_override',
+                'config_override',
+                'parameter_override',
+                'scheduler_override',
+                'rate_limits_override'
+            ]);
         });
     }
 };

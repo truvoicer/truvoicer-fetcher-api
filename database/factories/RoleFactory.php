@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Services\Auth\AuthService;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -16,8 +17,11 @@ class RoleFactory extends Factory
      */
     public function definition(): array
     {
+        $role = $this->faker->randomElement(AuthService::DEFAULT_ROLES);
         return [
-            //
+            'name' => $role['name'],
+            'label' => $role['label'],
+            'ability' => $role['ability'],
         ];
     }
 }
