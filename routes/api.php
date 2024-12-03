@@ -239,7 +239,7 @@ Route::middleware(['auth:sanctum', 'ability:api:admin,api:superuser,api:super_ad
             });
         });
         Route::prefix('tools')->name('tools.')->group(function () {
-            Route::get('/export/list', [ImportExportController::class, 'getExportList'])->name('list');
+            Route::get('/export/list', [ImportExportController::class, 'getExportList'])->name('export.list');
             Route::post('/export', [ImportExportController::class, 'runExport'])->name('export');
             Route::prefix('/import')->name('import.')->group(function () {
                 Route::post('/parse', [ImportExportController::class, 'parseImport'])->name('parse');
