@@ -4,12 +4,15 @@ namespace ImportExport;
 
 // use Illuminate\Foundation\Testing\RefreshDatabase;
 use App\Models\Category;
+use App\Models\File;
+use App\Models\FileDownload;
 use App\Models\Property;
 use App\Models\Provider;
 use App\Models\S;
 use App\Models\User;
 use Database\Seeders\RoleSeeder;
 use Database\Seeders\UserSeeder;
+use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
 class ExportTest extends TestCase
@@ -48,6 +51,7 @@ class ExportTest extends TestCase
 
     public function test_api_exports_to_json_file(): void
     {
+        Storage::fake('downloads');
         $category = Category::factory(2)->create();
         $property = Property::factory(2)->create();
         $service = S::factory(2)->create();
@@ -81,5 +85,8 @@ class ExportTest extends TestCase
                 ],
                 'errors',
             ]);
+        $file =File::first();
+        $fileDownload = FileDownload::first();
+        Storage::disk('downloads')->assertExists($file->rel_path);
     }
 }
