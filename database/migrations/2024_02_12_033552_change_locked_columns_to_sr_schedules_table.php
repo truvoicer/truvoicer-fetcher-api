@@ -12,8 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('sr_schedules', function (Blueprint $table) {
-            $table->dropColumn('locked');
-            $table->dropColumn('arguments');
+            $table->dropColumn(['locked', 'arguments']);
             $table->boolean('disable_child_srs')->default(false)->after('disabled');
         });
     }

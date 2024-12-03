@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('oauth_access_tokens', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('provider_id')->constrained('providers')->onDelete('cascade');
+            $table->foreignId('sr_id')->after('id')->constrained('srs')->onDelete('cascade');
             $table->text('access_token');
             $table->dateTime('expiry');
             $table->timestamps();

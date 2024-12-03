@@ -23,7 +23,6 @@ class Sr extends Model
         'default_data',
     ];
     protected $casts = [
-        'pagination_type' => 'json',
         'query_parameters' => 'json',
         'default_sr' => 'boolean',
         'default_data' => 'json',
