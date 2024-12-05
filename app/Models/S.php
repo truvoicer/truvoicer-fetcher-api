@@ -18,7 +18,7 @@ class S extends Model
         'name',
         'label'
     ];
-    public function sr()
+    public function sr(): \Illuminate\Database\Eloquent\Relations\HasMany
     {
         return $this->hasMany(Sr::class);
     }

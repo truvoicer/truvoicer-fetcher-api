@@ -79,8 +79,10 @@ class AuthService
         $filter = array_filter(self::DEFAULT_ROLES, function ($role) use ($names) {
             return in_array($role['name'], $names);
         });
+
         $availableRolesNames = array_unique(
             array_merge(
+                $names,
                 ...array_column($filter, 'available_roles')
             )
         );

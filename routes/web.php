@@ -15,4 +15,4 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::GET('/download/file/{file_download:download_key}', DownloadFileController::class)->name('download.file');
+Route::get('/download/file/{file_download:download_key}', DownloadFileController::class)->name('download.file');
