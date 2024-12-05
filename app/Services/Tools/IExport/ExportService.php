@@ -12,6 +12,7 @@ use App\Services\ServiceFactory;
 use App\Services\Tools\FileSystem\Downloads\DownloadsFileSystemService;
 use App\Services\Tools\SerializerService;
 use App\Traits\User\UserTrait;
+use Illuminate\Support\Facades\App;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 
 class ExportService
@@ -119,8 +120,10 @@ class ExportService
         if (!is_array($data[IExportTypeService::REQUEST_KEYS["EXPORT_DATA"]])) {
             throw new BadRequestHttpException("Export data not a valid array.");
         }
+
         array_walk($data[IExportTypeService::REQUEST_KEYS["EXPORT_DATA"]], function ($item, $key) {
             if (!is_array($item) || !array_key_exists("id", $item)) {
+                dd($item);
                 throw new BadRequestHttpException(
                     sprintf("Export data error: (id) does not exist in item position (%d)", $key)
                 );
@@ -133,4 +136,7 @@ class ExportService
         return $this->downloadsFileSystem;
     }
 
+    public static function getInstance(): ExportService {
+        return App::make(ExportService::class);
+    }
 }

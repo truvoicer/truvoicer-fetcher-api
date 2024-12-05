@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Models\Property;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -20,5 +21,14 @@ class SrConfigFactory extends Factory
             'value' => $this->faker->word,
             'array_value' => $this->faker->words,
         ];
+    }
+
+    public function withProperty(Property $property): SrConfigFactory
+    {
+        return $this->state(function (array $attributes) use ($property) {
+            return [
+                'property_id' => $property->id,
+            ];
+        });
     }
 }

@@ -28,7 +28,7 @@ class Sr extends Model
         'default_data' => 'json',
     ];
 
-    public function s()
+    public function s(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {
         return $this->belongsTo(S::class);
     }
@@ -68,7 +68,7 @@ class Sr extends Model
         return $this->hasOne(SrRateLimit::class, 'sr_id', 'id');
     }
 
-    public function srResponseKeys()
+    public function srResponseKeys(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
     {
         return $this->belongsToMany(
             SResponseKey::class,

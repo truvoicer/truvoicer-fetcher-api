@@ -14,16 +14,13 @@ class SrConfig extends Model
     public const REPOSITORY = SrConfigRepository::class;
 
     protected $casts = [
-        'value_choices' => 'array',
         'array_value' => 'array',
     ];
 
     protected $fillable = [
         'sr_id',
         'value',
-        'value_type',
         'array_value',
-        'value_choices',
     ];
 
     public function sr()

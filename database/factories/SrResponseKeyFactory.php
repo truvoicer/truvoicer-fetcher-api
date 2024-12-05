@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Models\Sr;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -30,5 +31,14 @@ class SrResponseKeyFactory extends Factory
             'append_extra_data_value' => null,
             'is_service_request' => $this->faker->boolean,
         ];
+    }
+
+    public function withSr(Sr $sr): SrResponseKeyFactory
+    {
+        return $this->state(function (array $attributes) use ($sr) {
+            return [
+                'sr_id' => $sr->id,
+            ];
+        });
     }
 }
