@@ -261,4 +261,9 @@ class SrResponseKeysImporterService extends ImporterBase
     {
         return false;
     }
+
+    public function deepFind(ImportType $importType, array $data, array $conditions, ?string $operation = 'AND'): array|null {
+        return null;
+    }
+
 }
