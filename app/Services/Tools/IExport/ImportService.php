@@ -74,8 +74,6 @@ class ImportService
         }
 
         $fileName = sprintf("import-%s.json", (new \DateTime())->format("YmdHis"));
-        $fileDirectory = sprintf("exports/%s", $fileName);
-
         $store = $this->importsFileSystemService->storeNewFile(
             $fileName,
             $fileName,

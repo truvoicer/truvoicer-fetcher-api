@@ -410,6 +410,64 @@ class ProviderImporterService extends ImporterBase
         }, $data);
     }
 
+    public function findSr(ImportType $importType, array $providers, array $conditions): array|null {
+        foreach ($providers as $item) {
+            $matchItem = null;
+            switch ($importType) {
+                case ImportType::SR:
+                    $matchItem = [$item];
+                    break;
+                case ImportType::SR_RESPONSE_KEY:
+                    if (!empty($item['sr_response_keys'])) {
+                        $matchItem = $item['sr_response_keys'];
+                    }
+                    break;
+                case ImportType::SR_CONFIG:
+                    if (!empty($item['sr_config'])) {
+                        $matchItem = $item['sr_config'];
+                    }
+                    break;
+                case ImportType::SR_PARAMETER:
+                    if (!empty($item['sr_parameter'])) {
+                        $matchItem = $item['sr_parameter'];
+                    }
+                    break;
+                case ImportType::SR_RATE_LIMIT:
+                    if (!empty($item['sr_rate_limit'])) {
+                        $matchItem = [$item['sr_rate_limit']];
+                    }
+                    break;
+                case ImportType::SR_SCHEDULE:
+                    if (!empty($item['sr_schedule'])) {
+                        $matchItem = [$item['sr_schedule']];
+                    }
+                    break;
+            }
+            $matches = array_filter($conditions, function ($condition, $key) use ($matchItem) {
+                return $matchItem[$key] === $condition;
+            }, ARRAY_FILTER_USE_BOTH);
+            if (count($matches) === count($conditions)) {
+                return $item;
+            }
+            if (!empty($item['child_srs']) && is_array($item['child_srs'])) {
+                $value = $this->findSr($importType, $item['child_srs'], [], $conditions);
+                if (!empty($value)) {
+                    return $value;
+                }
+            }
+            foreach (['srs', 'sr'] as $childrenKey) {
+                if (empty($item[$childrenKey]) || !is_array($item[$childrenKey])) {
+                    continue;
+                }
+                $value = $this->findSr($importType, $item[$childrenKey], ['srs', 'sr'], $conditions);
+                if (!empty($value)) {
+                    return $value;
+                }
+            }
+        }
+        return null;
+    }
+
     public function getProviderService(): ProviderService
     {
         return $this->providerService;
