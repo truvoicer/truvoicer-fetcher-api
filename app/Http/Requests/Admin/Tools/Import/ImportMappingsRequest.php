@@ -58,6 +58,10 @@ class ImportMappingsRequest extends FormRequest
                 'sometimes',
                 'array',
             ],
+            'mappings.*.dest' => [
+                'sometimes',
+                'array',
+            ],
             'file_id' => ['required', 'integer', 'exists:files,id'],
         ];
     }

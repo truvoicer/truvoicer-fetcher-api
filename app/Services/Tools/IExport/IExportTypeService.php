@@ -3,6 +3,7 @@
 namespace App\Services\Tools\IExport;
 
 use App\Enums\Import\ImportAction;
+use App\Enums\Import\ImportConfig;
 use App\Enums\Import\ImportMappingType;
 use App\Enums\Import\ImportType;
 use App\Repositories\SrRepository;
@@ -146,8 +147,55 @@ class IExportTypeService extends BaseService
         });
     }
 
+    private function findContentByType(ImportType $importType, array $contents): array {
+        return array_values(
+            array_filter($contents, function ($content) use ($importType) {
+                return $content['type'] === $importType->value;
+            })
+        );
+    }
+
+//    private function findContent(ImportType $importType, array $contents): array {
+//        foreach ($contents as $content) {
+//            $sra = $this->findSr($content['data'], ['srs', 'sr'], ['id' => 67]);
+//            switch ($importType) {
+//                case ImportType::SR:
+//                    dd($sra);
+////                case ImportType::SR_RESPONSE_KEY:
+////                case ImportType::SR_RATE_LIMIT:
+////                case ImportType::SR_CONFIG:
+////                case ImportType::SR_PARAMETER:
+////                case ImportType::SR_SCHEDULE:
+//
+//            }
+//        }
+//
+//    }
+
     public function runImportForType(array $contents, array $mappings)
     {
+        $instance = $this->getInstance(ImportType::PROVIDER->value);
+        foreach (ImportType::cases() as $importType) {
+
+            switch ($importType) {
+//                case ImportType::SR:
+//                case ImportType::SR_RESPONSE_KEY:
+//                case ImportType::SR_RATE_LIMIT:
+                case ImportType::SR_CONFIG:
+//                case ImportType::SR_PARAMETER:
+//                case ImportType::SR_SCHEDULE:
+                $providerMappings = $this->getMappingsByType($importType->value, $mappings);
+                $providerContent = $this->findContentByType(ImportType::PROVIDER, $contents);
+                    foreach ($providerContent as $content) {
+                        $sra = $instance->findSr($importType, $content['data'], ['id' => 223]);
+                        dd($sra);
+                    }
+                dd($providerMappings, $importType->value);
+                return $this->findMappings($mappings, $importType);
+
+            }
+        }
+        return [];
         $response = [];
         foreach ($contents as $item) {
             $getMappingsByType = $this->getMappingsByType($item["type"], $mappings);
@@ -156,6 +204,7 @@ class IExportTypeService extends BaseService
             });
             $data = $item['data'];
             $import = array_map(function (array $map) use($data) {
+                dd('ss');
                 return $this->destInterface($map, $data);
             }, array_values($filteredMappings));
             foreach ($import as $importItem) {
