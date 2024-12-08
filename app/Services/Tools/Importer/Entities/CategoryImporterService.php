@@ -6,6 +6,7 @@ use App\Enums\Import\ImportAction;
 use App\Enums\Import\ImportConfig;
 use App\Enums\Import\ImportMappingType;
 use App\Enums\Import\ImportType;
+use App\Helpers\Tools\UtilHelpers;
 use App\Models\Category;
 use App\Services\Category\CategoryService;
 use App\Services\Permission\AccessControlService;
@@ -199,6 +200,20 @@ class CategoryImporterService extends ImporterBase
         return array_map(function (array $providerData) {
             return $this->parseEntity($providerData);
         }, $data);
+    }
+
+    public function deepFind(ImportType $importType, array $data, array $conditions, ?string $operation = 'AND'): array|null {
+        return UtilHelpers::deepFindInNestedEntity(
+            data: $data,
+            conditions: $conditions,
+            childrenKeys: [],
+            itemToMatchHandler: function ($item) use ($importType) {
+                return match ($importType) {
+                    ImportType::CATEGORY => [$item],
+                    default => [],
+                };
+            }
+        );
     }
 
     public function getCategoryService(): CategoryService

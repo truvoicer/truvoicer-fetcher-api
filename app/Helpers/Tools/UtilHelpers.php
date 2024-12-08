@@ -51,4 +51,35 @@ class UtilHelpers
     {
         return (!empty($data[$key]) && is_numeric($data[$key]));
     }
+
+
+    public static function deepFindInNestedEntity(array $data, array $conditions, array $childrenKeys, \Closure $itemToMatchHandler): array|null {
+        foreach ($data as $item) {
+            $matchItem = $itemToMatchHandler($item);
+            if (!is_array($matchItem)) {
+                continue;
+            }
+
+            foreach ($matchItem as $match) {
+                $matches = array_filter($conditions, function ($condition, $key) use ($match) {
+                    return $match[$key] === $condition;
+                }, ARRAY_FILTER_USE_BOTH);
+                if (count($matches) === count($conditions)) {
+                    return $match;
+                }
+            }
+
+            foreach ($childrenKeys as $childrenKey) {
+                if (empty($item[$childrenKey]) || !is_array($item[$childrenKey])) {
+                    continue;
+                }
+
+                $value = self::deepFindInNestedEntity($item[$childrenKey], $conditions, $childrenKeys, $itemToMatchHandler);
+                if (!empty($value)) {
+                    return $value;
+                }
+            }
+        }
+        return null;
+    }
 }

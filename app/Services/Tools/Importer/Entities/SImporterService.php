@@ -6,6 +6,7 @@ use App\Enums\Import\ImportAction;
 use App\Enums\Import\ImportConfig;
 use App\Enums\Import\ImportMappingType;
 use App\Enums\Import\ImportType;
+use App\Helpers\Tools\UtilHelpers;
 use App\Models\S;
 use App\Services\ApiServices\ApiService;
 use App\Services\Permission\AccessControlService;
@@ -224,6 +225,20 @@ class SImporterService extends ImporterBase
         return array_map(function (array $providerData) {
             return $this->parseEntity($providerData);
         }, $data);
+    }
+    public function deepFind(ImportType $importType, array $data, array $conditions, ?string $operation = 'AND'): array|null {
+        return UtilHelpers::deepFindInNestedEntity(
+            data: $data,
+            conditions: $conditions,
+            childrenKeys: ['s_response_key'],
+            itemToMatchHandler: function ($item) use ($importType) {
+                return match ($importType) {
+                    ImportType::SERVICE => [$item],
+                    ImportType::S_RESPONSE_KEY => (!empty($item['s_response_key']))? $item['s_response_key'] : [],
+                    default => [],
+                };
+            }
+        );
     }
     public function getApiService(): ApiService
     {

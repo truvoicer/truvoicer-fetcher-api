@@ -5,6 +5,7 @@ namespace App\Services\Tools\Importer\Entities;
 use App\Enums\Import\ImportAction;
 use App\Enums\Import\ImportConfig;
 use App\Enums\Import\ImportMappingType;
+use App\Enums\Import\ImportType;
 use App\Models\Provider;
 use App\Services\Permission\AccessControlService;
 use App\Traits\Error\ErrorTrait;
@@ -48,6 +49,8 @@ abstract class ImporterBase
     abstract protected function overwrite(array $data, bool $withChildren): array;
 
     abstract protected function create(array $data, bool $withChildren): array;
+
+    abstract protected function deepFind(ImportType $importType, array $data, array $conditions, ?string $operation = 'AND'): array|null;
 
     public function importSelfNoChildren(ImportAction $action, array $map, array $data): array
     {

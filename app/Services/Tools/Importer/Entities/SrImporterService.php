@@ -6,6 +6,7 @@ use App\Enums\Import\ImportAction;
 use App\Enums\Import\ImportConfig;
 use App\Enums\Import\ImportMappingType;
 use App\Enums\Import\ImportType;
+use App\Helpers\Tools\UtilHelpers;
 use App\Models\Provider;
 use App\Models\S;
 use App\Models\Sr;
@@ -570,4 +571,24 @@ class SrImporterService extends ImporterBase
     {
         return [];
     }
+
+    public function deepFind(ImportType $importType, array $data, array $conditions, ?string $operation = 'AND'): array|null {
+        return UtilHelpers::deepFindInNestedEntity(
+            data: $data,
+            conditions: $conditions,
+            childrenKeys: ['srs', 'sr', 'child_srs'],
+            itemToMatchHandler: function ($item) use ($importType) {
+                return match ($importType) {
+                    ImportType::SR => [$item],
+                    ImportType::SR_RESPONSE_KEY => (!empty($item['sr_response_keys']))? $item['sr_response_keys'] : [],
+                    ImportType::SR_CONFIG => (!empty($item['sr_config']))? $item['sr_config'] : [],
+                    ImportType::SR_PARAMETER => (!empty($item['sr_parameter']))? $item['sr_parameter'] : [],
+                    ImportType::SR_RATE_LIMIT => (!empty($item['sr_rate_limit']))? [$item['sr_rate_limit']] : [],
+                    ImportType::SR_SCHEDULE => (!empty($item['sr_schedule']))? [$item['sr_schedule']] : [],
+                    default => [],
+                };
+            }
+        );
+    }
+
 }

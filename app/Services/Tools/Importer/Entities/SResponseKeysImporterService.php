@@ -241,6 +241,10 @@ class SResponseKeysImporterService extends ImporterBase
         return [];
     }
 
+    public function deepFind(ImportType $importType, array $data, array $conditions, ?string $operation = 'AND'): array|null {
+        return null;
+    }
+
     public function getExportTypeData($item): array|bool
     {
         return false;

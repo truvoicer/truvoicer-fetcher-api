@@ -84,57 +84,52 @@ class IExportTypeService extends BaseService
         $this->srRepository = new SrRepository();
     }
 
-    private function getInstance(string $importType)
+    private function getInstance(ImportType $importType): ImporterBase
     {
         switch ($importType) {
-            case ImportType::CATEGORY->value:
+            case ImportType::CATEGORY:
                 $instance = App::make(CategoryImporterService::class);
                 break;
-            case ImportType::PROVIDER->value:
+            case ImportType::PROVIDER:
                 $instance = App::make(ProviderImporterService::class);
                 break;
-            case ImportType::SERVICE->value:
+            case ImportType::SERVICE:
                 $instance = App::make(SImporterService::class);
                 break;
-            case ImportType::PROPERTY->value:
+            case ImportType::PROPERTY:
                 $instance = App::make(PropertyImporterService::class);
                 break;
-            case ImportType::SR->value:
+            case ImportType::SR:
                 $instance = App::make(SrImporterService::class);
                 break;
-            case ImportType::SR_RATE_LIMIT->value:
+            case ImportType::SR_RATE_LIMIT:
                 $instance = App::make(SrRateLimitImporterService::class);
                 break;
-            case ImportType::SR_SCHEDULE->value:
+            case ImportType::SR_SCHEDULE:
                 $instance = App::make(SrScheduleImporterService::class);
                 break;
-            case ImportType::SR_RESPONSE_KEY->value:
+            case ImportType::SR_RESPONSE_KEY:
                 $instance = App::make(SrResponseKeysImporterService::class);
                 break;
-            case ImportType::SR_PARAMETER->value:
+            case ImportType::SR_PARAMETER:
                 $instance = App::make(SrParameterImporterService::class);
                 break;
-            case ImportType::SR_CONFIG->value:
+            case ImportType::SR_CONFIG:
                 $instance = App::make(SrConfigImporterService::class);
                 break;
-            case ImportType::PROVIDER_RATE_LIMIT->value:
+            case ImportType::PROVIDER_RATE_LIMIT:
                 $instance = App::make(ProviderRateLimitImporterService::class);
                 break;
-            case ImportType::PROVIDER_PROPERTY->value:
+            case ImportType::PROVIDER_PROPERTY:
                 $instance = App::make(ProviderPropertiesImporterService::class);
                 break;
             default:
                 throw new BadRequestHttpException(
-                    sprintf("Import type error. %s", $importType)
+                    sprintf("Import type error. %s", $importType->value)
                 );
         }
         $instance->setUser($this->getUser());
         return $instance;
-    }
-
-    public function getImportDataMappings($importType, $fileContents)
-    {
-        return $this->getInstance($importType)->getImportMappings($fileContents);
     }
 
     private function getMappingsByType(string $type, array $mappings): array
@@ -148,67 +143,64 @@ class IExportTypeService extends BaseService
     }
 
     private function findContentByType(ImportType $importType, array $contents): array {
-        return array_values(
-            array_filter($contents, function ($content) use ($importType) {
-                return $content['type'] === $importType->value;
-            })
-        );
+        switch ($importType) {
+            case ImportType::SR:
+            case ImportType::SR_RESPONSE_KEY:
+            case ImportType::SR_RATE_LIMIT:
+            case ImportType::SR_CONFIG:
+            case ImportType::SR_PARAMETER:
+            case ImportType::SR_SCHEDULE:
+                $contents = array_values(
+                    array_filter($contents, function ($content) use ($importType) {
+                        return $content['type'] === ImportType::PROVIDER->value;
+                    })
+                );
+                $contents['data'] = array_merge(array_map(function ($content) {
+                    if (!empty(($content['srs'])) && is_array($content['srs'])) {
+                        return $content['srs'];
+                    } elseif (!empty($content['child_srs']) && is_array($content['child_srs'])) {
+                        return $content['child_srs'];
+                    }
+                    return [];
+                }, $contents));
+                break;
+            default:
+                $contents = array_values(
+                    array_filter($contents, function ($content) use ($importType) {
+                        return $content['type'] === $importType->value;
+                    })
+                );
+        }
     }
 
-//    private function findContent(ImportType $importType, array $contents): array {
-//        foreach ($contents as $content) {
-//            $sra = $this->findSr($content['data'], ['srs', 'sr'], ['id' => 67]);
-//            switch ($importType) {
-//                case ImportType::SR:
-//                    dd($sra);
-////                case ImportType::SR_RESPONSE_KEY:
-////                case ImportType::SR_RATE_LIMIT:
-////                case ImportType::SR_CONFIG:
-////                case ImportType::SR_PARAMETER:
-////                case ImportType::SR_SCHEDULE:
-//
-//            }
-//        }
-//
-//    }
 
     public function runImportForType(array $contents, array $mappings)
     {
-        $instance = $this->getInstance(ImportType::PROVIDER->value);
-        foreach (ImportType::cases() as $importType) {
-
-            switch ($importType) {
-//                case ImportType::SR:
-//                case ImportType::SR_RESPONSE_KEY:
-//                case ImportType::SR_RATE_LIMIT:
-                case ImportType::SR_CONFIG:
-//                case ImportType::SR_PARAMETER:
-//                case ImportType::SR_SCHEDULE:
-                $providerMappings = $this->getMappingsByType($importType->value, $mappings);
-                $providerContent = $this->findContentByType(ImportType::PROVIDER, $contents);
-                    foreach ($providerContent as $content) {
-                        $sra = $instance->findSr($importType, $content['data'], ['id' => 223]);
-                        dd($sra);
-                    }
-                dd($providerMappings, $importType->value);
-                return $this->findMappings($mappings, $importType);
-
-            }
-        }
-        return [];
         $response = [];
-        foreach ($contents as $item) {
-            $getMappingsByType = $this->getMappingsByType($item["type"], $mappings);
-            $filteredMappings = array_filter($getMappingsByType, function ($mapping) {
-                return !empty($mapping['mapping']['source']);
-            });
-            $data = $item['data'];
-            $import = array_map(function (array $map) use($data) {
-                dd('ss');
-                return $this->destInterface($map, $data);
-            }, array_values($filteredMappings));
-            foreach ($import as $importItem) {
-                $response[] = $importItem;
+        foreach (ImportType::cases() as $importType) {
+            $instance = null;
+            $filterMappings = [];
+            $filterContent = [];
+            $instance = $this->getInstance($importType);
+            $filterMappings = $this->getMappingsByType($importType->value, $mappings);
+            $filterContent = $this->findContentByType($importType, $contents);
+            foreach ($filterContent as $content) {
+                $import = array_map(function (array $map) use ($instance, $importType, $content) {
+                    if (!empty($map['root']) && !empty($map['children']) && is_array($map['children']) && count($map['children'])) {
+                        $conditions = array_map(function ($child) {
+                            return ['id' => $child['id']];
+                        }, $map['children']);
+                        $operation = 'OR';
+                    } else {
+                        $conditions = ['id' => $map['id']];
+                        $operation = 'AND';
+                    }
+                    $data = $instance->deepFind($importType, $content['data'], $conditions, $operation);
+                    return $this->destInterface($map, $data);
+                }, array_values($filterMappings));
+                foreach ($import as $importItem) {
+                    $response[] = $importItem;
+                }
             }
         }
         return $response;
@@ -227,10 +219,10 @@ class IExportTypeService extends BaseService
         }   else {
             $importType = $map['mapping']['dest'];
         }
-        return $this->getInstance($importType)->importMapFactory($map, $data);
+        return $this->getInstance(ImportType::from($importType))->importMapFactory($map, $data);
     }
 
-    public function validateType($importType, array $data): void
+    public function validateType(ImportType $importType, array $data): void
     {
         $instance = $this->getInstance($importType);
         $instance->validateImportData($data);
@@ -245,14 +237,14 @@ class IExportTypeService extends BaseService
     public function validateTypeBatch(array $data): void
     {
         foreach ($data as $item) {
-            $this->validateType($item["type"], $item['data']);
+            $this->validateType(ImportType::from($item["type"]), $item['data']);
         }
     }
 
     public function filterImportData(array $data): array
     {
         return array_map(function ($item) {
-            $instance = $this->getInstance($item["type"]);
+            $instance = $this->getInstance(ImportType::from($item["type"]));
             return $instance->filterImportData($item['data']);
         }, $data);
     }
@@ -261,7 +253,7 @@ class IExportTypeService extends BaseService
     public function getExportTypeData($exportType, $data): array
     {
         return array_map(function ($item) use ($exportType) {
-            $instance = $this->getInstance($exportType);
+            $instance = $this->getInstance(ImportType::from($exportType));
             $instance->setUser($this->getUser());
             $instance->getAccessControlService()->setUser($this->getUser());
             return $instance->getExportTypeData($item);
