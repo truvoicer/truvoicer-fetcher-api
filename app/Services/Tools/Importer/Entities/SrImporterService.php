@@ -84,11 +84,11 @@ class SrImporterService extends ImporterBase
         ];
     }
 
-    protected function overwrite(array $data, bool $withChildren, array $map): array
+    protected function overwrite(array $data, bool $withChildren, array $map, ?array $dest = null): array
     {
 
         try {
-            $provider = $this->findProvider($data, $map);
+            $provider = $this->findProvider($data, $map, $dest);
             if (!$provider['success']) {
                 return $provider;
             }
@@ -209,10 +209,10 @@ class SrImporterService extends ImporterBase
         }
         return $this->categoryImporterService->getCategoryService()->getCategoryRepository()->getModel();
     }
-    protected function create(array $data, bool $withChildren, array $map): array
+    protected function create(array $data, bool $withChildren, array $map, ?array $dest = null): array
     {
         try {
-            $provider = $this->findProvider($data, $map);
+            $provider = $this->findProvider($data, $map, $dest);
             if (!$provider['success']) {
                 return $provider;
             }
@@ -273,9 +273,9 @@ class SrImporterService extends ImporterBase
         }
     }
 
-    private function findProvider(array $data, array $map): array
+    private function findProvider(array $data, array $map, ?array $dest = null): array
     {
-        dd($data, $map);
+        dd($data, $map, $dest);
         if (!empty($data['provider'])) {
             $provider = $data['provider'];
         } elseif (!empty($data['pivot']['provider_id'])) {
@@ -404,15 +404,15 @@ class SrImporterService extends ImporterBase
         ];
     }
 
-    public function importSelfNoChildren(ImportAction $action, array $map, array $data): array
+    public function importSelfNoChildren(ImportAction $action, array $map, array $data, ?array $dest = null): array
     {
-        return $this->importSelf($action, $map, $data, false);
+        return $this->importSelf($action, $map, $data, false, $dest);
     }
 
-    public function importSelfWithChildren(ImportAction $action, array $map, array $data): array
+    public function importSelfWithChildren(ImportAction $action, array $map, array $data, ?array $dest = null): array
     {
 
-        return $this->importSelf($action, $map, $data, true);
+        return $this->importSelf($action, $map, $data, true, $dest);
     }
 
     public function getImportMappings(array $data): array

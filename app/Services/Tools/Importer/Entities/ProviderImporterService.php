@@ -143,7 +143,7 @@ class ProviderImporterService extends ImporterBase
         return $response;
     }
 
-    protected function create(array $data, bool $withChildren, array $map): array
+    protected function create(array $data, bool $withChildren, array $map, ?array $dest = null): array
     {
         try {
 //            dd((new Provider)->newFromBuilder($data));
@@ -193,7 +193,7 @@ class ProviderImporterService extends ImporterBase
         }
     }
 
-    protected function overwrite(array $data, bool $withChildren, array $map): array
+    protected function overwrite(array $data, bool $withChildren, array $map, ?array $dest = null): array
     {
         try {
             $checkProvider = $this->providerService->getProviderRepository()->findUserModelQuery(

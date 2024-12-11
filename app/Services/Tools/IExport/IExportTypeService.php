@@ -175,7 +175,7 @@ class IExportTypeService extends BaseService
                 }
                 $contents = [
                     [
-                        'type' => ImportType::SR->value,
+                        'type' => $importType->value,
                         'data' => $data
                     ]
                 ];
@@ -241,7 +241,9 @@ class IExportTypeService extends BaseService
         } else {
             $importType = $map['mapping']['dest'];
         }
-        return $this->getInstance(ImportType::from($importType))->importMapFactory($map, $data);
+        dd($importType, $map);
+        $dest = (!empty($map['dest'])) ? $map['dest'] :null;
+        return $this->getInstance(ImportType::from($importType))->importMapFactory($map, $data, $dest);
     }
 
     public function validateType(ImportType $importType, array $data): void

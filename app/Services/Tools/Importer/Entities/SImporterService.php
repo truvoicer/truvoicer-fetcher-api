@@ -10,6 +10,7 @@ use App\Helpers\Tools\UtilHelpers;
 use App\Models\S;
 use App\Services\ApiServices\ApiService;
 use App\Services\Permission\AccessControlService;
+use Exception;
 
 class SImporterService extends ImporterBase
 {
@@ -58,7 +59,7 @@ class SImporterService extends ImporterBase
         $this->apiService->setThrowException(false);
     }
 
-    protected function overwrite(array $data, bool $withChildren, array $map): array
+    protected function overwrite(array $data, bool $withChildren, array $map, ?array $dest = null): array
     {
 
         try {
@@ -87,7 +88,7 @@ class SImporterService extends ImporterBase
                 'success' => true,
                 'message' => "Service {$data['name']} imported successfully,"
             ];
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             return [
                 'success' => false,
                 'data' => $data,
@@ -96,7 +97,7 @@ class SImporterService extends ImporterBase
         }
     }
 
-    protected function create(array $data, bool $withChildren, array $map): array
+    protected function create(array $data, bool $withChildren, array $map, ?array $dest = null): array
     {
         try {
             $checkService = $this->apiService->getServiceRepository()->findUserModelBy(new S(), $this->getUser(), [
@@ -124,7 +125,7 @@ class SImporterService extends ImporterBase
                 'success' => true,
                 'message' => "Service {$data['name']} imported successfully,"
             ];
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             return [
                 'success' => false,
                 'data' => $data,
@@ -133,12 +134,12 @@ class SImporterService extends ImporterBase
         }
     }
 
-    public function importSelfNoChildren(ImportAction $action, array $map, array $data): array {
-        return $this->importSelf($action, $map, $data, false);
+    public function importSelfNoChildren(ImportAction $action, array $map, array $data, ?array $dest = null): array {
+        return $this->importSelf($action, $map, $data, false, $dest);
     }
 
-    public function importSelfWithChildren(ImportAction $action, array $map, array $data): array {
-        return $this->importSelf($action, $map, $data, true);
+    public function importSelfWithChildren(ImportAction $action, array $map, array $data, ?array $dest = null): array {
+        return $this->importSelf($action, $map, $data, true, $dest);
     }
 
     public function importServiceNoChildren(array $data): array
@@ -152,7 +153,7 @@ class SImporterService extends ImporterBase
                 'success' => true,
                 'data' => $this->apiService->getServiceRepository()->getModel()
             ];
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             return [
                 'success' => false,
                 'data' => $data,
@@ -172,7 +173,7 @@ class SImporterService extends ImporterBase
                 'success' => true,
                 'data' => $this->apiService->getServiceRepository()->getModel()
             ];
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             return [
                 'success' => false,
                 'data' => $data,

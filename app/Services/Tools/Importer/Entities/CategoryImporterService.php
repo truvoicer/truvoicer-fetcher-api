@@ -53,7 +53,7 @@ class CategoryImporterService extends ImporterBase
     {
         $this->categoryService->setThrowException(false);
     }
-    protected function create(array $data, bool $withChildren, array $map): array
+    protected function create(array $data, bool $withChildren, array $map, ?array $dest = null): array
     {
         try {
             $checkCategory = $this->categoryService->getUserCategoryRepository()->findUserModelBy(
@@ -88,7 +88,7 @@ class CategoryImporterService extends ImporterBase
         }
     }
 
-    protected function overwrite(array $data, bool $withChildren, array $map): array
+    protected function overwrite(array $data, bool $withChildren, array $map, ?array $dest = null): array
     {
         try {
             $checkCategory = $this->categoryService->getUserCategoryRepository()->findUserModelBy(
@@ -130,14 +130,14 @@ class CategoryImporterService extends ImporterBase
         }
     }
 
-    public function importSelfNoChildren(ImportAction $action, array $map, array $data): array
+    public function importSelfNoChildren(ImportAction $action, array $map, array $data, ?array $dest = null): array
     {
-        return $this->importSelf($action, $map, $data, false);
+        return $this->importSelf($action, $map, $data, false, $dest);
     }
 
-    public function importSelfWithChildren(ImportAction $action, array $map, array $data): array
+    public function importSelfWithChildren(ImportAction $action, array $map, array $data, ?array $dest = null): array
     {
-        return $this->importSelf($action, $map, $data, true);
+        return $this->importSelf($action, $map, $data, true, $dest);
     }
 
     public function getImportMappings(array $data): array
