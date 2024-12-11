@@ -6,13 +6,14 @@ use App\Enums\Import\ImportAction;
 use App\Enums\Import\ImportConfig;
 use App\Enums\Import\ImportMappingType;
 use App\Enums\Import\ImportType;
+use App\Helpers\Tools\UtilHelpers;
 use App\Models\Property;
-use App\Models\S;
 use App\Models\Sr;
 use App\Models\SrConfig;
 use App\Services\ApiServices\ServiceRequests\SrConfigService;
 use App\Services\ApiServices\ServiceRequests\SrService;
 use App\Services\Permission\AccessControlService;
+use Exception;
 use Illuminate\Database\Eloquent\Model;
 
 class SrConfigImporterService extends ImporterBase
@@ -46,7 +47,6 @@ class SrConfigImporterService extends ImporterBase
             'value',
             '{property.label}: {value}',
             'label',
-            [],
         );
     }
 
@@ -61,7 +61,7 @@ class SrConfigImporterService extends ImporterBase
             ],
         ];
     }
-    private function saveSrConfig(Sr $sr, Property $property, array $data)
+    private function saveSrConfig(Sr $sr, Property $property, array $data): array
     {
         if (!$this->srConfigService->saveRequestConfig($sr, $property, array_merge($data, $data['property']))) {
             return [
@@ -76,7 +76,7 @@ class SrConfigImporterService extends ImporterBase
         ];
     }
 
-    protected function overwrite(array $data, bool $withChildren): array
+    protected function overwrite(array $data, bool $withChildren, array $map): array
     {
         try {
             $sr = $this->findSr($data);
@@ -88,7 +88,11 @@ class SrConfigImporterService extends ImporterBase
             $property = $this->findProperty($sr, $data);
             if (!$property['success']) {
                 $property = $this->propertyImporterService->import(
-                    ImportAction::CREATE, $data['property'], $withChildren);
+                    ImportAction::CREATE,
+                    $data['property'],
+                    $withChildren,
+                    $map
+                );
                 if (!$property['success']) {
                     return $property;
                 }
@@ -98,7 +102,7 @@ class SrConfigImporterService extends ImporterBase
             }
 
             return $this->saveSrConfig($sr, $property, $data);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             return [
                 'success' => false,
                 'message' => $e->getMessage(),
@@ -107,7 +111,7 @@ class SrConfigImporterService extends ImporterBase
         }
     }
 
-    protected function create(array $data, bool $withChildren): array
+    protected function create(array $data, bool $withChildren, array $map): array
     {
         try {
             $sr = $this->findSr($data);
@@ -125,7 +129,7 @@ class SrConfigImporterService extends ImporterBase
             }
             $property = $property['property'];
             return $this->saveSrConfig($sr, $property, $data);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             return [
                 'success' => false,
                 'message' => $e->getMessage(),
@@ -194,7 +198,7 @@ class SrConfigImporterService extends ImporterBase
         return $this->importSelf($action, $map, $data, true);
     }
 
-    public function getImportMappings(array $data)
+    public function getImportMappings(array $data): array
     {
         return [];
     }
@@ -243,7 +247,18 @@ class SrConfigImporterService extends ImporterBase
     }
 
     public function deepFind(ImportType $importType, array $data, array $conditions, ?string $operation = 'AND'): array|null {
-        return null;
+        return UtilHelpers::deepFindInNestedEntity(
+            data: $data,
+            conditions: $conditions,
+            childrenKeys: ['srs', 'sr', 'child_srs'],
+            itemToMatchHandler: function ($item) use ($importType) {
+                return match ($importType) {
+                    ImportType::SR_CONFIG => (!empty($item['sr_config']))? $item['sr_config'] : [],
+                    default => [],
+                };
+            },
+            operation: $operation
+        );
     }
 
     public function getExportTypeData($item): array|bool

@@ -6,13 +6,13 @@ use App\Enums\Import\ImportAction;
 use App\Enums\Import\ImportConfig;
 use App\Enums\Import\ImportMappingType;
 use App\Enums\Import\ImportType;
-use App\Models\S;
+use App\Helpers\Tools\UtilHelpers;
 use App\Models\Sr;
 use App\Models\SrParameter;
 use App\Services\ApiServices\ServiceRequests\SrParametersService;
 use App\Services\ApiServices\ServiceRequests\SrService;
 use App\Services\Permission\AccessControlService;
-use Illuminate\Database\Eloquent\Model;
+use Exception;
 
 class SrParameterImporterService extends ImporterBase
 {
@@ -42,7 +42,6 @@ class SrParameterImporterService extends ImporterBase
             'name',
             '{name}: {value}',
             'label',
-            [],
         );
     }
 
@@ -58,7 +57,7 @@ class SrParameterImporterService extends ImporterBase
         ];
     }
 
-    protected function overwrite(array $data, bool $withChildren): array
+    protected function overwrite(array $data, bool $withChildren, array $map): array
     {
         try {
             $sr = $this->findSr($data);
@@ -98,7 +97,7 @@ class SrParameterImporterService extends ImporterBase
                 'success' => true,
                 'message' => "Sr parameter {$sr->name} imported successfully for sr {$sr->name}.."
             ];
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             return [
                 'success' => false,
                 'message' => $e->getMessage(),
@@ -107,7 +106,7 @@ class SrParameterImporterService extends ImporterBase
         }
     }
 
-    protected function create(array $data, bool $withChildren): array
+    protected function create(array $data, bool $withChildren, array $map): array
     {
         try {
             $sr = $this->findSr($data);
@@ -133,7 +132,7 @@ class SrParameterImporterService extends ImporterBase
                 'success' => true,
                 'message' => "Sr parameter {$data['name']} imported successfully for sr {$sr->name}.."
             ];
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             return [
                 'success' => false,
                 'message' => $e->getMessage(),
@@ -173,7 +172,7 @@ class SrParameterImporterService extends ImporterBase
         return $this->importSelf($action, $map, $data, true);
     }
 
-    public function getImportMappings(array $data)
+    public function getImportMappings(array $data): array
     {
         return [];
     }
@@ -238,7 +237,19 @@ class SrParameterImporterService extends ImporterBase
     }
 
     public function deepFind(ImportType $importType, array $data, array $conditions, ?string $operation = 'AND'): array|null {
-        return null;
+
+        return UtilHelpers::deepFindInNestedEntity(
+            data: $data,
+            conditions: $conditions,
+            childrenKeys: ['srs', 'sr', 'child_srs'],
+            itemToMatchHandler: function ($item) use ($importType) {
+                return match ($importType) {
+                    ImportType::SR_PARAMETER => (!empty($item['sr_parameter']))? $item['sr_parameter'] : [],
+                    default => [],
+                };
+            },
+            operation: $operation
+        );
     }
 
 }

@@ -11,6 +11,7 @@ use App\Models\Category;
 use App\Services\Category\CategoryService;
 use App\Services\Permission\AccessControlService;
 use App\Services\Permission\PermissionService;
+use Exception;
 
 class CategoryImporterService extends ImporterBase
 {
@@ -33,7 +34,6 @@ class CategoryImporterService extends ImporterBase
             'name',
             'label',
             'label',
-            [],
         );
     }
 
@@ -53,7 +53,7 @@ class CategoryImporterService extends ImporterBase
     {
         $this->categoryService->setThrowException(false);
     }
-    protected function create(array $data, bool $withChildren): array
+    protected function create(array $data, bool $withChildren, array $map): array
     {
         try {
             $checkCategory = $this->categoryService->getUserCategoryRepository()->findUserModelBy(
@@ -79,7 +79,7 @@ class CategoryImporterService extends ImporterBase
                 'success' => true,
                 'message' => $this->categoryService->getCategoryRepository()->getModel()
             ];
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             return [
                 'success' => false,
                 'data' => $data,
@@ -88,7 +88,7 @@ class CategoryImporterService extends ImporterBase
         }
     }
 
-    protected function overwrite(array $data, bool $withChildren): array
+    protected function overwrite(array $data, bool $withChildren, array $map): array
     {
         try {
             $checkCategory = $this->categoryService->getUserCategoryRepository()->findUserModelBy(
@@ -121,7 +121,7 @@ class CategoryImporterService extends ImporterBase
                 'success' => true,
                 'message' => "Category {$data['name']} updated successfully."
             ];
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             return [
                 'success' => false,
                 'data' => $data,
@@ -140,7 +140,7 @@ class CategoryImporterService extends ImporterBase
         return $this->importSelf($action, $map, $data, true);
     }
 
-    public function getImportMappings(array $data)
+    public function getImportMappings(array $data): array
     {
         return [];
     }
@@ -212,7 +212,8 @@ class CategoryImporterService extends ImporterBase
                     ImportType::CATEGORY => [$item],
                     default => [],
                 };
-            }
+            },
+            operation: $operation
         );
     }
 

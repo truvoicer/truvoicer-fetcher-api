@@ -8,10 +8,9 @@ use App\Enums\Import\ImportType;
 use App\Helpers\Tools\UtilHelpers;
 use App\Models\Property;
 use App\Services\Permission\AccessControlService;
-use App\Services\Permission\PermissionService;
 use App\Services\Property\PropertyService;
+use Exception;
 use Illuminate\Database\Eloquent\Model;
-use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 
 class PropertyImporterService extends ImporterBase {
 
@@ -33,7 +32,6 @@ class PropertyImporterService extends ImporterBase {
             'name',
             'label',
             'label',
-            [],
 
         );
     }
@@ -63,7 +61,7 @@ class PropertyImporterService extends ImporterBase {
         return $this->propertyService->getPropertyRepository()->findOne();
     }
 
-    protected function create(array $data, bool $withChildren): array
+    protected function create(array $data, bool $withChildren, array $map): array
     {
         try {
             $property = $this->findProperty(['name' => $data['name']]);
@@ -83,7 +81,7 @@ class PropertyImporterService extends ImporterBase {
                 'success' => true,
                 'message' => "Property {$data['name']} imported successfully."
             ];
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             return [
                 'success' => false,
                 'data' => $data,
@@ -93,11 +91,11 @@ class PropertyImporterService extends ImporterBase {
     }
 
 
-    protected function overwrite(array $data, bool $withChildren): array
+    protected function overwrite(array $data, bool $withChildren, array $map): array
     {
         try {
             $property = $this->findProperty(['name' => $data['name']]);
-            if (!$property) {
+            if (!$property instanceof Property) {
                 return [
                     'success' => false,
                     'message' => "Property {$data['name']} not found."
@@ -113,7 +111,7 @@ class PropertyImporterService extends ImporterBase {
                 'success' => true,
                 'message' => "Property {$data['name']} imported successfully."
             ];
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             return [
                 'success' => false,
                 'data' => $data,
@@ -130,7 +128,8 @@ class PropertyImporterService extends ImporterBase {
         return $this->importSelf($action, $map, $data, true);
     }
 
-    public function getImportMappings(array $data) {
+    public function getImportMappings(array $data): array
+    {
         return [];
     }
     public function validateImportData(array $data): void {
@@ -210,7 +209,8 @@ class PropertyImporterService extends ImporterBase {
                     ImportType::PROPERTY => [$item],
                     default => [],
                 };
-            }
+            },
+            operation: $operation
         );
     }
     public function getPropertyService(): PropertyService

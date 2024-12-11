@@ -6,17 +6,13 @@ use App\Enums\Import\ImportAction;
 use App\Enums\Import\ImportConfig;
 use App\Enums\Import\ImportMappingType;
 use App\Enums\Import\ImportType;
-use App\Models\Provider;
+use App\Helpers\Tools\UtilHelpers;
 use App\Models\S;
-use App\Models\Sr;
 use App\Models\SResponseKey;
-use App\Models\SrResponseKey;
 use App\Services\ApiServices\ApiService;
-use App\Services\ApiServices\ServiceRequests\ResponseKeys\SrResponseKeyService;
-use App\Services\ApiServices\ServiceRequests\SrService;
 use App\Services\ApiServices\SResponseKeysService;
 use App\Services\Permission\AccessControlService;
-use Illuminate\Database\Eloquent\Model;
+use Exception;
 
 class SResponseKeysImporterService extends ImporterBase
 {
@@ -46,7 +42,6 @@ class SResponseKeysImporterService extends ImporterBase
             'name',
             'name',
             'label',
-            [],
         );
     }
 
@@ -68,10 +63,10 @@ class SResponseKeysImporterService extends ImporterBase
         ];
     }
 
-    protected function overwrite(array $data, bool $withChildren): array
+    protected function overwrite(array $data, bool $withChildren, array $map): array
     {
         try {
-            $service = $this->findService($data, $withChildren);
+            $service = $this->findService($data);
             if (!$service['success']) {
                 return $service;
             }
@@ -102,7 +97,7 @@ class SResponseKeysImporterService extends ImporterBase
                 'success' => true,
                 'message' => "Service response key({$data['name']}) for Sr {$service->name} imported successfully."
             ];
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             return [
                 'success' => false,
                 'data' => $data,
@@ -111,10 +106,10 @@ class SResponseKeysImporterService extends ImporterBase
         }
     }
 
-    protected function create(array $data, bool $withChildren): array
+    protected function create(array $data, bool $withChildren, array $map): array
     {
         try {
-            $service = $this->findService($data, $withChildren);
+            $service = $this->findService($data);
             if (!$service['success']) {
                 return $service;
             }
@@ -144,7 +139,7 @@ class SResponseKeysImporterService extends ImporterBase
                 'success' => true,
                 'message' => "Service response key({$data['name']}) for Sr {$service->name} imported successfully."
             ];
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             return [
                 'success' => false,
                 'data' => $data,
@@ -187,7 +182,7 @@ class SResponseKeysImporterService extends ImporterBase
         return $this->importSelf($action, $map, $data, true);
     }
 
-    public function getImportMappings(array $data)
+    public function getImportMappings(array $data): array
     {
         return [];
     }
@@ -242,7 +237,19 @@ class SResponseKeysImporterService extends ImporterBase
     }
 
     public function deepFind(ImportType $importType, array $data, array $conditions, ?string $operation = 'AND'): array|null {
-        return null;
+
+        return UtilHelpers::deepFindInNestedEntity(
+            data: $data,
+            conditions: $conditions,
+            childrenKeys: ['s_response_key'],
+            itemToMatchHandler: function ($item) use ($importType) {
+                return match ($importType) {
+                    ImportType::S_RESPONSE_KEY => (!empty($item['s_response_key']))? $item['s_response_key'] : [],
+                    default => [],
+                };
+            },
+            operation: $operation
+        );
     }
 
     public function getExportTypeData($item): array|bool

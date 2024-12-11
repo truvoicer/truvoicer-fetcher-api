@@ -53,20 +53,40 @@ class UtilHelpers
     }
 
 
-    public static function deepFindInNestedEntity(array $data, array $conditions, array $childrenKeys, \Closure $itemToMatchHandler): array|null {
+    public static function deepFindInNestedEntity(
+        array $data,
+        array $conditions,
+        array $childrenKeys,
+        \Closure $itemToMatchHandler,
+        ?string $operation = 'AND'
+    ): array|null {
         foreach ($data as $item) {
-            $matchItem = $itemToMatchHandler($item);
-            if (!is_array($matchItem)) {
+            $itemsToMatch = $itemToMatchHandler($item);
+            if (!is_array($itemsToMatch)) {
                 continue;
             }
-
-            foreach ($matchItem as $match) {
-                $matches = array_filter($conditions, function ($condition, $key) use ($match) {
-                    return $match[$key] === $condition;
+            $matches = [];
+            foreach ($itemsToMatch as $itemToMatch) {
+                $conditionsMatch = array_filter($conditions, function ($condition) use ($itemToMatch) {
+                    $key = key($condition);
+                    return $itemToMatch[$key] === $condition[$key];
                 }, ARRAY_FILTER_USE_BOTH);
-                if (count($matches) === count($conditions)) {
-                    return $match;
+
+                switch ($operation) {
+                    case 'AND':
+                        if (count($conditionsMatch) === count($conditions)) {
+                            $matches[] = $itemToMatch;
+                        }
+                        break;
+                    case 'OR':
+                        if (count($conditionsMatch) > 0) {
+                            $matches[] = $itemToMatch;
+                        }
+                        break;
                 }
+            }
+            if (count($matches) > 0) {
+                return $matches;
             }
 
             foreach ($childrenKeys as $childrenKey) {
