@@ -12,7 +12,7 @@ use App\Repositories\SrRepository;
 use App\Services\Permission\PermissionService;
 use App\Services\Provider\ProviderService;
 use App\Services\Permission\AccessControlService;
-use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
+use Exception;
 
 class ProviderImporterService extends ImporterBase
 {
@@ -73,7 +73,7 @@ class ProviderImporterService extends ImporterBase
     }
 
 
-    private function importChildren(ImportAction $action, Provider $provider, array $data)
+    private function importChildren(ImportAction $action, Provider $provider, array $data, array $map)
     {
         $response = [];
         if (
@@ -88,7 +88,8 @@ class ProviderImporterService extends ImporterBase
                         $property['provider_id'] = $provider->id;
                         return $property;
                     }, $data['properties']),
-                    true
+                    true,
+                    $map
                 )
             );
         }
@@ -101,7 +102,8 @@ class ProviderImporterService extends ImporterBase
             $response[] = $this->providerRateLimitImporterService->import(
                 $action,
                 $data['provider_rate_limit'],
-                true
+                true,
+                $map
             );
         }
         if (
@@ -116,7 +118,8 @@ class ProviderImporterService extends ImporterBase
                         $category['provider_id'] = $provider->id;
                         return $category;
                     }, $data['categories']),
-                    true
+                    true,
+                    $map
                 )
             );
         }
@@ -132,14 +135,15 @@ class ProviderImporterService extends ImporterBase
                         $sr['provider_id'] = $provider->id;
                         return $sr;
                     }, $data['srs']),
-                    true
+                    true,
+                    $map
                 )
             );
         }
         return $response;
     }
 
-    protected function create(array $data, bool $withChildren): array
+    protected function create(array $data, bool $withChildren, array $map): array
     {
         try {
 //            dd((new Provider)->newFromBuilder($data));
@@ -167,7 +171,8 @@ class ProviderImporterService extends ImporterBase
                 $response = $this->importChildren(
                     ImportAction::CREATE,
                     $this->providerService->getProviderRepository()->getModel(),
-                    $data
+                    $data,
+                    $map
                 );
             } else {
                 $response = [
@@ -179,7 +184,7 @@ class ProviderImporterService extends ImporterBase
                 'success' => true,
                 'data' => $response,
             ];
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             return [
                 'success' => false,
                 'data' => $data,
@@ -188,7 +193,7 @@ class ProviderImporterService extends ImporterBase
         }
     }
 
-    protected function overwrite(array $data, bool $withChildren): array
+    protected function overwrite(array $data, bool $withChildren, array $map): array
     {
         try {
             $checkProvider = $this->providerService->getProviderRepository()->findUserModelQuery(
@@ -213,7 +218,8 @@ class ProviderImporterService extends ImporterBase
                 $response = $this->importChildren(
                     ImportAction::OVERWRITE,
                     $this->providerService->getProviderRepository()->getModel(),
-                    $data
+                    $data,
+                    $map
                 );
             } else {
                 $response = [
@@ -225,7 +231,7 @@ class ProviderImporterService extends ImporterBase
                 'success' => true,
                 'data' => $response,
             ];
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             return [
                 'success' => false,
                 'data' => $data,
@@ -423,7 +429,8 @@ class ProviderImporterService extends ImporterBase
                     ImportType::PROVIDER_RATE_LIMIT => (!empty($item['provider_rate_limit']))? [$item['provider_rate_limit']] : [],
                     default => [],
                 };
-            }
+            },
+            operation: $operation
         );
     }
 

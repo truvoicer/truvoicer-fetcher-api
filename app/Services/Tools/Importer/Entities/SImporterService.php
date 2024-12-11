@@ -10,9 +10,6 @@ use App\Helpers\Tools\UtilHelpers;
 use App\Models\S;
 use App\Services\ApiServices\ApiService;
 use App\Services\Permission\AccessControlService;
-use App\Services\Permission\PermissionService;
-use Illuminate\Database\Eloquent\Model;
-use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 
 class SImporterService extends ImporterBase
 {
@@ -35,7 +32,6 @@ class SImporterService extends ImporterBase
             'name',
             'label',
             'label',
-            [],
         );
     }
 
@@ -62,7 +58,7 @@ class SImporterService extends ImporterBase
         $this->apiService->setThrowException(false);
     }
 
-    protected function overwrite(array $data, bool $withChildren): array
+    protected function overwrite(array $data, bool $withChildren, array $map): array
     {
 
         try {
@@ -100,7 +96,7 @@ class SImporterService extends ImporterBase
         }
     }
 
-    protected function create(array $data, bool $withChildren): array
+    protected function create(array $data, bool $withChildren, array $map): array
     {
         try {
             $checkService = $this->apiService->getServiceRepository()->findUserModelBy(new S(), $this->getUser(), [
@@ -185,7 +181,7 @@ class SImporterService extends ImporterBase
         }
     }
 
-    public function getImportMappings(array $data)
+    public function getImportMappings(array $data): array
     {
         return [];
     }
@@ -237,7 +233,8 @@ class SImporterService extends ImporterBase
                     ImportType::S_RESPONSE_KEY => (!empty($item['s_response_key']))? $item['s_response_key'] : [],
                     default => [],
                 };
-            }
+            },
+            operation: $operation
         );
     }
     public function getApiService(): ApiService

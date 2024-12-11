@@ -6,14 +6,13 @@ use App\Enums\Import\ImportAction;
 use App\Enums\Import\ImportConfig;
 use App\Enums\Import\ImportMappingType;
 use App\Enums\Import\ImportType;
-use App\Models\Provider;
-use App\Models\S;
+use App\Helpers\Tools\UtilHelpers;
 use App\Models\Sr;
 use App\Models\SrRateLimit;
 use App\Services\ApiServices\RateLimitService;
 use App\Services\ApiServices\ServiceRequests\SrService;
 use App\Services\Permission\AccessControlService;
-use Illuminate\Database\Eloquent\Model;
+use Exception;
 
 class SrRateLimitImporterService extends ImporterBase
 {
@@ -42,10 +41,6 @@ class SrRateLimitImporterService extends ImporterBase
             'id',
             ImportType::SR_RATE_LIMIT->value,
             'Rate Limits',
-            null,
-            null,
-            null,
-            [],
         );
     }
 
@@ -67,12 +62,12 @@ class SrRateLimitImporterService extends ImporterBase
         ];
     }
 
-    protected function overwrite(array $data, bool $withChildren): array
+    protected function overwrite(array $data, bool $withChildren, array $map): array
     {
-        return $this->create($data, $withChildren);
+        return $this->create($data, $withChildren, $map);
     }
 
-    protected function create(array $data, bool $withChildren): array
+    protected function create(array $data, bool $withChildren, array $map): array
     {
         try {
             $sr = $this->findSr($data);
@@ -90,7 +85,7 @@ class SrRateLimitImporterService extends ImporterBase
                 'success' => true,
                 'message' => "Sr rate limit for Sr {$sr->name} imported successfully."
             ];
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             return [
                 'success' => false,
                 'message' => $e->getMessage()
@@ -131,7 +126,7 @@ class SrRateLimitImporterService extends ImporterBase
         return $this->importSelf($action, $map, $data, true);
     }
 
-    public function getImportMappings(array $data)
+    public function getImportMappings(array $data): array
     {
         return [];
     }
@@ -180,7 +175,19 @@ class SrRateLimitImporterService extends ImporterBase
     }
 
     public function deepFind(ImportType $importType, array $data, array $conditions, ?string $operation = 'AND'): array|null {
-        return null;
+
+        return UtilHelpers::deepFindInNestedEntity(
+            data: $data,
+            conditions: $conditions,
+            childrenKeys: ['srs', 'sr', 'child_srs'],
+            itemToMatchHandler: function ($item) use ($importType) {
+                return match ($importType) {
+                    ImportType::SR_RATE_LIMIT => (!empty($item['sr_rate_limit']))? [$item['sr_rate_limit']] : [],
+                    default => [],
+                };
+            },
+            operation: $operation
+        );
     }
 
 }

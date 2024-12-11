@@ -6,13 +6,13 @@ use App\Enums\Import\ImportAction;
 use App\Enums\Import\ImportConfig;
 use App\Enums\Import\ImportMappingType;
 use App\Enums\Import\ImportType;
+use App\Helpers\Tools\UtilHelpers;
 use App\Models\Provider;
 use App\Models\ProviderRateLimit;
-use App\Models\S;
 use App\Services\ApiServices\RateLimitService;
 use App\Services\Permission\AccessControlService;
 use App\Services\Provider\ProviderService;
-use Illuminate\Database\Eloquent\Model;
+use Exception;
 
 class ProviderRateLimitImporterService extends ImporterBase
 {
@@ -33,10 +33,6 @@ class ProviderRateLimitImporterService extends ImporterBase
             'id',
             ImportType::PROVIDER_RATE_LIMIT->value,
             'Rate Limits',
-            null,
-            null,
-            null,
-            [],
         );
     }
 
@@ -65,17 +61,17 @@ class ProviderRateLimitImporterService extends ImporterBase
         $this->rateLimitService->setUser($this->getUser());
     }
 
-    protected function overwrite(array $data, bool $withChildren): array
+    protected function overwrite(array $data, bool $withChildren, array $map): array
     {
-        return $this->import(ImportAction::OVERWRITE, $data, $withChildren);
+        return $this->import(ImportAction::OVERWRITE, $data, $withChildren, $map);
     }
 
-    protected function create(array $data, bool $withChildren): array
+    protected function create(array $data, bool $withChildren, array $map): array
     {
-        return $this->import(ImportAction::CREATE, $data, $withChildren);
+        return $this->import(ImportAction::CREATE, $data, $withChildren, $map);
     }
 
-    public function import(ImportAction $action, array $data, bool $withChildren): array
+    public function import(ImportAction $action, array $data, bool $withChildren, array $map): array
     {
         try {
             if (!empty($data['provider'])) {
@@ -115,7 +111,7 @@ class ProviderRateLimitImporterService extends ImporterBase
                 'success' => true,
                 'message' => "Sr rate limit for provider {$provider->name} imported successfully."
             ];
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             return [
                 'success' => false,
                 'data' => $data,
@@ -134,7 +130,7 @@ class ProviderRateLimitImporterService extends ImporterBase
         return $this->importSelf($action, $map, $data, true);
     }
 
-    public function getImportMappings(array $data)
+    public function getImportMappings(array $data): array
     {
         return [];
     }
@@ -178,7 +174,18 @@ class ProviderRateLimitImporterService extends ImporterBase
     }
 
     public function deepFind(ImportType $importType, array $data, array $conditions, ?string $operation = 'AND'): array|null {
-        return null;
+        return UtilHelpers::deepFindInNestedEntity(
+            data: $data,
+            conditions: $conditions,
+            childrenKeys: ['properties', 'provider_rate_limit'],
+            itemToMatchHandler: function ($item) use ($importType) {
+                return match ($importType) {
+                    ImportType::PROVIDER_RATE_LIMIT => (!empty($item['provider_rate_limit']))? [$item['provider_rate_limit']] : [],
+                    default => [],
+                };
+            },
+            operation: $operation
+        );
     }
     public function getExportTypeData($item): array|bool
     {

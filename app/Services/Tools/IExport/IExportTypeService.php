@@ -17,6 +17,7 @@ use App\Services\Tools\Importer\Entities\CategoryImporterService;
 use App\Services\Tools\Importer\Entities\PropertyImporterService;
 use App\Services\Tools\Importer\Entities\ProviderImporterService;
 use App\Services\Tools\Importer\Entities\SrConfigImporterService;
+use App\Services\Tools\Importer\Entities\SResponseKeysImporterService;
 use App\Services\Tools\Importer\Entities\SrImporterService;
 use App\Services\Tools\Importer\Entities\SrParameterImporterService;
 use App\Services\Tools\Importer\Entities\SrRateLimitImporterService;
@@ -111,6 +112,9 @@ class IExportTypeService extends BaseService
             case ImportType::SR_RESPONSE_KEY:
                 $instance = App::make(SrResponseKeysImporterService::class);
                 break;
+            case ImportType::S_RESPONSE_KEY:
+                $instance = App::make(SResponseKeysImporterService::class);
+                break;
             case ImportType::SR_PARAMETER:
                 $instance = App::make(SrParameterImporterService::class);
                 break;
@@ -142,7 +146,8 @@ class IExportTypeService extends BaseService
         });
     }
 
-    private function findContentByType(ImportType $importType, array $contents): array {
+    private function findContentByType(ImportType $importType, array $contents): array
+    {
         switch ($importType) {
             case ImportType::SR:
             case ImportType::SR_RESPONSE_KEY:
@@ -150,19 +155,30 @@ class IExportTypeService extends BaseService
             case ImportType::SR_CONFIG:
             case ImportType::SR_PARAMETER:
             case ImportType::SR_SCHEDULE:
-                $contents = array_values(
+                $filteredContent = array_values(
                     array_filter($contents, function ($content) use ($importType) {
                         return $content['type'] === ImportType::PROVIDER->value;
                     })
                 );
-                $contents['data'] = array_merge(array_map(function ($content) {
-                    if (!empty(($content['srs'])) && is_array($content['srs'])) {
-                        return $content['srs'];
-                    } elseif (!empty($content['child_srs']) && is_array($content['child_srs'])) {
-                        return $content['child_srs'];
+                $data = [];
+                foreach ($filteredContent as $content) {
+                    if (empty($content['data']) || !is_array($content['data'])) {
+                        continue;
                     }
-                    return [];
-                }, $contents));
+                    foreach ($content['data'] as $item) {
+                        if (!empty($item['srs']) && is_array($item['srs'])) {
+                            $data = array_merge($data, $item['srs']);
+                        } elseif (!empty($item['child_srs']) && is_array($item['child_srs'])) {
+                            $data = array_merge($data, $item['child_srs']);
+                        }
+                    }
+                }
+                $contents = [
+                    [
+                        'type' => ImportType::SR->value,
+                        'data' => $data
+                    ]
+                ];
                 break;
             default:
                 $contents = array_values(
@@ -171,6 +187,7 @@ class IExportTypeService extends BaseService
                     })
                 );
         }
+        return $contents;
     }
 
 
@@ -179,8 +196,6 @@ class IExportTypeService extends BaseService
         $response = [];
         foreach (ImportType::cases() as $importType) {
             $instance = null;
-            $filterMappings = [];
-            $filterContent = [];
             $instance = $this->getInstance($importType);
             $filterMappings = $this->getMappingsByType($importType->value, $mappings);
             $filterContent = $this->findContentByType($importType, $contents);
@@ -192,10 +207,17 @@ class IExportTypeService extends BaseService
                         }, $map['children']);
                         $operation = 'OR';
                     } else {
-                        $conditions = ['id' => $map['id']];
+                        $conditions = [['id' => $map['id']]];
                         $operation = 'AND';
                     }
+
                     $data = $instance->deepFind($importType, $content['data'], $conditions, $operation);
+                    if (empty($data)) {
+                        return [
+                            'success' => false,
+                            'error' => 'No data found.',
+                        ];
+                    }
                     return $this->destInterface($map, $data);
                 }, array_values($filterMappings));
                 foreach ($import as $importItem) {
@@ -216,7 +238,7 @@ class IExportTypeService extends BaseService
         }
         if ((!empty($map['mapping']['dest']) && $map['mapping']['dest'] === 'root') || (empty($map['mapping']['dest']) && !empty($map['mapping']['source']))) {
             $importType = $map['mapping']['source'];
-        }   else {
+        } else {
             $importType = $map['mapping']['dest'];
         }
         return $this->getInstance(ImportType::from($importType))->importMapFactory($map, $data);
@@ -260,7 +282,8 @@ class IExportTypeService extends BaseService
         }, $data[self::REQUEST_KEYS["EXPORT_DATA"]]);
     }
 
-    private static function filterMatch(?array $filter, array $config): bool{
+    private static function filterMatch(?array $filter, array $config): bool
+    {
         if (count($filter) > 0) {
             if (
                 array_filter($config, function ($value, $key) use ($filter) {

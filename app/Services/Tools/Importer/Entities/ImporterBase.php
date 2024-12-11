@@ -6,7 +6,6 @@ use App\Enums\Import\ImportAction;
 use App\Enums\Import\ImportConfig;
 use App\Enums\Import\ImportMappingType;
 use App\Enums\Import\ImportType;
-use App\Models\Provider;
 use App\Services\Permission\AccessControlService;
 use App\Traits\Error\ErrorTrait;
 use App\Traits\User\UserTrait;
@@ -46,9 +45,9 @@ abstract class ImporterBase
 
     abstract public function parseEntityBatch(array $data): array;
 
-    abstract protected function overwrite(array $data, bool $withChildren): array;
+    abstract protected function overwrite(array $data, bool $withChildren, array $map): array;
 
-    abstract protected function create(array $data, bool $withChildren): array;
+    abstract protected function create(array $data, bool $withChildren, array $map): array;
 
     abstract protected function deepFind(ImportType $importType, array $data, array $conditions, ?string $operation = 'AND'): array|null;
 
@@ -62,26 +61,21 @@ abstract class ImporterBase
         return $this->importSelf($action, $map, $data, true);
     }
 
-    protected function overwriteOrCreate(array $data, bool $withChildren): array
+    protected function overwriteOrCreate(array $data, bool $withChildren, array $map): array
     {
-        $overwrite = $this->overwrite($data, $withChildren);
+        $overwrite = $this->overwrite($data, $withChildren, $map);
         if ($overwrite['success']) {
             return $overwrite;
         }
-        return $this->create($data, $withChildren);
+        return $this->create($data, $withChildren, $map);
     }
 
-    public function import(ImportAction $action, array $data, bool $withChildren): array
+    public function import(ImportAction $action, array $data, bool $withChildren, array $map): array
     {
         return match ($action) {
-            ImportAction::CREATE => $this->create($data, $withChildren),
-            ImportAction::OVERWRITE => $this->overwrite($data, $withChildren),
-            ImportAction::OVERWRITE_OR_CREATE => $this->overwriteOrCreate($data, $withChildren),
-            default => [
-                'success' => false,
-                'data' => $data,
-                'error' => 'Invalid action.'
-            ],
+            ImportAction::CREATE => $this->create($data, $withChildren, $map),
+            ImportAction::OVERWRITE => $this->overwrite($data, $withChildren, $map),
+            ImportAction::OVERWRITE_OR_CREATE => $this->overwriteOrCreate($data, $withChildren, $map),
         };
     }
 
@@ -111,11 +105,11 @@ abstract class ImporterBase
         };
     }
 
-    protected function batchImport(ImportAction $action, array $data, bool $withChildren): array
+    protected function batchImport(ImportAction $action, array $data, bool $withChildren, array $map): array
     {
         $response = [];
         foreach ($data as $provider) {
-            $response[] = $this->import($action, $provider, $withChildren);
+            $response[] = $this->import($action, $provider, $withChildren, $map);
         }
         return $response;
     }
@@ -221,7 +215,7 @@ abstract class ImporterBase
                 'error' => 'Category not found'
             ];
         }
-        return $this->import($action, $data[$findItemIndex], $withChildren);
+        return $this->import($action, $data[$findItemIndex], $withChildren, $map);
     }
 
 }

@@ -6,14 +6,12 @@ use App\Enums\Import\ImportAction;
 use App\Enums\Import\ImportConfig;
 use App\Enums\Import\ImportMappingType;
 use App\Enums\Import\ImportType;
-use App\Models\Property;
+use App\Helpers\Tools\UtilHelpers;
 use App\Models\Provider;
 use App\Models\ProviderProperty;
-use App\Models\S;
-use App\Models\SrConfig;
-use App\Services\ApiServices\ServiceRequests\SrConfigService;
 use App\Services\Permission\AccessControlService;
 use App\Services\Provider\ProviderService;
+use Exception;
 use Illuminate\Database\Eloquent\Model;
 
 class ProviderPropertiesImporterService extends ImporterBase
@@ -38,7 +36,6 @@ class ProviderPropertiesImporterService extends ImporterBase
             'value',
             '{label}: {pivot.value}',
             'label',
-            [],
         );
     }
 
@@ -84,14 +81,14 @@ class ProviderPropertiesImporterService extends ImporterBase
             'provider' => $provider
         ];
     }
-    private function saveProviderProperty(array $data): array{
+    private function saveProviderProperty(array $data, array $map): array{
         $provider = $this->findProvider($data);
         if (!$provider['success']) {
             return $provider;
         }
         $provider = $provider['provider'];
 
-        $property = $this->findProperty($provider, $data);
+        $property = $this->findProperty($provider, $data, $map);
         if (!$property['success']) {
             return $property;
         }
@@ -108,7 +105,7 @@ class ProviderPropertiesImporterService extends ImporterBase
             'message' => "Provider property: {$data['name']} for provider {$provider->name} imported successfully."
         ];
     }
-    private function findProperty(Provider $provider, array $data): array
+    private function findProperty(Provider $provider, array $data, array $map): array
     {
         if (empty($data['name'])) {
             return [
@@ -131,7 +128,8 @@ class ProviderPropertiesImporterService extends ImporterBase
             $property = $this->propertyImporterService->import(
                 ImportAction::OVERWRITE,
                 $data,
-                false
+                false,
+                $map
             );
             if (!$property['success']) {
                 return $property;
@@ -144,11 +142,11 @@ class ProviderPropertiesImporterService extends ImporterBase
         ];
     }
 
-    protected function overwrite(array $data, bool $withChildren): array
+    protected function overwrite(array $data, bool $withChildren, array $map): array
     {
         try {
-            return $this->saveProviderProperty($data);
-        } catch (\Exception $e) {
+            return $this->saveProviderProperty($data, $map);
+        } catch (Exception $e) {
             return [
                 'success' => false,
                 'data' => $data,
@@ -157,11 +155,11 @@ class ProviderPropertiesImporterService extends ImporterBase
         }
     }
 
-    protected function create(array $data, bool $withChildren): array
+    protected function create(array $data, bool $withChildren, array $map): array
     {
         try {
-            return $this->saveProviderProperty($data);
-        } catch (\Exception $e) {
+            return $this->saveProviderProperty($data, $map);
+        } catch (Exception $e) {
             return [
                 'success' => false,
                 'data' => $data,
@@ -180,7 +178,7 @@ class ProviderPropertiesImporterService extends ImporterBase
         return $this->importSelf($action, $map, $data, true);
     }
 
-    public function getImportMappings(array $data)
+    public function getImportMappings(array $data): array
     {
         return [];
     }
@@ -229,7 +227,18 @@ class ProviderPropertiesImporterService extends ImporterBase
     }
 
     public function deepFind(ImportType $importType, array $data, array $conditions, ?string $operation = 'AND'): array|null {
-        return null;
+        return UtilHelpers::deepFindInNestedEntity(
+            data: $data,
+            conditions: $conditions,
+            childrenKeys: ['properties', 'provider_rate_limit'],
+            itemToMatchHandler: function ($item) use ($importType) {
+                return match ($importType) {
+                    ImportType::PROVIDER_PROPERTY => (!empty($item['properties']))? $item['properties'] : [],
+                    default => [],
+                };
+            },
+            operation: $operation
+        );
     }
     public function getExportTypeData($item): array|bool
     {

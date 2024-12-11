@@ -6,13 +6,13 @@ use App\Enums\Import\ImportAction;
 use App\Enums\Import\ImportConfig;
 use App\Enums\Import\ImportMappingType;
 use App\Enums\Import\ImportType;
+use App\Helpers\Tools\UtilHelpers;
 use App\Models\Sr;
 use App\Models\SResponseKey;
 use App\Models\SrResponseKey;
 use App\Services\ApiServices\ServiceRequests\ResponseKeys\SrResponseKeyService;
 use App\Services\ApiServices\ServiceRequests\SrService;
 use App\Services\Permission\AccessControlService;
-use Illuminate\Database\Eloquent\Model;
 
 class SrResponseKeysImporterService extends ImporterBase
 {
@@ -44,7 +44,6 @@ class SrResponseKeysImporterService extends ImporterBase
             'name',
             '{name}: {pivot.value}',
             'label',
-            [],
         );
     }
 
@@ -66,7 +65,7 @@ class SrResponseKeysImporterService extends ImporterBase
         ];
     }
 
-    protected function overwrite(array $data, bool $withChildren): array
+    protected function overwrite(array $data, bool $withChildren, array $map): array
     {
         $sr = $this->findSr($data);
         if (!$sr['success']) {
@@ -110,7 +109,7 @@ class SrResponseKeysImporterService extends ImporterBase
         ];
     }
 
-    protected function create(array $data, bool $withChildren): array
+    protected function create(array $data, bool $withChildren, array $map): array
     {
        $sr = $this->findSr($data);
         if (!$sr['success']) {
@@ -132,7 +131,8 @@ class SrResponseKeysImporterService extends ImporterBase
         if (!$responseKey instanceof SResponseKey) {
             $responseKey = $this->sResponseKeysImporterService->create(
                 $data,
-                $withChildren
+                $withChildren,
+                $map
             );
             if (!$responseKey['success']) {
                 return $responseKey;
@@ -191,7 +191,7 @@ class SrResponseKeysImporterService extends ImporterBase
         return $this->importSelf($action, $map, $data, true);
     }
 
-    public function getImportMappings(array $data)
+    public function getImportMappings(array $data): array
     {
         return [];
     }
@@ -263,7 +263,19 @@ class SrResponseKeysImporterService extends ImporterBase
     }
 
     public function deepFind(ImportType $importType, array $data, array $conditions, ?string $operation = 'AND'): array|null {
-        return null;
+
+        return UtilHelpers::deepFindInNestedEntity(
+            data: $data,
+            conditions: $conditions,
+            childrenKeys: ['srs', 'sr', 'child_srs'],
+            itemToMatchHandler: function ($item) use ($importType) {
+                return match ($importType) {
+                    ImportType::SR_RESPONSE_KEY => (!empty($item['sr_response_keys']))? $item['sr_response_keys'] : [],
+                    default => [],
+                };
+            },
+            operation: $operation
+        );
     }
 
 }
