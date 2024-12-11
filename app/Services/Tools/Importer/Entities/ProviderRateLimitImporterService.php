@@ -61,17 +61,17 @@ class ProviderRateLimitImporterService extends ImporterBase
         $this->rateLimitService->setUser($this->getUser());
     }
 
-    protected function overwrite(array $data, bool $withChildren, array $map): array
+    protected function overwrite(array $data, bool $withChildren, array $map, ?array $dest = null): array
     {
         return $this->import(ImportAction::OVERWRITE, $data, $withChildren, $map);
     }
 
-    protected function create(array $data, bool $withChildren, array $map): array
+    protected function create(array $data, bool $withChildren, array $map, ?array $dest = null): array
     {
         return $this->import(ImportAction::CREATE, $data, $withChildren, $map);
     }
 
-    public function import(ImportAction $action, array $data, bool $withChildren, array $map): array
+    public function import(ImportAction $action, array $data, bool $withChildren, array $map, ?array $dest = null): array
     {
         try {
             if (!empty($data['provider'])) {
@@ -120,14 +120,14 @@ class ProviderRateLimitImporterService extends ImporterBase
         }
     }
 
-    public function importSelfNoChildren(ImportAction $action, array $map, array $data): array
+    public function importSelfNoChildren(ImportAction $action, array $map, array $data, ?array $dest = null): array
     {
-        return $this->importSelf($action, $map, $data, false);
+        return $this->importSelf($action, $map, $data, false, $dest);
     }
 
-    public function importSelfWithChildren(ImportAction $action, array $map, array $data): array
+    public function importSelfWithChildren(ImportAction $action, array $map, array $data, ?array $dest = null): array
     {
-        return $this->importSelf($action, $map, $data, true);
+        return $this->importSelf($action, $map, $data, true, $dest);
     }
 
     public function getImportMappings(array $data): array

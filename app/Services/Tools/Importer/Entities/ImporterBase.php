@@ -45,41 +45,41 @@ abstract class ImporterBase
 
     abstract public function parseEntityBatch(array $data): array;
 
-    abstract protected function overwrite(array $data, bool $withChildren, array $map): array;
+    abstract protected function overwrite(array $data, bool $withChildren, array $map, ?array $dest = null): array;
 
-    abstract protected function create(array $data, bool $withChildren, array $map): array;
+    abstract protected function create(array $data, bool $withChildren, array $map, ?array $dest = null): array;
 
     abstract protected function deepFind(ImportType $importType, array $data, array $conditions, ?string $operation = 'AND'): array|null;
 
-    public function importSelfNoChildren(ImportAction $action, array $map, array $data): array
+    public function importSelfNoChildren(ImportAction $action, array $map, array $data, ?array $dest = null): array
     {
-        return $this->importSelf($action, $map, $data, false);
+        return $this->importSelf($action, $map, $data, false, $dest);
     }
 
-    public function importSelfWithChildren(ImportAction $action, array $map, array $data): array
+    public function importSelfWithChildren(ImportAction $action, array $map, array $data, ?array $dest = null): array
     {
-        return $this->importSelf($action, $map, $data, true);
+        return $this->importSelf($action, $map, $data, true, $dest);
     }
 
-    protected function overwriteOrCreate(array $data, bool $withChildren, array $map): array
+    protected function overwriteOrCreate(array $data, bool $withChildren, array $map, ?array $dest = null): array
     {
-        $overwrite = $this->overwrite($data, $withChildren, $map);
+        $overwrite = $this->overwrite($data, $withChildren, $map, $dest);
         if ($overwrite['success']) {
             return $overwrite;
         }
-        return $this->create($data, $withChildren, $map);
+        return $this->create($data, $withChildren, $map, $dest);
     }
 
-    public function import(ImportAction $action, array $data, bool $withChildren, array $map): array
+    public function import(ImportAction $action, array $data, bool $withChildren, array $map, ?array $dest = null): array
     {
         return match ($action) {
-            ImportAction::CREATE => $this->create($data, $withChildren, $map),
-            ImportAction::OVERWRITE => $this->overwrite($data, $withChildren, $map),
-            ImportAction::OVERWRITE_OR_CREATE => $this->overwriteOrCreate($data, $withChildren, $map),
+            ImportAction::CREATE => $this->create($data, $withChildren, $map, $dest),
+            ImportAction::OVERWRITE => $this->overwrite($data, $withChildren, $map, $dest),
+            ImportAction::OVERWRITE_OR_CREATE => $this->overwriteOrCreate($data, $withChildren, $map, $dest),
         };
     }
 
-    public function importMapFactory(array $map, array $data): array
+    public function importMapFactory(array $map, array $data, ?array $dest = null): array
     {
         if (empty($map['action'])) {
             return [
@@ -94,10 +94,9 @@ abstract class ImporterBase
                 'error' => 'Invalid action found.',
             ];
         }
-
         return match ($map['mapping']['name']) {
-            ImportMappingType::SELF_NO_CHILDREN->value => $this->importSelfNoChildren($action, $map, $data),
-            ImportMappingType::SELF_WITH_CHILDREN->value => $this->importSelfWithChildren($action, $map, $data),
+            ImportMappingType::SELF_NO_CHILDREN->value => $this->importSelfNoChildren($action, $map, $data, $dest),
+            ImportMappingType::SELF_WITH_CHILDREN->value => $this->importSelfWithChildren($action, $map, $data, $dest),
             default => [
                 'success' => false,
                 'data' => $map['data'],
@@ -196,14 +195,14 @@ abstract class ImporterBase
         return $this->accessControlService;
     }
 
-    protected function importSelf(ImportAction $action, array $map, array $data, bool $withChildren): array {
+    protected function importSelf(ImportAction $action, array $map, array $data, bool $withChildren, ?array $dest = null): array {
         $this->loadDependencies();
         if (!empty($map['root']) && !empty($map['children']) && is_array($map['children']) && count($map['children'])) {
             return [
                 'success' => true,
-                'data' => array_map(function ($map) use ($data, $action) {
+                'data' => array_map(function ($map) use ($data, $action, $dest) {
                     $map['action'] = $action->value;
-                    return $this->importMapFactory($map, $data);
+                    return $this->importMapFactory($map, $data, $dest);
                 }, $map['children'])
             ];
         }
@@ -215,7 +214,7 @@ abstract class ImporterBase
                 'error' => 'Category not found'
             ];
         }
-        return $this->import($action, $data[$findItemIndex], $withChildren, $map);
+        return $this->import($action, $data[$findItemIndex], $withChildren, $map, $dest);
     }
 
 }
