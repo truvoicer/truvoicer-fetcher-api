@@ -19,7 +19,6 @@ class ProviderImporterService extends ImporterBase
     private SrRepository $srRepository;
 
     public function __construct(
-        private ProviderService                   $providerService,
         private SrImporterService                 $srImporterService,
         private ProviderPropertiesImporterService $providerPropertiesImporterService,
         private ProviderRateLimitImporterService  $providerRateLimitImporterService,

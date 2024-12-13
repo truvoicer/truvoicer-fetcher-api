@@ -18,7 +18,6 @@ class ProviderRateLimitImporterService extends ImporterBase
 {
 
     public function __construct(
-        private ProviderService        $providerService,
         private RateLimitService       $rateLimitService,
         protected AccessControlService $accessControlService
     )

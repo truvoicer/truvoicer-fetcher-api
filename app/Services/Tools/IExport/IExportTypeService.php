@@ -230,18 +230,18 @@ class IExportTypeService extends BaseService
 
     protected function destInterface(array $map, array $data): array
     {
-        if (empty($map['mapping']['dest']) && empty($map['mapping']['source'])) {
+        if (empty($map['mapping']['source'])) {
             return [
                 'success' => false,
                 'error' => 'No source or destination found.',
             ];
         }
-        if ((!empty($map['mapping']['dest']) && $map['mapping']['dest'] === 'root') || (empty($map['mapping']['dest']) && !empty($map['mapping']['source']))) {
+        if ((!empty($map['mapping']['dest']) && $map['mapping']['dest'] === 'root')) {
             $importType = $map['mapping']['source'];
         } else {
-            $importType = $map['mapping']['dest'];
+            $importType = $map['mapping']['source'];
         }
-        dd($importType, $map);
+
         $dest = (!empty($map['dest'])) ? $map['dest'] :null;
         return $this->getInstance(ImportType::from($importType))->importMapFactory($map, $data, $dest);
     }

@@ -20,7 +20,6 @@ class SrConfigImporterService extends ImporterBase
 {
 
     public function __construct(
-        private SrService               $srService,
         private SrConfigService         $srConfigService,
         private PropertyImporterService $propertyImporterService,
         protected AccessControlService  $accessControlService
@@ -79,7 +78,7 @@ class SrConfigImporterService extends ImporterBase
     protected function overwrite(array $data, bool $withChildren, array $map, ?array $dest = null): array
     {
         try {
-            $sr = $this->findSr($data);
+            $sr = $this->findSr($data, $map, $dest);
             if (!$sr['success']) {
                 return $sr;
             }
@@ -114,7 +113,7 @@ class SrConfigImporterService extends ImporterBase
     protected function create(array $data, bool $withChildren, array $map, ?array $dest = null): array
     {
         try {
-            $sr = $this->findSr($data);
+            $sr = $this->findSr($data, $map, $dest);
             if (!$sr['success']) {
                 return $sr;
             }
@@ -138,30 +137,6 @@ class SrConfigImporterService extends ImporterBase
         }
     }
 
-
-    public function findSr(array $data): array
-    {
-        if (!empty($data['sr'])) {
-            $sr = $data['sr'];
-        } elseif (!empty($data['sr_id'])) {
-            $sr = $this->srService->getServiceRequestById((int)$data['sr_id']);
-        } else {
-            return [
-                'success' => false,
-                'message' => "Sr is required for sr config."
-            ];
-        }
-        if (!$sr instanceof Sr) {
-            return [
-                'success' => false,
-                'message' => "Sr not found for sr config."
-            ];
-        }
-        return [
-            'success' => true,
-            'sr' => $sr
-        ];
-    }
     public function findProperty(Sr $sr, array $data): array
     {
         if (empty($data['property'])) {
