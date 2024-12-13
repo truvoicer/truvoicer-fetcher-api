@@ -20,7 +20,6 @@ class SrResponseKeysImporterService extends ImporterBase
     public function __construct(
         private SResponseKeysImporterService   $sResponseKeysImporterService,
         private SrResponseKeyService   $srResponseKeyService,
-        private SrService              $srService,
         protected AccessControlService $accessControlService
     )
     {
@@ -67,7 +66,7 @@ class SrResponseKeysImporterService extends ImporterBase
 
     protected function overwrite(array $data, bool $withChildren, array $map, ?array $dest = null): array
     {
-        $sr = $this->findSr($data);
+        $sr = $this->findSr($data, $map, $dest);
         if (!$sr['success']) {
             return $sr;
         }
@@ -111,7 +110,7 @@ class SrResponseKeysImporterService extends ImporterBase
 
     protected function create(array $data, bool $withChildren, array $map, ?array $dest = null): array
     {
-       $sr = $this->findSr($data);
+       $sr = $this->findSr($data, $map, $dest);
         if (!$sr['success']) {
             return $sr;
         }
@@ -158,29 +157,6 @@ class SrResponseKeysImporterService extends ImporterBase
         ];
     }
 
-    public function findSr(array $data): array
-    {
-        if (!empty($data['sr'])) {
-            $sr = $data['sr'];
-        } elseif (!empty($data['sr_id'])) {
-            $sr = $this->srService->getServiceRequestById((int)$data['sr_id']);
-        } else {
-            return [
-                'success' => false,
-                'message' => "Sr is required for response key {$data['name']}."
-            ];
-        }
-        if (!$sr instanceof Sr) {
-            return [
-                'success' => false,
-                'message' => "Sr not found for response key {$data['name']}."
-            ];
-        }
-        return [
-            'success' => true,
-            'sr' => $sr
-        ];
-    }
     public function importSelfNoChildren(ImportAction $action, array $map, array $data, ?array $dest = null): array
     {
         return $this->importSelf($action, $map, $data, false, $dest);

@@ -18,7 +18,6 @@ class ProviderPropertiesImporterService extends ImporterBase
 {
 
     public function __construct(
-        private ProviderService         $providerService,
         private PropertyImporterService $propertyImporterService,
         protected AccessControlService  $accessControlService
     )
@@ -57,30 +56,6 @@ class ProviderPropertiesImporterService extends ImporterBase
         $this->propertyImporterService->setUser($this->getUser());
     }
 
-
-    private function findProvider(array $data): array
-    {
-        if (!empty($data['provider'])) {
-            $provider = $data['provider'];
-        } elseif (!empty($data['provider_id'])) {
-            $provider = $this->providerService->getProviderById((int)$data['provider_id']);
-        } else {
-            return [
-                'success' => false,
-                'message' => "Provider is required for provider id: {$data['provider_id']} property: {$data['name']}."
-            ];
-        }
-        if (!$provider instanceof Provider) {
-            return [
-                'success' => false,
-                'message' => "Provider not found for provider id: {$data['provider_id']} property: {$data['name']}"
-            ];
-        }
-        return [
-            'success' => true,
-            'provider' => $provider
-        ];
-    }
     private function saveProviderProperty(array $data, array $map): array{
         $provider = $this->findProvider($data);
         if (!$provider['success']) {

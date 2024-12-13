@@ -6,15 +6,22 @@ use App\Enums\Import\ImportAction;
 use App\Enums\Import\ImportConfig;
 use App\Enums\Import\ImportMappingType;
 use App\Enums\Import\ImportType;
+use App\Models\Provider;
+use App\Models\Sr;
+use App\Services\ApiServices\ServiceRequests\SrService;
 use App\Services\Permission\AccessControlService;
+use App\Services\Provider\ProviderService;
 use App\Traits\Error\ErrorTrait;
 use App\Traits\User\UserTrait;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\App;
 
 abstract class ImporterBase
 {
     use ErrorTrait, UserTrait;
 
+    protected SrService $srService;
+    protected ProviderService $providerService;
     protected Model $model;
     protected array $config;
     protected array $mappings;
@@ -24,6 +31,8 @@ abstract class ImporterBase
         Model                          $model
     )
     {
+        $this->srService = App::make(SrService::class);
+        $this->providerService = App::make(ProviderService::class);
         $this->model = $model;
         $this->setConfig();
         $this->setMappings();
@@ -215,6 +224,90 @@ abstract class ImporterBase
             ];
         }
         return $this->import($action, $data[$findItemIndex], $withChildren, $map, $dest);
+    }
+
+    protected function findProvider(array $data, array $map, ?array $dest = null): array
+    {
+        if (!empty($data['provider'])) {
+            $provider = $data['provider'];
+        }  elseif (
+            !empty($map['mapping']['dest']) &&
+            $map['mapping']['dest'] === ImportType::PROVIDER->value &&
+            is_array($dest)
+        ) {
+            $destIndex = count($dest) > 0 ? 0 : false;
+            if ($destIndex === false) {
+                return [
+                    'success' => false,
+                    'message' => "Provider not found."
+                ];
+            }
+            if (!empty($dest[$destIndex]['id'])) {
+                $provider = $this->providerService->getProviderById((int)$dest[$destIndex]['id']);
+            } else {
+                return [
+                    'success' => false,
+                    'message' => "Provider is required."
+                ];
+            }
+        } else {
+            return [
+                'success' => false,
+                'message' => "Provider is required."
+            ];
+        }
+        if (!$provider instanceof Provider) {
+            return [
+                'success' => false,
+                'message' => "Provider not found."
+            ];
+        }
+        return [
+            'success' => true,
+            'provider' => $provider
+        ];
+    }
+
+    public function findSr(array $data, array $map, ?array $dest = null): array
+    {
+        if (!empty($data['sr'])) {
+            $sr = $data['sr'];
+        } elseif (
+            !empty($map['mapping']['dest']) &&
+            $map['mapping']['dest'] === ImportType::SR->value &&
+            is_array($dest)
+        ) {
+            $destIndex = count($dest) > 0 ? 0 : false;
+            if ($destIndex === false) {
+                return [
+                    'success' => false,
+                    'message' => "Sr not found for sr schedule."
+                ];
+            }
+            if (!empty($dest[$destIndex]['id'])) {
+                $sr = $this->srService->getServiceRequestById((int)$dest[$destIndex]['id']);
+            } else {
+                return [
+                    'success' => false,
+                    'message' => "Sr is required for sr schedule."
+                ];
+            }
+        } else {
+            return [
+                'success' => false,
+                'message' => "Sr is required for sr schedule."
+            ];
+        }
+        if (!$sr instanceof Sr) {
+            return [
+                'success' => false,
+                'message' => "Sr not found for sr schedule."
+            ];
+        }
+        return [
+            'success' => true,
+            'sr' => $sr
+        ];
     }
 
 }
