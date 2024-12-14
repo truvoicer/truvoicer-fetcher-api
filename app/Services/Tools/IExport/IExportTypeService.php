@@ -210,7 +210,6 @@ class IExportTypeService extends BaseService
                         $conditions = [['id' => $map['id']]];
                         $operation = 'AND';
                     }
-
                     $data = $instance->deepFind($importType, $content['data'], $conditions, $operation);
                     if (empty($data)) {
                         return [

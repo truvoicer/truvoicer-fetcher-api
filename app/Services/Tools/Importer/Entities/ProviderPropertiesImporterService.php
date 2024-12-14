@@ -56,8 +56,8 @@ class ProviderPropertiesImporterService extends ImporterBase
         $this->propertyImporterService->setUser($this->getUser());
     }
 
-    private function saveProviderProperty(array $data, array $map): array{
-        $provider = $this->findProvider($data);
+    private function saveProviderProperty(array $data, array $map, ?array $dest = null): array{
+        $provider = $this->findProvider(ImportType::PROVIDER_PROPERTY, $data, $map, $dest);
         if (!$provider['success']) {
             return $provider;
         }
@@ -117,10 +117,10 @@ class ProviderPropertiesImporterService extends ImporterBase
         ];
     }
 
-    protected function overwrite(array $data, bool $withChildren, array $map, ?array $dest = null): array
+    protected function overwrite(array $data, bool $withChildren, array $map, ?array $dest = null, ?array $extraData = []): array
     {
         try {
-            return $this->saveProviderProperty($data, $map);
+            return $this->saveProviderProperty($data, $map, $dest);
         } catch (Exception $e) {
             return [
                 'success' => false,
@@ -130,10 +130,10 @@ class ProviderPropertiesImporterService extends ImporterBase
         }
     }
 
-    protected function create(array $data, bool $withChildren, array $map, ?array $dest = null): array
+    protected function create(array $data, bool $withChildren, array $map, ?array $dest = null, ?array $extraData = []): array
     {
         try {
-            return $this->saveProviderProperty($data, $map);
+            return $this->saveProviderProperty($data, $map, $dest);
         } catch (Exception $e) {
             return [
                 'success' => false,

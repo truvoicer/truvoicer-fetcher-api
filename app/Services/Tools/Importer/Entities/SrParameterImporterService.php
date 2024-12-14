@@ -56,10 +56,10 @@ class SrParameterImporterService extends ImporterBase
         ];
     }
 
-    protected function overwrite(array $data, bool $withChildren, array $map, ?array $dest = null): array
+    protected function overwrite(array $data, bool $withChildren, array $map, ?array $dest = null, ?array $extraData = []): array
     {
         try {
-            $sr = $this->findSr($data, $map, $dest);
+            $sr = $this->findSr(ImportType::SR_PARAMETER, $data, $map, $dest);
             if (!$sr['success']) {
                 return $sr;
             }
@@ -105,10 +105,10 @@ class SrParameterImporterService extends ImporterBase
         }
     }
 
-    protected function create(array $data, bool $withChildren, array $map, ?array $dest = null): array
+    protected function create(array $data, bool $withChildren, array $map, ?array $dest = null, ?array $extraData = []): array
     {
         try {
-            $sr = $this->findSr($data, $map, $dest);
+            $sr = $this->findSr(ImportType::SR_PARAMETER, $data, $map, $dest);
             if (!$sr['success']) {
                 return $sr;
             }

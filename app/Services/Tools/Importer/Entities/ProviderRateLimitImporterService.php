@@ -60,17 +60,17 @@ class ProviderRateLimitImporterService extends ImporterBase
         $this->rateLimitService->setUser($this->getUser());
     }
 
-    protected function overwrite(array $data, bool $withChildren, array $map, ?array $dest = null): array
+    protected function overwrite(array $data, bool $withChildren, array $map, ?array $dest = null, ?array $extraData = []): array
     {
         return $this->import(ImportAction::OVERWRITE, $data, $withChildren, $map);
     }
 
-    protected function create(array $data, bool $withChildren, array $map, ?array $dest = null): array
+    protected function create(array $data, bool $withChildren, array $map, ?array $dest = null, ?array $extraData = []): array
     {
         return $this->import(ImportAction::CREATE, $data, $withChildren, $map);
     }
 
-    public function import(ImportAction $action, array $data, bool $withChildren, array $map, ?array $dest = null): array
+    public function import(ImportAction $action, array $data, bool $withChildren, array $map, ?array $dest = null, ?array $extraData = []): array
     {
         try {
             if (!empty($data['provider'])) {

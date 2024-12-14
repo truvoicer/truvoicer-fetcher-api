@@ -60,15 +60,21 @@ class UtilHelpers
         \Closure $itemToMatchHandler,
         ?string $operation = 'AND'
     ): array|null {
+        $matches = [];
         foreach ($data as $item) {
             $itemsToMatch = $itemToMatchHandler($item);
             if (!is_array($itemsToMatch)) {
                 continue;
             }
-            $matches = [];
             foreach ($itemsToMatch as $itemToMatch) {
-                $conditionsMatch = array_filter($conditions, function ($condition) use ($itemToMatch) {
+                $conditionsMatch = array_filter($conditions, function ($condition) use ($itemToMatch, $item, $data) {
                     $key = key($condition);
+                    if (empty($itemToMatch[$key])) {
+                        return false;
+                    }
+                    if (empty($condition[$key])) {
+                        return false;
+                    }
                     return $itemToMatch[$key] === $condition[$key];
                 }, ARRAY_FILTER_USE_BOTH);
 
@@ -85,7 +91,7 @@ class UtilHelpers
                         break;
                 }
             }
-            if (count($matches) > 0) {
+            if ($operation === 'AND' && count($matches) > 0) {
                 return $matches;
             }
 
@@ -100,6 +106,6 @@ class UtilHelpers
                 }
             }
         }
-        return null;
+        return $matches;
     }
 }

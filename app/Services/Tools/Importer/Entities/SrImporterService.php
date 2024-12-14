@@ -82,11 +82,11 @@ class SrImporterService extends ImporterBase
         ];
     }
 
-    protected function overwrite(array $data, bool $withChildren, array $map, ?array $dest = null): array
+    protected function overwrite(array $data, bool $withChildren, array $map, ?array $dest = null, ?array $extraData = []): array
     {
 
         try {
-            $provider = $this->findProvider($data, $map, $dest);
+            $provider = $this->findProvider(ImportType::SR, $data, $map, $dest);
             if (!$provider['success']) {
                 return $provider;
             }
@@ -127,7 +127,7 @@ class SrImporterService extends ImporterBase
                 return [
                     'success' => true,
                     'message' => "Service Request {$data['name']} update for {$provider->name}.",
-                    'data' => $this->importSrChildren(ImportAction::OVERWRITE, $sr, $data, true, $map),
+                    'data' => $this->importSrChildren(ImportAction::OVERWRITE, $provider, $sr, $data, true, $map),
                 ];
             }
             return [
@@ -164,7 +164,6 @@ class SrImporterService extends ImporterBase
     private function getServiceData(array $data, array $map, ?array $dest = null): array
     {
         if (empty($data['s'])) {
-            dd($data, $map, $dest);
             return [
                 'success' => false,
                 'message' => "Service is required for sr {$data['name']}."
@@ -208,55 +207,70 @@ class SrImporterService extends ImporterBase
         }
         return $this->categoryImporterService->getCategoryService()->getCategoryRepository()->getModel();
     }
-    protected function create(array $data, bool $withChildren, array $map, ?array $dest = null): array
+    protected function create(array $data, bool $withChildren, array $map, ?array $dest = null, ?array $extraData = []): array
     {
         try {
-            $provider = $this->findProvider($data, $map, $dest);
+            $provider = $this->findProvider(ImportType::SR, $data, $map, $dest);
             if (!$provider['success']) {
                 return $provider;
             }
             $provider = $provider['provider'];
-            $sr = $this->srService->getRequestByName($provider, $data['name']);
-            if ($sr instanceof Sr) {
-                return [
-                    'success' => false,
-                    'message' => "Service Request {$data['name']} already exists for {$provider->name}."
-                ];
+            $checkSr = $provider->serviceRequest()->where('name', $data['name']);
+
+            if ($checkSr->first() instanceof Sr) {
+                $data['label'] = $data['name'] = $this->srService->getServiceRequestRepository()->buildCloneEntityStr(
+                    $checkSr,
+                    'name',
+                    $data['name']
+                );
             }
             $serviceData = $this->getServiceData($data, $map, $dest);
-            dd($serviceData);
+
             if (!$serviceData['success']) {
-                $service = $this->sImporterService->create($serviceData['service'], $withChildren, $map);
-                if (!$service['success']) {
-                    return $service;
-                }
-                $service = $this->sImporterService->getApiService()->getServiceRepository()->getModel();
-            } else {
-                $service = $this->getService($serviceData['service']);
-                if (!$service['success']) {
-                    return $service;
-                }
-                $service = $service['service'];
+                return $serviceData;
             }
+
+            $service = $this->sImporterService->create($serviceData['service'], $withChildren, $map);
+            if (!$service['success']) {
+                return $service;
+            }
+
+            $service = $this->sImporterService->getApiService()->getServiceRepository()->getModel();
             $data['service'] = $service->id;
 
-            $category = $this->createCategory($data, $withChildren);
+            $category = $this->createCategory($data, $withChildren, $map);
 
             if ($category) {
                 $data['category'] = $category->id;
             }
-            if (!$this->srService->createServiceRequest($provider, $data)) {
-                return [
-                    'success' => false,
-                    'message' => "Failed to create provider."
-                ];
+            if (!empty($extraData['isChildSr'])) {
+                if (empty($extraData['sr']) || !$extraData['sr'] instanceof Sr) {
+                    return [
+                        'success' => false,
+                        'message' => "Parent Sr is required for child"
+                    ];
+                }
+
+                if (!$this->srService->createChildSr($provider, $extraData['sr'], $data)) {
+                    return [
+                        'success' => false,
+                        'message' => "Failed to create child sr."
+                    ];
+                }
+            } else {
+                if (!$this->srService->createServiceRequest($provider, $data)) {
+                    return [
+                        'success' => false,
+                        'message' => "Failed to create provider."
+                    ];
+                }
             }
             $sr = $this->srService->getServiceRequestRepository()->getModel();
             if ($withChildren) {
                 return [
                     'success' => true,
                     'message' => "Service Request {$data['name']} created for {$provider->name}.",
-                    'data' => $this->importSrChildren(ImportAction::CREATE, $sr, $data, true, $map),
+                    'data' => $this->importSrChildren(ImportAction::CREATE, $provider, $sr, $data, true, $map),
                 ];
             }
             return [
@@ -273,18 +287,15 @@ class SrImporterService extends ImporterBase
         }
     }
 
-    public function importSrChildren(ImportAction $action, Sr $sr, array $data, bool $withChildren, array $map): array
+    public function importSrChildren(ImportAction $action, Provider $provider, Sr $sr, array $data, bool $withChildren, array $map): array
     {
-        $this->loadDependencies();
         $response = [];
         $data['sr'] = $sr;
-        $data['sr_id'] = $sr->id;
         if (
             !empty($data['sr_rate_limit']) &&
             is_array($data['sr_rate_limit'])
         ) {
             $data['sr_rate_limit']['sr'] = $sr;
-            $data['sr_rate_limit']['sr_id'] = $sr->id;
             $response[] = $this->srRateLimitImporterService->import(
                 $action,
                 $data['sr_rate_limit'],
@@ -297,7 +308,6 @@ class SrImporterService extends ImporterBase
             is_array($data['sr_schedule'])
         ) {
             $data['sr_schedule']['sr'] = $sr;
-            $data['sr_schedule']['sr_id'] = $sr->id;
             $response[] = $this->srScheduleImporterService->import(
                 $action,
                 $data['sr_schedule'],
@@ -313,8 +323,8 @@ class SrImporterService extends ImporterBase
                 $response,
                 $this->srResponseKeysImporterService->batchImport(
                     $action,
-                    array_map(function ($parameter) use ($data) {
-                        $parameter['sr_id'] = $data['sr_id'];
+                    array_map(function ($parameter) use ($sr) {
+                        $parameter['sr'] = $sr;
                         return $parameter;
                     }, $data['sr_response_keys']),
                     $withChildren,
@@ -331,8 +341,8 @@ class SrImporterService extends ImporterBase
                 $response,
                 $this->srParameterImporterService->batchImport(
                     $action,
-                    array_map(function ($parameter) use ($data) {
-                        $parameter['sr_id'] = $data['sr_id'];
+                    array_map(function ($parameter) use ($sr) {
+                        $parameter['sr'] = $sr;
                         return $parameter;
                     }, $data['sr_parameter']),
                     $withChildren,
@@ -348,8 +358,8 @@ class SrImporterService extends ImporterBase
                 $response,
                 $this->srConfigImporterService->batchImport(
                     $action,
-                    array_map(function ($config) use ($data) {
-                        $config['sr_id'] = $data['sr_id'];
+                    array_map(function ($config) use ($sr) {
+                        $config['sr'] = $sr;
                         return $config;
                     }, $data['sr_config']),
                     $withChildren,
@@ -365,9 +375,14 @@ class SrImporterService extends ImporterBase
                 $response,
                 $this->batchImport(
                     $action,
-                    $data['child_srs'],
+                    array_map(function ($childSr) use ($sr, $provider) {
+                        $childSr['sr'] = $sr;
+                        $childSr['provider'] = $provider;
+                        return $childSr;
+                    }, $data['child_srs']),
                     $withChildren,
-                    $map
+                    $map,
+                    ['isChildSr' => true, 'sr' => $sr]
                 )
             );
         }

@@ -59,7 +59,7 @@ class SImporterService extends ImporterBase
         $this->apiService->setThrowException(false);
     }
 
-    protected function overwrite(array $data, bool $withChildren, array $map, ?array $dest = null): array
+    protected function overwrite(array $data, bool $withChildren, array $map, ?array $dest = null, ?array $extraData = []): array
     {
 
         try {
@@ -97,18 +97,19 @@ class SImporterService extends ImporterBase
         }
     }
 
-    protected function create(array $data, bool $withChildren, array $map, ?array $dest = null): array
+    protected function create(array $data, bool $withChildren, array $map, ?array $dest = null, ?array $extraData = []): array
     {
         try {
             $checkService = $this->apiService->getServiceRepository()->findUserModelBy(new S(), $this->getUser(), [
                 ['name', '=', $data['name']]
             ], false);
 
-            if ($checkService instanceof S) {
-                return [
-                    'success' => false,
-                    'message' => "Service {$data['name']} already exists."
-                ];
+            if ($checkService->first() instanceof S) {
+                $data['label'] = $data['name'] = $this->apiService->getServiceRepository()->buildCloneEntityStr(
+                    $checkService,
+                    'name',
+                    $data['name']
+                );
             }
             if (
                 !$this->apiService->createService(
