@@ -61,7 +61,7 @@ class PropertyImporterService extends ImporterBase {
         return $this->propertyService->getPropertyRepository()->findOne();
     }
 
-    protected function create(array $data, bool $withChildren, array $map, ?array $dest = null): array
+    protected function create(array $data, bool $withChildren, array $map, ?array $dest = null, ?array $extraData = []): array
     {
         try {
             $property = $this->findProperty(['name' => $data['name']]);
@@ -91,7 +91,7 @@ class PropertyImporterService extends ImporterBase {
     }
 
 
-    protected function overwrite(array $data, bool $withChildren, array $map, ?array $dest = null): array
+    protected function overwrite(array $data, bool $withChildren, array $map, ?array $dest = null, ?array $extraData = []): array
     {
         try {
             $property = $this->findProperty(['name' => $data['name']]);

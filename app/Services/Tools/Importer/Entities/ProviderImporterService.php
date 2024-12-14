@@ -84,7 +84,7 @@ class ProviderImporterService extends ImporterBase
                 $this->providerPropertiesImporterService->batchImport(
                     $action,
                     array_map(function ($property) use ($provider) {
-                        $property['provider_id'] = $provider->id;
+                        $property['provider'] = $provider;
                         return $property;
                     }, $data['properties']),
                     true,
@@ -97,7 +97,6 @@ class ProviderImporterService extends ImporterBase
             is_array($data['provider_rate_limit'])
         ) {
             $data['provider_rate_limit']['provider'] = $provider;
-            $data['provider_rate_limit']['provider_id'] = $provider->id;
             $response[] = $this->providerRateLimitImporterService->import(
                 $action,
                 $data['provider_rate_limit'],
@@ -114,7 +113,7 @@ class ProviderImporterService extends ImporterBase
                 $this->categoryImporterService->batchImport(
                     $action,
                     array_map(function ($category) use ($provider) {
-                        $category['provider_id'] = $provider->id;
+                        $category['provider'] = $provider;
                         return $category;
                     }, $data['categories']),
                     true,
@@ -131,7 +130,7 @@ class ProviderImporterService extends ImporterBase
                 $this->srImporterService->batchImport(
                     $action,
                     array_map(function ($sr) use ($provider) {
-                        $sr['provider_id'] = $provider->id;
+                        $sr['provider'] = $provider;
                         return $sr;
                     }, $data['srs']),
                     true,
@@ -142,10 +141,9 @@ class ProviderImporterService extends ImporterBase
         return $response;
     }
 
-    protected function create(array $data, bool $withChildren, array $map, ?array $dest = null): array
+    protected function create(array $data, bool $withChildren, array $map, ?array $dest = null, ?array $extraData = []): array
     {
         try {
-//            dd((new Provider)->newFromBuilder($data));
             $checkProvider = $this->providerService->getProviderRepository()->findUserModelQuery(
                 new Provider(),
                 $this->getUser(),
@@ -166,10 +164,12 @@ class ProviderImporterService extends ImporterBase
                 ];
             }
 
+            $provider = $this->providerService->getProviderRepository()->getModel();
+
             if ($withChildren) {
                 $response = $this->importChildren(
                     ImportAction::CREATE,
-                    $this->providerService->getProviderRepository()->getModel(),
+                    $provider,
                     $data,
                     $map
                 );
@@ -181,6 +181,12 @@ class ProviderImporterService extends ImporterBase
             }
             return [
                 'success' => true,
+                'message' => sprintf(
+                    "Provider imported successfully | name: %s | label: %s with_children: %s",
+                    $provider->name,
+                    $provider->label,
+                    ($withChildren) ? 'true' : 'false'
+                ),
                 'data' => $response,
             ];
         } catch (Exception $e) {
@@ -192,7 +198,7 @@ class ProviderImporterService extends ImporterBase
         }
     }
 
-    protected function overwrite(array $data, bool $withChildren, array $map, ?array $dest = null): array
+    protected function overwrite(array $data, bool $withChildren, array $map, ?array $dest = null, ?array $extraData = []): array
     {
         try {
             $checkProvider = $this->providerService->getProviderRepository()->findUserModelQuery(
@@ -213,22 +219,33 @@ class ProviderImporterService extends ImporterBase
                     'message' => "Failed to update provider {$data['name']}."
                 ];
             }
+            $provider = $this->providerService->getProviderRepository()->getModel();
             if ($withChildren) {
                 $response = $this->importChildren(
                     ImportAction::OVERWRITE,
-                    $this->providerService->getProviderRepository()->getModel(),
+                    $provider,
                     $data,
                     $map
                 );
             } else {
                 $response = [
                     'success' => true,
-                    'message' => "Provider {$data['name']} imported successfully. No children imported."
+                    'message' => sprintf(
+                        "Provider imported successfully | name: %s | label: %s with_children: false",
+                        $provider->name,
+                        $provider->label,
+                    ),
                 ];
             }
             return [
                 'success' => true,
                 'data' => $response,
+                'message' => sprintf(
+                    "Provider imported successfully | name: %s | label: %s with_children: %s",
+                    $provider->name,
+                    $provider->label,
+                    ($withChildren) ? 'true' : 'false'
+                ),
             ];
         } catch (Exception $e) {
             return [

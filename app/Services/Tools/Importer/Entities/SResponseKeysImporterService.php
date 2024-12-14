@@ -63,7 +63,7 @@ class SResponseKeysImporterService extends ImporterBase
         ];
     }
 
-    protected function overwrite(array $data, bool $withChildren, array $map, ?array $dest = null): array
+    protected function overwrite(array $data, bool $withChildren, array $map, ?array $dest = null, ?array $extraData = []): array
     {
         try {
             $service = $this->findService($data);
@@ -106,7 +106,7 @@ class SResponseKeysImporterService extends ImporterBase
         }
     }
 
-    protected function create(array $data, bool $withChildren, array $map, ?array $dest = null): array
+    protected function create(array $data, bool $withChildren, array $map, ?array $dest = null, ?array $extraData = []): array
     {
         try {
             $service = $this->findService($data);

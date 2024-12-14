@@ -54,9 +54,9 @@ abstract class ImporterBase
 
     abstract public function parseEntityBatch(array $data): array;
 
-    abstract protected function overwrite(array $data, bool $withChildren, array $map, ?array $dest = null): array;
+    abstract protected function overwrite(array $data, bool $withChildren, array $map, ?array $dest = null, ?array $extraData = []): array;
 
-    abstract protected function create(array $data, bool $withChildren, array $map, ?array $dest = null): array;
+    abstract protected function create(array $data, bool $withChildren, array $map, ?array $dest = null, ?array $extraData = []): array;
 
     abstract protected function deepFind(ImportType $importType, array $data, array $conditions, ?string $operation = 'AND'): array|null;
 
@@ -70,22 +70,13 @@ abstract class ImporterBase
         return $this->importSelf($action, $map, $data, true, $dest);
     }
 
-    protected function overwriteOrCreate(array $data, bool $withChildren, array $map, ?array $dest = null): array
+    protected function overwriteOrCreate(array $data, bool $withChildren, array $map, ?array $dest = null, ?array $extraData = []): array
     {
-        $overwrite = $this->overwrite($data, $withChildren, $map, $dest);
+        $overwrite = $this->overwrite($data, $withChildren, $map, $dest, $extraData);
         if ($overwrite['success']) {
             return $overwrite;
         }
-        return $this->create($data, $withChildren, $map, $dest);
-    }
-
-    public function import(ImportAction $action, array $data, bool $withChildren, array $map, ?array $dest = null): array
-    {
-        return match ($action) {
-            ImportAction::CREATE => $this->create($data, $withChildren, $map, $dest),
-            ImportAction::OVERWRITE => $this->overwrite($data, $withChildren, $map, $dest),
-            ImportAction::OVERWRITE_OR_CREATE => $this->overwriteOrCreate($data, $withChildren, $map, $dest),
-        };
+        return $this->create($data, $withChildren, $map, $dest, $extraData);
     }
 
     public function importMapFactory(array $map, array $data, ?array $dest = null): array
@@ -113,13 +104,23 @@ abstract class ImporterBase
         };
     }
 
-    protected function batchImport(ImportAction $action, array $data, bool $withChildren, array $map): array
+    protected function batchImport(ImportAction $action, array $data, bool $withChildren, array $map, ?array $extraData = []): array
     {
         $response = [];
         foreach ($data as $provider) {
-            $response[] = $this->import($action, $provider, $withChildren, $map);
+            $response[] = $this->import($action, $provider, $withChildren, $map, null, $extraData);
         }
         return $response;
+    }
+
+    public function import(ImportAction $action, array $data, bool $withChildren, array $map, ?array $dest = null, ?array $extraData = []): array
+    {
+        $this->loadDependencies();
+        return match ($action) {
+            ImportAction::CREATE => $this->create($data, $withChildren, $map, $dest, $extraData),
+            ImportAction::OVERWRITE => $this->overwrite($data, $withChildren, $map, $dest, $extraData),
+            ImportAction::OVERWRITE_OR_CREATE => $this->overwriteOrCreate($data, $withChildren, $map, $dest, $extraData),
+        };
     }
 
     protected function compareKeysWithModelFields(array $data): bool
@@ -215,18 +216,19 @@ abstract class ImporterBase
                 }, $map['children'])
             ];
         }
+
         $findItemIndex = array_search($map['id'], array_column($data, 'id'));
         if ($findItemIndex === false) {
             return [
                 'success' => false,
-                'data' => $map,
-                'error' => 'Category not found'
+                'error' => "Map item not found in data, make sure to include data | Import type: {$action->value} | Map id: {$map['id']}",
+                'map' => $map,
             ];
         }
         return $this->import($action, $data[$findItemIndex], $withChildren, $map, $dest);
     }
 
-    protected function findProvider(array $data, array $map, ?array $dest = null): array
+    protected function findProvider(ImportType $importType, array $data, array $map, ?array $dest = null): array
     {
         if (!empty($data['provider'])) {
             $provider = $data['provider'];
@@ -239,7 +241,7 @@ abstract class ImporterBase
             if ($destIndex === false) {
                 return [
                     'success' => false,
-                    'message' => "Provider not found."
+                    'message' => "Provider not found | Import type: {$importType->value}"
                 ];
             }
             if (!empty($dest[$destIndex]['id'])) {
@@ -247,19 +249,19 @@ abstract class ImporterBase
             } else {
                 return [
                     'success' => false,
-                    'message' => "Provider is required."
+                    'message' => "Provider is required | Import type: {$importType->value}"
                 ];
             }
         } else {
             return [
                 'success' => false,
-                'message' => "Provider is required."
+                'message' => "Provider is required | Import type: {$importType->value}"
             ];
         }
         if (!$provider instanceof Provider) {
             return [
                 'success' => false,
-                'message' => "Provider not found."
+                'message' => "Provider not found | Import type: {$importType->value}"
             ];
         }
         return [
@@ -268,7 +270,7 @@ abstract class ImporterBase
         ];
     }
 
-    public function findSr(array $data, array $map, ?array $dest = null): array
+    public function findSr(ImportType $importType, array $data, array $map, ?array $dest = null): array
     {
         if (!empty($data['sr'])) {
             $sr = $data['sr'];
@@ -281,7 +283,7 @@ abstract class ImporterBase
             if ($destIndex === false) {
                 return [
                     'success' => false,
-                    'message' => "Sr not found for sr schedule."
+                    'message' => "Sr not found for sr schedule | Import type: {$importType->value}"
                 ];
             }
             if (!empty($dest[$destIndex]['id'])) {
@@ -289,19 +291,19 @@ abstract class ImporterBase
             } else {
                 return [
                     'success' => false,
-                    'message' => "Sr is required for sr schedule."
+                    'message' => "Sr is required for sr schedule | Import type: {$importType->value}"
                 ];
             }
         } else {
             return [
                 'success' => false,
-                'message' => "Sr is required for sr schedule."
+                'message' => "Sr is required for sr schedule | Import type: {$importType->value}"
             ];
         }
         if (!$sr instanceof Sr) {
             return [
                 'success' => false,
-                'message' => "Sr not found for sr schedule."
+                'message' => "Sr not found for sr schedule | Import type: {$importType->value}"
             ];
         }
         return [

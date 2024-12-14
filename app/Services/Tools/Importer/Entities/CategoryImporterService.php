@@ -53,7 +53,7 @@ class CategoryImporterService extends ImporterBase
     {
         $this->categoryService->setThrowException(false);
     }
-    protected function create(array $data, bool $withChildren, array $map, ?array $dest = null): array
+    protected function create(array $data, bool $withChildren, array $map, ?array $dest = null, ?array $extraData = []): array
     {
         try {
             $checkCategory = $this->categoryService->getUserCategoryRepository()->findUserModelBy(
@@ -88,7 +88,7 @@ class CategoryImporterService extends ImporterBase
         }
     }
 
-    protected function overwrite(array $data, bool $withChildren, array $map, ?array $dest = null): array
+    protected function overwrite(array $data, bool $withChildren, array $map, ?array $dest = null, ?array $extraData = []): array
     {
         try {
             $checkCategory = $this->categoryService->getUserCategoryRepository()->findUserModelBy(
