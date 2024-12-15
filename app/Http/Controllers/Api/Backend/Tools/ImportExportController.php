@@ -122,8 +122,8 @@ class ImportExportController extends Controller
 
     public function runImportMappings(ImportMappingsRequest $request)
     {
-        $this->importService->setUser($request->user());
-        $this->importService->runMappingsImporter(
+        ImportMappingsEvent::dispatch(
+            $request->user()->id,
             $request->validated('file_id'),
             $request->validated('mappings')
         );
