@@ -31,22 +31,22 @@ class ImportMappingsListener
         $fileId = $event->fileId;
         $mappings = $event->mappings;
 
-        $user = $this->userAdminService->getUserRepository()->findById($userId);
-        if (!$user instanceof User) {
-            Log::log('error', 'ImportMappingsEvent: $user is not instance of User');
-            return;
-        }
-        if (empty($fileId)) {
-            Log::log('error', 'ImportMappingsEvent: $fileId is empty');
-            return;
-        }
-
-        if (empty($mappings)) {
-            Log::log('error', 'ImportMappingsEvent: $mappings is empty');
-            return;
-        }
-
-        $this->importService->setUser($user);
-        $this->importService->runMappingsImporter($fileId, $mappings);
+//        $user = $this->userAdminService->getUserRepository()->findById($userId);
+//        if (!$user instanceof User) {
+//            Log::log('error', 'ImportMappingsEvent: $user is not instance of User');
+//            return;
+//        }
+//        if (empty($fileId)) {
+//            Log::log('error', 'ImportMappingsEvent: $fileId is empty');
+//            return;
+//        }
+//
+//        if (empty($mappings)) {
+//            Log::log('error', 'ImportMappingsEvent: $mappings is empty');
+//            return;
+//        }
+//
+//        $this->importService->setUser($user);
+//        $this->importService->runMappingsImporter($fileId, $mappings);
     }
 }
