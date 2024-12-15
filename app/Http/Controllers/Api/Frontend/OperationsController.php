@@ -18,11 +18,9 @@ class OperationsController extends Controller
 {
 
     public function __construct(
-        HttpRequestService $httpRequestService,
-        SerializerService $serializerService,
         AccessControlService $accessControlService
     ) {
-        parent::__construct($accessControlService, $httpRequestService, $serializerService);
+        parent::__construct($accessControlService);
     }
 
     public function searchOperation(string $type, ApiRequestDataInterface $apiRequestDataHandler, OperationsRequest $request)

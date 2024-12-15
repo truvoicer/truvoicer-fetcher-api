@@ -39,6 +39,7 @@ class ImportService
     {
         $this->iExportTypeService->setUser($this->getUser());
         $getFileData = $this->importsFileSystemService->fileSystemService->getFileById($fileId);
+
         $getFileContents = $this->importsFileSystemService->getFilesystem()->get($getFileData->rel_path);
         if (!$getFileContents) {
             throw new BadRequestHttpException("Error reading file");

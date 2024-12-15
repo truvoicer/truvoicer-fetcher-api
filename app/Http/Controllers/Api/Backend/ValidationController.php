@@ -21,12 +21,10 @@ class ValidationController extends Controller
      * @param AccessControlService $accessControlService
      */
     public function __construct(
-        HttpRequestService $httpRequestService,
-        SerializerService $serializerService,
         ValidatorService $providerService,
         AccessControlService $accessControlService
     ) {
-        parent::__construct($accessControlService, $httpRequestService, $serializerService);
+        parent::__construct($accessControlService);
         $this->validatorService = $providerService;
     }
 

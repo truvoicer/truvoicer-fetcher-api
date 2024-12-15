@@ -67,7 +67,7 @@ class ServiceRequestController extends Controller
         AccessControlService $accessControlService
     )
     {
-        parent::__construct($accessControlService, $httpRequestService, $serializerService);
+        parent::__construct($accessControlService);
         $this->providerService = $providerService;
         $this->apiServicesService = $apiServicesService;
         $this->srService = $requestService;

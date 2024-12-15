@@ -26,32 +26,20 @@ use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
  */
 class ImportExportController extends Controller
 {
-    private SecurityService $securityService;
-    private UserAdminService $userService;
-    private ExportService $exportService;
-
     /**
      * ExportController constructor.
      * Initialises services used in this controller
      *
-     * @param SerializerService $serializerService
-     * @param HttpRequestService $httpRequestService
-     * @param SecurityService $securityService
-     * @param UserAdminService $userService
      * @param AccessControlService $accessControlService
+     * @param ExportService $exportService
+     * @param ImportService $importService
      */
     public function __construct(
-        SerializerService $serializerService,
-        HttpRequestService $httpRequestService,
-        SecurityService $securityService,
-        UserAdminService $userService,
-        AccessControlService $accessControlService,
-        ExportService $exportService
+        protected AccessControlService $accessControlService,
+        protected ExportService $exportService,
+        protected ImportService $importService
     ) {
-        parent::__construct($accessControlService, $httpRequestService, $serializerService);
-        $this->securityService = $securityService;
-        $this->userService = $userService;
-        $this->exportService = $exportService;
+        parent::__construct($accessControlService);
     }
 
     public function getExportList(Request $request)
@@ -134,8 +122,8 @@ class ImportExportController extends Controller
 
     public function runImportMappings(ImportMappingsRequest $request)
     {
-        ImportMappingsEvent::dispatch(
-            $request->user()->id,
+        $this->importService->setUser($request->user());
+        $this->importService->runMappingsImporter(
             $request->validated('file_id'),
             $request->validated('mappings')
         );

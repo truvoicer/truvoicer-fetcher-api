@@ -40,7 +40,7 @@ class EntityController extends Controller
         AccessControlService $accessControlService,
         private EntityService $entityService
     ) {
-        parent::__construct($accessControlService, $httpRequestService, $serializerService);
+        parent::__construct($accessControlService);
     }
 
     /**

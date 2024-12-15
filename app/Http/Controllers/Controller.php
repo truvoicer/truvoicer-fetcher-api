@@ -15,19 +15,10 @@ class Controller extends BaseController
 {
     use AuthorizesRequests, ValidatesRequests;
 
-    protected SerializerService $serializerService;
-    protected HttpRequestService $httpRequestService;
-    protected AccessControlService $accessControlService;
-
     public function __construct(
-        AccessControlService $accessControlService,
-        HttpRequestService $httpRequestService,
-        SerializerService $serializerService
+        protected AccessControlService $accessControlService,
     )
     {
-        $this->serializerService = $serializerService;
-        $this->httpRequestService = $httpRequestService;
-        $this->accessControlService = $accessControlService;
     }
 
     protected function setAccessControlUser(?User $user = null) {

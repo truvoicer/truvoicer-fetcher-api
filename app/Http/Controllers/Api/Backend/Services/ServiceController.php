@@ -37,12 +37,10 @@ class ServiceController extends Controller
      * @param AccessControlService $accessControlService
      */
     public function __construct(
-        HttpRequestService $httpRequestService,
-        SerializerService $serializerService,
         ApiService $apiServicesService,
         AccessControlService $accessControlService
     ) {
-        parent::__construct($accessControlService, $httpRequestService, $serializerService);
+        parent::__construct($accessControlService);
         $this->apiServicesService = $apiServicesService;   //Initialise api services service
     }
 

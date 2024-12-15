@@ -33,7 +33,7 @@ class SearchController extends Controller
         SearchService $searchService,
         AccessControlService $accessControlService
     ) {
-        parent::__construct($accessControlService, $httpRequestService, $serializerService);
+        parent::__construct($accessControlService);
         $this->searchService = $searchService;
     }
 

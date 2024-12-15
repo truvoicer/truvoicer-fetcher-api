@@ -31,7 +31,7 @@ class ListController extends Controller
         SerializerService $serializerService,
         AccessControlService $accessControlService
     ) {
-        parent::__construct($accessControlService, $httpRequestService, $serializerService);
+        parent::__construct($accessControlService);
         $this->providerService = $providerService;
     }
 
