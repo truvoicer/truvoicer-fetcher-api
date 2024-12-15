@@ -9,7 +9,7 @@ use App\Services\User\UserAdminService;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Support\Facades\Log;
 
-class ImportMappingsListener implements ShouldQueue
+class ImportMappingsListener
 {
     /**
      * Create the event listener.

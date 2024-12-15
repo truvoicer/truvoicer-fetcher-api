@@ -4,10 +4,11 @@ namespace App\Events;
 
 use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Broadcasting\PrivateChannel;
+use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 
-class ImportMappingsEvent
+class ImportMappingsEvent implements ShouldBroadcast
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
@@ -32,7 +33,7 @@ class ImportMappingsEvent
     public function broadcastOn(): array
     {
         return [
-            new PrivateChannel('import-mappings-event'),
+            new PrivateChannel('App.Model.User.'.$this->userId),
         ];
     }
 }
