@@ -24,14 +24,12 @@ class AuthController extends Controller
 {
     private UserAdminService $userAdminService;
     public function __construct(
-        HttpRequestService $httpRequestService,
-        SerializerService $serializerService,
         UserAdminService $userAdminService,
         AccessControlService $accessControlService
     )
     {
 
-        parent::__construct($accessControlService, $httpRequestService, $serializerService);
+        parent::__construct($accessControlService);
         $this->userAdminService = $userAdminService;
     }
 

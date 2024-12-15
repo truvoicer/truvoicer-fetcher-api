@@ -43,7 +43,7 @@ class SrRateLimitController extends Controller
         RateLimitService     $srRateLimitService,
         AccessControlService $accessControlService
     ) {
-        parent::__construct($accessControlService, $httpRequestService, $serializerService);
+        parent::__construct($accessControlService);
         // Initialise services for this controller
         $this->srRateLimitService = $srRateLimitService;
     }

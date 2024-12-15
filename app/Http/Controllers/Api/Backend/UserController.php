@@ -45,7 +45,7 @@ class UserController extends Controller
         HttpRequestService $httpRequestService,
         AccessControlService $accessControlService
     ) {
-        parent::__construct($accessControlService, $httpRequestService, $serializerService);
+        parent::__construct($accessControlService);
         $this->userService = $userService;
     }
 

@@ -38,12 +38,10 @@ class CategoryController extends Controller
      * @param AccessControlService $accessControlService
      */
     public function __construct(
-        SerializerService $serializerService,
         CategoryService $categoryService,
-        HttpRequestService $httpRequestService,
         AccessControlService $accessControlService
     ) {
-        parent::__construct($accessControlService, $httpRequestService, $serializerService);
+        parent::__construct($accessControlService);
         $this->categoryService = $categoryService;
     }
 

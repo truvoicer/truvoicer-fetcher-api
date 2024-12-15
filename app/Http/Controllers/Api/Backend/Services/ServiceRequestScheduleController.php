@@ -44,7 +44,7 @@ class ServiceRequestScheduleController extends Controller
         SrScheduleService      $srScheduleService,
         AccessControlService $accessControlService
     ) {
-        parent::__construct($accessControlService, $httpRequestService, $serializerService);
+        parent::__construct($accessControlService);
         // Initialise services for this controller
         $this->srScheduleService = $srScheduleService;
     }

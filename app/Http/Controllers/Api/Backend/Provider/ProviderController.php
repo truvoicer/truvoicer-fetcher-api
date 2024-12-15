@@ -42,7 +42,7 @@ class ProviderController extends Controller
         AccessControlService $accessControlService
     )
     {
-        parent::__construct($accessControlService, $httpRequestService, $serializerService);
+        parent::__construct($accessControlService);
         $this->providerService = $providerService;
     }
 

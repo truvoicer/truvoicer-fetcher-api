@@ -44,7 +44,7 @@ class ServiceRequestParameterController extends Controller
         SrParametersService  $requestParametersService,
         AccessControlService $accessControlService
     ) {
-        parent::__construct($accessControlService, $httpRequestService, $serializerService);
+        parent::__construct($accessControlService);
         $this->requestParametersService = $requestParametersService;
     }
 

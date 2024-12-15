@@ -26,7 +26,7 @@ class DownloadFileController extends Controller
         private UploadsFileSystemService   $uploadsFileSystemService,
     )
     {
-        parent::__construct($accessControlService, $httpRequestService, $serializerService);
+        parent::__construct($accessControlService);
     }
 
     /**

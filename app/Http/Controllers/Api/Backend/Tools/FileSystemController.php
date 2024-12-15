@@ -40,7 +40,7 @@ class FileSystemController extends Controller
         UserAdminService $userService,
         AccessControlService $accessControlService
     ) {
-        parent::__construct($accessControlService, $httpRequestService, $serializerService);
+        parent::__construct($accessControlService);
         $this->fileSystemService = $fileSystemService;
         $this->userService = $userService;
     }
