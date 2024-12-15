@@ -169,6 +169,7 @@ return [
         App\Providers\RouteServiceProvider::class,
 
         MongoDB\Laravel\MongoDBServiceProvider::class,
+        App\Providers\BroadcastServiceProvider::class,
     ])->toArray(),
 
     /*
