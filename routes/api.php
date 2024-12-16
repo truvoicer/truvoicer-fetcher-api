@@ -243,7 +243,7 @@ Route::middleware(['auth:sanctum', 'ability:api:admin,api:superuser,api:super_ad
             Route::post('/export', [ImportExportController::class, 'runExport'])->name('export');
             Route::prefix('/import')->name('import.')->group(function () {
                 Route::post('/parse', [ImportExportController::class, 'parseImport'])->name('parse');
-                Route::post('/mappings', [ImportExportController::class, 'runImportMappings'])->name('mappings');
+                Route::post('/mappings', [ImportExportController::class, 'runImport'])->name('mappings');
             });
             Route::prefix('utils')->name('utils.')->group(function () {
                 Route::get('/variable/list', [UtilsController::class, 'getVariableList'])->name('variable.list');

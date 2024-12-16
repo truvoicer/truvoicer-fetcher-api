@@ -60,6 +60,8 @@ abstract class ImporterBase
 
     abstract protected function deepFind(ImportType $importType, array $data, array $conditions, ?string $operation = 'AND'): array|null;
 
+    public function lock(array $data): void {}
+
     public function importSelfNoChildren(ImportAction $action, array $map, array $data, ?array $dest = null): array
     {
         return $this->importSelf($action, $map, $data, false, $dest);

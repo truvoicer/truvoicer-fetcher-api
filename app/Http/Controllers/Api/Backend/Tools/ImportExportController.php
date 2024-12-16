@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\Api\Backend\Tools;
 
-use App\Events\ImportMappingsEvent;
+use App\Events\ImportStartedEvent;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\Tools\Export\ExportRequest;
 use App\Http\Requests\Admin\Tools\Import\ImportMappingsRequest;
@@ -120,9 +120,9 @@ class ImportExportController extends Controller
         );
     }
 
-    public function runImportMappings(ImportMappingsRequest $request)
+    public function runImport(ImportMappingsRequest $request)
     {
-        ImportMappingsEvent::dispatch(
+        ImportStartedEvent::dispatch(
             $request->user()->id,
             $request->validated('file_id'),
             $request->validated('mappings')

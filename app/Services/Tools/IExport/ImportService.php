@@ -35,7 +35,7 @@ class ImportService
         return $this->uploadsFileSystemService->readTempFile($filePath);
     }
 
-    public function runMappingsImporter(int $fileId, array $mappings)
+    public function import(int $fileId, array $mappings)
     {
         $this->iExportTypeService->setUser($this->getUser());
         $getFileData = $this->importsFileSystemService->fileSystemService->getFileById($fileId);
