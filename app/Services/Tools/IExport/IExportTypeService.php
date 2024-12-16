@@ -190,44 +190,21 @@ class IExportTypeService extends BaseService
         return $contents;
     }
 
-
-    public function runImportForType(array $contents, array $mappings)
+    private function buildDeepFindConditions(array $map): array
     {
-        $response = [];
-        foreach (ImportType::cases() as $importType) {
-            $instance = null;
-            $instance = $this->getInstance($importType);
-            $filterMappings = $this->getMappingsByType($importType->value, $mappings);
-            $filterContent = $this->findContentByType($importType, $contents);
-            foreach ($filterContent as $content) {
-                $import = array_map(function (array $map) use ($instance, $importType, $content) {
-                    if (!empty($map['root']) && !empty($map['children']) && is_array($map['children']) && count($map['children'])) {
-                        $conditions = array_map(function ($child) {
-                            return ['id' => $child['id']];
-                        }, $map['children']);
-                        $operation = 'OR';
-                    } else {
-                        $conditions = [['id' => $map['id']]];
-                        $operation = 'AND';
-                    }
-                    $data = $instance->deepFind($importType, $content['data'], $conditions, $operation);
-                    if (empty($data)) {
-                        return [
-                            'success' => false,
-                            'error' => 'No data found.',
-                        ];
-                    }
-                    return $this->destInterface($map, $data);
-                }, array_values($filterMappings));
-                foreach ($import as $importItem) {
-                    $response[] = $importItem;
-                }
-            }
+        if (!empty($map['root']) && !empty($map['children']) && is_array($map['children']) && count($map['children'])) {
+            $conditions = array_map(function ($child) {
+                return ['id' => $child['id']];
+            }, $map['children']);
+            $operation = 'OR';
+        } else {
+            $conditions = [['id' => $map['id']]];
+            $operation = 'AND';
         }
-        return $response;
+        return [$conditions, $operation];
     }
 
-    protected function destInterface(array $map, array $data): array
+    private function getImportType(array $map): array
     {
         if (empty($map['mapping']['source'])) {
             return [
@@ -240,9 +217,82 @@ class IExportTypeService extends BaseService
         } else {
             $importType = $map['mapping']['source'];
         }
+        return [
+            'success' => true,
+            'importType' => $importType,
+        ];
+    }
 
-        $dest = (!empty($map['dest'])) ? $map['dest'] :null;
-        return $this->getInstance(ImportType::from($importType))->importMapFactory($map, $data, $dest);
+    private function importTypeIterator(
+        array $importTypes,
+        array $contents,
+        array $mappings,
+        \Closure $callback
+    )
+    {
+        $response = [];
+        foreach ($importTypes as $importType) {
+            $instance = null;
+            $instance = $this->getInstance($importType);
+            $filterMappings = $this->getMappingsByType($importType->value, $mappings);
+            $filterContent = $this->findContentByType($importType, $contents);
+            foreach ($filterContent as $content) {
+                $import = array_map(function (array $map) use ($instance, $importType, $content, $callback) {
+                    list ($conditions, $operation) = $this->buildDeepFindConditions($map);
+                    $data = $instance->deepFind($importType, $content['data'], $conditions, $operation);
+                    if (empty($data)) {
+                        return [
+                            'success' => false,
+                            'error' => 'No data found.',
+                        ];
+                    }
+
+                    $importType = $this->getImportType($map);
+                    if (!$importType['success']) {
+                        return $importType;
+                    }
+
+                    $importType = $importType['importType'];
+                    $dest = (!empty($map['dest'])) ? $map['dest'] : null;
+                    return $callback($importType, $map, $data, $dest);
+                }, array_values($filterMappings));
+                foreach ($import as $importItem) {
+                    $response[] = $importItem;
+                }
+            }
+        }
+        return $response;
+    }
+
+    public function runLock(array $contents, array $mappings)
+    {
+        return $this->importTypeIterator(
+            [
+                ImportType::CATEGORY,
+                ImportType::PROVIDER,
+                ImportType::SERVICE,
+                ImportType::PROPERTY,
+            ],
+            $contents,
+            $mappings,
+            function ($importType, $map, $data, $dest) {
+                $this->getInstance(ImportType::from($importType))
+                    ->lock($map, $data, $dest);
+            }
+        );
+    }
+
+    public function runImportForType(array $contents, array $mappings)
+    {
+       return $this->importTypeIterator(
+            ImportType::cases(),
+            $contents,
+            $mappings,
+            function ($importType, $map, $data, $dest) {
+                return $this->getInstance(ImportType::from($importType))
+                    ->importMapFactory($map, $data, $dest);
+            }
+        );
     }
 
     public function validateType(ImportType $importType, array $data): void
