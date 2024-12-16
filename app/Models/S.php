@@ -57,4 +57,9 @@ class S extends Model
             'provider_id'
         );
     }
+
+    public function entityLock()
+    {
+        return $this->morphMany(EntityLock::class, 'entityLockable');
+    }
 }

@@ -39,7 +39,9 @@ abstract class ImporterBase
     }
 
     abstract protected function setConfig(): void;
+
     abstract protected function setMappings(): void;
+
     abstract protected function loadDependencies(): void;
 
     abstract public function validateImportData(array $data): void;
@@ -60,7 +62,12 @@ abstract class ImporterBase
 
     abstract protected function deepFind(ImportType $importType, array $data, array $conditions, ?string $operation = 'AND'): array|null;
 
-    public function lock(array $data): void {}
+    public function lock(ImportAction $action, array $map, array $data, ?array $dest = null): array
+    {
+        return [
+            'success' => true,
+        ];
+    }
 
     public function importSelfNoChildren(ImportAction $action, array $map, array $data, ?array $dest = null): array
     {
@@ -81,29 +88,23 @@ abstract class ImporterBase
         return $this->create($data, $withChildren, $map, $dest, $extraData);
     }
 
-    public function importMapFactory(array $map, array $data, ?array $dest = null): array
+    public function importMapFactory(ImportAction $action, array $map, array $data, ?array $dest = null): array
     {
-        if (empty($map['action'])) {
-            return [
-                'success' => false,
-                'error' => 'No action found.',
-            ];
+        switch ($action) {
+            case ImportAction::LOCK:
+                return $this->lock($action, $map, $data, $dest);
+            case ImportAction::CREATE:
+            case ImportAction::OVERWRITE:
+            case ImportAction::OVERWRITE_OR_CREATE:
+                return match ($map['mapping']['name']) {
+                    ImportMappingType::SELF_NO_CHILDREN->value => $this->importSelfNoChildren($action, $map, $data, $dest),
+                    ImportMappingType::SELF_WITH_CHILDREN->value => $this->importSelfWithChildren($action, $map, $data, $dest),
+                    default => [
+                        'success' => false,
+                        'data' => $map['data'],
+                    ],
+                };
         }
-        $action = ImportAction::tryFrom($map['action']);
-        if (!$action) {
-            return [
-                'success' => false,
-                'error' => 'Invalid action found.',
-            ];
-        }
-        return match ($map['mapping']['name']) {
-            ImportMappingType::SELF_NO_CHILDREN->value => $this->importSelfNoChildren($action, $map, $data, $dest),
-            ImportMappingType::SELF_WITH_CHILDREN->value => $this->importSelfWithChildren($action, $map, $data, $dest),
-            default => [
-                'success' => false,
-                'data' => $map['data'],
-            ],
-        };
     }
 
     protected function batchImport(ImportAction $action, array $data, bool $withChildren, array $map, ?array $extraData = []): array
@@ -175,14 +176,14 @@ abstract class ImporterBase
     }
 
     protected function buildConfig(
-        bool $show,
+        bool    $show,
         string  $id,
         string  $name,
         string  $label,
-        ?string  $nameField = null,
-        ?string  $labelField = null,
-        ?string  $rootLabelField = null,
-        ?array   $childrenKeys = [],
+        ?string $nameField = null,
+        ?string $labelField = null,
+        ?string $rootLabelField = null,
+        ?array  $childrenKeys = [],
     ): void
     {
         $this->config[ImportConfig::SHOW->value] = $show;
@@ -194,6 +195,7 @@ abstract class ImporterBase
         $this->config[ImportConfig::LABEL_FIELD->value] = $labelField;
         $this->config[ImportConfig::ROOT_LABEL_FIELD->value] = $rootLabelField;
     }
+
     protected function getConfigItem(ImportConfig $importConfig): mixed
     {
         if (!array_key_exists($importConfig->value, $this->config)) {
@@ -207,14 +209,15 @@ abstract class ImporterBase
         return $this->accessControlService;
     }
 
-    protected function importSelf(ImportAction $action, array $map, array $data, bool $withChildren, ?array $dest = null): array {
+    protected function importSelf(ImportAction $action, array $map, array $data, bool $withChildren, ?array $dest = null): array
+    {
         $this->loadDependencies();
         if (!empty($map['root']) && !empty($map['children']) && is_array($map['children']) && count($map['children'])) {
             return [
                 'success' => true,
                 'data' => array_map(function ($map) use ($data, $action, $dest) {
                     $map['action'] = $action->value;
-                    return $this->importMapFactory($map, $data, $dest);
+                    return $this->importMapFactory($action, $map, $data, $dest);
                 }, $map['children'])
             ];
         }
@@ -234,7 +237,7 @@ abstract class ImporterBase
     {
         if (!empty($data['provider'])) {
             $provider = $data['provider'];
-        }  elseif (
+        } elseif (
             !empty($map['mapping']['dest']) &&
             $map['mapping']['dest'] === ImportType::PROVIDER->value &&
             is_array($dest)

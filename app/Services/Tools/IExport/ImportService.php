@@ -30,11 +30,6 @@ class ImportService
     ) {
     }
 
-    private function getXmlData(string $filePath)
-    {
-        return $this->uploadsFileSystemService->readTempFile($filePath);
-    }
-
     public function import(int $fileId, array $mappings)
     {
         $this->iExportTypeService->setUser($this->getUser());
@@ -103,6 +98,21 @@ class ImportService
             ),
             "data" => $this->iExportTypeService->filterImportData($getFileContents)
         ];
+    }
+
+    public function lockEntities(int $fileId, array $mappings) {
+
+        $this->iExportTypeService->setUser($this->getUser());
+        $getFileData = $this->importsFileSystemService->fileSystemService->getFileById($fileId);
+
+        $getFileContents = $this->importsFileSystemService->getFilesystem()->get($getFileData->rel_path);
+        if (!$getFileContents) {
+            throw new BadRequestHttpException("Error reading file");
+        }
+        return $this->iExportTypeService->runLock(
+            json_decode($getFileContents, true),
+            $mappings
+        );
     }
 
 }

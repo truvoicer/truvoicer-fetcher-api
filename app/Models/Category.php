@@ -57,4 +57,8 @@ class Category extends Model
         );
     }
 
+    public function entityLock()
+    {
+        return $this->morphMany(EntityLock::class, 'entityLockable');
+    }
 }
