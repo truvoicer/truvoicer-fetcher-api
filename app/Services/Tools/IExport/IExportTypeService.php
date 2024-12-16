@@ -276,8 +276,8 @@ class IExportTypeService extends BaseService
             $contents,
             $mappings,
             function ($importType, $map, $data, $dest) {
-                $this->getInstance(ImportType::from($importType))
-                    ->lock($map, $data, $dest);
+                return $this->getInstance(ImportType::from($importType))
+                    ->importMapFactory(ImportAction::LOCK, $map, $data, $dest);
             }
         );
     }
@@ -289,8 +289,21 @@ class IExportTypeService extends BaseService
             $contents,
             $mappings,
             function ($importType, $map, $data, $dest) {
+                if (empty($map['action'])) {
+                    return [
+                        'success' => false,
+                        'error' => 'No action found.',
+                    ];
+                }
+                $action = ImportAction::tryFrom($map['action']);
+                if (!$action) {
+                    return [
+                        'success' => false,
+                        'error' => 'Invalid action found.',
+                    ];
+                }
                 return $this->getInstance(ImportType::from($importType))
-                    ->importMapFactory($map, $data, $dest);
+                    ->importMapFactory($action, $map, $data, $dest);
             }
         );
     }

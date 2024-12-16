@@ -54,4 +54,9 @@ class Property extends Model
             'id'
         );
     }
+
+    public function entityLock()
+    {
+        return $this->morphMany(EntityLock::class, 'entityLockable');
+    }
 }
