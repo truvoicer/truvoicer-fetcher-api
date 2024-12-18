@@ -82,6 +82,25 @@ class SrImporterService extends ImporterBase
         ];
     }
 
+    public function lock(ImportAction $action, array $map, array $data, ?array $dest = null): array
+    {
+        $sr = $this->findSr(ImportType::SR, $data, $map, $dest);
+        if (!$sr['success']) {
+            return $sr;
+        }
+        $sr = $sr['sr'];
+        if (!$this->entityService->lockEntity($this->getUser(), $sr->id, Sr::class)) {
+            return [
+                'success' => false,
+                'message' => "Failed to lock sr {$data['name']}."
+            ];
+        }
+        return [
+            'success' => true,
+            'message' => 'Sr import is locked.'
+        ];
+    }
+
     protected function overwrite(array $data, bool $withChildren, array $map, ?array $dest = null, ?array $extraData = []): array
     {
 

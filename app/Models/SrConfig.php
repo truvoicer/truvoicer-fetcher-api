@@ -37,4 +37,9 @@ class SrConfig extends Model
         );
     }
 
+    public function entityLock()
+    {
+        return $this->morphMany(EntityLock::class, 'entity');
+    }
+
 }

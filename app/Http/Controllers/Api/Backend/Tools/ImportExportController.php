@@ -60,6 +60,7 @@ class ImportExportController extends Controller
     {
         $this->exportService->setUser($request->user());
         $xmlDataArray = $this->exportService->getExportDataArray($request->validated());
+        dd($xmlDataArray);
         if (!count($xmlDataArray)) {
             return $this->sendErrorResponse(
                 "Export Store error: No data to export."

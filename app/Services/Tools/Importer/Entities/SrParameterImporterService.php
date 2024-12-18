@@ -56,6 +56,36 @@ class SrParameterImporterService extends ImporterBase
         ];
     }
 
+    public function lock(ImportAction $action, array $map, array $data, ?array $dest = null): array
+    {
+        $sr = $this->findSr(ImportType::SR_PARAMETER, $data, $map, $dest);
+        if (!$sr['success']) {
+            return $sr;
+        }
+        $sr = $sr['sr'];
+        $this->srParametersService->getRequestParametersRepo()->addWhere(
+            'name',
+            $data['name']
+        );
+        $srParameter = $this->srParametersService->getRequestParametersRepo()->findOne();
+        if (!$srParameter instanceof SrParameter) {
+            return [
+                'success' => false,
+                'message' => "Sr parameter not found for Sr {$sr->name}"
+            ];
+        }
+        if (!$this->entityService->lockEntity($this->getUser(), $srParameter->id, SrParameter::class)) {
+            return [
+                'success' => false,
+                'message' => "Failed to lock sr parameter {$data['name']}."
+            ];
+        }
+        return [
+            'success' => true,
+            'message' => 'Sr parameter import is locked.'
+        ];
+    }
+
     protected function overwrite(array $data, bool $withChildren, array $map, ?array $dest = null, ?array $extraData = []): array
     {
         try {

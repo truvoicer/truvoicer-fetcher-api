@@ -147,4 +147,9 @@ class Sr extends Model
     {
         return $this->hasMany(OauthAccessToken::class);
     }
+
+    public function entityLock()
+    {
+        return $this->morphMany(EntityLock::class, 'entity');
+    }
 }

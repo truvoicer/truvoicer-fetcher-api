@@ -21,4 +21,9 @@ class SrParameter extends Model
     {
         return $this->belongsTo(Sr::class);
     }
+
+    public function entityLock()
+    {
+        return $this->morphMany(EntityLock::class, 'entity');
+    }
 }

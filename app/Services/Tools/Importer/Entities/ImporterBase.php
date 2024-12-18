@@ -26,10 +26,10 @@ abstract class ImporterBase
     protected Model $model;
     protected array $config;
     protected array $mappings;
+    protected EntityService $entityService;
 
     public function __construct(
         protected AccessControlService $accessControlService,
-        protected EntityService $entityService,
         Model                          $model
     )
     {

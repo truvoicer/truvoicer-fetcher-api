@@ -47,7 +47,11 @@ class SrResponseKey extends Model
             'sr_response_key_id',
             'sr_id'
         )
-            ->withPivot('response_response_keys', 'request_response_keys', 'action', 'single_request', 'disable_request')
-            ->using(SrResponseKeySr::class);
+            ->withPivot('response_response_keys', 'request_response_keys', 'action', 'single_request', 'disable_request');
+    }
+
+    public function entityLock()
+    {
+        return $this->morphMany(EntityLock::class, 'entity');
     }
 }

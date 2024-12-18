@@ -34,8 +34,15 @@ class SResponseKey extends Model
             'id'
         );
     }
+
     public function service()
     {
         return $this->belongsTo(S::class);
+    }
+
+
+    public function entityLock()
+    {
+        return $this->morphMany(EntityLock::class, 'entity');
     }
 }
