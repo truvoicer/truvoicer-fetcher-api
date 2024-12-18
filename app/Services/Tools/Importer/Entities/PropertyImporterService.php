@@ -78,6 +78,20 @@ class PropertyImporterService extends ImporterBase {
         ];
     }
 
+    public function unlock(Property $property): array
+    {
+        if (!$this->entityService->lockEntity($this->getUser(), $property->id, Property::class)) {
+            return [
+                'success' => false,
+                'message' => "Failed to unlock property {$property->name}."
+            ];
+        }
+        return [
+            'success' => true,
+            'message' => 'Property is unlocked.'
+        ];
+    }
+
     private function findProperty(array $params): ?Model
     {
         foreach ($params as $key => $value) {
@@ -101,6 +115,11 @@ class PropertyImporterService extends ImporterBase {
                     'success' => false,
                     'message' => "Failed to create property {$data['name']}."
                 ];
+            }
+            $property = $this->propertyService->getPropertyRepository()->getModel();
+            $unlockProperty = $this->unlock($property);
+            if (!$unlockProperty['success']) {
+                return $unlockProperty;
             }
             return [
                 'success' => true,
@@ -131,6 +150,11 @@ class PropertyImporterService extends ImporterBase {
                     'success' => false,
                     'message' => "Failed to update property {$data['name']}."
                 ];
+            }
+            $property = $this->propertyService->getPropertyRepository()->getModel();
+            $unlockProperty = $this->unlock($property);
+            if (!$unlockProperty['success']) {
+                return $unlockProperty;
             }
             return [
                 'success' => true,

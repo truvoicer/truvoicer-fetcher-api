@@ -77,6 +77,20 @@ class CategoryImporterService extends ImporterBase
         ];
     }
 
+    public function unlock(Category $category): array
+    {
+        if (!$this->entityService->unlockEntity($this->getUser(), $category->id, Category::class)) {
+            return [
+                'success' => false,
+                'message' => "Failed to unlock category {$category->name}."
+            ];
+        }
+        return [
+            'success' => true,
+            'message' => 'Category is unlocked.'
+        ];
+    }
+
     protected function create(array $data, bool $withChildren, array $map, ?array $dest = null, ?array $extraData = []): array
     {
         try {
@@ -99,9 +113,17 @@ class CategoryImporterService extends ImporterBase
                 $this->getUser(),
                 $data
             );
+
+            $category = $this->categoryService->getCategoryRepository()->getModel();
+
+            $unlockCategory = $this->unlock($category);
+            if (!$unlockCategory['success']) {
+                return $unlockCategory;
+            }
+
             return [
                 'success' => true,
-                'message' => $this->categoryService->getCategoryRepository()->getModel()
+                'message' => $category
             ];
         } catch (Exception $e) {
             return [
@@ -140,6 +162,11 @@ class CategoryImporterService extends ImporterBase
                     'success' => false,
                     'message' => "Failed to update category {$data['name']}."
                 ];
+            }
+            $category = $this->categoryService->getCategoryRepository()->getModel();
+            $unlockCategory = $this->unlock($category);
+            if (!$unlockCategory['success']) {
+                return $unlockCategory;
             }
             return [
                 'success' => true,

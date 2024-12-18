@@ -121,7 +121,7 @@ class SrResponseKeysImporterService extends ImporterBase
                 $this->getUser(),
                 $sr,
                 $responseKey->name,
-                $data
+                $data['sr_response_key']
             )
         ) {
             return [
@@ -170,7 +170,7 @@ class SrResponseKeysImporterService extends ImporterBase
                 $this->getUser(),
                 $sr,
                 $responseKey->name,
-                $data
+                $data['sr_response_key']
             )
         ) {
             return [
@@ -181,6 +181,32 @@ class SrResponseKeysImporterService extends ImporterBase
         return [
             'success' => true,
             'message' => "Sr response key({$responseKey->name}) for Sr {$sr->name} imported successfully."
+        ];
+    }
+    public function importSrChildren(ImportAction $action, Provider $provider, Sr $sr, array $data, bool $withChildren, array $map): array
+    {
+        $response = [];
+        $data['sr'] = $sr;
+        if (
+            !empty($data['sr_response_key_srs']) &&
+            is_array($data['sr_response_key_srs'])
+        ) {
+            $response = array_merge(
+                $response,
+                $this->srConfigImporterService->batchImport(
+                    $action,
+                    array_map(function ($config) use ($sr) {
+                        $config['sr'] = $sr;
+                        return $config;
+                    }, $data['sr_config']),
+                    $withChildren,
+                    $map
+                )
+            );
+        }
+        return [
+            'success' => true,
+            'data' => $response,
         ];
     }
 

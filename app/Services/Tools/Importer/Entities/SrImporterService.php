@@ -226,6 +226,7 @@ class SrImporterService extends ImporterBase
         }
         return $this->categoryImporterService->getCategoryService()->getCategoryRepository()->getModel();
     }
+
     protected function create(array $data, bool $withChildren, array $map, ?array $dest = null, ?array $extraData = []): array
     {
         try {
@@ -334,9 +335,10 @@ class SrImporterService extends ImporterBase
                 $map
             );
         }
+
         if (
-            !empty($data['sr_response_keys']) &&
-            is_array($data['sr_response_keys'])
+            !empty($data['s']['s_response_keys']) &&
+            is_array($data['s']['s_response_keys'])
         ) {
             $response = array_merge(
                 $response,
@@ -345,7 +347,7 @@ class SrImporterService extends ImporterBase
                     array_map(function ($parameter) use ($sr) {
                         $parameter['sr'] = $sr;
                         return $parameter;
-                    }, $data['sr_response_keys']),
+                    }, $data['s']['s_response_keys']),
                     $withChildren,
                     $map
                 )

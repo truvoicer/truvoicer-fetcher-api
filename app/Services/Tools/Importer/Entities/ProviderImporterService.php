@@ -94,6 +94,19 @@ class ProviderImporterService extends ImporterBase
             'message' => 'Provider import is locked.'
         ];
     }
+    public function unlock(Provider $provider): array
+    {
+        if (!$this->entityService->lockEntity($this->getUser(), $provider->id, Provider::class)) {
+            return [
+                'success' => false,
+                'message' => "Failed to unlock provider {$provider->name}."
+            ];
+        }
+        return [
+            'success' => true,
+            'message' => 'Provider import is unlocked.'
+        ];
+    }
 
     private function importChildren(ImportAction $action, Provider $provider, array $data, array $map)
     {
@@ -202,6 +215,10 @@ class ProviderImporterService extends ImporterBase
                     'message' => "Provider {$data['name']} imported successfully. No children imported."
                 ];
             }
+            $unlockProvider = $this->unlock($provider);
+            if (!$unlockProvider['success']) {
+                return $unlockProvider;
+            }
             return [
                 'success' => true,
                 'message' => sprintf(
@@ -259,6 +276,10 @@ class ProviderImporterService extends ImporterBase
                         $provider->label,
                     ),
                 ];
+            }
+            $unlockProvider = $this->unlock($provider);
+            if (!$unlockProvider['success']) {
+                return $unlockProvider;
             }
             return [
                 'success' => true,
@@ -343,6 +364,26 @@ class ProviderImporterService extends ImporterBase
         )->toArray();
     }
 
+    private function getSrWith()
+    {
+        return [
+            'srConfig' => function ($query) {
+                $query->with('property');
+            },
+            'srParameter',
+            'srSchedule',
+            'category',
+            'srRateLimit',
+            's' => function ($query) {
+                $query->with([
+                    'sResponseKeys' => function ($query) {
+                        $query->with(['srResponseKey']);
+                    }
+                ]);
+            },
+        ];
+    }
+
     public function getExportTypeData($item): array|bool
     {
         $srs = (!empty($item["srs"]) && is_array($item["srs"])) ?
@@ -351,26 +392,7 @@ class ProviderImporterService extends ImporterBase
             ->setWith([
                 'srs' => function ($query) use ($srs) {
                     if (empty($srs)) {
-                        $query->with([
-                        'srConfig' => function ($query) {
-                            $query->with('property');
-                        },
-                        'srParameter',
-                        'srSchedule',
-                        'category',
-                        'srRateLimit',
-                            's' => function ($query) {
-                                $query->with([
-                                    'sResponseKeys' => function ($query) {
-                                        $query->with([
-                                            'srResponseKey' => function ($query) {
-                                                $query->with('srResponseKeySrs');
-                                            },
-                                        ]);
-                                    }
-                                ]);
-                            },
-                        ]);
+                        $query->with($this->getSrWith());
                         return;
                     }
                     $query->whereIn('id', array_column($srs, 'id'));
@@ -383,26 +405,7 @@ class ProviderImporterService extends ImporterBase
                     $query = $this->srRepository->buildNestedSrQuery(
                         $query,
                         $childSrs,
-                        [
-                            'srConfig' => function ($query) {
-                                $query->with('property');
-                            },
-                            'srParameter',
-                            'srSchedule',
-                            'srRateLimit',
-                            's' => function ($query) {
-                                $query->with([
-                                    'sResponseKeys' => function ($query) {
-                                        $query->with([
-                                            'srResponseKey' => function ($query) {
-                                                $query->with('srResponseKeySrs');
-                                            },
-                                        ]);
-                                    }
-                                ]);
-                            },
-                            'category'
-                        ]
+                        $this->getSrWith()
                     );
                 },
                 'categories',
