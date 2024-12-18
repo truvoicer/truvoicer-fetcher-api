@@ -22,4 +22,9 @@ class ProviderRateLimit extends Model
     {
         return $this->belongsTo(Provider::class, 'provider_id', 'id');
     }
+
+    public function entityLock()
+    {
+        return $this->morphMany(EntityLock::class, 'entity');
+    }
 }

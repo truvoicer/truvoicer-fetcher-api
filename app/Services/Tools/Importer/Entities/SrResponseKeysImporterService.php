@@ -64,6 +64,33 @@ class SrResponseKeysImporterService extends ImporterBase
         ];
     }
 
+    public function lock(ImportAction $action, array $map, array $data, ?array $dest = null): array
+    {
+        $sr = $this->findSr(ImportType::SR_RESPONSE_KEY, $data, $map, $dest);
+        if (!$sr['success']) {
+            return $sr;
+        }
+        $sr = $sr['sr'];
+
+        $srResponseKey = $sr->srResponseKeys()->where('name', $data['name'])->first();
+        if (!$srResponseKey instanceof SrResponseKey) {
+            return [
+                'success' => false,
+                'message' => "Sr response key not found for Sr {$sr->name}"
+            ];
+        }
+        if (!$this->entityService->lockEntity($this->getUser(), $srResponseKey->id, SrResponseKey::class)) {
+            return [
+                'success' => false,
+                'message' => "Failed to lock sr response key {$data['name']}."
+            ];
+        }
+        return [
+            'success' => true,
+            'message' => 'Sr response key import is locked.'
+        ];
+    }
+
     protected function overwrite(array $data, bool $withChildren, array $map, ?array $dest = null, ?array $extraData = []): array
     {
         $sr = $this->findSr(ImportType::SR_RESPONSE_KEY, $data, $map, $dest);

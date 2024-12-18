@@ -60,6 +60,33 @@ class ProviderRateLimitImporterService extends ImporterBase
         $this->rateLimitService->setUser($this->getUser());
     }
 
+    public function lock(ImportAction $action, array $map, array $data, ?array $dest = null): array
+    {
+        $provider = $this->findProvider(ImportType::PROVIDER, $data, $map, $dest);
+        if (!$provider['success']) {
+            return $provider;
+        }
+        $provider = $provider['provider'];
+
+        $rateLimit = $provider->providerRateLimit()->first();
+        if (!$rateLimit) {
+            return [
+                'success' => false,
+                'message' => "Failed to find provider rate limit for provider {$provider->name}."
+            ];
+        }
+        if (!$this->entityService->lockEntity($this->getUser(), $rateLimit->id, ProviderRateLimit::class)) {
+            return [
+                'success' => false,
+                'message' => "Failed to lock provider provider {$data['name']}."
+            ];
+        }
+        return [
+            'success' => true,
+            'message' => 'Provider property import is locked.'
+        ];
+    }
+
     protected function overwrite(array $data, bool $withChildren, array $map, ?array $dest = null, ?array $extraData = []): array
     {
         return $this->import(ImportAction::OVERWRITE, $data, $withChildren, $map);
@@ -73,22 +100,13 @@ class ProviderRateLimitImporterService extends ImporterBase
     public function import(ImportAction $action, array $data, bool $withChildren, array $map, ?array $dest = null, ?array $extraData = [], ?bool $lock = false): array
     {
         try {
-            if (!empty($data['provider'])) {
-                $provider = $data['provider'];
-            } elseif (!empty($data['provider_id'])) {
-                $provider = $this->providerService->getProviderById((int)$data['provider_id']);
-            } else {
-                return [
-                    'success' => false,
-                    'message' => "Provider {$data['name']} is required."
-                ];
+            $provider = $this->findProvider(ImportType::PROVIDER, $data, $map, $dest);
+            if (!$provider['success']) {
+                return $provider;
             }
-            if (!$provider instanceof Provider) {
-                return [
-                    'success' => false,
-                    'message' => "Provider {$data['name']} not found."
-                ];
-            }
+
+            $provider = $provider['provider'];
+
             $rateLimit = $provider->providerRateLimit()->first();
             if (
                 !$rateLimit &&

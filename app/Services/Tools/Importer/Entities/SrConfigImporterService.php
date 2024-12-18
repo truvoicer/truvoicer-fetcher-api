@@ -60,6 +60,34 @@ class SrConfigImporterService extends ImporterBase
             ],
         ];
     }
+
+    public function lock(ImportAction $action, array $map, array $data, ?array $dest = null): array
+    {
+        $sr = $this->findSr(ImportType::SR_CONFIG, $data, $map, $dest);
+        if (!$sr['success']) {
+            return $sr;
+        }
+        $sr = $sr['sr'];
+        $srConfig = $sr->srConfig->first();
+
+        if (!$srConfig instanceof SrConfig) {
+            return [
+                'success' => false,
+                'message' => "Sr config not found for Sr {$sr->name}"
+            ];
+        }
+        if (!$this->entityService->lockEntity($this->getUser(), $srConfig->id, SrConfig::class)) {
+            return [
+                'success' => false,
+                'message' => "Failed to lock sr config {$data['name']}."
+            ];
+        }
+        return [
+            'success' => true,
+            'message' => 'Sr config import is locked.'
+        ];
+    }
+
     private function saveSrConfig(Sr $sr, Property $property, array $data): array
     {
         if (!$this->srConfigService->saveRequestConfig($sr, $property, array_merge($data, $data['property']))) {

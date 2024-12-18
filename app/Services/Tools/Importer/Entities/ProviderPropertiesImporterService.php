@@ -56,6 +56,32 @@ class ProviderPropertiesImporterService extends ImporterBase
         $this->propertyImporterService->setUser($this->getUser());
     }
 
+    public function lock(ImportAction $action, array $map, array $data, ?array $dest = null): array
+    {
+        $provider = $this->findProvider(ImportType::PROVIDER_PROPERTY, $data, $map, $dest);
+        if (!$provider['success']) {
+            return $provider;
+        }
+        $provider = $provider['provider'];
+
+        $property = $this->findProperty($provider, $data, $map);
+        if (!$property['success']) {
+            return $property;
+        }
+        $property = $property['property'];
+
+        if (!$this->entityService->lockEntity($this->getUser(), $property->id, ProviderProperty::class)) {
+            return [
+                'success' => false,
+                'message' => "Failed to lock provider provider {$data['name']}."
+            ];
+        }
+        return [
+            'success' => true,
+            'message' => 'Provider property import is locked.'
+        ];
+    }
+
     private function saveProviderProperty(array $data, array $map, ?array $dest = null): array{
         $provider = $this->findProvider(ImportType::PROVIDER_PROPERTY, $data, $map, $dest);
         if (!$provider['success']) {

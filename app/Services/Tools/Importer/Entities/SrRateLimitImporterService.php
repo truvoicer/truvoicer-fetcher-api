@@ -61,6 +61,32 @@ class SrRateLimitImporterService extends ImporterBase
         ];
     }
 
+    public function lock(ImportAction $action, array $map, array $data, ?array $dest = null): array
+    {
+        $sr = $this->findSr(ImportType::SR_RATE_LIMIT, $data, $map, $dest);
+        if (!$sr['success']) {
+            return $sr;
+        }
+        $sr = $sr['sr'];
+        $srRateLimit = $sr->srRateLimit()->first();
+
+        if (!$srRateLimit instanceof SrRateLimit) {
+            return [
+                'success' => false,
+                'message' => "Sr rate limit not found for Sr {$sr->name}"
+            ];
+        }
+        if (!$this->entityService->lockEntity($this->getUser(), $srRateLimit->id, SrRateLimit::class)) {
+            return [
+                'success' => false,
+                'message' => "Failed to lock sr rate limit {$data['name']}."
+            ];
+        }
+        return [
+            'success' => true,
+            'message' => 'Sr rate limit import is locked.'
+        ];
+    }
     protected function overwrite(array $data, bool $withChildren, array $map, ?array $dest = null, ?array $extraData = []): array
     {
         return $this->create($data, $withChildren, $map);

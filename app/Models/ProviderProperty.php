@@ -106,4 +106,9 @@ class ProviderProperty extends Model
     {
         return $this->belongsTo(Property::class);
     }
+
+    public function entityLock()
+    {
+        return $this->morphMany(EntityLock::class, 'entity');
+    }
 }

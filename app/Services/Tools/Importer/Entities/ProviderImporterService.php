@@ -236,7 +236,7 @@ class ProviderImporterService extends ImporterBase
                     'message' => "Provider {$data['name']} not found."
                 ];
             }
-            if (!$this->providerService->updateProvider($this->getUser(), $checkProvider,  $data)) {
+            if (!$this->providerService->updateProvider($this->getUser(), $checkProvider, $data)) {
                 return [
                     'success' => false,
                     'message' => "Failed to update provider {$data['name']}."
@@ -347,57 +347,73 @@ class ProviderImporterService extends ImporterBase
     {
         $srs = (!empty($item["srs"]) && is_array($item["srs"])) ?
             $item["srs"] : [];
-        $this->providerService->getProviderRepository()->setWith([
-            'srs' => function ($query) use ($srs) {
-                if (empty($srs)) {
-                    $query->with([
+        $this->providerService->getProviderRepository()
+            ->setWith([
+                'srs' => function ($query) use ($srs) {
+                    if (empty($srs)) {
+                        $query->with([
                         'srConfig' => function ($query) {
                             $query->with('property');
                         },
                         'srParameter',
                         'srSchedule',
+                        'category',
                         'srRateLimit',
-                        'srResponseKeys',
-                        's' => function ($query) {
-                            $query->with('sResponseKeys');
-                        },
-                        'category'
-                    ]);
-                    return;
-                }
-                $query->whereIn('id', array_column($srs, 'id'));
-                $childSrs = [];
-                foreach ($srs as $sr) {
-                    if (is_array($sr['child_srs'])) {
-                        $childSrs = array_merge($childSrs, $sr['child_srs']);
+                            's' => function ($query) {
+                                $query->with([
+                                    'sResponseKeys' => function ($query) {
+                                        $query->with([
+                                            'srResponseKey' => function ($query) {
+                                                $query->with('srResponseKeySrs');
+                                            },
+                                        ]);
+                                    }
+                                ]);
+                            },
+                        ]);
+                        return;
                     }
-                }
-                $query = $this->srRepository->buildNestedSrQuery(
-                    $query,
-                    $childSrs,
-                    [
-                        'srConfig' => function ($query) {
-                            $query->with('property');
-                        },
-                        'srParameter',
-                        'srSchedule',
-                        'srRateLimit',
-                        'srResponseKeys',
-                        's' => function ($query) {
-                            $query->with('sResponseKeys');
-                        },
-                        'category'
-                    ]
-                );
-            },
-            'categories',
-            'properties',
-            'providerRateLimit'
-        ]);
+                    $query->whereIn('id', array_column($srs, 'id'));
+                    $childSrs = [];
+                    foreach ($srs as $sr) {
+                        if (is_array($sr['child_srs'])) {
+                            $childSrs = array_merge($childSrs, $sr['child_srs']);
+                        }
+                    }
+                    $query = $this->srRepository->buildNestedSrQuery(
+                        $query,
+                        $childSrs,
+                        [
+                            'srConfig' => function ($query) {
+                                $query->with('property');
+                            },
+                            'srParameter',
+                            'srSchedule',
+                            'srRateLimit',
+                            's' => function ($query) {
+                                $query->with([
+                                    'sResponseKeys' => function ($query) {
+                                        $query->with([
+                                            'srResponseKey' => function ($query) {
+                                                $query->with('srResponseKeySrs');
+                                            },
+                                        ]);
+                                    }
+                                ]);
+                            },
+                            'category'
+                        ]
+                    );
+                },
+                'categories',
+                'properties',
+                'providerRateLimit'
+            ]);
         $provider = $this->providerService->getProviderRepository()->findById(
-            $item["id"],
+            4,
+//            $item["id"],
         );
-
+        dd($provider->toArray());
         if (!$provider) {
             return false;
         }
@@ -456,7 +472,8 @@ class ProviderImporterService extends ImporterBase
         }, $data);
     }
 
-    public function deepFind(ImportType $importType, array $data, array $conditions, ?string $operation = 'AND'): array|null {
+    public function deepFind(ImportType $importType, array $data, array $conditions, ?string $operation = 'AND'): array|null
+    {
         return UtilHelpers::deepFindInNestedEntity(
             data: $data,
             conditions: $conditions,
@@ -464,8 +481,8 @@ class ProviderImporterService extends ImporterBase
             itemToMatchHandler: function ($item) use ($importType) {
                 return match ($importType) {
                     ImportType::PROVIDER => [$item],
-                    ImportType::PROVIDER_PROPERTY => (!empty($item['properties']))? $item['properties'] : [],
-                    ImportType::PROVIDER_RATE_LIMIT => (!empty($item['provider_rate_limit']))? [$item['provider_rate_limit']] : [],
+                    ImportType::PROVIDER_PROPERTY => (!empty($item['properties'])) ? $item['properties'] : [],
+                    ImportType::PROVIDER_RATE_LIMIT => (!empty($item['provider_rate_limit'])) ? [$item['provider_rate_limit']] : [],
                     default => [],
                 };
             },

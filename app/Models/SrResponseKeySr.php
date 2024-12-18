@@ -27,4 +27,9 @@ class SrResponseKeySr extends Pivot
         'single_request',
         'disable_request'
     ];
+
+    public function entityLock()
+    {
+        return $this->morphMany(EntityLock::class, 'entity');
+    }
 }

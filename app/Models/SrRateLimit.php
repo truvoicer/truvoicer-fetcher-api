@@ -23,4 +23,9 @@ class SrRateLimit extends Model
     {
         return $this->belongsTo(Sr::class, 'sr_id', 'id');
     }
+
+    public function entityLock()
+    {
+        return $this->morphMany(EntityLock::class, 'entity');
+    }
 }

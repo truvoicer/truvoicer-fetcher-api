@@ -52,6 +52,32 @@ class SrScheduleImporterService extends ImporterBase
         ];
     }
 
+    public function lock(ImportAction $action, array $map, array $data, ?array $dest = null): array
+    {
+        $sr = $this->findSr(ImportType::SR_SCHEDULE, $data, $map, $dest);
+        if (!$sr['success']) {
+            return $sr;
+        }
+        $sr = $sr['sr'];
+        $srSchedule = $sr->srSchedule()->first();
+
+        if (!$srSchedule instanceof SrSchedule) {
+            return [
+                'success' => false,
+                'message' => "Sr schedule not found for Sr {$sr->name}"
+            ];
+        }
+        if (!$this->entityService->lockEntity($this->getUser(), $srSchedule->id, SrSchedule::class)) {
+            return [
+                'success' => false,
+                'message' => "Failed to lock sr schedule {$data['name']}."
+            ];
+        }
+        return [
+            'success' => true,
+            'message' => 'Sr schedule import is locked.'
+        ];
+    }
     protected function overwrite(array $data, bool $withChildren, array $map, ?array $dest = null, ?array $extraData = []): array
     {
         return $this->create($data, $withChildren, $map);

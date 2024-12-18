@@ -63,6 +63,39 @@ class SResponseKeysImporterService extends ImporterBase
         ];
     }
 
+    public function lock(ImportAction $action, array $map, array $data, ?array $dest = null): array
+    {
+        $service = $this->apiService->getServiceRepository()->findByName(
+            $data['name']
+        );
+        if (!$service instanceof S) {
+            return [
+                'success' => false,
+                'message' => "Service {$data['name']} not found."
+            ];
+        }
+        $sResponseKey = $this->sResponseKeysService->getServiceResponseKeyByName(
+            $service,
+            $data['name']
+        );
+        if (!$sResponseKey) {
+            return [
+                'success' => false,
+                'message' => "Service response key ({$data['name']}) not found for Sr {$service->name}."
+            ];
+        }
+        if (!$this->entityService->lockEntity($this->getUser(), $sResponseKey->id, SResponseKey::class)) {
+            return [
+                'success' => false,
+                'message' => "Failed to lock service response key {$data['name']}."
+            ];
+        }
+        return [
+            'success' => true,
+            'message' => 'Service response key is locked.'
+        ];
+    }
+
     protected function overwrite(array $data, bool $withChildren, array $map, ?array $dest = null, ?array $extraData = []): array
     {
         try {
