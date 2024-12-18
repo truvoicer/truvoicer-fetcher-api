@@ -9,6 +9,7 @@ use App\Enums\Import\ImportType;
 use App\Models\Provider;
 use App\Models\Sr;
 use App\Services\ApiServices\ServiceRequests\SrService;
+use App\Services\EntityService;
 use App\Services\Permission\AccessControlService;
 use App\Services\Provider\ProviderService;
 use App\Traits\Error\ErrorTrait;
@@ -28,11 +29,13 @@ abstract class ImporterBase
 
     public function __construct(
         protected AccessControlService $accessControlService,
+        protected EntityService $entityService,
         Model                          $model
     )
     {
         $this->srService = App::make(SrService::class);
         $this->providerService = App::make(ProviderService::class);
+        $this->entityService = App::make(EntityService::class);
         $this->model = $model;
         $this->setConfig();
         $this->setMappings();
@@ -69,14 +72,14 @@ abstract class ImporterBase
         ];
     }
 
-    public function importSelfNoChildren(ImportAction $action, array $map, array $data, ?array $dest = null): array
+    public function importSelfNoChildren(ImportAction $action, array $map, array $data, ?array $dest = null, ?bool $lock = false): array
     {
-        return $this->importSelf($action, $map, $data, false, $dest);
+        return $this->importSelf($action, $map, $data, false, $dest, $lock);
     }
 
-    public function importSelfWithChildren(ImportAction $action, array $map, array $data, ?array $dest = null): array
+    public function importSelfWithChildren(ImportAction $action, array $map, array $data, ?array $dest = null, ?bool $lock = false): array
     {
-        return $this->importSelf($action, $map, $data, true, $dest);
+        return $this->importSelf($action, $map, $data, true, $dest, $lock);
     }
 
     protected function overwriteOrCreate(array $data, bool $withChildren, array $map, ?array $dest = null, ?array $extraData = []): array
@@ -88,17 +91,29 @@ abstract class ImporterBase
         return $this->create($data, $withChildren, $map, $dest, $extraData);
     }
 
-    public function importMapFactory(ImportAction $action, array $map, array $data, ?array $dest = null): array
+    public function importMapFactory(array $map, array $data, ?array $dest = null, ?bool $lock = false): array
     {
+        if (empty($map['action'])) {
+            return [
+                'success' => false,
+                'error' => 'No action found.',
+            ];
+        }
+        $action = ImportAction::tryFrom($map['action']);
+        if (!$action) {
+            return [
+                'success' => false,
+                'error' => 'Invalid action found.',
+            ];
+        }
+
         switch ($action) {
-            case ImportAction::LOCK:
-                return $this->lock($action, $map, $data, $dest);
             case ImportAction::CREATE:
             case ImportAction::OVERWRITE:
             case ImportAction::OVERWRITE_OR_CREATE:
                 return match ($map['mapping']['name']) {
-                    ImportMappingType::SELF_NO_CHILDREN->value => $this->importSelfNoChildren($action, $map, $data, $dest),
-                    ImportMappingType::SELF_WITH_CHILDREN->value => $this->importSelfWithChildren($action, $map, $data, $dest),
+                    ImportMappingType::SELF_NO_CHILDREN->value => $this->importSelfNoChildren($action, $map, $data, $dest, $lock),
+                    ImportMappingType::SELF_WITH_CHILDREN->value => $this->importSelfWithChildren($action, $map, $data, $dest, $lock),
                     default => [
                         'success' => false,
                         'data' => $map['data'],
@@ -116,14 +131,28 @@ abstract class ImporterBase
         return $response;
     }
 
-    public function import(ImportAction $action, array $data, bool $withChildren, array $map, ?array $dest = null, ?array $extraData = []): array
+    public function import(ImportAction $action, array $data, bool $withChildren, array $map, ?array $dest = null, ?array $extraData = [], ?bool $lock = false): array
     {
         $this->loadDependencies();
-        return match ($action) {
-            ImportAction::CREATE => $this->create($data, $withChildren, $map, $dest, $extraData),
-            ImportAction::OVERWRITE => $this->overwrite($data, $withChildren, $map, $dest, $extraData),
-            ImportAction::OVERWRITE_OR_CREATE => $this->overwriteOrCreate($data, $withChildren, $map, $dest, $extraData),
-        };
+
+        $lockableActions = [
+            ImportAction::OVERWRITE,
+            ImportAction::OVERWRITE_OR_CREATE,
+        ];
+        if (!$lock) {
+            return match ($action) {
+                ImportAction::CREATE => $this->create($data, $withChildren, $map, $dest, $extraData),
+                ImportAction::OVERWRITE => $this->overwrite($data, $withChildren, $map, $dest, $extraData),
+                ImportAction::OVERWRITE_OR_CREATE => $this->overwriteOrCreate($data, $withChildren, $map, $dest, $extraData),
+            };
+        }
+        if (in_array($action, $lockableActions)) {
+            return $this->lock($action, $map, $data, $dest);
+        }
+        return [
+            'success' => true,
+            'message' => 'Action is not lockable.'
+        ];
     }
 
     protected function compareKeysWithModelFields(array $data): bool
@@ -209,15 +238,15 @@ abstract class ImporterBase
         return $this->accessControlService;
     }
 
-    protected function importSelf(ImportAction $action, array $map, array $data, bool $withChildren, ?array $dest = null): array
+    protected function importSelf(ImportAction $action, array $map, array $data, bool $withChildren, ?array $dest = null, ?bool $lock = false): array
     {
         $this->loadDependencies();
         if (!empty($map['root']) && !empty($map['children']) && is_array($map['children']) && count($map['children'])) {
             return [
                 'success' => true,
-                'data' => array_map(function ($map) use ($data, $action, $dest) {
+                'data' => array_map(function ($map) use ($data, $action, $dest, $lock) {
                     $map['action'] = $action->value;
-                    return $this->importMapFactory($action, $map, $data, $dest);
+                    return $this->importMapFactory($map, $data, $dest, $lock);
                 }, $map['children'])
             ];
         }
@@ -230,7 +259,7 @@ abstract class ImporterBase
                 'map' => $map,
             ];
         }
-        return $this->import($action, $data[$findItemIndex], $withChildren, $map, $dest);
+        return $this->import($action, $data[$findItemIndex], $withChildren, $map, $dest, [], $lock);
     }
 
     protected function findProvider(ImportType $importType, array $data, array $map, ?array $dest = null): array

@@ -2,7 +2,10 @@
 
 namespace App\Services;
 
+use App\Enums\Import\EntityLockStatus;
 use App\Http\Resources\Service\ServiceRequest\SrTreeViewCollection;
+use App\Models\EntityLock;
+use App\Models\Provider;
 use App\Models\User;
 use App\Repositories\SrRepository;
 use App\Services\ApiServices\ServiceRequests\SrService;
@@ -29,6 +32,7 @@ class EntityService extends BaseService
     private SrRepository $srRepository;
 
     public function __construct(
+
     )
     {
         parent::__construct();
@@ -55,6 +59,33 @@ class EntityService extends BaseService
                 return  $this->srRepository->getUserServiceRequestByIds($user, $ids);
         }
         return null;
+    }
+
+    public function lockEntity(User $user, int $id, string $class)
+    {
+        $lockProvider = EntityLock::query()->updateOrCreate(
+            [
+                'user_id' => $user->id,
+                'entity_id' => $id,
+                'entity_type' => $class
+            ],
+            [
+                'user_id' => $user->id,
+                'status' => EntityLockStatus::LOCKED,
+                'locked_at' => now(),
+                'unlocked_at' => null
+            ]);
+        return $lockProvider->status === EntityLockStatus::LOCKED;
+    }
+
+    public function unlockEntity(User $user, int $id, string $class)
+    {
+        EntityLock::query()
+            ->where('user_id', $user->id)
+            ->where('entity_id', $id)
+            ->where('entity_type', $class)
+            ->delete();
+        return true;
     }
 
     public static function getInstance(): EntityService

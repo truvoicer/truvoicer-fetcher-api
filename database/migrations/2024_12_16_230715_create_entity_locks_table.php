@@ -11,14 +11,13 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('entity_lock', function (Blueprint $table) {
+        Schema::create('entity_locks', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('user_id');
             $table->unsignedBigInteger('entity_id');
             $table->string('entity_type');
             $table->string('status')->default('locked');
             $table->timestamp('locked_at')->nullable();
-            $table->timestamp('unlocked_at')->nullable();
             $table->timestamps();
         });
     }
@@ -28,6 +27,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('entity_lock');
+        Schema::dropIfExists('entity_locks');
     }
 };

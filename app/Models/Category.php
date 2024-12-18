@@ -59,6 +59,6 @@ class Category extends Model
 
     public function entityLock()
     {
-        return $this->morphMany(EntityLock::class, 'entityLockable');
+        return $this->morphMany(EntityLock::class, 'entity');
     }
 }
