@@ -2,6 +2,7 @@
 
 namespace App\Services\Provider;
 
+use App\Enums\Import\EntityLockStatus;
 use App\Models\Category;
 use App\Models\Property;
 use App\Models\Provider;
@@ -158,6 +159,32 @@ class ProviderService extends BaseService
             return null;
         }
         return PropertyService::getPropertyValue($property->value_type, $property->providerProperty);
+    }
+
+    public function lockProvider(User $user, Provider $provider)
+    {
+        $lockProvider = $provider->entityLock()->updateOrCreate(
+            [
+                'user_id' => $user->id,
+                'entity_id' => $provider->id,
+                'entity_type' => Provider::class
+            ],
+            [
+            'user_id' => $user->id,
+            'status' => EntityLockStatus::LOCKED,
+            'locked_at' => now(),
+            'unlocked_at' => null
+        ]);
+        return $lockProvider->status === EntityLockStatus::LOCKED;
+    }
+    public function unlockProvider(User $user, Provider $provider)
+    {
+        $provider->entityLock()
+            ->where('user_id', $user->id)
+            ->where('entity_id', $provider->id)
+            ->where('entity_type', Provider::class)
+            ->delete();
+        return true;
     }
 
     private function setProviderObject(array $providerData)

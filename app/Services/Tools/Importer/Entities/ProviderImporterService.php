@@ -7,6 +7,7 @@ use App\Enums\Import\ImportConfig;
 use App\Enums\Import\ImportMappingType;
 use App\Enums\Import\ImportType;
 use App\Helpers\Tools\UtilHelpers;
+use App\Models\Category;
 use App\Models\Provider;
 use App\Repositories\SrRepository;
 use App\Services\Permission\PermissionService;
@@ -73,7 +74,21 @@ class ProviderImporterService extends ImporterBase
 
     public function lock(ImportAction $action, array $map, array $data, ?array $dest = null): array
     {
-        dd($action, $map, $data, $dest);
+        $provider = $this->providerService->getProviderRepository()->findByName(
+            $data['name']
+        );
+        if (!$provider instanceof Provider) {
+            return [
+                'success' => false,
+                'message' => "Provider {$data['name']} not found."
+            ];
+        }
+        if (!$this->entityService->lockEntity($this->getUser(), $provider->id, Provider::class)) {
+            return [
+                'success' => false,
+                'message' => "Failed to lock provider {$data['name']}."
+            ];
+        }
         return [
             'success' => true,
             'message' => 'Provider import is locked.'

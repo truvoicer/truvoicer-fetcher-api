@@ -277,7 +277,7 @@ class IExportTypeService extends BaseService
             $mappings,
             function ($importType, $map, $data, $dest) {
                 return $this->getInstance(ImportType::from($importType))
-                    ->importMapFactory(ImportAction::LOCK, $map, $data, $dest);
+                    ->importMapFactory($map, $data, $dest, true);
             }
         );
     }
@@ -303,7 +303,7 @@ class IExportTypeService extends BaseService
                     ];
                 }
                 return $this->getInstance(ImportType::from($importType))
-                    ->importMapFactory($action, $map, $data, $dest);
+                    ->importMapFactory($map, $data, $dest);
             }
         );
     }

@@ -56,10 +56,24 @@ class CategoryImporterService extends ImporterBase
 
     public function lock(ImportAction $action, array $map, array $data, ?array $dest = null): array
     {
-        dd($action, $map, $data, $dest);
+        $category = $this->categoryService->getProviderRepository()->findByName(
+            $data['name']
+        );
+        if (!$category instanceof Category) {
+            return [
+                'success' => false,
+                'message' => "Category {$data['name']} not found."
+            ];
+        }
+        if (!$this->entityService->lockEntity($this->getUser(), $category->id, Category::class)) {
+            return [
+                'success' => false,
+                'message' => "Failed to lock category {$data['name']}."
+            ];
+        }
         return [
             'success' => true,
-            'message' => 'Category import is locked.'
+            'message' => 'Category is locked.'
         ];
     }
 
@@ -138,16 +152,6 @@ class CategoryImporterService extends ImporterBase
                 'message' => $e->getMessage()
             ];
         }
-    }
-
-    public function importSelfNoChildren(ImportAction $action, array $map, array $data, ?array $dest = null): array
-    {
-        return $this->importSelf($action, $map, $data, false, $dest);
-    }
-
-    public function importSelfWithChildren(ImportAction $action, array $map, array $data, ?array $dest = null): array
-    {
-        return $this->importSelf($action, $map, $data, true, $dest);
     }
 
     public function getImportMappings(array $data): array

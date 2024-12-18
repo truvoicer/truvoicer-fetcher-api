@@ -70,7 +70,7 @@ class ProviderRateLimitImporterService extends ImporterBase
         return $this->import(ImportAction::CREATE, $data, $withChildren, $map);
     }
 
-    public function import(ImportAction $action, array $data, bool $withChildren, array $map, ?array $dest = null, ?array $extraData = []): array
+    public function import(ImportAction $action, array $data, bool $withChildren, array $map, ?array $dest = null, ?array $extraData = [], ?bool $lock = false): array
     {
         try {
             if (!empty($data['provider'])) {
@@ -117,16 +117,6 @@ class ProviderRateLimitImporterService extends ImporterBase
                 'message' => $e->getMessage()
             ];
         }
-    }
-
-    public function importSelfNoChildren(ImportAction $action, array $map, array $data, ?array $dest = null): array
-    {
-        return $this->importSelf($action, $map, $data, false, $dest);
-    }
-
-    public function importSelfWithChildren(ImportAction $action, array $map, array $data, ?array $dest = null): array
-    {
-        return $this->importSelf($action, $map, $data, true, $dest);
     }
 
     public function getImportMappings(array $data): array

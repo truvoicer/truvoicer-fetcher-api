@@ -143,16 +143,6 @@ class ProviderPropertiesImporterService extends ImporterBase
         }
     }
 
-    public function importSelfNoChildren(ImportAction $action, array $map, array $data, ?array $dest = null): array
-    {
-        return $this->importSelf($action, $map, $data, false, $dest);
-    }
-
-    public function importSelfWithChildren(ImportAction $action, array $map, array $data, ?array $dest = null): array
-    {
-        return $this->importSelf($action, $map, $data, true, $dest);
-    }
-
     public function getImportMappings(array $data): array
     {
         return [];

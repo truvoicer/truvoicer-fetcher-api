@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\Import\EntityLockStatus;
 use App\Repositories\CategoryRepository;
 use App\Repositories\CategoryUserRepository;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -12,16 +13,19 @@ class EntityLock extends Model
 {
     use HasFactory;
 
-    public const TABLE_NAME = 'categories';
-    public const REPOSITORY = CategoryRepository::class;
-
-
     protected $fillable = [
         'user_id',
         'entity_type',
         'status',
         'locked_at',
-        'unlocked_at',
+    ];
+
+    protected $casts = [
+        'status' => EntityLockStatus::class,
+    ];
+
+    protected $attributes = [
+        'status' => EntityLockStatus::class,
     ];
 
     public function entityLockable(): MorphTo

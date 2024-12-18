@@ -61,9 +61,24 @@ class SImporterService extends ImporterBase
 
     public function lock(ImportAction $action, array $map, array $data, ?array $dest = null): array
     {
+        $service = $this->apiService->getServiceRepository()->findByName(
+            $data['name']
+        );
+        if (!$service instanceof S) {
+            return [
+                'success' => false,
+                'message' => "Service {$data['name']} not found."
+            ];
+        }
+        if (!$this->entityService->lockEntity($this->getUser(), $service->id, S::class)) {
+            return [
+                'success' => false,
+                'message' => "Failed to lock service {$data['name']}."
+            ];
+        }
         return [
             'success' => true,
-            'message' => 'Service import is locked.'
+            'message' => 'Service is locked.'
         ];
     }
 
@@ -141,14 +156,6 @@ class SImporterService extends ImporterBase
                 'error' => $e->getMessage()
             ];
         }
-    }
-
-    public function importSelfNoChildren(ImportAction $action, array $map, array $data, ?array $dest = null): array {
-        return $this->importSelf($action, $map, $data, false, $dest);
-    }
-
-    public function importSelfWithChildren(ImportAction $action, array $map, array $data, ?array $dest = null): array {
-        return $this->importSelf($action, $map, $data, true, $dest);
     }
 
     public function importServiceNoChildren(array $data): array
