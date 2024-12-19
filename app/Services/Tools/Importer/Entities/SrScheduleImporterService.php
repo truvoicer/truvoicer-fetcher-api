@@ -78,6 +78,21 @@ class SrScheduleImporterService extends ImporterBase
             'message' => 'Sr schedule import is locked.'
         ];
     }
+
+    public function unlock(SrSchedule $srSchedule): array
+    {
+        if (!$this->entityService->unlockEntity($this->getUser(), $srSchedule->id, SrSchedule::class)) {
+            return [
+                'success' => false,
+                'message' => "Failed to unlock sr schedule."
+            ];
+        }
+        return [
+            'success' => true,
+            'message' => 'Sr schedule import is unlocked.'
+        ];
+    }
+
     protected function overwrite(array $data, bool $withChildren, array $map, ?array $dest = null, ?array $extraData = []): array
     {
         return $this->create($data, $withChildren, $map);
@@ -97,7 +112,12 @@ class SrScheduleImporterService extends ImporterBase
                 'message' => "Failed to create sr schedule."
             ];
         }
-
+        $unlockSrSchedule = $this->unlock(
+            $this->srScheduleService->getSrScheduleRepository()->getModel()
+        );
+        if (!$unlockSrSchedule['success']) {
+            return $unlockSrSchedule;
+        }
         return [
             'success' => true,
             'message' => "Sr schedule for Sr {$sr->name} imported successfully."

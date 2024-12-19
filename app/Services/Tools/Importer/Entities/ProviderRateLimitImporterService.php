@@ -87,6 +87,20 @@ class ProviderRateLimitImporterService extends ImporterBase
         ];
     }
 
+    public function unlock(ProviderRateLimit $providerRateLimit): array
+    {
+        if (!$this->entityService->unlockEntity($this->getUser(), $providerRateLimit->id, ProviderRateLimit::class)) {
+            return [
+                'success' => false,
+                'message' => "Failed to lock provider rate limit {$providerRateLimit->name}."
+            ];
+        }
+        return [
+            'success' => true,
+            'message' => 'Provider rate limit import is locked.'
+        ];
+    }
+
     protected function overwrite(array $data, bool $withChildren, array $map, ?array $dest = null, ?array $extraData = []): array
     {
         return $this->import(ImportAction::OVERWRITE, $data, $withChildren, $map);
@@ -123,6 +137,10 @@ class ProviderRateLimitImporterService extends ImporterBase
                     'success' => false,
                     'message' => "Failed to update provider rate limit for provider {$provider->name}."
                 ];
+            }
+            $unlock = $this->unlock($rateLimit);
+            if (!$unlock['success']) {
+                return $unlock;
             }
             return [
                 'success' => true,

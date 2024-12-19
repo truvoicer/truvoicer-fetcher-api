@@ -96,6 +96,20 @@ class SResponseKeysImporterService extends ImporterBase
         ];
     }
 
+    public function unlock(SResponseKey $sResponseKey): array
+    {
+        if (!$this->entityService->unlockEntity($this->getUser(), $sResponseKey->id, SResponseKey::class)) {
+            return [
+                'success' => false,
+                'message' => "Failed to unlock service response key {$sResponseKey->name}."
+            ];
+        }
+        return [
+            'success' => true,
+            'message' => 'Service response key is unlocked.'
+        ];
+    }
+
     protected function overwrite(array $data, bool $withChildren, array $map, ?array $dest = null, ?array $extraData = []): array
     {
         try {
@@ -125,6 +139,10 @@ class SResponseKeysImporterService extends ImporterBase
                     'success' => false,
                     'message' => "Failed to update service response key ({$data['name']}) for Sr {$service->name}."
                 ];
+            }
+            $unlocked = $this->unlock($this->sResponseKeysService->getResponseKeyRepository()->getModel());
+            if (!$unlocked['success']) {
+                return $unlocked;
             }
             return [
                 'success' => true,
@@ -167,6 +185,10 @@ class SResponseKeysImporterService extends ImporterBase
                     'success' => false,
                     'message' => "Failed to create service response key ({$data['name']}) for Sr {$service->name}."
                 ];
+            }
+            $unlocked = $this->unlock($this->sResponseKeysService->getResponseKeyRepository()->getModel());
+            if (!$unlocked['success']) {
+                return $unlocked;
             }
             return [
                 'success' => true,

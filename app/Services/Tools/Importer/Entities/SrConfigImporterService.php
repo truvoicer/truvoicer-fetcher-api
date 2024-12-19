@@ -87,6 +87,19 @@ class SrConfigImporterService extends ImporterBase
             'message' => 'Sr config import is locked.'
         ];
     }
+    public function unlock(SrConfig $srConfig): array
+    {
+        if (!$this->entityService->unlockEntity($this->getUser(), $srConfig->id, SrConfig::class)) {
+            return [
+                'success' => false,
+                'message' => "Failed to unlock sr config {$srConfig->name}."
+            ];
+        }
+        return [
+            'success' => true,
+            'message' => 'Sr config import is unlocked.'
+        ];
+    }
 
     private function saveSrConfig(Sr $sr, Property $property, array $data): array
     {
@@ -96,6 +109,10 @@ class SrConfigImporterService extends ImporterBase
                 'message' => "Failed to create sr config for Sr {$sr->name}",
                 'data' => $data
             ];
+        }
+        $unlocked = $this->unlock($this->srConfigService->getRequestConfigRepo()->getModel());
+        if (!$unlocked['success']) {
+            return $unlocked;
         }
         return [
             'success' => true,

@@ -82,6 +82,20 @@ class SImporterService extends ImporterBase
         ];
     }
 
+    public function unlock(S $service): array
+    {
+        if (!$this->entityService->unlockEntity($this->getUser(), $service->id, S::class)) {
+            return [
+                'success' => false,
+                'message' => "Failed to unlock service {$service->name}."
+            ];
+        }
+        return [
+            'success' => true,
+            'message' => 'Service is unlocked.'
+        ];
+    }
+
     protected function overwrite(array $data, bool $withChildren, array $map, ?array $dest = null, ?array $extraData = []): array
     {
 
@@ -106,6 +120,10 @@ class SImporterService extends ImporterBase
                     'success' => false,
                     'message' => "Error updating service {$data['name']}."
                 ];
+            }
+            $unlockService = $this->unlock($this->apiService->getServiceRepository()->getModel());
+            if (!$unlockService['success']) {
+                return $unlockService;
             }
             return [
                 'success' => true,
@@ -144,6 +162,10 @@ class SImporterService extends ImporterBase
                     'success' => false,
                     'message' => "Error creating service {$data['name']}."
                 ];
+            }
+            $unlockService = $this->unlock($this->apiService->getServiceRepository()->getModel());
+            if (!$unlockService['success']) {
+                return $unlockService;
             }
             return [
                 'success' => true,

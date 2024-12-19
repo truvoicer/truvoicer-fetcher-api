@@ -73,7 +73,20 @@ class ProviderPropertiesImporterService extends ImporterBase
         if (!$this->entityService->lockEntity($this->getUser(), $property->id, ProviderProperty::class)) {
             return [
                 'success' => false,
-                'message' => "Failed to lock provider provider {$data['name']}."
+                'message' => "Failed to lock provider property {$data['name']}."
+            ];
+        }
+        return [
+            'success' => true,
+            'message' => 'Provider property import is locked.'
+        ];
+    }
+    public function unlock(ProviderProperty $providerProperty): array
+    {
+        if (!$this->entityService->unlockEntity($this->getUser(), $providerProperty->id, ProviderProperty::class)) {
+            return [
+                'success' => false,
+                'message' => "Failed to lock provider property {$providerProperty->name}."
             ];
         }
         return [
@@ -100,6 +113,12 @@ class ProviderPropertiesImporterService extends ImporterBase
                 'success' => false,
                 'message' => "Failed to create provider property: {$data['name']} for provider {$provider->name}."
             ];
+        }
+        $unlock = $this->unlock(
+            $this->providerService->getProviderPropertyRepository()->getModel()
+        );
+        if (!$unlock['success']) {
+            return $unlock;
         }
         return [
             'success' => true,
