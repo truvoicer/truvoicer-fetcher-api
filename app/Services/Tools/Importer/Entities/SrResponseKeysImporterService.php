@@ -91,6 +91,20 @@ class SrResponseKeysImporterService extends ImporterBase
         ];
     }
 
+    public function unlock(SrResponseKey $srResponseKey): array
+    {
+        if (!$this->entityService->unlockEntity($this->getUser(), $srResponseKey->id, SrResponseKey::class)) {
+            return [
+                'success' => false,
+                'message' => "Failed to unlock sr response key {$srResponseKey->name}."
+            ];
+        }
+        return [
+            'success' => true,
+            'message' => 'Sr response key import is unlocked.'
+        ];
+    }
+
     protected function overwrite(array $data, bool $withChildren, array $map, ?array $dest = null, ?array $extraData = []): array
     {
         $sr = $this->findSr(ImportType::SR_RESPONSE_KEY, $data, $map, $dest);
@@ -128,6 +142,12 @@ class SrResponseKeysImporterService extends ImporterBase
                 'success' => false,
                 'message' => "Failed to create sr response key."
             ];
+        }
+        $unlock = $this->unlock(
+            $this->srResponseKeyService->getSrResponseKeyRepository()->getModel()
+        );
+        if (!$unlock['success']) {
+            return $unlock;
         }
         return [
             'success' => true,
@@ -178,35 +198,15 @@ class SrResponseKeysImporterService extends ImporterBase
                 'message' => "Failed to create sr response key."
             ];
         }
-        return [
-            'success' => true,
-            'message' => "Sr response key({$responseKey->name}) for Sr {$sr->name} imported successfully."
-        ];
-    }
-    public function importSrChildren(ImportAction $action, Provider $provider, Sr $sr, array $data, bool $withChildren, array $map): array
-    {
-        $response = [];
-        $data['sr'] = $sr;
-        if (
-            !empty($data['sr_response_key_srs']) &&
-            is_array($data['sr_response_key_srs'])
-        ) {
-            $response = array_merge(
-                $response,
-                $this->srConfigImporterService->batchImport(
-                    $action,
-                    array_map(function ($config) use ($sr) {
-                        $config['sr'] = $sr;
-                        return $config;
-                    }, $data['sr_config']),
-                    $withChildren,
-                    $map
-                )
-            );
+        $unlock = $this->unlock(
+            $this->srResponseKeyService->getSrResponseKeyRepository()->getModel()
+        );
+        if (!$unlock['success']) {
+            return $unlock;
         }
         return [
             'success' => true,
-            'data' => $response,
+            'message' => "Sr response key({$responseKey->name}) for Sr {$sr->name} imported successfully."
         ];
     }
 

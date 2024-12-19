@@ -86,6 +86,20 @@ class SrParameterImporterService extends ImporterBase
         ];
     }
 
+    public function unlock(SrParameter $srParameter): array
+    {
+        if (!$this->entityService->unlockEntity($this->getUser(), $srParameter->id, SrParameter::class)) {
+            return [
+                'success' => false,
+                'message' => "Failed to unlock sr parameter {$srParameter->name}."
+            ];
+        }
+        return [
+            'success' => true,
+            'message' => 'Sr parameter import is unlocked.'
+        ];
+    }
+
     protected function overwrite(array $data, bool $withChildren, array $map, ?array $dest = null, ?array $extraData = []): array
     {
         try {
@@ -122,6 +136,12 @@ class SrParameterImporterService extends ImporterBase
                     'message' => "Failed to create sr parameter {$data['name']} for sr {$sr->name}.."
                 ];
             }
+            $unlocked = $this->unlock(
+                $this->srParametersService->getRequestParametersRepo()->getModel()
+            );
+            if (!$unlocked['success']) {
+                return $unlocked;
+            }
             return [
                 'success' => true,
                 'message' => "Sr parameter {$sr->name} imported successfully for sr {$sr->name}.."
@@ -156,6 +176,12 @@ class SrParameterImporterService extends ImporterBase
                     'success' => false,
                     'message' => "Failed to create sr parameter {$data['name']} for sr {$sr->name}.."
                 ];
+            }
+            $unlocked = $this->unlock(
+                $this->srParametersService->getRequestParametersRepo()->getModel()
+            );
+            if (!$unlocked['success']) {
+                return $unlocked;
             }
             return [
                 'success' => true,

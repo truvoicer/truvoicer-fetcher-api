@@ -87,6 +87,21 @@ class SrRateLimitImporterService extends ImporterBase
             'message' => 'Sr rate limit import is locked.'
         ];
     }
+
+    public function unlock(SrRateLimit $srRateLimit): array
+    {
+        if (!$this->entityService->unlockEntity($this->getUser(), $srRateLimit->id, SrRateLimit::class)) {
+            return [
+                'success' => false,
+                'message' => "Failed to unlock sr rate limit."
+            ];
+        }
+        return [
+            'success' => true,
+            'message' => 'Sr rate limit import is unlocked.'
+        ];
+    }
+
     protected function overwrite(array $data, bool $withChildren, array $map, ?array $dest = null, ?array $extraData = []): array
     {
         return $this->create($data, $withChildren, $map);
@@ -105,6 +120,10 @@ class SrRateLimitImporterService extends ImporterBase
                     'success' => false,
                     'message' => "Failed to create sr rate limit for Sr {$sr->name}."
                 ];
+            }
+            $unlockSrRateLimit = $this->unlock($this->rateLimitService->getSrRateLimitRepository()->getModel());
+            if (!$unlockSrRateLimit['success']) {
+                return $unlockSrRateLimit;
             }
             return [
                 'success' => true,

@@ -88,6 +88,7 @@ class SrConfigRepository extends BaseRepository
                 ...$data
             ]
         );
+        $this->setModel($create);
         return $create->exists;
     }
 

@@ -73,9 +73,10 @@ class ProviderPropertyRepository extends BaseRepository
         $findProviderProperty = $this->findProviderProperty($provider, $property);
         if (!$findProviderProperty instanceof Property) {
             $create = ProviderProperty::create(['provider_id' => $provider->id, 'property_id' => $property->id, ...$data]);
+            $this->setModel($create);
             return $create->exists;
         }
-
+        $this->setModel($findProviderProperty->providerProperty);
         $update = $provider->properties()->updateExistingPivot($property->id, $data);
         return true;
     }

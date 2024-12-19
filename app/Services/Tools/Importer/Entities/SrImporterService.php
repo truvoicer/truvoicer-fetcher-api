@@ -101,6 +101,20 @@ class SrImporterService extends ImporterBase
         ];
     }
 
+    public function unlock(Sr $sr): array
+    {
+        if (!$this->entityService->unlockEntity($this->getUser(), $sr->id, Sr::class)) {
+            return [
+                'success' => false,
+                'message' => "Failed to unlock sr {$sr->name}."
+            ];
+        }
+        return [
+            'success' => true,
+            'message' => 'Sr import is unlocked.'
+        ];
+    }
+
     protected function overwrite(array $data, bool $withChildren, array $map, ?array $dest = null, ?array $extraData = []): array
     {
 
@@ -148,6 +162,10 @@ class SrImporterService extends ImporterBase
                     'message' => "Service Request {$data['name']} update for {$provider->name}.",
                     'data' => $this->importSrChildren(ImportAction::OVERWRITE, $provider, $sr, $data, true, $map),
                 ];
+            }
+            $unlockSr = $this->unlock($sr);
+            if (!$unlockSr['success']) {
+                return $unlockSr;
             }
             return [
                 'success' => true,
@@ -292,6 +310,10 @@ class SrImporterService extends ImporterBase
                     'message' => "Service Request {$data['name']} created for {$provider->name}.",
                     'data' => $this->importSrChildren(ImportAction::CREATE, $provider, $sr, $data, true, $map),
                 ];
+            }
+            $unlockSr = $this->unlock($sr);
+            if (!$unlockSr['success']) {
+                return $unlockSr;
             }
             return [
                 'success' => true,
