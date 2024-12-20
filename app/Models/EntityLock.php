@@ -15,6 +15,7 @@ class EntityLock extends Model
 
     protected $fillable = [
         'user_id',
+        'entity_id',
         'entity_type',
         'status',
         'locked_at',

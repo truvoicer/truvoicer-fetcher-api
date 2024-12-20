@@ -70,6 +70,8 @@ class EntityService extends BaseService
                 'entity_type' => $class
             ],
             [
+                'entity_id' => $id,
+                'entity_type' => $class,
                 'user_id' => $user->id,
                 'status' => EntityLockStatus::LOCKED,
                 'locked_at' => now(),

@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\Tools\Export\ExportRequest;
 use App\Http\Requests\Admin\Tools\Import\ImportMappingsRequest;
 use App\Http\Requests\Admin\Tools\Import\ParseImportRequest;
+use App\Notifications\ImportStartedNotification;
 use App\Services\Permission\AccessControlService;
 use App\Services\Tools\HttpRequestService;
 use App\Services\SecurityService;
@@ -128,10 +129,18 @@ class ImportExportController extends Controller
             $request->validated('file_id'),
             $request->validated('mappings')
         );
+
         ImportStartedEvent::dispatch(
             $request->user()->id,
             $request->validated('file_id'),
             $request->validated('mappings')
+        );
+        $request->user()->notify(
+            new ImportStartedNotification(
+                $request->user()->id,
+                $request->validated('file_id'),
+                $request->validated('mappings')
+            )
         );
         return $this->sendSuccessResponse(
             "Import mappings event dispatched."

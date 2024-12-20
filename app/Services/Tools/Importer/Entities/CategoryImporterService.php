@@ -56,15 +56,24 @@ class CategoryImporterService extends ImporterBase
 
     public function lock(ImportAction $action, array $map, array $data, ?array $dest = null): array
     {
-        $category = $this->categoryService->getProviderRepository()->findByName(
-            $data['name']
-        );
+//        $category = $this->categoryService->getCategoryRepository()->findByName(
+//            $data['name']
+//        );
+
+        $category = $this->categoryService->getUserCategoryRepository()
+            ->findUserModelBy(
+                new Category(),
+                $this->getUser(),
+                [['name', '=', $data['name']]
+        ], false);
+
         if (!$category instanceof Category) {
             return [
                 'success' => false,
                 'message' => "Category {$data['name']} not found."
             ];
         }
+
         if (!$this->entityService->lockEntity($this->getUser(), $category->id, Category::class)) {
             return [
                 'success' => false,
