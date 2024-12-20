@@ -9,7 +9,7 @@ use Illuminate\Notifications\Messages\BroadcastMessage;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
-class ImportCompletedNotification extends Notification implements ShouldQueue, ShouldBroadcast
+class ImportStartedNotification extends Notification implements ShouldQueue, ShouldBroadcast
 {
     use Queueable;
 
@@ -17,7 +17,9 @@ class ImportCompletedNotification extends Notification implements ShouldQueue, S
      * Create a new notification instance.
      */
     public function __construct(
-        private array $results
+        public int $userId,
+        public int $fileId,
+        public array $mappings
     )
     {
         //
@@ -53,8 +55,8 @@ class ImportCompletedNotification extends Notification implements ShouldQueue, S
     {
         return [
             'type' => 'import',
-            'message' => 'Import completed',
-            'results' => $this->results
+            'message' => 'Import started',
+            'mappings' => $this->mappings
         ];
     }
 
@@ -62,8 +64,8 @@ class ImportCompletedNotification extends Notification implements ShouldQueue, S
     {
         return new BroadcastMessage([
             'type' => 'import',
-            'message' => 'Import completed',
-            'results' => $this->results
+            'message' => 'Import started',
+            'mappings' => $this->mappings
         ]);
     }
 }

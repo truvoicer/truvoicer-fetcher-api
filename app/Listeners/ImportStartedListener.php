@@ -32,6 +32,13 @@ class ImportStartedListener implements ShouldQueue
         $fileId = $event->fileId;
         $mappings = $event->mappings;
 
+        Log::log('info',
+            sprintf(
+                'ImportStartedListener: userId: %s, fileId: %s',
+                $userId,
+                $fileId
+            )
+        );
         $user = $this->userAdminService->getUserRepository()->findById($userId);
         if (!$user instanceof User) {
             Log::log('error', 'ImportMappingsEvent: $user is not instance of User');
@@ -48,7 +55,19 @@ class ImportStartedListener implements ShouldQueue
         }
 
         $this->importService->setUser($user);
+        Log::log('info',
+            sprintf(
+                'ImportStartedListener: Importing file %s',
+                $fileId,
+            )
+        );
         $results = $this->importService->import($fileId, $mappings);
+        Log::log('info',
+            sprintf(
+                'ImportStartedListener: Importing file %s completed',
+                $fileId,
+            )
+        );
         $user->notify(
             new ImportCompletedNotification(
                 $results
