@@ -12,10 +12,12 @@ use App\Services\ApiServices\ServiceRequests\SrService;
 use App\Services\EntityService;
 use App\Services\Permission\AccessControlService;
 use App\Services\Provider\ProviderService;
+use App\Services\Tools\IExport\IExportTypeService;
 use App\Traits\Error\ErrorTrait;
 use App\Traits\User\UserTrait;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\App;
+use Illuminate\Support\Facades\Log;
 
 abstract class ImporterBase
 {
@@ -111,14 +113,23 @@ abstract class ImporterBase
             case ImportAction::CREATE:
             case ImportAction::OVERWRITE:
             case ImportAction::OVERWRITE_OR_CREATE:
-                return match ($map['mapping']['name']) {
-                    ImportMappingType::SELF_NO_CHILDREN->value => $this->importSelfNoChildren($action, $map, $data, $dest, $lock),
-                    ImportMappingType::SELF_WITH_CHILDREN->value => $this->importSelfWithChildren($action, $map, $data, $dest, $lock),
-                    default => [
-                        'success' => false,
-                        'data' => $map['data'],
-                    ],
-                };
+                switch ($map['mapping']['name']) {
+                    case ImportMappingType::SELF_NO_CHILDREN->value:
+                        return $this->importSelfNoChildren($action, $map, $data, $dest, $lock);
+                    case ImportMappingType::SELF_WITH_CHILDREN->value:
+                        return $this->importSelfWithChildren($action, $map, $data, $dest, $lock);
+                    default:
+                        Log::channel(IExportTypeService::LOGGING_NAME)->error(
+                            "Invalid mapping type.",
+                            [
+                                'data' => $data
+                            ]
+                        );
+                        return [
+                            'success' => false,
+                            'message' => 'Invalid mapping type.'
+                        ];
+                }
         }
     }
 

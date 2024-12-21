@@ -2,14 +2,14 @@
 
 namespace App\Notifications;
 
+use App\Models\User;
 use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\BroadcastMessage;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
-class ImportStartedNotification extends Notification implements ShouldQueue, ShouldBroadcast
+class ImportStartedNotification extends Notification implements ShouldQueue
 {
     use Queueable;
 
@@ -17,8 +17,7 @@ class ImportStartedNotification extends Notification implements ShouldQueue, Sho
      * Create a new notification instance.
      */
     public function __construct(
-        public int $userId,
-        public int $fileId,
+        public User $user,
         public array $mappings
     )
     {
@@ -32,7 +31,7 @@ class ImportStartedNotification extends Notification implements ShouldQueue, Sho
      */
     public function via(object $notifiable): array
     {
-        return ['database'];
+        return ['database', 'broadcast'];
     }
 
     /**

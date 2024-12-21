@@ -15,10 +15,11 @@ class Controller extends BaseController
 {
     use AuthorizesRequests, ValidatesRequests;
 
-    public function __construct(
-        protected AccessControlService $accessControlService,
-    )
+    protected AccessControlService $accessControlService;
+
+    public function __construct()
     {
+        $this->accessControlService = app(AccessControlService::class);
     }
 
     protected function setAccessControlUser(?User $user = null) {

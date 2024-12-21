@@ -10,7 +10,9 @@ use App\Helpers\Tools\UtilHelpers;
 use App\Models\S;
 use App\Services\ApiServices\ApiService;
 use App\Services\Permission\AccessControlService;
+use App\Services\Tools\IExport\IExportTypeService;
 use Exception;
+use Illuminate\Support\Facades\Log;
 
 class SImporterService extends ImporterBase
 {
@@ -130,9 +132,14 @@ class SImporterService extends ImporterBase
                 'message' => "Service {$data['name']} imported successfully,"
             ];
         } catch (Exception $e) {
+            Log::channel(IExportTypeService::LOGGING_NAME)->error(
+                $e->getMessage(),
+                [
+                    'data' => $data
+                ]
+            );
             return [
                 'success' => false,
-                'data' => $data,
                 'error' => $e->getMessage()
             ];
         }
@@ -172,9 +179,14 @@ class SImporterService extends ImporterBase
                 'message' => "Service {$data['name']} imported successfully,"
             ];
         } catch (Exception $e) {
+            Log::channel(IExportTypeService::LOGGING_NAME)->error(
+                $e->getMessage(),
+                [
+                    'data' => $data
+                ]
+            );
             return [
                 'success' => false,
-                'data' => $data,
                 'error' => $e->getMessage()
             ];
         }
@@ -192,9 +204,14 @@ class SImporterService extends ImporterBase
                 'data' => $this->apiService->getServiceRepository()->getModel()
             ];
         } catch (Exception $e) {
+            Log::channel(IExportTypeService::LOGGING_NAME)->error(
+                $e->getMessage(),
+                [
+                    'data' => $data
+                ]
+            );
             return [
                 'success' => false,
-                'data' => $data,
                 'message' => $e->getMessage()
             ];
         }
@@ -212,9 +229,14 @@ class SImporterService extends ImporterBase
                 'data' => $this->apiService->getServiceRepository()->getModel()
             ];
         } catch (Exception $e) {
+            Log::channel(IExportTypeService::LOGGING_NAME)->error(
+                $e->getMessage(),
+                [
+                    'data' => $data
+                ]
+            );
             return [
                 'success' => false,
-                'data' => $data,
                 'message' => $e->getMessage()
             ];
         }

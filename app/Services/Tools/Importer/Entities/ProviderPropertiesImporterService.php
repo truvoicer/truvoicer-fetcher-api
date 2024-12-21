@@ -11,8 +11,10 @@ use App\Models\Provider;
 use App\Models\ProviderProperty;
 use App\Services\Permission\AccessControlService;
 use App\Services\Provider\ProviderService;
+use App\Services\Tools\IExport\IExportTypeService;
 use Exception;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Log;
 
 class ProviderPropertiesImporterService extends ImporterBase
 {
@@ -167,9 +169,14 @@ class ProviderPropertiesImporterService extends ImporterBase
         try {
             return $this->saveProviderProperty($data, $map, $dest);
         } catch (Exception $e) {
+            Log::channel(IExportTypeService::LOGGING_NAME)->error(
+                $e->getMessage(),
+                [
+                    'data' => $data
+                ]
+            );
             return [
                 'success' => false,
-                'data' => $data,
                 'message' => $e->getMessage()
             ];
         }
@@ -180,9 +187,14 @@ class ProviderPropertiesImporterService extends ImporterBase
         try {
             return $this->saveProviderProperty($data, $map, $dest);
         } catch (Exception $e) {
+            Log::channel(IExportTypeService::LOGGING_NAME)->error(
+                $e->getMessage(),
+                [
+                    'data' => $data
+                ]
+            );
             return [
                 'success' => false,
-                'data' => $data,
                 'message' => $e->getMessage()
             ];
         }

@@ -13,7 +13,9 @@ use App\Repositories\SrRepository;
 use App\Services\Permission\PermissionService;
 use App\Services\Provider\ProviderService;
 use App\Services\Permission\AccessControlService;
+use App\Services\Tools\IExport\IExportTypeService;
 use Exception;
+use Illuminate\Support\Facades\Log;
 
 class ProviderImporterService extends ImporterBase
 {
@@ -230,9 +232,14 @@ class ProviderImporterService extends ImporterBase
                 'data' => $response,
             ];
         } catch (Exception $e) {
+            Log::channel(IExportTypeService::LOGGING_NAME)->error(
+                $e->getMessage(),
+                [
+                    'data' => $data
+                ]
+            );
             return [
                 'success' => false,
-                'data' => $data,
                 'error' => $e->getMessage()
             ];
         }
@@ -292,9 +299,14 @@ class ProviderImporterService extends ImporterBase
                 ),
             ];
         } catch (Exception $e) {
+            Log::channel(IExportTypeService::LOGGING_NAME)->error(
+                $e->getMessage(),
+                [
+                    'data' => $data
+                ]
+            );
             return [
                 'success' => false,
-                'data' => $data,
                 'error' => $e->getMessage()
             ];
         }

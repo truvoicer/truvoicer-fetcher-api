@@ -15,8 +15,10 @@ use App\Services\ApiServices\ApiService;
 use App\Services\ApiServices\ServiceRequests\SrService;
 use App\Services\Permission\AccessControlService;
 use App\Services\Provider\ProviderService;
+use App\Services\Tools\IExport\IExportTypeService;
 use Exception;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Log;
 
 class SrImporterService extends ImporterBase
 {
@@ -172,10 +174,15 @@ class SrImporterService extends ImporterBase
                 'message' => "Service Request {$data['name']} update for {$provider->name}."
             ];
         } catch (Exception $e) {
+            Log::channel(IExportTypeService::LOGGING_NAME)->error(
+                $e->getMessage(),
+                [
+                    'data' => $data
+                ]
+            );
             return [
                 'success' => false,
-                'data' => $data,
-                'message' => $e->getMessage()
+                'message' => $e->getMessage(),
             ];
         }
     }
@@ -321,10 +328,15 @@ class SrImporterService extends ImporterBase
             ];
         } catch
         (Exception $e) {
+            Log::channel(IExportTypeService::LOGGING_NAME)->error(
+                $e->getMessage(),
+                [
+                    'data' => $data
+                ]
+            );
             return [
                 'success' => false,
-                'data' => $data,
-                'message' => $e->getMessage()
+                'message' => $e->getMessage(),
             ];
         }
     }

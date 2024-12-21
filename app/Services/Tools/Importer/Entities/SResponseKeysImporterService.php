@@ -12,7 +12,9 @@ use App\Models\SResponseKey;
 use App\Services\ApiServices\ApiService;
 use App\Services\ApiServices\SResponseKeysService;
 use App\Services\Permission\AccessControlService;
+use App\Services\Tools\IExport\IExportTypeService;
 use Exception;
+use Illuminate\Support\Facades\Log;
 
 class SResponseKeysImporterService extends ImporterBase
 {
@@ -149,10 +151,15 @@ class SResponseKeysImporterService extends ImporterBase
                 'message' => "Service response key({$data['name']}) for Sr {$service->name} imported successfully."
             ];
         } catch (Exception $e) {
+            Log::channel(IExportTypeService::LOGGING_NAME)->error(
+                $e->getMessage(),
+                [
+                    'data' => $data
+                ]
+            );
             return [
                 'success' => false,
-                'data' => $data,
-                'message' => $e->getMessage()
+                'message' => $e->getMessage(),
             ];
         }
     }
@@ -195,10 +202,15 @@ class SResponseKeysImporterService extends ImporterBase
                 'message' => "Service response key({$data['name']}) for Sr {$service->name} imported successfully."
             ];
         } catch (Exception $e) {
+            Log::channel(IExportTypeService::LOGGING_NAME)->error(
+                $e->getMessage(),
+                [
+                    'data' => $data
+                ]
+            );
             return [
                 'success' => false,
-                'data' => $data,
-                'message' => $e->getMessage()
+                'message' => $e->getMessage(),
             ];
         }
     }

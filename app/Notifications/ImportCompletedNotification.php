@@ -2,14 +2,14 @@
 
 namespace App\Notifications;
 
+use App\Models\User;
 use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\BroadcastMessage;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
-class ImportCompletedNotification extends Notification implements ShouldQueue, ShouldBroadcast
+class ImportCompletedNotification extends Notification implements ShouldQueue
 {
     use Queueable;
 
@@ -17,6 +17,7 @@ class ImportCompletedNotification extends Notification implements ShouldQueue, S
      * Create a new notification instance.
      */
     public function __construct(
+        public User $user,
         private array $results
     )
     {
@@ -30,7 +31,7 @@ class ImportCompletedNotification extends Notification implements ShouldQueue, S
      */
     public function via(object $notifiable): array
     {
-        return ['database'];
+        return ['database', 'broadcast'];
     }
 
     /**
