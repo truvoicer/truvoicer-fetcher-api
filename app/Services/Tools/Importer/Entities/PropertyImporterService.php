@@ -9,8 +9,10 @@ use App\Helpers\Tools\UtilHelpers;
 use App\Models\Property;
 use App\Services\Permission\AccessControlService;
 use App\Services\Property\PropertyService;
+use App\Services\Tools\IExport\IExportTypeService;
 use Exception;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Log;
 
 class PropertyImporterService extends ImporterBase {
 
@@ -126,9 +128,14 @@ class PropertyImporterService extends ImporterBase {
                 'message' => "Property {$data['name']} imported successfully."
             ];
         } catch (Exception $e) {
+            Log::channel(IExportTypeService::LOGGING_NAME)->error(
+                $e->getMessage(),
+                [
+                    'data' => $data
+                ]
+            );
             return [
                 'success' => false,
-                'data' => $data,
                 'message' => $e->getMessage()
             ];
         }
@@ -161,9 +168,14 @@ class PropertyImporterService extends ImporterBase {
                 'message' => "Property {$data['name']} imported successfully."
             ];
         } catch (Exception $e) {
+            Log::channel(IExportTypeService::LOGGING_NAME)->error(
+                $e->getMessage(),
+                [
+                    'data' => $data
+                ]
+            );
             return [
                 'success' => false,
-                'data' => $data,
                 'message' => $e->getMessage()
             ];
         }

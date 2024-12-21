@@ -13,8 +13,10 @@ use App\Models\SrConfig;
 use App\Services\ApiServices\ServiceRequests\SrConfigService;
 use App\Services\ApiServices\ServiceRequests\SrService;
 use App\Services\Permission\AccessControlService;
+use App\Services\Tools\IExport\IExportTypeService;
 use Exception;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Log;
 
 class SrConfigImporterService extends ImporterBase
 {
@@ -104,10 +106,15 @@ class SrConfigImporterService extends ImporterBase
     private function saveSrConfig(Sr $sr, Property $property, array $data): array
     {
         if (!$this->srConfigService->saveRequestConfig($sr, $property, array_merge($data, $data['property']))) {
+            Log::channel(IExportTypeService::LOGGING_NAME)->error(
+                "Failed to create sr config for Sr {$sr->name}",
+                [
+                    'data' => $data
+                ]
+            );
             return [
                 'success' => false,
                 'message' => "Failed to create sr config for Sr {$sr->name}",
-                'data' => $data
             ];
         }
         $unlocked = $this->unlock($this->srConfigService->getRequestConfigRepo()->getModel());
@@ -147,10 +154,15 @@ class SrConfigImporterService extends ImporterBase
 
             return $this->saveSrConfig($sr, $property, $data);
         } catch (Exception $e) {
+            Log::channel(IExportTypeService::LOGGING_NAME)->error(
+                $e->getMessage(),
+                [
+                    'data' => $data
+                ]
+            );
             return [
                 'success' => false,
                 'message' => $e->getMessage(),
-                'data' => $data
             ];
         }
     }
@@ -165,19 +177,29 @@ class SrConfigImporterService extends ImporterBase
             $sr = $sr['sr'];
             $property = $this->findProperty($sr, $data);
             if (!$property['success']) {
+                Log::channel(IExportTypeService::LOGGING_NAME)->error(
+                    "Failed to find property for Sr {$sr->name}",
+                    [
+                        'data' => $data
+                    ]
+                );
                 return [
                     'success' => false,
                     'message' => "Failed to find property for Sr {$sr->name}",
-                    'data' => $data
                 ];
             }
             $property = $property['property'];
             return $this->saveSrConfig($sr, $property, $data);
         } catch (Exception $e) {
+            Log::channel(IExportTypeService::LOGGING_NAME)->error(
+                $e->getMessage(),
+                [
+                    'data' => $data
+                ]
+            );
             return [
                 'success' => false,
                 'message' => $e->getMessage(),
-                'data' => $data
             ];
         }
     }

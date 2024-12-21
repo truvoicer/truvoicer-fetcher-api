@@ -11,7 +11,9 @@ use App\Models\Category;
 use App\Services\Category\CategoryService;
 use App\Services\Permission\AccessControlService;
 use App\Services\Permission\PermissionService;
+use App\Services\Tools\IExport\IExportTypeService;
 use Exception;
+use Illuminate\Support\Facades\Log;
 
 class CategoryImporterService extends ImporterBase
 {
@@ -135,9 +137,14 @@ class CategoryImporterService extends ImporterBase
                 'message' => $category
             ];
         } catch (Exception $e) {
+            Log::channel(IExportTypeService::LOGGING_NAME)->error(
+                $e->getMessage(),
+                [
+                    'data' => $data
+                ]
+            );
             return [
                 'success' => false,
-                'data' => $data,
                 'message' => $e->getMessage()
             ];
         }
@@ -182,9 +189,14 @@ class CategoryImporterService extends ImporterBase
                 'message' => "Category {$data['name']} updated successfully."
             ];
         } catch (Exception $e) {
+            Log::channel(IExportTypeService::LOGGING_NAME)->error(
+                $e->getMessage(),
+                [
+                    'data' => $data
+                ]
+            );
             return [
                 'success' => false,
-                'data' => $data,
                 'message' => $e->getMessage()
             ];
         }

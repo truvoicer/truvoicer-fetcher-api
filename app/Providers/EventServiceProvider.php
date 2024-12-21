@@ -2,11 +2,9 @@
 
 namespace App\Providers;
 
-use App\Events\ImportStartedEvent;
 use App\Events\ProcessSrOperationDataEvent;
 use App\Events\RunProviderSrOperationEvent;
 use App\Events\RunSrOperationEvent;
-use App\Listeners\ImportStartedListener;
 use App\Listeners\ProcessSrOperationDataListener;
 use App\Listeners\RunProviderSrOperationListener;
 use App\Listeners\RunSrOperationListener;
@@ -28,9 +26,6 @@ class EventServiceProvider extends ServiceProvider
         ],
         ProcessSrOperationDataEvent::class => [
             ProcessSrOperationDataListener::class,
-        ],
-        ImportStartedEvent::class => [
-            ImportStartedListener::class,
         ],
     ];
 

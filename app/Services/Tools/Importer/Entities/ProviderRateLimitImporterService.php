@@ -12,7 +12,9 @@ use App\Models\ProviderRateLimit;
 use App\Services\ApiServices\RateLimitService;
 use App\Services\Permission\AccessControlService;
 use App\Services\Provider\ProviderService;
+use App\Services\Tools\IExport\IExportTypeService;
 use Exception;
+use Illuminate\Support\Facades\Log;
 
 class ProviderRateLimitImporterService extends ImporterBase
 {
@@ -147,9 +149,14 @@ class ProviderRateLimitImporterService extends ImporterBase
                 'message' => "Sr rate limit for provider {$provider->name} imported successfully."
             ];
         } catch (Exception $e) {
+            Log::channel(IExportTypeService::LOGGING_NAME)->error(
+                $e->getMessage(),
+                [
+                    'data' => $data
+                ]
+            );
             return [
                 'success' => false,
-                'data' => $data,
                 'message' => $e->getMessage()
             ];
         }

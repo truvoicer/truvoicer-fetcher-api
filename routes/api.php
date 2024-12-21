@@ -3,6 +3,7 @@
 use App\Http\Controllers\Api\Auth\AuthController;
 use App\Http\Controllers\Api\Backend\AdminController;
 use App\Http\Controllers\Api\Backend\CategoryController;
+use App\Http\Controllers\Api\Backend\Notification\NotificationController;
 use App\Http\Controllers\Api\Backend\PermissionController;
 use App\Http\Controllers\Api\Backend\PropertyController;
 use App\Http\Controllers\Api\Backend\Provider\ProviderController;
@@ -50,6 +51,20 @@ Route::middleware(['auth:sanctum', 'ability:api:app_user'])->group(function () {
         Route::prefix('operation')->name('operation.')->group(function () {
             Route::post('/search/{type}', [OperationsController::class, 'searchOperation'])->name('search');
         });
+    });
+});
+Route::middleware(['auth:sanctum', 'ability:api:admin,api:superuser,api:super_admin,api:user,api:app_user'])->group(function () {
+    Route::prefix('notification')->name('notification.')->group(function () {
+        Route::get('/list', [NotificationController::class, 'index'])->name('list');
+        Route::get('/read/count', [NotificationController::class, 'getReadCount'])->name('read.count');
+        Route::get('/unread/count', [NotificationController::class, 'getUnreadCount'])->name('unread.count');
+        Route::post('/mark-all-read', [NotificationController::class, 'markAllAsRead'])->name('mark-all-read');
+        Route::post('/mark-all-unread', [NotificationController::class, 'markAllAsUnread'])->name('mark-all-unread');
+        Route::get('/{notification}', [NotificationController::class, 'edit'])->name('detail');
+        Route::post('/{notification}/mark-read', [NotificationController::class, 'markAsRead'])->name('mark-read');
+        Route::post('/{notification}/mark-unread', [NotificationController::class, 'markAsUnread'])->name('mark-unread');
+        Route::delete('/{notification}/delete', [NotificationController::class, 'destroy'])->name('delete');
+        Route::delete('/delete-all', [NotificationController::class, 'deleteAll'])->name('delete-all');
     });
 });
 Route::middleware(['auth:sanctum', 'ability:api:admin,api:superuser,api:super_admin,api:user,api:app_user'])->group(function () {

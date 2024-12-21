@@ -2,22 +2,16 @@
 
 namespace App\Http\Controllers\Api\Backend\Tools;
 
-use App\Events\ImportStartedEvent;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\Tools\Export\ExportRequest;
 use App\Http\Requests\Admin\Tools\Import\ImportMappingsRequest;
 use App\Http\Requests\Admin\Tools\Import\ParseImportRequest;
-use App\Notifications\ImportStartedNotification;
+use App\Jobs\StartImportJob;
 use App\Services\Permission\AccessControlService;
-use App\Services\Tools\HttpRequestService;
-use App\Services\SecurityService;
-use App\Services\Tools\SerializerService;
 use App\Services\Tools\IExport\ExportService;
 use App\Services\Tools\IExport\ImportService;
 use App\Services\User\UserAdminService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
-use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 
 /**
  * Contains api endpoint functions for exporting tasks
@@ -130,17 +124,10 @@ class ImportExportController extends Controller
             $request->validated('mappings')
         );
 
-        ImportStartedEvent::dispatch(
+        StartImportJob::dispatch(
             $request->user()->id,
             $request->validated('file_id'),
             $request->validated('mappings')
-        );
-        $request->user()->notify(
-            new ImportStartedNotification(
-                $request->user()->id,
-                $request->validated('file_id'),
-                $request->validated('mappings')
-            )
         );
         return $this->sendSuccessResponse(
             "Import mappings event dispatched."

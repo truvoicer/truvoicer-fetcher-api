@@ -29,6 +29,9 @@ use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 
 class IExportTypeService extends BaseService
 {
+    const LOGGING_NAME = 'ImportExport';
+    const LOGGING_PATH = 'logs/import_export/log.log';
+
     const REQUEST_KEYS = [
         "EXPORT_TYPE" => "export_type",
         "EXPORT_DATA" => "export_data",

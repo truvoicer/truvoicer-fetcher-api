@@ -12,7 +12,9 @@ use App\Models\SrParameter;
 use App\Services\ApiServices\ServiceRequests\SrParametersService;
 use App\Services\ApiServices\ServiceRequests\SrService;
 use App\Services\Permission\AccessControlService;
+use App\Services\Tools\IExport\IExportTypeService;
 use Exception;
+use Illuminate\Support\Facades\Log;
 
 class SrParameterImporterService extends ImporterBase
 {
@@ -147,10 +149,15 @@ class SrParameterImporterService extends ImporterBase
                 'message' => "Sr parameter {$sr->name} imported successfully for sr {$sr->name}.."
             ];
         } catch (Exception $e) {
+            Log::channel(IExportTypeService::LOGGING_NAME)->error(
+                $e->getMessage(),
+                [
+                    'data' => $data
+                ]
+            );
             return [
                 'success' => false,
                 'message' => $e->getMessage(),
-                'data' => $data
             ];
         }
     }
@@ -188,10 +195,15 @@ class SrParameterImporterService extends ImporterBase
                 'message' => "Sr parameter {$data['name']} imported successfully for sr {$sr->name}.."
             ];
         } catch (Exception $e) {
+            Log::channel(IExportTypeService::LOGGING_NAME)->error(
+                $e->getMessage(),
+                [
+                    'data' => $data
+                ]
+            );
             return [
                 'success' => false,
                 'message' => $e->getMessage(),
-                'data' => $data
             ];
         }
     }
