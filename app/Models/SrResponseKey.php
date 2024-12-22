@@ -26,6 +26,17 @@ class SrResponseKey extends Model
         "is_service_request",
         "array_keys",
     ];
+    protected $casts = [
+        'show_in_response' => 'boolean',
+        'list_item' => 'boolean',
+        'custom_value' => 'boolean',
+        'searchable' => 'boolean',
+        'is_date' => 'boolean',
+        'date_format' => 'string',
+        'append_extra_data_value' => 'string',
+        'prepend_extra_data_value' => 'string',
+        'is_service_request' => 'boolean',
+    ];
     public function sr()
     {
         return $this->belongsTo(Sr::class);
