@@ -4,6 +4,8 @@ namespace App\Repositories\MongoDB;
 
 use App\Models\S;
 use App\Models\Sr;
+use Illuminate\Support\Facades\DB;
+use function Termwind\parse;
 
 class MongoDBRepository extends BaseRepository
 {

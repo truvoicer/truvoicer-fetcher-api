@@ -22,6 +22,7 @@ use App\Traits\Error\ErrorTrait;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Log;
+use MongoDB\BSON\UTCDateTime;
 
 class SrOperationsService
 {
@@ -125,7 +126,7 @@ class SrOperationsService
             $data
         );
 
-        $now = now()->toISOString();
+        $now = new UTCDateTime(now());
         if (empty($insertData[MongoDBRepository::CREATED_AT])) {
             $insertData[MongoDBRepository::CREATED_AT] = $now;
         }
@@ -135,10 +136,19 @@ class SrOperationsService
         return $insertData;
     }
 
-    private function validateRequiredFields(array $saveData)
+    private function validateRequiredFields(Provider $provider, Sr $sr, array $saveData)
     {
         foreach (self::REQUIRED_FIELDS as $field) {
             if (!array_key_exists($field, $saveData)) {
+                Log::channel(self::LOGGING_NAME)->error(
+                    sprintf(
+                        'Missing required field: %s for service request: %s | Provider: %s',
+                        $field,
+                        $sr->label,
+                        $provider->name,
+                    ),
+                    $saveData
+                );
                 return false;
             }
         }
@@ -364,15 +374,7 @@ class SrOperationsService
                 'success' => false
             ];
         }
-        if (!$this->validateRequiredFields($insertData)) {
-            Log::channel(self::LOGGING_NAME)->error(
-                sprintf(
-                    'Error validating required fields for service request: %s | Provider: %s',
-                    $sr->label,
-                    $provider->name,
-                ),
-                $insertData
-            );
+        if (!$this->validateRequiredFields($provider, $sr, $insertData)) {
             return [
                 'success' => false
             ];
@@ -428,6 +430,7 @@ class SrOperationsService
             return $requestDataItem;
         }
         $prepareData = $this->prepareDbSaveData($sr, $apiResponse, $requestDataItem, $queryData);
+
         if (!$prepareData['success'] && empty($prepareData['data'])) {
             return false;
         }
