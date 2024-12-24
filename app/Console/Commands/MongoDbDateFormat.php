@@ -64,7 +64,7 @@ class MongoDbDateFormat extends Command
             );
             $srs = $this->srRepository->findMany();
         }
-        dd($srs->count());
+
         $this->collectionIterator(
             $srs,
             function () {
