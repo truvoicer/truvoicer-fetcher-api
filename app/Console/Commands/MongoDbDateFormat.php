@@ -29,7 +29,7 @@ class MongoDbDateFormat extends Command
      *
      * @var string
      */
-    protected $signature = 'mongodb:format-dates';
+    protected $signature = 'mongodb:format-dates {--sr_id=}';
 
     /**
      * The console command description.
@@ -52,7 +52,19 @@ class MongoDbDateFormat extends Command
         $this->mongoDBRepository = $mongoDBRepository;
         $this->srResponseKeyService = $srResponseKeyService;
         $this->srRepository = $srRepository;
-        $srs = $this->srRepository->findAll();
+
+        $srId = $this->option('sr_id');
+        if (empty($srId)){
+            $srs = $this->srRepository->findAll();
+        } else {
+            $this->srRepository->addWhere(
+                'id',
+                array_map('intval', array_map('trim', explode(',', $srId))),
+                'in'
+            );
+            $srs = $this->srRepository->findMany();
+        }
+        dd($srs->count());
         $this->collectionIterator(
             $srs,
             function () {

@@ -188,6 +188,7 @@ class ResponseManager extends BaseService
     private function successResponse(?string $contentType, array $requestData, array $extraData, ApiRequest $apiRequest, Response $response)
     {
         $apiResponse = new ApiResponse();
+        $apiResponse->setContentType($contentType);
         $apiResponse->setStatus("success");
         $apiResponse->setRequestData($requestData);
         $apiResponse->setExtraData($extraData);
