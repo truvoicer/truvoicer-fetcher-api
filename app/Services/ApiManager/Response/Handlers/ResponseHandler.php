@@ -3,6 +3,7 @@
 namespace App\Services\ApiManager\Response\Handlers;
 
 
+use App\Helpers\Tools\DateHelpers;
 use App\Models\Provider;
 use App\Models\S;
 use App\Models\Sr;
@@ -23,6 +24,7 @@ use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\App;
+use MongoDB\BSON\UTCDateTime;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 
 class ResponseHandler extends ApiBase
@@ -330,10 +332,11 @@ class ResponseHandler extends ApiBase
 
     private function buildDateValue(SrResponseKey $requestResponseKey, $value)
     {
-        if (empty($requestResponseKey->date_format)) {
-            return Carbon::create($value)->toISOString();
+        $newDate = DateHelpers::parseDateString($value, $requestResponseKey->date_format);
+        if ($newDate) {
+            return new UTCDateTime($newDate);
         }
-        return Carbon::createFromFormat($requestResponseKey->date_format, $value)->toISOString();
+        return $value;
     }
 
     private function buildRequestKeyTextValue(SrResponseKey $requestResponseKey, $itemArrayValue)

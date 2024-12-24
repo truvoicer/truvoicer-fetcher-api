@@ -9,6 +9,7 @@ use Illuminate\Database\Connection;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
+use MongoDB\BSON\ObjectId;
 use MongoDB\Laravel\Query\Builder;
 
 class BaseRepository
@@ -344,9 +345,14 @@ class BaseRepository
         return $this->findMany();
     }
 
+    public function update(ObjectId $id, array $data)
+    {
+        $this->connection->table($this->collection)->where('_id', $id)->update($data);
+        return true;
+    }
     public function insert(array $data)
     {
-        return $this->connection->collection($this->collection)->insert($data);
+        return $this->connection->table($this->collection)->insert($data);
     }
 
     public function deleteBatch(array $ids)

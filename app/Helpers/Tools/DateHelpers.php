@@ -2,6 +2,8 @@
 
 namespace App\Helpers\Tools;
 
+use Carbon\Carbon;
+
 class DateHelpers
 {
     public static function convertMonthToInteger(string $month): int|bool
@@ -24,5 +26,39 @@ class DateHelpers
             return false;
         }
         return $months[strtolower($month)];
+    }
+
+    public static function parseDateStringToCarbon(string $date, ?string $format = null): ?Carbon
+    {
+        try {
+            if ($format) {
+                return Carbon::createFromFormat($format, $date);
+            } else {
+                return Carbon::parse($date);
+            }
+        } catch (\Exception $e) {
+            return null;
+        }
+    }
+    public static function parseDateString(string $date, ?string $format = null): ?Carbon
+    {
+        $types = [];
+        if ($format) {
+            $types[] = 'format';
+        }
+        $types[] = 'default';
+        $types[] = 'replaceSlash';
+
+        foreach ($types as $type) {
+            $parsedDate = match ($type) {
+                'default' => self::parseDateStringToCarbon($date),
+                'replaceSlash' => self::parseDateStringToCarbon(str_replace('/', '-', $date)),
+                default => null,
+            };
+            if ($parsedDate) {
+                return $parsedDate;
+            }
+        }
+        return null;
     }
 }
