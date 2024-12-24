@@ -153,7 +153,13 @@ class MongoDbDateFormat extends Command
     {
         $srResponseKeys = $this->srResponseKeyService->findResponseKeysForOperationBySr($sr);
         return $srResponseKeys->filter(function ($srResponseKey) {
-            return str_contains($srResponseKey->name, 'date');
+            return (
+                str_contains($srResponseKey->name, 'date') &&
+                (
+                    !empty($srResponseKey?->srResponseKey?->value) &&
+                    DateHelpers::isValidDateString($srResponseKey->srResponseKey->value)
+                )
+            );
         });
     }
 }
