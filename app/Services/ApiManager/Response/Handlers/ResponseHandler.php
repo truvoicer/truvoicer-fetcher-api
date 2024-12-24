@@ -351,7 +351,7 @@ class ResponseHandler extends ApiBase
             }
             return null;
         }
-        if ($requestResponseKey->is_date || (!empty($itemArrayValue) && (new \Carbon\Carbon)->isValid($itemArrayValue))) {
+        if ($requestResponseKey->is_date || (!empty($itemArrayValue) && DateHelpers::isValidDateString($itemArrayValue))) {
             return $this->buildDateValue($requestResponseKey, $itemArrayValue);
         }
         return $itemArrayValue;

@@ -61,4 +61,9 @@ class DateHelpers
         }
         return null;
     }
+
+    public static function isValidDateString(string $date): bool
+    {
+        return self::parseDateString($date) instanceof Carbon;
+    }
 }
