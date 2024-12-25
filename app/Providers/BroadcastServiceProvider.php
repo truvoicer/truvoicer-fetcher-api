@@ -12,7 +12,11 @@ class BroadcastServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        Broadcast::routes(['prefix' => 'api', 'middleware' => ['auth:sanctum', 'ability:api:admin,api:superuser,api:super_admin,api:user,api:app_user']]);
+        if(request()->hasHeader('authorization')) {
+            Broadcast::routes(['prefix' => 'api', 'middleware' => ['auth:sanctum', 'ability:api:admin,api:superuser,api:super_admin,api:user,api:app_user']]);
+        } else {
+            Broadcast::routes();
+        }
 
         require base_path('routes/channels.php');
     }
