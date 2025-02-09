@@ -9,6 +9,7 @@ use App\Http\Requests\Provider\UpdateProviderRequest;
 use App\Http\Resources\ProviderCollection;
 use App\Http\Resources\ProviderResource;
 use App\Models\Provider;
+use App\Repositories\ProviderRepository;
 use App\Services\Auth\AuthService;
 use App\Services\Permission\AccessControlService;
 use App\Services\Permission\PermissionService;
@@ -26,24 +27,18 @@ use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
  */
 class ProviderController extends Controller
 {
-    private ProviderService $providerService;
+    private ProviderRepository $providerRepository;
 
     /**
      * ProviderController constructor.
      * @param ProviderService $providerService
-     * @param AccessControlService $accessControlService
-     * @param HttpRequestService $httpRequestService
-     * @param SerializerService $serializerService
      */
     public function __construct(
-        HttpRequestService   $httpRequestService,
-        SerializerService    $serializerService,
-        ProviderService      $providerService,
-        AccessControlService $accessControlService
+       private ProviderService      $providerService
     )
     {
-        parent::__construct($accessControlService);
-        $this->providerService = $providerService;
+        parent::__construct();
+        $this->providerRepository = $providerService->getProviderRepository();
     }
 
     /**

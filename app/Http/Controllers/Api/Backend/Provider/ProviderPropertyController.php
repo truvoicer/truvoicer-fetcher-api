@@ -30,24 +30,16 @@ use Illuminate\Http\Request;
 class ProviderPropertyController extends Controller
 {
 
-    private ProviderService $providerService;
 
     /**
      * ProviderController constructor.
-     * @param HttpRequestService $httpRequestService
-     * @param SerializerService $serializerService
      * @param ProviderService $providerService
-     * @param AccessControlService $accessControlService
      */
     public function __construct(
-        HttpRequestService   $httpRequestService,
-        SerializerService    $serializerService,
-        ProviderService      $providerService,
-        AccessControlService $accessControlService
+        private ProviderService      $providerService
     )
     {
-        parent::__construct($accessControlService);
-        $this->providerService = $providerService;
+        parent::__construct();
     }
 
     /**

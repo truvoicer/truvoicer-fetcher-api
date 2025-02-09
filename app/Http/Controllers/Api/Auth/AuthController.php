@@ -8,7 +8,6 @@ use App\Http\Resources\AccessTokenResource;
 use App\Http\Resources\PersonalAccessTokenResource;
 use App\Http\Resources\RoleResource;
 use App\Http\Resources\UserResource;
-use App\Models\Mongo\Recruitment;
 use App\Models\User;
 use App\Services\Auth\AuthService;
 use App\Services\Permission\AccessControlService;
@@ -22,15 +21,12 @@ use Symfony\Component\HttpFoundation\Response;
 
 class AuthController extends Controller
 {
-    private UserAdminService $userAdminService;
+
     public function __construct(
-        UserAdminService $userAdminService,
-        AccessControlService $accessControlService
+        private UserAdminService $userAdminService,
     )
     {
-
-        parent::__construct($accessControlService);
-        $this->userAdminService = $userAdminService;
+        parent::__construct();
     }
 
     public function login(LoginRequest $request): \Illuminate\Http\JsonResponse

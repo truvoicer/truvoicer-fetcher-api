@@ -25,27 +25,10 @@ use Illuminate\Http\Request;
 class SrRateLimitController extends Controller
 {
 
-    // Initialise services for this controller
-    private RateLimitService $srRateLimitService;
-
-    /**
-     * ServiceRequestConfigController constructor.
-     * Initialise services for this controller
-     *
-     * @param HttpRequestService $httpRequestService
-     * @param SerializerService $serializerService
-     * @param RateLimitService $srRateLimitService
-     * @param AccessControlService $accessControlService
-     */
     public function __construct(
-        HttpRequestService   $httpRequestService,
-        SerializerService    $serializerService,
-        RateLimitService     $srRateLimitService,
-        AccessControlService $accessControlService
+        private RateLimitService     $srRateLimitService,
     ) {
-        parent::__construct($accessControlService);
-        // Initialise services for this controller
-        $this->srRateLimitService = $srRateLimitService;
+        parent::__construct();
     }
 
     public function getServiceRateLimit(

@@ -11,21 +11,11 @@ use Illuminate\Http\Request;
 
 class ValidationController extends Controller
 {
-    private ValidatorService $validatorService;
 
-    /**
-     * ProviderController constructor.
-     * @param HttpRequestService $httpRequestService
-     * @param SerializerService $serializerService
-     * @param ValidatorService $providerService
-     * @param AccessControlService $accessControlService
-     */
     public function __construct(
-        ValidatorService $providerService,
-        AccessControlService $accessControlService
+        private ValidatorService $validatorService,
     ) {
-        parent::__construct($accessControlService);
-        $this->validatorService = $providerService;
+        parent::__construct();
     }
 
     public function validateAll(Request $request)

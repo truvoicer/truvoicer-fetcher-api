@@ -29,25 +29,11 @@ use Illuminate\Http\Request;
  */
 class ServiceRequestResponseKeyController extends Controller
 {
-    private SrResponseKeyService $srResponseKeyService;
 
-    /**
-     * ServiceRequestResponseKeyController constructor.
-     * Initialises services used in this controller
-     *
-     * @param HttpRequestService $httpRequestService
-     * @param SerializerService $serializerService
-     * @param SrResponseKeyService $requestResponseKeysService
-     * @param AccessControlService $accessControlService
-     */
     public function __construct(
-        HttpRequestService   $httpRequestService,
-        SerializerService    $serializerService,
-        SrResponseKeyService $requestResponseKeysService,
-        AccessControlService $accessControlService
+        private SrResponseKeyService $srResponseKeyService,
     ) {
-        parent::__construct($accessControlService);
-        $this->srResponseKeyService = $requestResponseKeysService;
+        parent::__construct();
     }
 
     /**

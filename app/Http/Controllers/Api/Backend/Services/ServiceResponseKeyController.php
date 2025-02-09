@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Api\Backend\Services;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Service\ResponseKey\CreateSResponseKeyRequest;
 use App\Http\Requests\Service\ResponseKey\DeleteBatchSResponseKeyRequest;
-use App\Http\Requests\Service\ResponseKey\UpdateServiceResponseKeyRequest;
+use App\Http\Requests\Service\ResponseKey\UpdateSResponseKeyRequest;
 use App\Http\Resources\Service\ServiceResponseKeyCollection;
 use App\Http\Resources\Service\ServiceResponseKeyResource;
 use App\Models\Provider;
@@ -29,33 +29,13 @@ use Illuminate\Http\Request;
  */
 class ServiceResponseKeyController extends Controller
 {
-    private ProviderService $providerService;
-    private ApiService $apiServicesService;
-    private SResponseKeysService $responseKeysService;
 
-    /**
-     * ServiceResponseKeyController constructor.
-     * Initialises services used in this controller
-     *
-     * @param ProviderService $providerService
-     * @param HttpRequestService $httpRequestService
-     * @param SerializerService $serializerService
-     * @param ApiService $apiServicesService
-     * @param SResponseKeysService $responseKeysService
-     * @param AccessControlService $accessControlService
-     */
     public function __construct(
-        ProviderService      $providerService,
-        HttpRequestService   $httpRequestService,
-        SerializerService    $serializerService,
-        ApiService           $apiServicesService,
-        SResponseKeysService $responseKeysService,
-        AccessControlService $accessControlService
+        private ProviderService      $providerService,
+        private ApiService           $apiServicesService,
+        private SResponseKeysService $responseKeysService,
     ) {
-        parent::__construct($accessControlService);
-        $this->providerService = $providerService;
-        $this->apiServicesService = $apiServicesService;
-        $this->responseKeysService = $responseKeysService;
+        parent::__construct();
     }
 
     /**
@@ -193,7 +173,7 @@ class ServiceResponseKeyController extends Controller
      * Returns error response and message on fail
      *
      */
-    public function updateServiceResponseKey(S $service, SResponseKey $serviceResponseKey, UpdateServiceResponseKeyRequest $request)
+    public function updateServiceResponseKey(S $service, SResponseKey $serviceResponseKey, UpdateSResponseKeyRequest $request)
     {
         $this->setAccessControlUser($request->user());
         if (

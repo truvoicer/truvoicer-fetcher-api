@@ -27,26 +27,17 @@ class ProviderRateLimitController extends Controller
 {
 
     // Initialise services for this controller
-    private RateLimitService $providerRateLimitService;
 
     /**
      * ServiceRequestConfigController constructor.
      * Initialise services for this controller
      *
-     * @param HttpRequestService $httpRequestService
-     * @param SerializerService $serializerService
      * @param RateLimitService $providerRateLimitService
-     * @param AccessControlService $accessControlService
      */
     public function __construct(
-        HttpRequestService   $httpRequestService,
-        SerializerService    $serializerService,
-        RateLimitService     $providerRateLimitService,
-        AccessControlService $accessControlService
+        private RateLimitService     $providerRateLimitService
     ) {
-        parent::__construct($accessControlService);
-        // Initialise services for this controller
-        $this->providerRateLimitService = $providerRateLimitService;
+        parent::__construct();
     }
 
     public function getProviderRateLimit(

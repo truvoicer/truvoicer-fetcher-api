@@ -28,25 +28,11 @@ use Laravel\Sanctum\PersonalAccessToken;
  */
 class UserController extends Controller
 {
-    private UserAdminService $userService;
 
-    /**
-     * AdminController constructor.
-     * Initialises services used in this controller
-     *
-     * @param UserAdminService $userService
-     * @param SerializerService $serializerService
-     * @param HttpRequestService $httpRequestService
-     * @param AccessControlService $accessControlService
-     */
     public function __construct(
-        UserAdminService $userService,
-        SerializerService $serializerService,
-        HttpRequestService $httpRequestService,
-        AccessControlService $accessControlService
+        private UserAdminService $userService,
     ) {
-        parent::__construct($accessControlService);
-        $this->userService = $userService;
+        parent::__construct();
     }
 
     public function getSessionUserDetail(Request $request)

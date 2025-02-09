@@ -16,25 +16,11 @@ use Illuminate\Http\Request;
  */
 class SearchController extends Controller
 {
-    private SearchService $searchService;
 
-    /**
-     * SearchController constructor.
-     * Initialise services to be used in this class
-     *
-     * @param SerializerService $serializerService
-     * @param HttpRequestService $httpRequestService
-     * @param SearchService $searchService
-     * @param AccessControlService $accessControlService
-     */
     public function __construct(
-        SerializerService $serializerService,
-        HttpRequestService $httpRequestService,
-        SearchService $searchService,
-        AccessControlService $accessControlService
+        private SearchService $searchService,
     ) {
-        parent::__construct($accessControlService);
-        $this->searchService = $searchService;
+        parent::__construct();
     }
 
     public function search(string $query)

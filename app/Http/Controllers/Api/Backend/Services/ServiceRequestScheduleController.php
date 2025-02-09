@@ -26,27 +26,10 @@ use Illuminate\Http\Request;
 class ServiceRequestScheduleController extends Controller
 {
 
-    // Initialise services for this controller
-    private SrScheduleService $srScheduleService;
-
-    /**
-     * ServiceRequestConfigController constructor.
-     * Initialise services for this controller
-     *
-     * @param HttpRequestService $httpRequestService
-     * @param SerializerService $serializerService
-     * @param SrScheduleService $srScheduleService
-     * @param AccessControlService $accessControlService
-     */
     public function __construct(
-        HttpRequestService   $httpRequestService,
-        SerializerService    $serializerService,
-        SrScheduleService      $srScheduleService,
-        AccessControlService $accessControlService
+        private SrScheduleService      $srScheduleService,
     ) {
-        parent::__construct($accessControlService);
-        // Initialise services for this controller
-        $this->srScheduleService = $srScheduleService;
+        parent::__construct();
     }
 
     public function getServiceSchedule(

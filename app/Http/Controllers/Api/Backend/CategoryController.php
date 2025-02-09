@@ -26,23 +26,10 @@ use Illuminate\Http\Request;
 class CategoryController extends Controller
 {
 
-    private CategoryService $categoryService;
-
-    /**
-     * CategoryController constructor.
-     * Initialise services for this class
-     *
-     * @param SerializerService $serializerService
-     * @param CategoryService $categoryService
-     * @param HttpRequestService $httpRequestService
-     * @param AccessControlService $accessControlService
-     */
     public function __construct(
-        CategoryService $categoryService,
-        AccessControlService $accessControlService
+        private CategoryService $categoryService,
     ) {
-        parent::__construct($accessControlService);
-        $this->categoryService = $categoryService;
+        parent::__construct();
     }
 
     /**

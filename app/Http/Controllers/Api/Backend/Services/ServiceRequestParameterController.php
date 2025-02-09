@@ -27,25 +27,12 @@ use Illuminate\Http\Request;
  */
 class ServiceRequestParameterController extends Controller
 {
-    private SrParametersService $requestParametersService;
 
-    /**
-     * ServiceRequestParameterController constructor.
-     * Initialises services used in this controller
-     *
-     * @param HttpRequestService $httpRequestService
-     * @param SerializerService $serializerService
-     * @param SrParametersService $requestParametersService
-     * @param AccessControlService $accessControlService
-     */
+
     public function __construct(
-        HttpRequestService   $httpRequestService,
-        SerializerService    $serializerService,
-        SrParametersService  $requestParametersService,
-        AccessControlService $accessControlService
+        private SrParametersService  $requestParametersService,
     ) {
-        parent::__construct($accessControlService);
-        $this->requestParametersService = $requestParametersService;
+        parent::__construct();
     }
 
     /**

@@ -23,29 +23,12 @@ use Illuminate\Http\Request;
  */
 class UtilsController extends Controller
 {
-    private FileSystemService $fileSystemService;
-    private UserAdminService $userService;
 
-    /**
-     * ExportController constructor.
-     * Initialises services used in this controller
-     *
-     * @param SerializerService $serializerService
-     * @param HttpRequestService $httpRequestService
-     * @param FileSystemService $fileSystemService
-     * @param UserAdminService $userService
-     * @param AccessControlService $accessControlService
-     */
     public function __construct(
-        SerializerService $serializerService,
-        HttpRequestService $httpRequestService,
-        FileSystemService $fileSystemService,
-        UserAdminService $userService,
-        AccessControlService $accessControlService
+        private FileSystemService $fileSystemService,
+        private  UserAdminService $userService,
     ) {
-        parent::__construct($accessControlService);
-        $this->fileSystemService = $fileSystemService;
-        $this->userService = $userService;
+        parent::__construct();
     }
 
     /**
