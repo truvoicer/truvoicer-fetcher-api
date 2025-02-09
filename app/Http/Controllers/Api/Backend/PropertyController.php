@@ -22,29 +22,12 @@ use Illuminate\Http\Request;
  */
 class PropertyController extends Controller
 {
-    private PropertyRepository $propertyRepository;
-    private PropertyService $propertyService;
 
-    /**
-     * PropertyController constructor.
-     * Initialises services to be used in this class
-     *
-     * @param PropertyRepository $propertyRepository
-     * @param HttpRequestService $httpRequestService
-     * @param PropertyService $propertyService
-     * @param SerializerService $serializerService
-     * @param AccessControlService $accessControlService
-     */
     public function __construct(
-        PropertyRepository $propertyRepository,
-        HttpRequestService $httpRequestService,
-        PropertyService $propertyService,
-        SerializerService $serializerService,
-        AccessControlService $accessControlService
+        private PropertyRepository $propertyRepository,
+        private PropertyService $propertyService,
     ) {
-        parent::__construct($accessControlService);
-        $this->propertyRepository = $propertyRepository;
-        $this->propertyService = $propertyService;
+        parent::__construct();
     }
 
     public function getPropertyList(Request $request)

@@ -25,26 +25,12 @@ use Illuminate\Http\Request;
  */
 class PermissionController extends Controller
 {
-    private PermissionService $permissionService;
 
-    /**
-     * PermissionController constructor.
-     * Initialise services for this class
-     *
-     * @param AccessControlService $accessControlService
-     * @param SerializerService $serializerService
-     * @param PermissionService $permissionService
-     * @param HttpRequestService $httpRequestService
-     */
     public function __construct(
-        AccessControlService $accessControlService,
-        SerializerService    $serializerService,
-        PermissionService    $permissionService,
-        HttpRequestService   $httpRequestService
+        private PermissionService    $permissionService,
     )
     {
-        parent::__construct($accessControlService);
-        $this->permissionService = $permissionService;
+        parent::__construct();
     }
 
     public function getPermissions(Request $request)

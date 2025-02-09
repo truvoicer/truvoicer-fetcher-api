@@ -9,7 +9,6 @@ use App\Http\Requests\Service\Request\DeleteBatchSrRequest;
 use App\Http\Requests\Service\Request\DuplicateSrRequest;
 use App\Http\Requests\Service\Request\OverrideChildSrRequest;
 use App\Http\Requests\Service\Request\ResponseKey\PopulateSrResponseKeysRequest;
-use App\Http\Requests\Service\Request\UpdateServiceRequest;
 use App\Http\Requests\Service\Request\UpdateSrDefaultsRequest;
 use App\Http\Requests\Service\Request\UpdateSrRequest;
 use App\Http\Resources\Service\ServiceRequest\ServiceRequestCollection;
@@ -43,34 +42,13 @@ use Symfony\Component\HttpFoundation\Response;
 class ServiceRequestController extends Controller
 {
 
-    // Initialise services variables for this controller
-    private ProviderService $providerService;
-    private ApiService $apiServicesService;
-    private SrService $srService;
-
-    /**
-     * ServiceRequestController constructor.
-     * Initialise services for this controller
-     * @param ProviderService $providerService
-     * @param HttpRequestService $httpRequestService
-     * @param SerializerService $serializerService
-     * @param ApiService $apiServicesService
-     * @param SrService $requestService
-     * @param AccessControlService $accessControlService
-     */
     public function __construct(
-        ProviderService      $providerService,
-        HttpRequestService   $httpRequestService,
-        SerializerService    $serializerService,
-        ApiService           $apiServicesService,
-        SrService            $requestService,
-        AccessControlService $accessControlService
+        private ProviderService      $providerService,
+        private ApiService           $apiServicesService,
+        private SrService            $srService,
     )
     {
-        parent::__construct($accessControlService);
-        $this->providerService = $providerService;
-        $this->apiServicesService = $apiServicesService;
-        $this->srService = $requestService;
+        parent::__construct();
     }
 
     public function getTypeList(): \Illuminate\Http\JsonResponse

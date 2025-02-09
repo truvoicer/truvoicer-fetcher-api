@@ -26,21 +26,10 @@ use Illuminate\Http\Request;
 class EntityController extends Controller
 {
 
-    /**
-     * ExportController constructor.
-     * Initialises services used in this controller
-     *
-     * @param SerializerService $serializerService
-     * @param HttpRequestService $httpRequestService
-     * @param AccessControlService $accessControlService
-     */
     public function __construct(
-        SerializerService $serializerService,
-        HttpRequestService $httpRequestService,
-        AccessControlService $accessControlService,
         private EntityService $entityService
     ) {
-        parent::__construct($accessControlService);
+        parent::__construct();
     }
 
     /**

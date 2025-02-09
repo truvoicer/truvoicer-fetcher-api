@@ -25,23 +25,17 @@ use Illuminate\Http\Request;
  */
 class ServiceController extends Controller
 {
-    private ApiService $apiServicesService;     // Initialise api services service
-
     /**
      * ServiceController constructor.
      * Initialises services used in this controller
      *
-     * @param HttpRequestService $httpRequestService
-     * @param SerializerService $serializerService
      * @param ApiService $apiServicesService
-     * @param AccessControlService $accessControlService
      */
     public function __construct(
-        ApiService $apiServicesService,
-        AccessControlService $accessControlService
+        private ApiService $apiServicesService
     ) {
-        parent::__construct($accessControlService);
-        $this->apiServicesService = $apiServicesService;   //Initialise api services service
+        parent::__construct();
+
     }
 
     /**

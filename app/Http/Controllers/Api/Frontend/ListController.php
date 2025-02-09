@@ -23,16 +23,11 @@ use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
  */
 class ListController extends Controller
 {
-    private ProviderService $providerService;
 
     public function __construct(
-        ProviderService $providerService,
-        HttpRequestService $httpRequestService,
-        SerializerService $serializerService,
-        AccessControlService $accessControlService
+        private ProviderService $providerService,
     ) {
-        parent::__construct($accessControlService);
-        $this->providerService = $providerService;
+        parent::__construct();
     }
 
     public function getCategoryProviderList(S $service, Request $request)

@@ -21,20 +21,11 @@ use Illuminate\Http\Request;
  */
 class ImportExportController extends Controller
 {
-    /**
-     * ExportController constructor.
-     * Initialises services used in this controller
-     *
-     * @param AccessControlService $accessControlService
-     * @param ExportService $exportService
-     * @param ImportService $importService
-     */
     public function __construct(
-        protected AccessControlService $accessControlService,
         protected ExportService $exportService,
         protected ImportService $importService
     ) {
-        parent::__construct($accessControlService);
+        parent::__construct();
     }
 
     public function getExportList(Request $request)
