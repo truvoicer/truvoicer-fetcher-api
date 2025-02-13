@@ -185,12 +185,16 @@ class SrResponseKeysImporterService extends ImporterBase
             }
             $responseKey = $this->sResponseKeysImporterService->getSResponseKeyService()->getResponseKeyRepository()->getModel();
         }
+
         if (
+            !empty($data['sr_response_key']) &&
+            is_array($data['sr_response_key']) &&
+            count($data['sr_response_key']) > 1 &&
             !$this->srResponseKeyService->createSrResponseKey(
                 $this->getUser(),
                 $sr,
                 $responseKey->name,
-                $data['sr_response_key']
+                UtilHelpers::arrayExceptKey($data['sr_response_key'], ['id'])
             )
         ) {
             return [
