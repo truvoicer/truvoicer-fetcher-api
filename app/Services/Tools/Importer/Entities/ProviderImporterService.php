@@ -252,7 +252,6 @@ class ProviderImporterService extends ImporterBase
                 'code' => $e->getCode(),
                 'file' => $e->getFile(),
                 'error' => $e->getMessage(),
-                'data' => $data
             ];
         }
     }
@@ -322,7 +321,6 @@ class ProviderImporterService extends ImporterBase
                 'code' => $e->getCode(),
                 'file' => $e->getFile(),
                 'error' => $e->getMessage(),
-                'data' => $data,
             ];
         }
     }
