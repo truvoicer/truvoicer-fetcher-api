@@ -2,6 +2,7 @@
 namespace App\Helpers\Tools;
 
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Arr;
 
 class UtilHelpers
 {
@@ -107,5 +108,13 @@ class UtilHelpers
             }
         }
         return $matches;
+    }
+
+    public static function arrayExceptKey(array $array, array $keys, ?bool $batch = false): array
+    {
+        if (!$batch) {
+            return Arr::except($array, $keys);
+        }
+        return array_map(fn($item) => self::arrayExceptKey($item, $keys), $array);
     }
 }

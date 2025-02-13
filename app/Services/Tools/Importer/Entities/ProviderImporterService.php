@@ -15,6 +15,7 @@ use App\Services\Provider\ProviderService;
 use App\Services\Permission\AccessControlService;
 use App\Services\Tools\IExport\IExportTypeService;
 use Exception;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Log;
 
 class ProviderImporterService extends ImporterBase
@@ -142,6 +143,7 @@ class ProviderImporterService extends ImporterBase
                 $map
             );
         }
+
         if (
             !empty($data['categories']) &&
             is_array($data['categories'])
@@ -150,10 +152,10 @@ class ProviderImporterService extends ImporterBase
                 $response,
                 $this->categoryImporterService->batchImport(
                     $action,
-                    array_map(function ($category) use ($provider) {
-                        $category['provider'] = $provider;
-                        return $category;
-                    }, $data['categories']),
+                        array_map(function ($category) use ($provider) {
+                            $category['provider'] = $provider;
+                            return $category;
+                        }, $data['categories']),
                     true,
                     $map
                 )
@@ -194,6 +196,13 @@ class ProviderImporterService extends ImporterBase
                     'name',
                     $data['name']
                 );
+            }
+
+            if (
+                !empty($data['categories']) &&
+                is_array($data['categories'])
+            ) {
+                $data['categories'] = UtilHelpers::arrayExceptKey($data['categories'], ['id'], true);
             }
             if (!$this->providerService->createProvider($this->getUser(), $data)) {
                 return [
@@ -242,7 +251,8 @@ class ProviderImporterService extends ImporterBase
                 'success' => false,
                 'code' => $e->getCode(),
                 'file' => $e->getFile(),
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
+                'data' => $data
             ];
         }
     }
@@ -311,11 +321,11 @@ class ProviderImporterService extends ImporterBase
                 'success' => false,
                 'code' => $e->getCode(),
                 'file' => $e->getFile(),
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
+                'data' => $data,
             ];
         }
     }
-
 
     public function validateImportData(array $data): void
     {
