@@ -240,6 +240,8 @@ class ProviderImporterService extends ImporterBase
             );
             return [
                 'success' => false,
+                'code' => $e->getCode(),
+                'file' => $e->getFile(),
                 'error' => $e->getMessage()
             ];
         }
@@ -307,6 +309,8 @@ class ProviderImporterService extends ImporterBase
             );
             return [
                 'success' => false,
+                'code' => $e->getCode(),
+                'file' => $e->getFile(),
                 'error' => $e->getMessage()
             ];
         }

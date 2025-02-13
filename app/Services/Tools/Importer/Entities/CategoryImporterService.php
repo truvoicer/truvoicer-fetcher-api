@@ -145,6 +145,7 @@ class CategoryImporterService extends ImporterBase
             );
             return [
                 'success' => false,
+                'file' => $e->getFile(),
                 'message' => $e->getMessage()
             ];
         }
