@@ -425,10 +425,8 @@ class ProviderImporterService extends ImporterBase
                 'providerRateLimit'
             ]);
         $provider = $this->providerService->getProviderRepository()->findById(
-            4,
-//            $item["id"],
+            $item["id"],
         );
-        dd($provider->toArray());
         if (!$provider) {
             return false;
         }
