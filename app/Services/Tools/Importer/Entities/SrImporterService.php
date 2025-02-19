@@ -274,7 +274,8 @@ class SrImporterService extends ImporterBase
             if (!$serviceData['success']) {
                 return $serviceData;
             }
-
+            
+            // TODO: Fix service import to clone only if not exist
             $service = $this->sImporterService->create($serviceData['service'], $withChildren, $map);
             if (!$service['success']) {
                 return $service;
