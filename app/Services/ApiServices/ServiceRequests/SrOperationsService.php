@@ -160,6 +160,7 @@ class SrOperationsService
         $findByData = array_map(function ($field) use ($saveData) {
             return [$field, $saveData[$field]];
         }, self::REQUIRED_FIELDS);
+        
         $findExisting = $this->mongoDBRepository->findOneBy($findByData);
         if (!empty($findExisting)) {
             return true;
