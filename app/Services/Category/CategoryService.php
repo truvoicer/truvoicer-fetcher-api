@@ -71,7 +71,7 @@ class CategoryService extends BaseService
     }
 
 
-    public function getCategorySelectedProvidersList(string $selectedProviders = null, $user)
+    public function getCategorySelectedProvidersList(string $selectedProviders, $user)
     {
         $selectedProvidersArray = explode(",", $selectedProviders);
         $providerArray = [];

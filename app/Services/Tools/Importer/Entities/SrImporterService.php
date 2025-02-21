@@ -50,6 +50,7 @@ class SrImporterService extends ImporterBase
         $this->srResponseKeysImporterService->setThrowException(false)->setUser($this->getUser());
         $this->srConfigImporterService->setThrowException(false)->setUser($this->getUser());
         $this->categoryImporterService->setThrowException(false)->setUser($this->getUser());
+        $this->srParameterImporterService->setThrowException(false)->setUser($this->getUser());
     }
 
     protected function setConfig(): void
@@ -275,13 +276,24 @@ class SrImporterService extends ImporterBase
                 return $serviceData;
             }
             
-            // TODO: Fix service import to clone only if not exist
-            $service = $this->sImporterService->create($serviceData['service'], $withChildren, $map);
-            if (!$service['success']) {
-                return $service;
+            $service = $this->srService
+                ->getServiceRequestRepository()
+                ->findUserModelBy(new S(), $this->getUser(), [
+                    ['name', '=', $serviceData['service']['name']]
+                ], false);
+
+            if (!$service) {
+                $service = $this->sImporterService->create(
+                    $serviceData['service'], 
+                    $withChildren, 
+                    $map
+                );
+                if (!$service['success']) {
+                    return $service;
+                }
+                $service = $this->sImporterService->getApiService()->getServiceRepository()->getModel();
             }
 
-            $service = $this->sImporterService->getApiService()->getServiceRepository()->getModel();
             $data['service'] = $service->id;
 
             $category = $this->createCategory($data, $withChildren, $map);
@@ -344,6 +356,7 @@ class SrImporterService extends ImporterBase
 
     public function importSrChildren(ImportAction $action, Provider $provider, Sr $sr, array $data, bool $withChildren, array $map): array
     {
+        $this->loadDependencies();
         $response = [];
         $data['sr'] = $sr;
         if (

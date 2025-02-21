@@ -502,12 +502,10 @@ class ProviderImporterService extends ImporterBase
         return UtilHelpers::deepFindInNestedEntity(
             data: $data,
             conditions: $conditions,
-            childrenKeys: ['properties', 'provider_rate_limit'],
+            childrenKeys: [],
             itemToMatchHandler: function ($item) use ($importType) {
                 return match ($importType) {
                     ImportType::PROVIDER => [$item],
-                    ImportType::PROVIDER_PROPERTY => (!empty($item['properties'])) ? $item['properties'] : [],
-                    ImportType::PROVIDER_RATE_LIMIT => (!empty($item['provider_rate_limit'])) ? [$item['provider_rate_limit']] : [],
                     default => [],
                 };
             },

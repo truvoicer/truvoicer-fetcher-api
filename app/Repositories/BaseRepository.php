@@ -173,7 +173,7 @@ class BaseRepository
         return $this->findOne();
     }
 
-    public function findByName(string $name = null)
+    public function findByName(string $name)
     {
         $this->addWhere('name', $name);
         return $this->findOne();

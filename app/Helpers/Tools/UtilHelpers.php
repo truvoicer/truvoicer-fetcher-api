@@ -117,4 +117,11 @@ class UtilHelpers
         }
         return array_map(fn($item) => self::arrayExceptKey($item, $keys), $array);
     }
+
+    public static function arrayKeyIs(array $array, string $key, $value): bool {
+        return (
+            Arr::exists($array, $key) &&
+            $array[$key] === $value
+        );
+    }
 }

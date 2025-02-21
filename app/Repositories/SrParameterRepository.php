@@ -32,7 +32,7 @@ class SrParameterRepository extends BaseRepository
         );
     }
 
-    public function getRequestParametersByRequestName(Provider $provider, string $serviceRequestName = null)
+    public function getRequestParametersByRequestName(Provider $provider, string $serviceRequestName)
     {
         return $provider->serviceRequest()
             ->where('name', $serviceRequestName)
