@@ -154,7 +154,7 @@ class SImporterService extends ImporterBase
                 ['name', '=', $data['name']]
             ], false);
 
-            if ($checkService->first() instanceof S) {
+            if ($checkService && $checkService->first() instanceof S) {
                 $data['label'] = $data['name'] = $this->apiService->getServiceRepository()->buildCloneEntityStr(
                     $checkService,
                     'name',

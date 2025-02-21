@@ -115,16 +115,16 @@ class ImportExportController extends Controller
             $request->validated('mappings')
         );
 
-        StartImportJob::dispatch(
-            $request->user()->id,
-            $request->validated('file_id'),
-            $request->validated('mappings')
-        );
-//        (new StartImportJob(
-//            $request->user()->id,
-//            $request->validated('file_id'),
-//            $request->validated('mappings')
-//        ))->handle();
+        // StartImportJob::dispatch(
+        //     $request->user()->id,
+        //     $request->validated('file_id'),
+        //     $request->validated('mappings')
+        // );
+       (new StartImportJob(
+           $request->user()->id,
+           $request->validated('file_id'),
+           $request->validated('mappings')
+       ))->handle();
         return $this->sendSuccessResponse(
             "Import mappings event dispatched."
         );

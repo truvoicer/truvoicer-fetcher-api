@@ -88,7 +88,7 @@ class ProviderService extends BaseService
         );
         return $this->findProviders($user);
     }
-    public function getUserProviderByName(User $user, string $providerName = null)
+    public function getUserProviderByName(User $user, string $providerName)
     {
         return $this->userProviderRepository->findUserProviderByName($user, $providerName);
     }
