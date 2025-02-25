@@ -5,7 +5,8 @@ use App\Http\Controllers\Api\Backend\AdminController;
 use App\Http\Controllers\Api\Backend\CategoryController;
 use App\Http\Controllers\Api\Backend\Notification\NotificationController;
 use App\Http\Controllers\Api\Backend\PermissionController;
-use App\Http\Controllers\Api\Backend\PropertyController;
+use App\Http\Controllers\Api\Backend\Property\PropertyController;
+use App\Http\Controllers\Api\Backend\Property\PropertyProfileController;
 use App\Http\Controllers\Api\Backend\Provider\ProviderController;
 use App\Http\Controllers\Api\Backend\Provider\ProviderPropertyController;
 use App\Http\Controllers\Api\Backend\Provider\ProviderRateLimitController;
@@ -123,6 +124,9 @@ Route::middleware(['auth:sanctum', 'ability:api:admin,api:superuser,api:super_ad
             Route::get('/{category}', [CategoryController::class, 'getSingleCategory'])->name('detail');
             Route::patch('/{category}/update', [CategoryController::class, 'updateCategory'])->name('update');
             Route::delete('/{category}/delete', [CategoryController::class, 'deleteCategory'])->name('delete');
+        });
+        Route::prefix('property')->name('property.')->group(function () {
+            Route::get('/profiles', [PropertyProfileController::class, 'index'])->name('index');
         });
         Route::prefix('provider')->name('provider.')->group(function () {
             Route::get('/list', [ProviderController::class, 'getProviderList'])->name('list')->can('viewAny', Provider::class);
