@@ -8,7 +8,7 @@ use Illuminate\Http\Request;
 class ApiMongoDBSearchListResourceCollection extends BaseCollection
 {
 
-    public static $wrap = 'results';
+    // public static $wrap = 'results';
 
     /**
      * Transform the resource collection into an array.
@@ -17,11 +17,13 @@ class ApiMongoDBSearchListResourceCollection extends BaseCollection
      */
     public function toArray(Request $request): array
     {
-        $data = ResourceHelpers::buildCollectionResponseProperties($this->collection);
-        $data[$this::$wrap] = ResourceHelpers::buildCollectionResults($this->collection);
-        if ($this->hasPagination()) {
-            $data['pagination'] = $this->buildLinks($this->resource);
-        }
-        return $data;
+        // $data = ResourceHelpers::buildCollectionResponseProperties($this->collection);
+        // $data[$this::$wrap] = ResourceHelpers::buildCollectionResults($this->collection);
+        // if ($this->hasPagination()) {
+        //     $data['pagination'] = $this->buildLinks($this->resource);
+        // }
+        // return $this->resource;
+
+        return parent::toArray($request);
     }
 }

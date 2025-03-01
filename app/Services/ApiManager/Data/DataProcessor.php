@@ -118,6 +118,60 @@ class DataProcessor
         return $this->getProviderPropertyValue($parameterName);
     }
 
+    public function replaceListItemsOffsetPlaceholders(array $data) {
+        if (is_array($data) && !array_key_exists('offset', $this->queryArray)) {
+            return $this->replaceListItemsValueStr(
+                DataConstants::PARAM_FILTER_KEYS['OFFSET']['placeholder'],
+                $this->calculateOffset() ?? 0,
+                $data
+            );
+        }
+        return $data;
+    }
+    public function calculateOffset() {
+        if (empty($this->queryArray['page_number'])) {
+            return false;
+        }
+        if (empty($this->queryArray['page_size'])) {
+            return false;
+        }
+        return (int)$this->queryArray['page_number'] * (int)$this->queryArray['page_size'];
+    }
+
+    public function replaceListItemValueStr(string $placeholder, string|int $replace, string|int $value) {
+        
+        return str_replace($placeholder, $replace, $value);
+    }
+
+    public function replaceListItemsValueStr(string $placeholder, string|int $replace, array $data) {
+        foreach ($data as $key => $item) {
+            $data[$key]['value'] = $this->replaceListItemValueStr($placeholder, $replace, $item['value']);
+        }
+        return $data;
+    }
+
+    public function findListItemBy(string $placeholder, string $findBy, array $data) {
+        if (empty($data[$findBy])) {
+            return false;
+        }
+        if (!str_contains($data[$findBy], $placeholder)) {
+            return false;
+        }
+        return $data;
+    }
+
+    public function findListItemsBy(string $placeholder, string $findBy, array $data) {
+        $newData = [];
+        foreach ($data as $item) {
+            $find = $this->findListItemBy($placeholder, $findBy, $item);
+            if (!$find) {
+                continue;
+            }
+            $newData[] = $item;
+        }
+        return $newData;
+    }
+
     public function getSrConfigItem(string $parameterName)
     {
         $property = $this->requestConfigs->where('name', $parameterName)->first();
@@ -205,6 +259,11 @@ class DataProcessor
     public function setRequestConfigs(Collection $requestConfigs): void
     {
         $this->requestConfigs = $requestConfigs;
+    }
+
+    public function getRequestConfigs(): Collection
+    {
+        return $this->requestConfigs;
     }
 
     public function setRequestParameters(Collection $requestParameters): void

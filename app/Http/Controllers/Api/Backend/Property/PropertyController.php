@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Api\Backend;
+namespace App\Http\Controllers\Api\Backend\Property;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Property\CreatePropertyRequest;
@@ -10,11 +10,7 @@ use App\Http\Resources\PropertyCollection;
 use App\Http\Resources\PropertyResource;
 use App\Models\Property;
 use App\Repositories\PropertyRepository;
-use App\Services\Permission\AccessControlService;
-use App\Services\Permission\PermissionService;
-use App\Services\Tools\HttpRequestService;
 use App\Services\Property\PropertyService;
-use App\Services\Tools\SerializerService;
 use Illuminate\Http\Request;
 
 /**

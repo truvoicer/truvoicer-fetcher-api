@@ -217,12 +217,15 @@ class BaseOperations extends ApiBase
         $query = $this->dataProcessor->getConfigValue(DataConstants::QUERY);
 
         if ($headers) {
+            $headers = $this->dataProcessor->replaceListItemsOffsetPlaceholders($headers);
             $headers = $this->buildListValues($headers);
         }
         if ($postBody) {
+            $postBody = $this->dataProcessor->replaceListItemsOffsetPlaceholders($postBody);
             $postBody = $this->buildListValues($postBody);
         }
         if ($query) {
+            $query = $this->dataProcessor->replaceListItemsOffsetPlaceholders($query);
             $query = $this->buildListValues($query);
         }
 

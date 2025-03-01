@@ -40,10 +40,7 @@ class OperationsController extends Controller
                 'No results found',
             );
         }
-        return $this->sendSuccessResponse(
-            'Success',
-            $results
-        );
+        return $results;
     }
 
 }

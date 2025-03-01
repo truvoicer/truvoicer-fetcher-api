@@ -3,8 +3,10 @@
 namespace App\Services\ApiManager\Operations\DataHandler;
 
 use App\Events\ProcessSrOperationDataEvent;
+use App\Http\Resources\ApiSearchItemResource;
 use App\Models\Sr;
 use App\Repositories\SrRepository;
+use App\Services\ApiManager\Data\DataConstants;
 use App\Services\ApiManager\Operations\ApiRequestService;
 use App\Services\ApiManager\Response\Entity\ApiResponse;
 use App\Services\ApiServices\ApiService;
@@ -12,6 +14,7 @@ use App\Services\ApiServices\ServiceRequests\SrOperationsService;
 use App\Services\Category\CategoryService;
 use App\Services\Provider\ProviderService;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 
@@ -54,9 +57,15 @@ class ApiRequestApiDirectHandler extends ApiRequestDataHandler
         }
 
         $collection = new Collection();
+        $totalItems = 0;
         foreach ($this->providers as $index => $provider) {
             foreach ($provider->sr as $sr) {
-                $requestData = $this->searchOperationBySr($sr, $data);
+                $response = $this->searchOperationBySr($sr, $data);
+                $requestData = $response->getRequestData();
+                $extraData = $response->getExtraData();
+                if (!empty($extraData[DataConstants::TOTAL_ITEMS])) {
+                    $totalItems = $totalItems + (int)$extraData[DataConstants::TOTAL_ITEMS];
+                }
                 switch ($sr->type) {
                     case SrRepository::SR_TYPE_LIST:
                         foreach ($requestData as $item) {
@@ -65,12 +74,23 @@ class ApiRequestApiDirectHandler extends ApiRequestDataHandler
                         break;
                     case SrRepository::SR_TYPE_DETAIL:
                     case SrRepository::SR_TYPE_SINGLE:
-                        return $requestData;
+                        return new ApiSearchItemResource($requestData);
                 }
             }
         }
 
-        return $collection;
+        switch ($serviceType) {
+            case SrRepository::SR_TYPE_MIXED:
+            case SrRepository::SR_TYPE_LIST:
+                $paginator = new LengthAwarePaginator(
+                    $collection,
+                    $totalItems,
+                    !array_key_exists(DataConstants::PAGE_SIZE, $data)? (int)$data[DataConstants::PAGE_SIZE] : 20,
+
+                );
+                return $paginator;
+        }
+        return false;
     }
 
     public function searchOperationBySr(
@@ -94,19 +114,7 @@ class ApiRequestApiDirectHandler extends ApiRequestDataHandler
         if (!$this->afterFetchOperation($sr, $response, $data)) {
 
         }
-        $collection = new Collection();
-        switch ($sr->type) {
-            case SrRepository::SR_TYPE_LIST:
-                foreach ($response->getRequestData() as $item) {
-                    $collection->add($item);
-                }
-                return $collection;
-            case SrRepository::SR_TYPE_DETAIL:
-            case SrRepository::SR_TYPE_SINGLE:
-                return $response->getRequestData();
-            default:
-                return false;
-        }
+        return $response;
     }
 
     private function afterFetchOperation(
