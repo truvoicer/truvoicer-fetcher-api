@@ -2,8 +2,6 @@
 
 namespace App\Services\ApiManager\Operations\DataHandler;
 
-use App\Http\Resources\ApiMongoDBSearchListResourceCollection;
-use App\Http\Resources\ApiSearchItemResource;
 use App\Models\Provider;
 use App\Models\Sr;
 use App\Models\User;
@@ -57,36 +55,22 @@ class ApiRequestDataInterface
                 if (!count($compare)) {
                     break;
                 }
-                $response = $this->prioritySearchHandler(
+                return $this->prioritySearchHandler(
                     $compare,
                     $response,
                     $data
                 );
                 break;
             case 'database':
-                $response = $this->apiRequestMongoDbHandler->searchOperation(
+                return $this->apiRequestMongoDbHandler->searchOperation(
                     $serviceType, $providers, $serviceName, $filteredRequestData
                 );
                 break;
             case 'api_direct':
-                $response = $this->apiRequestApiDirectHandler->searchOperation(
+                return $this->apiRequestApiDirectHandler->searchOperation(
                     $serviceType, $providers, $serviceName, $data
                 );
                 break;
-            default:
-                return false;
-        }
-
-        if (!$response) {
-            return false;
-        }
-        switch ($serviceType) {
-            case SrRepository::SR_TYPE_MIXED:
-            case SrRepository::SR_TYPE_LIST:
-                return new ApiMongoDBSearchListResourceCollection($response);
-            case SrRepository::SR_TYPE_DETAIL:
-            case SrRepository::SR_TYPE_SINGLE:
-                return new ApiSearchItemResource($response);
             default:
                 return false;
         }
