@@ -1,8 +1,7 @@
 <?php
 
 namespace App\Helpers\Tools;
-
-use Carbon\Carbon;
+use Illuminate\Support\Carbon;
 
 class DateHelpers
 {

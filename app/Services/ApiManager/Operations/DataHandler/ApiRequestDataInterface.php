@@ -2,6 +2,8 @@
 
 namespace App\Services\ApiManager\Operations\DataHandler;
 
+use App\Http\Resources\ApiMongoDbSearchListCollection;
+use App\Http\Resources\ApiDirectSearchListCollection;
 use App\Models\Provider;
 use App\Models\Sr;
 use App\Models\User;

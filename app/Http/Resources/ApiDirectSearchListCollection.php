@@ -3,10 +3,13 @@
 namespace App\Http\Resources;
 
 use App\Helpers\Resources\ResourceHelpers;
+use App\Traits\Resources\CollectionPaginateTrait;
 use Illuminate\Http\Request;
+use Illuminate\Http\Resources\Json\ResourceCollection;
 
-class ApiDirectSearchListResourceCollection extends BaseCollection
+class ApiDirectSearchListCollection extends ResourceCollection
 {
+    use CollectionPaginateTrait;
 
     public static $wrap = 'results';
 
@@ -18,7 +21,7 @@ class ApiDirectSearchListResourceCollection extends BaseCollection
     public function toArray(Request $request): array
     {
         $data = [];
-        $data[$this::$wrap] = ResourceHelpers::buildCollectionResults($this->collection);
+        $data[$this::$wrap] = ApiSearchItemResource::collection($this->collection);
         if ($this->hasPagination()) {
             $data['pagination'] = $this->buildLinks($this->resource);
         }

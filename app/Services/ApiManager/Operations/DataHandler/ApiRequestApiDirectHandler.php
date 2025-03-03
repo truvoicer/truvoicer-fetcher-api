@@ -3,6 +3,7 @@
 namespace App\Services\ApiManager\Operations\DataHandler;
 
 use App\Events\ProcessSrOperationDataEvent;
+use App\Http\Resources\ApiDirectSearchListCollection;
 use App\Http\Resources\ApiSearchItemResource;
 use App\Models\Sr;
 use App\Repositories\SrRepository;
@@ -29,8 +30,7 @@ class ApiRequestApiDirectHandler extends ApiRequestDataHandler
         protected ApiService          $apiService,
         protected ApiResponse         $apiResponse,
         protected SrOperationsService $srOperationsService,
-    )
-    {
+    ) {
         parent::__construct(
             $providers,
             $providerService,
@@ -46,8 +46,7 @@ class ApiRequestApiDirectHandler extends ApiRequestDataHandler
         array  $providers,
         string $serviceName,
         ?array $data = []
-    )
-    {
+    ) {
         if (!count($providers)) {
             return false;
         }
@@ -61,6 +60,9 @@ class ApiRequestApiDirectHandler extends ApiRequestDataHandler
         foreach ($this->providers as $index => $provider) {
             foreach ($provider->sr as $sr) {
                 $response = $this->searchOperationBySr($sr, $data);
+                if (!$response) {
+                    continue;
+                }
                 $requestData = $response->getRequestData();
                 $extraData = $response->getExtraData();
                 if (!empty($extraData[DataConstants::TOTAL_ITEMS])) {
@@ -82,11 +84,13 @@ class ApiRequestApiDirectHandler extends ApiRequestDataHandler
         switch ($serviceType) {
             case SrRepository::SR_TYPE_MIXED:
             case SrRepository::SR_TYPE_LIST:
-                $paginator = new LengthAwarePaginator(
-                    $collection,
-                    $totalItems,
-                    !array_key_exists(DataConstants::PAGE_SIZE, $data)? (int)$data[DataConstants::PAGE_SIZE] : 20,
-
+                $paginator = new ApiDirectSearchListCollection(
+                    new LengthAwarePaginator(
+                        $collection,
+                        $totalItems,
+                        array_key_exists(DataConstants::PAGE_SIZE, $data) ? (int)$data[DataConstants::PAGE_SIZE] : 20,
+                        array_key_exists(DataConstants::PAGE_NUMBER, $data) ? (int)$data[DataConstants::PAGE_NUMBER] : 1,
+                    )
                 );
                 return $paginator;
         }
@@ -96,8 +100,7 @@ class ApiRequestApiDirectHandler extends ApiRequestDataHandler
     public function searchOperationBySr(
         Sr         $sr,
         array      $data
-    )
-    {
+    ) {
         $provider = $sr->provider;
         $this->apiRequestService->setProvider($provider);
         if ($this->user->cannot('view', $provider)) {
@@ -112,7 +115,6 @@ class ApiRequestApiDirectHandler extends ApiRequestDataHandler
             return false;
         }
         if (!$this->afterFetchOperation($sr, $response, $data)) {
-
         }
         return $response;
     }
@@ -121,8 +123,7 @@ class ApiRequestApiDirectHandler extends ApiRequestDataHandler
         Sr          $sr,
         ApiResponse $apiResponse,
         array       $data
-    ): bool
-    {
+    ): bool {
         ProcessSrOperationDataEvent::dispatch(
             $this->user->id,
             $sr->id,

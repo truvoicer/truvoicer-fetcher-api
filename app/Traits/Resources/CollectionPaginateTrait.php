@@ -3,11 +3,18 @@
 namespace App\Traits\Resources;
 
 use App\Services\ApiManager\Data\DataConstants;
-use App\Services\ApiManager\Data\DefaultData;
+use Illuminate\Pagination\AbstractPaginator;
 use Illuminate\Pagination\LengthAwarePaginator;
 
 trait CollectionPaginateTrait
 {
+
+    public function hasPagination(): bool
+    {
+        return (
+            $this->resource instanceof AbstractPaginator
+        );
+    }
     public function buildLinks(LengthAwarePaginator $resource)
     {
         return [
