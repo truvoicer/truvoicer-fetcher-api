@@ -111,6 +111,17 @@ class SrOperationsService
         }
     }
 
+
+    private function processDates(array $data): array
+    {
+        foreach ($data as $key => $value) {
+            if ($value instanceof Carbon) {
+                $data[$key] = new UTCDateTime($value);
+            }
+        }
+        return $data;
+    }
+
     private function buildSaveData(ApiResponse $requestResponse, array $data, array $queryData = [])
     {
         $requestData = $requestResponse->toArray();
@@ -133,7 +144,7 @@ class SrOperationsService
         if (empty($insertData[MongoDBRepository::UPDATED_AT])) {
             $insertData[MongoDBRepository::UPDATED_AT] = $now;
         }
-        return $insertData;
+        return $this->processDates($insertData);
     }
 
     private function validateRequiredFields(Provider $provider, Sr $sr, array $saveData)

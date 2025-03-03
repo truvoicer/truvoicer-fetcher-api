@@ -334,7 +334,7 @@ class ResponseHandler extends ApiBase
     {
         $newDate = DateHelpers::parseDateString($value, $requestResponseKey->date_format);
         if ($newDate) {
-            return new UTCDateTime($newDate);
+            return $newDate;
         }
         return $value;
     }

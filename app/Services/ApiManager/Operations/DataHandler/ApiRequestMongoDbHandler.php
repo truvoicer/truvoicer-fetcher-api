@@ -2,8 +2,8 @@
 
 namespace App\Services\ApiManager\Operations\DataHandler;
 
+use App\Http\Resources\ApiMongoDbSearchListCollection;
 use App\Http\Resources\ApiSearchItemResource;
-use App\Http\Resources\ApiMongoDBSearchListResourceCollection;
 use App\Models\S;
 use App\Repositories\SrRepository;
 use App\Services\ApiManager\Data\DataConstants;
@@ -29,8 +29,7 @@ class ApiRequestMongoDbHandler extends ApiRequestDataHandler
         protected CategoryService                  $categoryService,
         protected ApiResponse                      $apiResponse,
         protected ApiRequestService                $apiRequestService,
-    )
-    {
+    ) {
         parent::__construct(
             $providers,
             $providerService,
@@ -39,7 +38,6 @@ class ApiRequestMongoDbHandler extends ApiRequestDataHandler
             $apiResponse,
             $this->apiRequestService
         );
-
     }
 
     public function searchInit(string $type): void
@@ -49,7 +47,6 @@ class ApiRequestMongoDbHandler extends ApiRequestDataHandler
         $this->apiRequestSearchService->setItemSearchData($this->itemSearchData);
         $this->apiRequestSearchService->setService($this->service);
         $this->apiRequestSearchService->setType($type);
-
     }
 
     public function runListSearch(string $type, array $providers, ?array $query = []): Collection|LengthAwarePaginator
@@ -81,7 +78,8 @@ class ApiRequestMongoDbHandler extends ApiRequestDataHandler
         }
         return $data;
     }
-    public function findItemId(array $item): int|false {
+    public function findItemId(array $item): int|false
+    {
         if (empty($item['item_id'])) {
             return false;
         }
@@ -125,6 +123,7 @@ class ApiRequestMongoDbHandler extends ApiRequestDataHandler
         if (!count($providers)) {
             return false;
         }
+
         $getService = $this->findService($serviceName);
         if (!$getService instanceof S) {
             return false;
@@ -132,19 +131,24 @@ class ApiRequestMongoDbHandler extends ApiRequestDataHandler
         $this->setService($getService);
 
         $providerData = $this->buildProviderData($providers);
+        
         switch ($type) {
             case SrRepository::SR_TYPE_LIST:
             case SrRepository::SR_TYPE_MIXED:
-                return $this->runListSearch(
-                    $type,
-                    $providerData,
-                    $data
+                return new ApiMongoDbSearchListCollection(
+                    $this->runListSearch(
+                        $type,
+                        $providerData,
+                        $data
+                    )
                 );
             case SrRepository::SR_TYPE_DETAIL:
             case SrRepository::SR_TYPE_SINGLE:
-                return $this->runItemSearch(
-                    $type,
-                    $providerData
+                return new ApiSearchItemResource(
+                    $this->runItemSearch(
+                        $type,
+                        $providerData
+                    )
                 );
             default:
                 return false;
@@ -170,6 +174,4 @@ class ApiRequestMongoDbHandler extends ApiRequestDataHandler
     {
         return $this->apiRequestSearchService;
     }
-
-
 }
