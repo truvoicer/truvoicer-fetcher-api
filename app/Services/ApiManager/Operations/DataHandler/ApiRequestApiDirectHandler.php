@@ -6,6 +6,7 @@ use App\Events\ProcessSrOperationDataEvent;
 use App\Http\Resources\ApiDirectSearchListCollection;
 use App\Http\Resources\ApiSearchItemResource;
 use App\Models\Sr;
+use App\Paginators\CollectionPaginator;
 use App\Repositories\SrRepository;
 use App\Services\ApiManager\Data\DataConstants;
 use App\Services\ApiManager\Operations\ApiRequestService;
@@ -67,6 +68,8 @@ class ApiRequestApiDirectHandler extends ApiRequestDataHandler
                 $extraData = $response->getExtraData();
                 if (!empty($extraData[DataConstants::TOTAL_ITEMS])) {
                     $totalItems = $totalItems + (int)$extraData[DataConstants::TOTAL_ITEMS];
+                } else {
+                    $totalItems = count($requestData);
                 }
                 switch ($sr->type) {
                     case SrRepository::SR_TYPE_LIST:
@@ -85,7 +88,7 @@ class ApiRequestApiDirectHandler extends ApiRequestDataHandler
             case SrRepository::SR_TYPE_MIXED:
             case SrRepository::SR_TYPE_LIST:
                 $paginator = new ApiDirectSearchListCollection(
-                    new LengthAwarePaginator(
+                    new CollectionPaginator(
                         $collection,
                         $totalItems,
                         array_key_exists(DataConstants::PAGE_SIZE, $data) ? (int)$data[DataConstants::PAGE_SIZE] : 20,
