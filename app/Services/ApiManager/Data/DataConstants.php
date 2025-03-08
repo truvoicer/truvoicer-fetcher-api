@@ -175,6 +175,7 @@ class DataConstants
     public const PREV_PAGE = 'prev_page';
     public const NEXT_PAGE = 'next_page';
     public const LAST_PAGE = 'last_page';
+    public const HAS_MORE = 'has_more';
     public const PAGINATION_TYPE = 'pagination_type';
 
     public const SERVICE_RESPONSE_KEYS = [

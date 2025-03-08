@@ -25,7 +25,9 @@ trait CollectionPaginateTrait
             DataConstants::PREV_PAGE => $resource->currentPage() - 1,
             DataConstants::NEXT_PAGE => $resource->currentPage() + 1,
             DataConstants::LAST_PAGE => $resource->lastPage(),
-            DataConstants::PAGINATION_TYPE => 'page'
+            DataConstants::HAS_MORE => $resource->hasMorePages(),
+            DataConstants::PAGINATION_TYPE => 'page',
+
         ];
     }
 }
