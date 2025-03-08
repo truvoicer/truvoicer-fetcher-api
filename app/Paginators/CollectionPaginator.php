@@ -23,6 +23,7 @@ class CollectionPaginator extends LengthAwarePaginator
             'current_page' => $this->currentPage(),
             'total' => $this->total(),
             'total_pages' => $this->lastPage(),
+            'has_more' => $this->hasMorePages(),
         ];
     }
 }
