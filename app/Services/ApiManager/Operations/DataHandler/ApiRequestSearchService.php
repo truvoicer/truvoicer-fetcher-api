@@ -235,7 +235,7 @@ class ApiRequestSearchService
         if (!empty($query[DataConstants::PAGE_SIZE])) {
             $this->mongoDBRepository->setPerPage((int)$query[DataConstants::PAGE_SIZE]);
         }
-
+        
         if (!empty($query[DataConstants::PAGE_NUMBER])) {
             $this->mongoDBRepository->setPage((int)$query[DataConstants::PAGE_NUMBER]);
         }
