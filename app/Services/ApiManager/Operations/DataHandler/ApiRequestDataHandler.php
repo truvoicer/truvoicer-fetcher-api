@@ -29,8 +29,6 @@ class ApiRequestDataHandler
         'service',
         'api_fetch_type',
         'item_id',
-        'page_number',
-        'page_size',
     ];
 
     protected array $notFoundProviders;
