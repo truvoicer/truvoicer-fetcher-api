@@ -26,38 +26,34 @@ class StoreSrResponseKeySrRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'response_key_id' => [
+            'sr_response_key_id' => [
                 'required',
                 'integer',
                 Rule::exists(SrResponseKey::class, 'id'),
             ],
-            'response_key_sr' => [
-                'required',
-                'array'
-            ],
-            'response_key_sr.action' => [
+            'action' => [
                 'required',
                 'string'
             ],
-            'response_key_sr.single_request' => [
+            'single_request' => [
                 'required',
                 'boolean'
             ],
-            'response_key_sr.disable_request' => [
+            'disable_request' => [
                 'required',
                 'boolean'
             ],
-            'response_key_sr.response_response_keys' => [
+            'response_response_keys' => [
                 'sometimes',
                 'nullable',
                 'array'
             ],
-            'response_key_sr.request_response_keys' => [
+            'request_response_keys' => [
                 'sometimes',
                 'nullable',
                 'array'
             ],
-            'response_key_sr.id' => [
+            'sr_id' => [
                 'required',
                 'integer'
             ],

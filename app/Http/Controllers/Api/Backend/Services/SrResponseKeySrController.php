@@ -118,18 +118,29 @@ class SrResponseKeySrController extends Controller
         ) {
             return $this->sendErrorResponse("Access denied");
         }
-        $responseKeyId = $request->validated('response_key_id');
-        $srResponseKey = $this->srResponseKeyService->getSrResponseKeyRepository()->findById($responseKeyId);
+
+        $srResponseKeyId = $request->validated('sr_response_key_id', null);
+
+        if (empty($srResponseKeyId)) {
+            return $this->sendErrorResponse(
+                'The sr_response_key_id field is required',
+            );
+        }
+
+        $srResponseKey = $this->srResponseKeyService->getSrResponseKeyRepository()->findById(
+            $srResponseKeyId
+        );
         if (!$srResponseKey) {
             return $this->sendErrorResponse(
                 'There was an error finding the response key',
             );
         }
+
         $store = $this->srResponseKeyService->saveSrResponseKeySrs(
             $request->user(),
-            $srResponseKey,
             $request->validated()
         );
+
         if (!$store) {
             return $this->sendErrorResponse(
                 'There was an error storing the response key sr\'s',
@@ -159,12 +170,25 @@ class SrResponseKeySrController extends Controller
         ) {
             return $this->sendErrorResponse("Access denied");
         }
-        $update = $this->srResponseKeyService->saveSrResponseKeySrs(
-            $user,
-            $srResponseKey,
-            $request->validated()
+
+        $requestData = $request->validated();
+        if (!empty($requestData['sr_response_key_id'])) {
+
+            $srResponseKey = $this->srResponseKeyService->getSrResponseKeyRepository()->findById(
+                $requestData['sr_response_key_id']
+            );
+            if (!$srResponseKey) {
+                return $this->sendErrorResponse(
+                    'There was an error finding the response key',
+                );
+            }
+        }
+        $store = $this->srResponseKeyService->updateSrResponseKeySr(
+            $request->user(),
+            $srResponseKeySr,
+            $requestData
         );
-        if (!$update) {
+        if (!$store) {
             return $this->sendErrorResponse(
                 'There was an error storing the response key sr\'s',
             );
@@ -172,5 +196,29 @@ class SrResponseKeySrController extends Controller
         return $this->sendSuccessResponse(
             "success"
         );
+    }
+
+    public function destroy(
+        Provider $provider,
+        Sr $serviceRequest,
+        SrResponseKeySr $srResponseKeySr,
+        Request $request
+    ) {
+        $this->setAccessControlUser($request->user());
+        if (
+            !$this->accessControlService->checkPermissionsForEntity(
+                $provider,
+                [
+                    PermissionService::PERMISSION_ADMIN,
+                    PermissionService::PERMISSION_DELETE,
+                ]
+            )
+        ) {
+            return $this->sendErrorResponse("Access denied");
+        }
+        if ($srResponseKeySr->delete()) {
+            return $this->sendSuccessResponse("Successfully deleted response key sr");
+        }
+        return $this->sendErrorResponse("There was an error deleting the response key sr");
     }
 }

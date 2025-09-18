@@ -230,6 +230,7 @@ Route::middleware(['auth:sanctum', 'ability:api:admin,api:superuser,api:super_ad
                                 Route::post('/create', [SrResponseKeySrController::class, 'store'])->name('store');
                                 Route::get('/{srResponseKeySr}', [SrResponseKeySrController::class, 'show'])->name('show');
                                 Route::patch('/{srResponseKeySr}/update', [SrResponseKeySrController::class, 'update'])->name('update');
+                                Route::delete('/{srResponseKeySr}/delete', [SrResponseKeySrController::class, 'destroy'])->name('destroy');
                             });
                             Route::prefix('batch')->name('batch.')->group(function () {
                                 Route::delete('/delete', [ServiceRequestResponseKeyController::class, 'deleteBatch'])->name('delete');

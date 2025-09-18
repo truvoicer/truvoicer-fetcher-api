@@ -92,14 +92,9 @@ class Sr extends Model
 
     public function srResponseKeySrs()
     {
-        return $this->belongsToMany(
-            SrResponseKey::class,
-            SrResponseKeySr::TABLE_NAME,
-            'sr_id',
-            'sr_response_key_id'
-        )
-            ->withPivot('response_response_keys', 'request_response_keys', 'action', 'single_request', 'disable_request')
-            ->using(SrResponseKeySr::class);
+        return $this->hasMany(
+            SrResponseKeySr::class,
+        );
     }
 
     public function srChildSr()

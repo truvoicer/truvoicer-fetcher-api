@@ -13,7 +13,7 @@ use App\Services\ApiServices\ServiceRequests\SrService;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Support\Facades\Log;
 
-class ProcessSrOperationDataListener implements ShouldQueue
+class ProcessSrOperationDataListener
 {
     /**
      * Create the event listener.

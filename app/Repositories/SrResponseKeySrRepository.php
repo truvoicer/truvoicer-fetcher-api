@@ -2,11 +2,13 @@
 
 namespace App\Repositories;
 
+use App\Exceptions\SrValidationException;
 use App\Models\Provider;
 use App\Models\Sr;
 use App\Models\SrResponseKey;
 use App\Models\SrResponseKeySr;
 use App\Models\SResponseKey;
+use App\Models\User;
 
 class SrResponseKeySrRepository extends BaseRepository
 {
@@ -27,47 +29,68 @@ class SrResponseKeySrRepository extends BaseRepository
         return parent::getModel();
     }
 
-    public function syncResponseKeySrs(SrResponseKey $srResponseKey, array $syncData)
+    public function prepareSaveData(array $data)
     {
-        if (!$srResponseKey->exists) {
-            return false;
+        $saveData = [];
+        if (!empty($data['action'])) {
+            $saveData['action'] = $data['action'];
+        }
+        if (array_key_exists('single_request', $data) && is_bool($data['single_request'])) {
+            $saveData['single_request'] = $data['single_request'];
+        }
+        if (array_key_exists('disable_request', $data) && is_bool($data['disable_request'])) {
+            $saveData['disable_request'] = $data['disable_request'];
+        }
+        if (!empty($data['request_response_keys']) && is_array($data['request_response_keys'])) {
+            $saveData['request_response_keys'] = $data['request_response_keys'];
+        }
+        if (!empty($data['response_response_keys']) && is_array($data['response_response_keys'])) {
+            $saveData['response_response_keys'] = $data['response_response_keys'];
+        }
+        if (!empty($data['sr_id'])) {
+            $saveData['sr_id'] = (int)$data['sr_id'];
+        }
+        if (!empty($data['sr_response_key_id'])) {
+            $saveData['sr_response_key_id'] = (int)$data['sr_response_key_id'];
         }
 
-        foreach ($syncData as $index => $sr) {
-            if (empty($sr['id'])) {
-                continue;
-            }
-            if (!empty($sr['action']) && !in_array($sr['action'], self::ALLOWED_ACTIONS)) {
-                continue;
-            }
-            $srId = $sr['id'];
-            $saveData = [
-                'sr_id' => $srId,
-                'sr_response_key_id' => $srResponseKey->id,
-            ];
-            if (!empty($sr['action'])) {
-                $saveData['action'] = $sr['action'];
-            }
-            if (array_key_exists('single_request', $sr) && is_bool($sr['single_request'])) {
-                $saveData['single_request'] = $sr['single_request'];
-            }
-            if (array_key_exists('disable_request', $sr) && is_bool($sr['disable_request'])) {
-                $saveData['disable_request'] = $sr['disable_request'];
-            }
-            if (!empty($sr['request_response_keys']) && is_array($sr['request_response_keys'])) {
-                $saveData['request_response_keys'] = $sr['request_response_keys'];
-            }
-            if (!empty($sr['response_response_keys']) && is_array($sr['response_response_keys'])) {
-                $saveData['response_response_keys'] = $sr['response_response_keys'];
-            }
-            SrResponseKeySr::updateOrCreate(
-                [
-                    'sr_id' => $srId,
-                    'sr_response_key_id' => $srResponseKey->id
-                ],
-                $saveData
-            );
+        return $saveData;
+    }
+    public function validateSaveDataSr(User $user, int $srId): bool {
+        $srRepo = new SrRepository();
+
+        $srs = $srRepo->getUserServiceRequestByIds(
+            $user,
+            [$srId]
+        );
+        if ($srs->where('id', $srId)->count() === 0) {
+            throw new SrValidationException("Service request not found or access denied.");
         }
         return true;
+    }
+
+    public function storeSrResponseKeySrs(User $user, array $data)
+    {
+        if (empty($data['sr_id'])) {
+            return false;
+        }
+        if (!empty($data['action']) && !in_array($data['action'], self::ALLOWED_ACTIONS)) {
+            return false;
+        }
+        $saveData = $this->prepareSaveData($data);
+        if (!$this->validateSaveDataSr($user, (int)$saveData['sr_id'])) {
+            return false;
+        }
+        $srResponseKeySr = new SrResponseKeySr();
+        $srResponseKeySr->fill($saveData);
+        return $srResponseKeySr->save();
+    }
+    public function updateSrResponseKeySrs(User $user, SrResponseKeySr $srResponseKeySr, array $data)
+    {
+        $saveData = $this->prepareSaveData($data);
+        if (!empty($saveData['sr_id']) && !$this->validateSaveDataSr($user, (int)$saveData['sr_id'])) {
+            return false;
+        }
+        return $srResponseKeySr->update($saveData);
     }
 }
