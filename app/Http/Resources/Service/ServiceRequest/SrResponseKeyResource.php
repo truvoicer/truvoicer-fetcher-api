@@ -27,7 +27,6 @@ class SrResponseKeyResource extends JsonResource
             new SResponseKeyMinimalResource($this->sResponseKey)
         );
         $data['provider'] = new ProviderMinimalResource($this->provider);
-        $data['sr_response_key_srs'] = new SrResponseKeySrsCollection($this->whenLoaded('srResponseKeySrs'));
         return $data;
     }
 }

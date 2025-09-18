@@ -3,6 +3,7 @@
 namespace App\Http\Requests\Service\Request\ResponseKey;
 
 use App\Models\Provider;
+use App\Models\SrResponseKey;
 use App\Models\SrResponseKeySr;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -25,38 +26,34 @@ class UpdateSrResponseKeySrRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'response_key' => [
+            'sr_response_key_id' => [
                 'sometimes',
                 'integer',
-                Rule::exists(SrResponseKeySr::class, 'id'),
+                Rule::exists(SrResponseKey::class, 'id'),
             ],
-            'response_key_sr' => [
-                'required',
-                'array'
-            ],
-            'response_key_sr.action' => [
+            'action' => [
                 'sometimes',
                 'string'
             ],
-            'response_key_sr.single_request' => [
+            'single_request' => [
                 'sometimes',
                 'boolean'
             ],
-            'response_key_sr.disable_request' => [
+            'disable_request' => [
                 'sometimes',
                 'boolean'
             ],
-            'response_key_sr.response_response_keys' => [
+            'response_response_keys' => [
                 'sometimes',
                 'nullable',
                 'array'
             ],
-            'response_key_sr.request_response_keys' => [
+            'request_response_keys' => [
                 'sometimes',
                 'nullable',
                 'array'
             ],
-            'response_key_sr.id' => [
+            'sr_id' => [
                 'sometimes',
                 'integer'
             ],

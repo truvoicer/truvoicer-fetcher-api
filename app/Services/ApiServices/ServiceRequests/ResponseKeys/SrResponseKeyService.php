@@ -115,12 +115,12 @@ class SrResponseKeyService extends BaseService
     {
         $newData = [];
         if (
-            empty($requestData["id"]) ||
-            !is_numeric($requestData["id"])
+            empty($requestData["sr_id"]) ||
+            !is_numeric($requestData["sr_id"])
         ) {
             throw new SrValidationException("Invalid service request id provided.");
         }
-        $newData['id'] = (int) $requestData["id"];
+        $newData['sr_id'] = (int)$requestData["sr_id"];
 
         if (
             !empty($requestData["action"]) &&
@@ -182,35 +182,20 @@ class SrResponseKeyService extends BaseService
         return $requestResponseKeyData;
     }
 
-    public function updateSrResponseKeySr(User $user, SrResponseKeySr $srResponseKeySr, array $data) {}
-
-    public function saveSrResponseKeySrs(User $user, SrResponseKey $srResponseKey, array $data): bool
-    {
-        if (empty($data["response_key_sr"]) || !is_array($data["response_key_sr"])) {
-            return false;
-        }
-
-        $validateSrResponseKeySr = $this->validateSrResponseKeySrRequestData($data["response_key_sr"]);
-        if (!$validateSrResponseKeySr) {
-            return false;
-        }
-
-        $this->accessControlService->setUser($user);
-
-        $srs = $this->srService->getServiceRequestRepository()->getUserServiceRequestByIds(
+    public function updateSrResponseKeySr(User $user, SrResponseKeySr $srResponseKeySr, array $data) {
+        return $this->srResponseKeySrRepository->updateSrResponseKeySrs(
             $user,
-            [$validateSrResponseKeySr['id']]
+            $srResponseKeySr,
+            $data
         );
+    }
 
-        $filterResponseKeySrs = array_filter([$validateSrResponseKeySr], function ($item) use ($srs) {
-            return $srs->where('id', $item['id'])->count() > 0;
-        });
-
-        $this->srResponseKeySrRepository->syncResponseKeySrs(
-            $srResponseKey,
-            $filterResponseKeySrs
+    public function saveSrResponseKeySrs(User $user, array $data): bool
+    {
+        return $this->srResponseKeySrRepository->storeSrResponseKeySrs(
+            $user,
+            $data
         );
-        return true;
     }
 
     public function createSrResponseKey(User $user, Sr $serviceRequest, string $sResponseKeyName, array $data)

@@ -24,6 +24,7 @@ class OperationsController extends Controller
 
     public function searchOperation(string $type, ApiRequestDataInterface $apiRequestDataHandler, OperationsRequest $request)
     {
+        ini_set('max_execution_time', 60);
         $provider = $request->validated('provider', []);
         $service = $request->validated('service');
         $apiRequestDataHandler->setUser($request->user());
@@ -40,6 +41,8 @@ class OperationsController extends Controller
                 'No results found',
             );
         }
+
+        ini_restore('max_execution_time');
         return $results;
     }
 

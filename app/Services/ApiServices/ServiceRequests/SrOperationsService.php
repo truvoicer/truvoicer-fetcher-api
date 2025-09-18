@@ -5,6 +5,7 @@ namespace App\Services\ApiServices\ServiceRequests;
 use App\Models\Provider;
 use App\Models\S;
 use App\Models\Sr;
+use App\Models\SrResponseKeySr;
 use App\Models\SrSchedule;
 use App\Models\User;
 use App\Repositories\MongoDB\MongoDBRepository;
@@ -70,8 +71,7 @@ class SrOperationsService
         ProviderService   $providerService,
         ApiRequestService $requestOperation,
         SrScheduleService $srScheduleService
-    )
-    {
+    ) {
         $this->srService = $srService;
         $this->providerService = $providerService;
         $this->requestOperation = $requestOperation;
@@ -171,7 +171,7 @@ class SrOperationsService
         $findByData = array_map(function ($field) use ($saveData) {
             return [$field, $saveData[$field]];
         }, self::REQUIRED_FIELDS);
-        
+
         $findExisting = $this->mongoDBRepository->findOneBy($findByData);
         if (!empty($findExisting)) {
             return true;
@@ -266,54 +266,67 @@ class SrOperationsService
 
     private function runResponseKeySrItem(Sr $parentSr, array $data)
     {
-        foreach ($data as $key => $item) {
-            $validate = $this->validateResponseKeySrConfig($item);
-            if (!$validate) {
+        $srResponseKeySrs = SrResponseKeySr::query()
+            ->whereHas('srResponseKey', function ($query) use ($parentSr) {
+                $query->where('sr_id', $parentSr->id);
+            })
+            ->get();
+
+        foreach ($srResponseKeySrs as $srResponseKeySr) {
+
+            $sResponseKey = $srResponseKeySr->srResponseKey->sResponseKey;
+
+            $keyReqResponseValue = $data[$sResponseKey->name] ?? null;
+
+            if (
+                $srResponseKeySr->action !== SrResponseKeySrRepository::ACTION_STORE
+            ) {
                 continue;
             }
-            foreach ($validate as $nested) {
-                $requestItem = $nested['request_item'];
-                $disableRequest = $requestItem['disable_request'] ?? false;
-                if ($disableRequest) {
-                    return true;
-                }
-                $provider = $this->providerService->getUserProviderByName($this->user, $requestItem['provider_name']);
-                if (!$provider instanceof Provider) {
-                    continue;
-                }
-                $sr = SrRepository::getSrByName($provider, $requestItem['request_name']);
-                if (!$sr instanceof Sr) {
-                    continue;
-                }
 
-                Log::channel(self::LOGGING_NAME)->info(
-                    sprintf(
-                        'runResponseKeySrItem: %s for service request: %s, provider: %s',
-                        $requestItem['action'],
-                        $sr->label,
-                        $provider->label,
-                    ),
-                    [
-                        'data' => $nested['data'],
-                        'request_item' => $requestItem,
-                        'parent_sr' => $parentSr->label,
-                        'buildNestedSrResponseKeyData' => $this->buildNestedSrResponseKeyData(
-                            $this->getRequestResponseKeyNames($requestItem),
-                            $nested['data'],
-                            $data
-                        )
-                    ]
-                );
-                $this->runOperationForSr(
-                    $sr,
-                    $requestItem['action'],
-                    $this->buildNestedSrResponseKeyData(
-                        $this->getRequestResponseKeyNames($requestItem),
-                        $nested['data'],
+            $disableRequest = $srResponseKeySr->disable_request ?? false;
+            if ($disableRequest) {
+                continue;
+            }
+
+            $sr = $srResponseKeySr?->sr;
+            if (!$sr instanceof Sr) {
+                continue;
+            }
+
+            $provider = $srResponseKeySr->sr?->provider;
+            if (!$provider instanceof Provider) {
+                continue;
+            }
+
+            $requestResponseKeys = $srResponseKeySr?->request_response_keys ?? [];
+            Log::channel(self::LOGGING_NAME)->info(
+                sprintf(
+                    'runResponseKeySrItem: %s for service request: %s, provider: %s',
+                    $srResponseKeySr->action,
+                    $sr->label,
+                    $provider->label,
+                ),
+                [
+                    'data' => $keyReqResponseValue,
+                    'srResponseKeySrId' => $srResponseKeySr->id,
+                    'parent_sr' => $parentSr->label,
+                    'buildNestedSrResponseKeyData' => $this->buildNestedSrResponseKeyData(
+                        $requestResponseKeys,
+                        $keyReqResponseValue,
                         $data
                     )
-                );
-            }
+                ]
+            );
+            $this->runOperationForSr(
+                $sr,
+                $srResponseKeySr->action,
+                $this->buildNestedSrResponseKeyData(
+                    $requestResponseKeys,
+                    $keyReqResponseValue,
+                    $data
+                )
+            );
         }
         return true;
     }
@@ -632,11 +645,14 @@ class SrOperationsService
             );
             return;
         }
-        $this->runOperationForSr($sr, SrResponseKeySrRepository::ACTION_STORE,
+        $this->runOperationForSr(
+            $sr,
+            SrResponseKeySrRepository::ACTION_STORE,
             [
                 'query' => '',
                 DataConstants::SERVICE_RESPONSE_KEYS['OFFSET'][SResponseKeysService::RESPONSE_KEY_NAME] => $this->offset,
-            ]);
+            ]
+        );
     }
 
     private function getTotalPagesFromTotalItems()
@@ -670,11 +686,11 @@ class SrOperationsService
         $pageSizeResponseKey = DataConstants::SERVICE_RESPONSE_KEYS['PAGE_SIZE'][SResponseKeysService::RESPONSE_KEY_NAME];
 
         $extraData = $apiResponse->getExtraData();
-//        $totalItems = null;
+        //        $totalItems = null;
         $totalPages = null;
-//        if (isset($extraData[$totalItemsResponseKey]) && $extraData[$totalItemsResponseKey] !== '') {
-//            $totalItems = (int)$extraData[$totalItemsResponseKey];
-//        }
+        //        if (isset($extraData[$totalItemsResponseKey]) && $extraData[$totalItemsResponseKey] !== '') {
+        //            $totalItems = (int)$extraData[$totalItemsResponseKey];
+        //        }
         if (!isset($extraData[$totalPagesResponseKey]) || $extraData[$totalPagesResponseKey] === '') {
             return;
         }
@@ -692,12 +708,14 @@ class SrOperationsService
         if ($this->pageNumber > $totalPages) {
             return;
         }
-        $this->runOperationForSr($sr,
+        $this->runOperationForSr(
+            $sr,
             SrResponseKeySrRepository::ACTION_STORE,
             [
                 'query' => '',
                 DataConstants::SERVICE_RESPONSE_KEYS['PAGE_NUMBER'][SResponseKeysService::RESPONSE_KEY_NAME] => $this->pageNumber,
-            ]);
+            ]
+        );
     }
 
     public function getRequestOperation(): ApiRequestService
@@ -720,5 +738,4 @@ class SrOperationsService
     {
         $this->runResponseKeySrRequests = $runResponseKeySrRequests;
     }
-
 }
