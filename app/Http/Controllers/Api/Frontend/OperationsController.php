@@ -24,8 +24,8 @@ class OperationsController extends Controller
 
     public function searchOperation(string $type, ApiRequestDataInterface $apiRequestDataHandler, OperationsRequest $request)
     {
-        $provider = $request->get('provider');
-        $service = $request->get('service');
+        $provider = $request->validated('provider', []);
+        $service = $request->validated('service');
         $apiRequestDataHandler->setUser($request->user());
 
         $results = $apiRequestDataHandler->searchOperation(
@@ -33,7 +33,7 @@ class OperationsController extends Controller
             $type,
             $provider,
             $service,
-            $request->all()
+            $request->validated()
         );
         if (!$results) {
             return $this->sendErrorResponse(

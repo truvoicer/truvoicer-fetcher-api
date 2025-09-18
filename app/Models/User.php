@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Repositories\UserRepository;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
@@ -97,5 +98,9 @@ class User extends Authenticatable
     }
     public function sPermissions() {
         return $this->hasManyThrough(SUserPermission::class, SUser::class);
+    }
+
+    public function settings(): HasOne {
+        return $this->hasOne(UserSetting::class);
     }
 }

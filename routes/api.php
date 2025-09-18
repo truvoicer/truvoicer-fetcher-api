@@ -21,10 +21,12 @@ use App\Http\Controllers\Api\Backend\Services\ServiceRequestController;
 use App\Http\Controllers\Api\Backend\Services\ServiceRequestParameterController;
 use App\Http\Controllers\Api\Backend\Services\ServiceRequestResponseKeyController;
 use App\Http\Controllers\Api\Backend\Services\ServiceResponseKeyController;
+use App\Http\Controllers\Api\Backend\Services\SrResponseKeySrController;
 use App\Http\Controllers\Api\Backend\Tools\FileSystemController;
 use App\Http\Controllers\Api\Backend\Tools\ImportExportController;
 use App\Http\Controllers\Api\Backend\Tools\UtilsController;
-use App\Http\Controllers\Api\Backend\UserController;
+use App\Http\Controllers\Api\Backend\User\UserController;
+use App\Http\Controllers\Api\Backend\User\UserSettingController;
 use App\Http\Controllers\Api\Frontend\ListController;
 use App\Http\Controllers\Api\Frontend\OperationsController;
 use App\Models\Provider;
@@ -87,6 +89,10 @@ Route::middleware(['auth:sanctum', 'ability:api:admin,api:superuser,api:super_ad
                 Route::patch('/update', [UserController::class, 'updateSessionUser'])->name('update');
                 Route::prefix('permission')->name('permission.')->group(function () {
                     Route::get('/entity/{entity}/{id}', [UserController::class, 'getUserEntityPermissionList'])->name('entity');
+                });
+                Route::prefix('setting')->name('setting.')->group(function () {
+                    Route::get('/', [UserSettingController::class, 'show'])->name('show');
+                    Route::patch('/update', [UserSettingController::class, 'update'])->name('update');
                 });
                 Route::get('/api-token', [UserController::class, 'getSessionUserApiToken'])->name('api-token.detail');
                 Route::prefix('api-token')->name('api-token.')->group(function () {
@@ -170,6 +176,7 @@ Route::middleware(['auth:sanctum', 'ability:api:admin,api:superuser,api:super_ad
                             Route::patch('/{childSr}/override', [ServiceRequestController::class, 'overrideChildServiceRequest'])->name('override');
                             Route::post('/{childSr}/duplicate', [ServiceRequestController::class, 'duplicateChildServiceRequest'])->name('duplicate');
                         });
+
                         Route::post('/populate-response-keys', [ServiceRequestController::class, 'populateSrResponseKeys'])->name('populate-response-keys');
                         Route::delete('/delete', [ServiceRequestController::class, 'deleteServiceRequest'])->name('delete');
                         Route::patch('/defaults/update', [ServiceRequestController::class, 'updateSrDefaults'])->name('defaults.update');
@@ -214,8 +221,16 @@ Route::middleware(['auth:sanctum', 'ability:api:admin,api:superuser,api:super_ad
                         });
                         Route::prefix('response-key')->name('response-key.')->group(function () {
                             Route::get('/list', [ServiceRequestResponseKeyController::class, 'getRequestResponseKeyList'])->name('list');
+
+
                             Route::post('/create', [ServiceRequestResponseKeyController::class, 'createRequestResponseKey'])->name('create');
 
+                            Route::prefix('sr')->name('sr.')->group(function () {
+                                Route::get('/', [SrResponseKeySrController::class, 'index'])->name('index');
+                                Route::post('/create', [SrResponseKeySrController::class, 'store'])->name('store');
+                                Route::get('/{srResponseKeySr}', [SrResponseKeySrController::class, 'show'])->name('show');
+                                Route::patch('/{srResponseKeySr}/update', [SrResponseKeySrController::class, 'update'])->name('update');
+                            });
                             Route::prefix('batch')->name('batch.')->group(function () {
                                 Route::delete('/delete', [ServiceRequestResponseKeyController::class, 'deleteBatch'])->name('delete');
                             });

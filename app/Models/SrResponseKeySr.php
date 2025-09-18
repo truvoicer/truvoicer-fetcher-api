@@ -32,4 +32,12 @@ class SrResponseKeySr extends Pivot
     {
         return $this->morphMany(EntityLock::class, 'entity');
     }
+
+    public function sr() {
+        return $this->belongsTo(Sr::class);
+    }
+
+    public function srResponseKey() {
+        return $this->belongsTo(SrResponseKey::class);
+    }
 }

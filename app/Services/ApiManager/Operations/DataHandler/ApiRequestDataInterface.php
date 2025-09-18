@@ -36,9 +36,9 @@ class ApiRequestDataInterface
         ?array $data = []
     )
     {
-        if (!count($providers)) {
-            return false;
-        }
+        // if (!count($providers)) {
+        //     return false;
+        // }
         $filteredRequestData = array_filter($data, function ($value) {
             return !in_array($value, ApiRequestDataHandler::RESERVED_REQUEST_KEYS);
         }, ARRAY_FILTER_USE_KEY);

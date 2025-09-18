@@ -14,6 +14,7 @@ use App\Services\Permission\AccessControlService;
 use App\Services\Tools\HttpRequestService;
 use App\Services\Tools\SerializerService;
 use App\Services\User\UserAdminService;
+use App\Services\User\UserSettingService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
@@ -24,6 +25,7 @@ class AuthController extends Controller
 
     public function __construct(
         private UserAdminService $userAdminService,
+        private UserSettingService $userSettingService
     )
     {
         parent::__construct();
@@ -78,9 +80,14 @@ class AuthController extends Controller
 
     public function getSingleUserByApiToken(Request $request): \Illuminate\Http\JsonResponse
     {
+        $this->userSettingService->setUser($request->user());
+        $userSettings = $this->userSettingService->findUserSettings();
+        if (!$userSettings->exists) {
+            return $this->sendErrorResponse('Error finding/initialising user settings');
+        }
         return $this->sendSuccessResponse(
             "success",
-            new UserResource($request->user())
+            new UserResource($request->user()->load('settings'))
         );
     }
 

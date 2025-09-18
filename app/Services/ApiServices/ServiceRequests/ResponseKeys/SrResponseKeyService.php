@@ -7,6 +7,7 @@ use App\Exceptions\SrValidationException;
 use App\Models\Sr;
 use App\Models\SResponseKey;
 use App\Models\SrResponseKey;
+use App\Models\SrResponseKeySr;
 use App\Models\User;
 use App\Repositories\SrConfigRepository;
 use App\Repositories\SResponseKeyRepository;
@@ -32,8 +33,7 @@ class SrResponseKeyService extends BaseService
         private AccessControlService $accessControlService,
         private SrService $srService,
         private SrConfigService $srConfigService
-    )
-    {
+    ) {
         parent::__construct();
         $this->SResponseKeyRepository = new SResponseKeyRepository();
         $this->srResponseKeyRepository = new SrResponseKeyRepository();
@@ -49,7 +49,8 @@ class SrResponseKeyService extends BaseService
         return $this->SResponseKeyRepository->findMany();
     }
 
-    public function findParentSrForResponseKeys(Sr $serviceRequest) {
+    public function findParentSrForResponseKeys(Sr $serviceRequest)
+    {
         $parentServiceRequest = $this->srService->findParentSr($serviceRequest);
         if (!$parentServiceRequest instanceof Sr) {
             return $serviceRequest;
@@ -60,7 +61,8 @@ class SrResponseKeyService extends BaseService
         return $serviceRequest;
     }
 
-    public function findResponseKeysForOperationBySr(Sr $serviceRequest, ?array $excludeKeys = [], ?array $conditions = []) {
+    public function findResponseKeysForOperationBySr(Sr $serviceRequest, ?array $excludeKeys = [], ?array $conditions = [])
+    {
         return $this->srResponseKeyRepository->findSrResponseKeysWithRelation(
             $this->findParentSrForResponseKeys($serviceRequest),
             $excludeKeys
@@ -105,40 +107,54 @@ class SrResponseKeyService extends BaseService
 
     public function getRequestResponseKeys(
         Sr $serviceRequest,
-    ): LengthAwarePaginator|Collection
-    {
+    ): LengthAwarePaginator|Collection {
         return $this->srResponseKeyRepository->findSrResponseKeysWithRelation($serviceRequest);
     }
 
-    private function filterResponseKeySrs(array $requestData)
+    private function validateSrResponseKeySrRequestData(array $requestData)
     {
-        return array_filter($requestData, function ($item) {
-            if (
-                empty($item["id"]) ||
-                !is_numeric($item["id"])
-            ) {
-                return false;
-            }
-            if (
-                !empty($item["action"]) &&
-                !in_array($item["action"], SrResponseKeySrRepository::ALLOWED_ACTIONS)
-            ) {
-                return false;
-            }
-            if (!empty($item["request_response_keys"]) && !is_array($item["request_response_keys"])) {
-                return false;
-            }
-            if (!empty($item["response_response_keys"]) && !is_array($item["response_response_keys"])) {
-                return false;
-            }
-            if (array_key_exists('single_request', $item) && !is_bool($item["single_request"])) {
-                return false;
-            }
-            if (array_key_exists('disable_request', $item) && !is_bool($item["disable_request"])) {
-                return false;
-            }
-            return true;
-        });
+        $newData = [];
+        if (
+            empty($requestData["id"]) ||
+            !is_numeric($requestData["id"])
+        ) {
+            throw new SrValidationException("Invalid service request id provided.");
+        }
+        $newData['id'] = (int) $requestData["id"];
+
+        if (
+            !empty($requestData["action"]) &&
+            !in_array($requestData["action"], SrResponseKeySrRepository::ALLOWED_ACTIONS)
+        ) {
+            throw new SrValidationException("Invalid action provided.");
+        }
+        $newData['action'] = $requestData["action"];
+
+        if (!empty($requestData["request_response_keys"]) && is_array($requestData["request_response_keys"])) {
+            $newData['request_response_keys'] = $requestData["request_response_keys"];
+        }
+
+        if (!empty($requestData["response_response_keys"]) && is_array($requestData["response_response_keys"])) {
+            $newData['response_response_keys'] = $requestData["response_response_keys"];
+        }
+
+        if (!array_key_exists('single_request', $requestData)) {
+            throw new SrValidationException("Invalid single_request provided.");
+        }
+        if (!is_bool($requestData["single_request"])) {
+            throw new SrValidationException("single_request must be a boolean.");
+        }
+        $newData['single_request'] = $requestData["single_request"];
+
+        if (!array_key_exists('disable_request', $requestData)) {
+            throw new SrValidationException("Invalid disable_request provided.");
+        }
+        if (!is_bool($requestData["disable_request"])) {
+            throw new SrValidationException("disable_request must be a boolean.");
+        }
+        $newData['disable_request'] = $requestData["disable_request"];
+
+        return $newData;
     }
 
     public function setRequestResponseKeyObject(array $data)
@@ -163,30 +179,30 @@ class SrResponseKeyService extends BaseService
             }
         }
 
-        $requestResponseKeyData['array_keys'] = null;
-        if (!empty($responseKeyData['array_keys']) && !is_array($responseKeyData['array_keys'])) {
-            throw new BadRequestHttpException("array_keys must be an array");
-        }
         return $requestResponseKeyData;
     }
 
-    public function saveSrResponseKeySrs(User $user, SrResponseKey $srResponseKey, array $data)
+    public function updateSrResponseKeySr(User $user, SrResponseKeySr $srResponseKeySr, array $data) {}
+
+    public function saveSrResponseKeySrs(User $user, SrResponseKey $srResponseKey, array $data): bool
     {
-        $filterResponseKeySrs = $this->filterResponseKeySrs(
-            (!empty($data["response_key_srs"]) && is_array($data["response_key_srs"]))
-                ? $data["response_key_srs"]
-                : []
-        );
-        if (!count($filterResponseKeySrs)) {
+        if (empty($data["response_key_sr"]) || !is_array($data["response_key_sr"])) {
             return false;
         }
-        $srIds = array_map(fn ($item) => $item['id'], $filterResponseKeySrs);
+
+        $validateSrResponseKeySr = $this->validateSrResponseKeySrRequestData($data["response_key_sr"]);
+        if (!$validateSrResponseKeySr) {
+            return false;
+        }
 
         $this->accessControlService->setUser($user);
 
-        $srs = $this->srService->getServiceRequestRepository()->getUserServiceRequestByIds($user, $srIds);
+        $srs = $this->srService->getServiceRequestRepository()->getUserServiceRequestByIds(
+            $user,
+            [$validateSrResponseKeySr['id']]
+        );
 
-        $filterResponseKeySrs = array_filter($filterResponseKeySrs, function ($item) use($srs) {
+        $filterResponseKeySrs = array_filter([$validateSrResponseKeySr], function ($item) use ($srs) {
             return $srs->where('id', $item['id'])->count() > 0;
         });
 
@@ -199,53 +215,20 @@ class SrResponseKeyService extends BaseService
 
     public function createSrResponseKey(User $user, Sr $serviceRequest, string $sResponseKeyName, array $data)
     {
-        $createResponseKey = $this->srResponseKeyRepository->createServiceRequestResponseKey(
+        return $this->srResponseKeyRepository->createServiceRequestResponseKey(
             $serviceRequest,
             $sResponseKeyName,
             $this->setRequestResponseKeyObject($data)
         );
-        if (!$createResponseKey) {
-            return false;
-        }
-        $srResponseKey = $this->srResponseKeyRepository->getModel();
-        if (
-            $srResponseKey->is_service_request &&
-            !empty($data["response_key_srs"]) &&
-            is_array($data["response_key_srs"])
-        ) {
-            $createResponseKey = $this->saveSrResponseKeySrs(
-                $user,
-                $srResponseKey,
-                $data
-            );
-        }
-        return $createResponseKey;
     }
 
     public function saveSrResponseKey(User $user, Sr $serviceRequest, SResponseKey $serviceResponseKey, array $data)
     {
-        $save = $this->srResponseKeyRepository->saveServiceRequestResponseKey(
+        return $this->srResponseKeyRepository->saveServiceRequestResponseKey(
             $serviceRequest,
             $serviceResponseKey,
             $this->setRequestResponseKeyObject($data)
         );
-        if (!$save) {
-            return false;
-        }
-
-        $srResponseKey = $this->srResponseKeyRepository->getModel();
-        if (
-            $srResponseKey->is_service_request &&
-            !empty($data["response_key_srs"]) &&
-            is_array($data["response_key_srs"])
-        ) {
-            $save = $this->saveSrResponseKeySrs(
-                $user,
-                $srResponseKey,
-                $data
-            );
-        }
-        return $save;
     }
 
     public function updateRequestResponseKey(User $user, Sr $serviceRequest, SrResponseKey $srResponseKey, array $data)
@@ -262,27 +245,10 @@ class SrResponseKeyService extends BaseService
                 return false;
             }
         }
-        $save = $this->srResponseKeyRepository->updateSrResponseKey(
+        return $this->srResponseKeyRepository->updateSrResponseKey(
             $srResponseKey,
             $this->setRequestResponseKeyObject($data)
         );
-        if (!$save) {
-            return false;
-        }
-        $srResponseKey = $this->srResponseKeyRepository->getModel();
-        if (
-            $srResponseKey->is_service_request &&
-            !empty($data["response_key_srs"]) &&
-            is_array($data["response_key_srs"])
-        ) {
-            $save = $this->saveSrResponseKeySrs(
-                $user,
-                $srResponseKey,
-                $data
-            );
-        }
-
-        return $save;
     }
 
     public function deleteRequestResponseKey(SrResponseKey $serviceRequestResponseKey)
