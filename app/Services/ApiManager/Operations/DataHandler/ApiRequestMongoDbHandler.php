@@ -120,9 +120,9 @@ class ApiRequestMongoDbHandler extends ApiRequestDataHandler
 
     public function searchOperation(string $type, array $providers, string $serviceName, ?array $data = [])
     {
-        if (!count($providers)) {
-            return false;
-        }
+        // if (!count($providers)) {
+        //     return false;
+        // }
 
         $getService = $this->findService($serviceName);
         if (!$getService instanceof S) {
@@ -131,7 +131,7 @@ class ApiRequestMongoDbHandler extends ApiRequestDataHandler
         $this->setService($getService);
 
         $providerData = $this->buildProviderData($providers);
-        
+
         switch ($type) {
             case SrRepository::SR_TYPE_LIST:
             case SrRepository::SR_TYPE_MIXED:

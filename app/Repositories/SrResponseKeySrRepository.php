@@ -32,15 +32,6 @@ class SrResponseKeySrRepository extends BaseRepository
         if (!$srResponseKey->exists) {
             return false;
         }
-        SrResponseKeySr::where('sr_response_key_id', $srResponseKey->id)
-            ->whereNotIn('sr_id',
-                array_filter(
-                    array_map(fn($sr) => $sr['id'], $syncData),
-                    fn($sr) => !empty($sr['id']),
-                    ARRAY_FILTER_USE_BOTH
-                )
-            )
-            ->delete();
 
         foreach ($syncData as $index => $sr) {
             if (empty($sr['id'])) {

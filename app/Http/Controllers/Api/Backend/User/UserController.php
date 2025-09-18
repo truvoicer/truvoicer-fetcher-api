@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Api\Backend;
+namespace App\Http\Controllers\Api\Backend\User;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\User\CreateUserRequest;
