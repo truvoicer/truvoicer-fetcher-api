@@ -70,7 +70,8 @@ class ApiRequestDataInterface
                     $serviceName,
                     $filteredRequestData
                 );
-                if (!$response) {
+
+                if (!$response?->resource) {
                     return $this->apiRequestApiDirectHandler->searchOperation(
                         $serviceType,
                         $providers,
@@ -78,6 +79,7 @@ class ApiRequestDataInterface
                         $data
                     );
                 }
+                return $response;
                 break;
             case 'api_direct':
                 return $this->apiRequestApiDirectHandler->searchOperation(

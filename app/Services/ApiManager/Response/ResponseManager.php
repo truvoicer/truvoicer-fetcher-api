@@ -103,6 +103,9 @@ class ResponseManager extends BaseService
             $contentType = "na";
             switch ($this->getContentType($response)) {
                 case self::CONTENT_TYPE_JSON:
+                    if (empty($response->json())) {
+                        throw new Exception("Empty JSON response from provider");
+                    }
                     $contentType = "json";
                     $this->jsonResponseHandler->setApiService($this->serviceRequest);
                     $this->jsonResponseHandler->setResponseArray($response->json());

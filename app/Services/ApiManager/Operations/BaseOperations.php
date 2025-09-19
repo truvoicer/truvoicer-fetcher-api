@@ -61,7 +61,7 @@ class BaseOperations extends ApiBase
     {
     }
 
-    public function getOperationResponse(string $requestType, ?string $providerName = null)
+    public function getOperationResponse(string $requestType, ?string $providerName = null): ApiResponse
     {
         return $this->responseHandler(
             $requestType,
