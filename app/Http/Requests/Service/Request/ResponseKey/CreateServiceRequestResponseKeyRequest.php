@@ -37,14 +37,7 @@ class CreateServiceRequestResponseKeyRequest extends FormRequest
             'date_format' => 'nullable|string',
             'append_extra_data_value' => 'string|nullable',
             'prepend_extra_data_value' => 'string|nullable',
-            'is_service_request' => 'nullable|boolean',
             'array_keys' => 'nullable|array',
-            'response_key_srs.*' => Rule::forEach(function ($value, string $attribute) {
-                return [
-                    'required_if_accepted:is_service_request',
-                    Rule::exists(Sr::class, 'id'),
-                ];
-            })
         ];
     }
 }
