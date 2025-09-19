@@ -24,9 +24,7 @@ class ApiRequestDataInterface
         private ApiRequestApiDirectHandler $apiRequestApiDirectHandler,
         private ProviderService            $providerService,
         private SrService                  $srService
-    )
-    {
-    }
+    ) {}
 
     public function searchOperation(
         string $fetchType,
@@ -34,8 +32,7 @@ class ApiRequestDataInterface
         array  $providers,
         string $serviceName,
         ?array $data = []
-    )
-    {
+    ) {
         // if (!count($providers)) {
         //     return false;
         // }
@@ -48,7 +45,10 @@ class ApiRequestDataInterface
         switch ($fetchType) {
             case 'mixed':
                 $response = $this->apiRequestMongoDbHandler->searchOperation(
-                    $serviceType, $providers, $serviceName, $filteredRequestData
+                    $serviceType,
+                    $providers,
+                    $serviceName,
+                    $filteredRequestData
                 );
                 $compare = $this->apiRequestMongoDbHandler->compareResultsWithData(
                     $response
@@ -64,13 +64,27 @@ class ApiRequestDataInterface
                 );
                 break;
             case 'database':
-                return $this->apiRequestMongoDbHandler->searchOperation(
-                    $serviceType, $providers, $serviceName, $filteredRequestData
+                $response = $this->apiRequestMongoDbHandler->searchOperation(
+                    $serviceType,
+                    $providers,
+                    $serviceName,
+                    $filteredRequestData
                 );
+                if (!$response) {
+                    return $this->apiRequestApiDirectHandler->searchOperation(
+                        $serviceType,
+                        $providers,
+                        $serviceName,
+                        $data
+                    );
+                }
                 break;
             case 'api_direct':
                 return $this->apiRequestApiDirectHandler->searchOperation(
-                    $serviceType, $providers, $serviceName, $data
+                    $serviceType,
+                    $providers,
+                    $serviceName,
+                    $data
                 );
                 break;
             default:
@@ -146,12 +160,12 @@ class ApiRequestDataInterface
                     }
                     break;
             }
-
         }
         return null;
     }
 
-    private function apiSearchBySr(Sr $sr, string|int $id): Collection|array|null {
+    private function apiSearchBySr(Sr $sr, string|int $id): Collection|array|null
+    {
         $response = $this->apiRequestApiDirectHandler->searchOperationBySr(
             $sr,
             ['item_id' => $id]
@@ -224,5 +238,4 @@ class ApiRequestDataInterface
     {
         $this->user = $user;
     }
-
 }

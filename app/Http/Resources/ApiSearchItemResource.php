@@ -16,7 +16,6 @@ class ApiSearchItemResource extends JsonResource
     public function toArray(Request $request): array
     {
         $data = ResourceHelpers::buildCollectionResults(parent::toArray($request));
-        $data['hello'] = 'Bye';
         return $data;
     }
 }
