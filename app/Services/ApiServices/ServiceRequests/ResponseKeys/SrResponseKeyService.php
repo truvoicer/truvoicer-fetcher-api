@@ -169,7 +169,6 @@ class SrResponseKeyService extends BaseService
             "date_format",
             "append_extra_data_value",
             "prepend_extra_data_value",
-            "is_service_request",
             "array_keys",
         ];
         $requestResponseKeyData = [];

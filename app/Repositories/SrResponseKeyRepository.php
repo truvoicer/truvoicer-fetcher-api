@@ -75,7 +75,6 @@ class SrResponseKeyRepository extends BaseRepository
 //            $responseKey->setAppendExtraDataValue($item->getAppendExtraDataValue());
 //            $responseKey->setPrependExtraData($item->getPrependExtraData());
 //            $responseKey->setPrependExtraDataValue($item->getPrependExtraDataValue());
-//            $responseKey->setIsServiceRequest($item->is_service_request);
 //            $destinationServiceRequest->addServiceRequestResponseKey($responseKey);
 //            $this->getEntityManager()->persist($responseKey);
 //        }

@@ -39,34 +39,7 @@ class UpdateServiceRequestResponseKeyRequest extends FormRequest
             'date_format' => 'nullable|string',
             'append_extra_data_value' => 'string|nullable',
             'prepend_extra_data_value' => 'string|nullable',
-            'is_service_request' => 'nullable|boolean',
             'array_keys' => 'nullable|array',
-            'response_key_srs.*.action' => [
-                'required',
-                Rule::in(SrResponseKeySrRepository::ALLOWED_ACTIONS)
-            ],
-            'response_key_srs.*.single_request' => [
-                'boolean'
-            ],
-            'response_key_srs.*.disable_request' => [
-                'boolean'
-            ],
-            'response_key_srs.*.id' => Rule::forEach(function ($value, string $attribute) {
-                return [
-                    'required_if_accepted:is_service_request',
-                    Rule::exists(Sr::class, 'id'),
-                ];
-            }),
-            'response_key_srs.*.request_response_keys.*' => Rule::forEach(function ($value, string $attribute) {
-                return [
-                    'string'
-                ];
-            }),
-            'response_key_srs.*.response_response_keys.*' => Rule::forEach(function ($value, string $attribute) {
-                return [
-                    'string'
-                ];
-            })
         ];
     }
 }

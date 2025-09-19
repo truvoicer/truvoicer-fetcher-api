@@ -21,7 +21,6 @@ return new class extends Migration
             $table->longText('array_keys')->nullable();
             $table->string('prepend_extra_data_value')->nullable();
             $table->string('append_extra_data_value')->nullable();
-            $table->boolean('is_service_request')->default(false);
             $table->timestamps();
         });
     }
