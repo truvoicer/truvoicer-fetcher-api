@@ -48,6 +48,7 @@ class ApiRequestApiDirectHandler extends ApiRequestDataHandler
         string $serviceName,
         ?array $data = []
     ) {
+
         if (!count($providers)) {
             return false;
         }
@@ -61,6 +62,7 @@ class ApiRequestApiDirectHandler extends ApiRequestDataHandler
         foreach ($this->providers as $index => $provider) {
             foreach ($provider->sr as $sr) {
                 $response = $this->searchOperationBySr($sr, $data);
+
                 if (!$response) {
                     continue;
                 }
@@ -103,7 +105,7 @@ class ApiRequestApiDirectHandler extends ApiRequestDataHandler
     public function searchOperationBySr(
         Sr         $sr,
         array      $data
-    ) {
+    ): ApiResponse|bool {
         $provider = $sr->provider;
         $this->apiRequestService->setProvider($provider);
         if ($this->user->cannot('view', $provider)) {

@@ -359,10 +359,10 @@ class BaseRepository
     {
         foreach ($ids as $index => $id) {
             if ($index === 0) {
-                $this->addWhere('id', $id);
+                $this->addWhere('_id', $id);
                 continue;
             }
-            $this->addWhere('id', $id, '=', 'OR');
+            $this->addWhere('_id', $id, '=', 'OR');
         }
         return $this->getQuery()->delete();
     }
