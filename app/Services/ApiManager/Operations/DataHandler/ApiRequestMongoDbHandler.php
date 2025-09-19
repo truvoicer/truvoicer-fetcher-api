@@ -144,12 +144,14 @@ class ApiRequestMongoDbHandler extends ApiRequestDataHandler
                 );
             case SrRepository::SR_TYPE_DETAIL:
             case SrRepository::SR_TYPE_SINGLE:
-                return new ApiSearchItemResource(
-                    $this->runItemSearch(
-                        $type,
-                        $providerData
-                    )
+                $response = $this->runItemSearch(
+                    $type,
+                    $providerData
                 );
+                if (!$response) {
+                    return false;
+                }
+                return new ApiSearchItemResource($response);
             default:
                 return false;
         }
