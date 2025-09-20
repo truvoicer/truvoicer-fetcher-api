@@ -135,6 +135,7 @@ class ApiRequestSearchService
         $reservedKeys = array_merge($reservedKeys, self::RESERVED_SEARCH_RESPONSE_KEYS);
         $sort = [];
         $orderByData = [];
+
         if (!empty($queryData['sort_by'])) {
             $orderByData['sort_by'] = $queryData['sort_by'];
             unset($queryData['sort_by']);
@@ -143,6 +144,7 @@ class ApiRequestSearchService
             $orderByData['sort_order'] = $queryData['sort_order'];
             unset($queryData['sort_order']);
         }
+
         foreach ($this->providers as $provider) {
             $whereGroup = [];
             $srs = $this->srService->flattenSrCollection($this->type, $provider->sr);
