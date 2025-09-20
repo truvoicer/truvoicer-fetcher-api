@@ -23,6 +23,7 @@ class SrResponseKeyFactory extends Factory
             'show_in_response' => $this->faker->boolean,
             'list_item' => $this->faker->boolean,
             'custom_value' => $this->faker->boolean,
+            'search_priority' => $this->faker->randomNumber(),
             'searchable' => $this->faker->boolean,
             'is_date' => $this->faker->boolean,
             'date_format' => ($isDate) ? $this->faker->randomElement(['Y-m-d', 'Y-m-d H:i:s']) : null,

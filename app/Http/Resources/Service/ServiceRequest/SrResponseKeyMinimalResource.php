@@ -24,6 +24,7 @@ class SrResponseKeyMinimalResource extends JsonResource
             'searchable' => $this->show_in_response,
             'list_item' => $this->list_item,
             'custom_value' => $this->custom_value,
+            'search_priority' => $this->search_priority,
             'is_date' => $this->is_date,
             'date_format' => $this->date_format,
             'append_extra_data_value' => $this->append_extra_data_value,

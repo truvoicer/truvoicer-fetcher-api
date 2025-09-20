@@ -46,7 +46,6 @@ class ApiRequestApiDirectHandler extends ApiRequestDataHandler
         string $serviceType,
         array  $providers,
         string $serviceName,
-        ?array $data = []
     ) {
 
         if (!count($providers)) {
@@ -61,7 +60,7 @@ class ApiRequestApiDirectHandler extends ApiRequestDataHandler
         $totalItems = 0;
         foreach ($this->providers as $index => $provider) {
             foreach ($provider->sr as $sr) {
-                $response = $this->searchOperationBySr($sr, $data);
+                $response = $this->searchOperationBySr($sr);
 
                 if (!$response) {
                     continue;
@@ -104,7 +103,6 @@ class ApiRequestApiDirectHandler extends ApiRequestDataHandler
 
     public function searchOperationBySr(
         Sr         $sr,
-        array      $data
     ): ApiResponse|bool {
         $provider = $sr->provider;
         $this->apiRequestService->setProvider($provider);
@@ -114,12 +112,12 @@ class ApiRequestApiDirectHandler extends ApiRequestDataHandler
 
         $this->apiRequestService->setSr($sr);
 
-        $response = $this->apiRequestService->runOperation($data);
+        $response = $this->apiRequestService->runOperation($this->requestData);
 
         if ($response->getStatus() !== 'success') {
             return false;
         }
-        if (!$this->afterFetchOperation($sr, $response, $data)) {
+        if (!$this->afterFetchOperation($sr, $response)) {
         }
         return $response;
     }
@@ -127,13 +125,12 @@ class ApiRequestApiDirectHandler extends ApiRequestDataHandler
     private function afterFetchOperation(
         Sr          $sr,
         ApiResponse $apiResponse,
-        array       $data
     ): bool {
         ProcessSrOperationDataEvent::dispatch(
             $this->user->id,
             $sr->id,
             $apiResponse,
-            $data,
+            $this->requestData,
             false,
             true
         );

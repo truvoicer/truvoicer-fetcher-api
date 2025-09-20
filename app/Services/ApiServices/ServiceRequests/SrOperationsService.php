@@ -8,12 +8,12 @@ use App\Models\Sr;
 use App\Models\SrResponseKeySr;
 use App\Models\SrSchedule;
 use App\Models\User;
+use App\Repositories\MongoDB\MongoDBQuery;
 use App\Repositories\MongoDB\MongoDBRepository;
 use App\Repositories\SrRepository;
 use App\Repositories\SrResponseKeyRepository;
 use App\Repositories\SrResponseKeySrRepository;
 use App\Services\ApiManager\Data\DataConstants;
-use App\Services\ApiManager\Data\DefaultData;
 use App\Services\ApiManager\Operations\ApiRequestService;
 use App\Services\ApiManager\Response\Entity\ApiResponse;
 use App\Services\ApiServices\SResponseKeysService;
@@ -49,14 +49,10 @@ class SrOperationsService
         'query' => '',
     ];
 
-    private MongoDBRepository $mongoDBRepository;
-    private SrService $srService;
-    private ProviderService $providerService;
-    private SrScheduleService $srScheduleService;
-    private ApiRequestService $requestOperation;
     private User $user;
-
     private Carbon $now;
+    private MongoDBQuery $mongoDBQuery;
+
     private int $offset = 0;
     private int $pageNumber = 1;
     private int $pageSize = 100;
@@ -67,17 +63,18 @@ class SrOperationsService
     private bool $runResponseKeySrRequests = true;
 
     public function __construct(
-        SrService         $srService,
-        ProviderService   $providerService,
-        ApiRequestService $requestOperation,
-        SrScheduleService $srScheduleService
+        private SrService $srService,
+        private ProviderService $providerService,
+        private SrScheduleService $srScheduleService,
+        private ApiRequestService $requestOperation,
+        private MongoDBRepository $mongoDBRepository
     ) {
         $this->srService = $srService;
         $this->providerService = $providerService;
         $this->requestOperation = $requestOperation;
         $this->srScheduleService = $srScheduleService;
-        $this->mongoDBRepository = new MongoDBRepository();
         $this->now = now();
+        $this->mongoDBQuery = new MongoDBQuery();
     }
 
     public function providerSrSchedule(string $interval)
@@ -172,7 +169,7 @@ class SrOperationsService
             return [$field, $saveData[$field]];
         }, self::REQUIRED_FIELDS);
 
-        $findExisting = $this->mongoDBRepository->findOneBy($findByData);
+        $findExisting = $this->mongoDBQuery->findOneBy($findByData);
         if (!empty($findExisting)) {
             return true;
         }
@@ -421,7 +418,7 @@ class SrOperationsService
     private function saveToDb(Sr $sr, array $data)
     {
         $provider = $sr->provider()->first();
-        if (!$this->mongoDBRepository->insert($data)) {
+        if (!$this->mongoDBQuery->insert($data)) {
             Log::channel(self::LOGGING_NAME)->error(
                 sprintf(
                     'Error inserting data for service request: %s | Provider: %s',
@@ -482,7 +479,7 @@ class SrOperationsService
     {
         if ($this->shouldSaveToDb($action)) {
             $collectionName = $this->mongoDBRepository->getCollectionName($sr);
-            $this->mongoDBRepository->setCollection($collectionName);
+            $this->mongoDBQuery->setCollection($collectionName);
         }
         return $this->processRequestDataItem($sr, $action, $apiResponse->getRequestData(), $queryData, $apiResponse);
     }
@@ -493,7 +490,7 @@ class SrOperationsService
         foreach ($apiResponse->getRequestData() as $item) {
             if ($this->shouldSaveToDb($action)) {
                 $collectionName = $this->mongoDBRepository->getCollectionName($sr);
-                $this->mongoDBRepository->setCollection($collectionName);
+                $this->mongoDBQuery->setCollection($collectionName);
             }
             $requestDataItem = $this->processRequestDataItem($sr, $action, $item, $queryData, $apiResponse);
             if (!$requestDataItem) {

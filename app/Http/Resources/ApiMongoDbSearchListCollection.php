@@ -21,7 +21,6 @@ class ApiMongoDbSearchListCollection extends ResourceCollection
     public function toArray(Request $request): array
     {
         $data = [];
-
         $data[$this::$wrap] = ApiSearchItemResource::collection($this->collection);
 
         if ($this->hasPagination()) {
