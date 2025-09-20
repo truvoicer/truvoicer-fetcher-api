@@ -16,6 +16,7 @@ use App\Services\Provider\ProviderService;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
+use MongoDB\Model\BSONDocument;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 
 class ApiRequestMongoDbHandler extends ApiRequestDataHandler
@@ -56,7 +57,7 @@ class ApiRequestMongoDbHandler extends ApiRequestDataHandler
         return $this->apiRequestSearchService->runListSearch($query);
     }
 
-    public function runItemSearch(string $type, array $providers): array|null
+    public function runItemSearch(string $type, array $providers): BSONDocument|null
     {
         $this->prepareProviders($providers, $type);
         $this->searchInit($type);
@@ -135,6 +136,13 @@ class ApiRequestMongoDbHandler extends ApiRequestDataHandler
         switch ($type) {
             case SrRepository::SR_TYPE_LIST:
             case SrRepository::SR_TYPE_MIXED:
+                // dd(
+                //     $this->runListSearch(
+                //         $type,
+                //         $providerData,
+                //         $data
+                //     )
+                // );
                 return new ApiMongoDbSearchListCollection(
                     $this->runListSearch(
                         $type,

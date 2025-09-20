@@ -107,8 +107,18 @@ class SrResponseKeyService extends BaseService
 
     public function getRequestResponseKeys(
         Sr $serviceRequest,
+        array $excludeKeys = [],
+        array $conditions = [],
+        ?string $orderBy = null,
+        ?string $orderDirection = 'asc'
     ): LengthAwarePaginator|Collection {
-        return $this->srResponseKeyRepository->findSrResponseKeysWithRelation($serviceRequest);
+        return $this->srResponseKeyRepository->findSrResponseKeysWithRelation(
+            $serviceRequest,
+            $excludeKeys,
+            $conditions,
+            $orderBy,
+            $orderDirection
+        );
     }
 
     private function validateSrResponseKeySrRequestData(array $requestData)
@@ -165,6 +175,7 @@ class SrResponseKeyService extends BaseService
             "searchable",
             "list_item",
             "custom_value",
+            "search_priority",
             "is_date",
             "date_format",
             "append_extra_data_value",
@@ -181,7 +192,8 @@ class SrResponseKeyService extends BaseService
         return $requestResponseKeyData;
     }
 
-    public function updateSrResponseKeySr(User $user, SrResponseKeySr $srResponseKeySr, array $data) {
+    public function updateSrResponseKeySr(User $user, SrResponseKeySr $srResponseKeySr, array $data)
+    {
         return $this->srResponseKeySrRepository->updateSrResponseKeySrs(
             $user,
             $srResponseKeySr,

@@ -77,6 +77,10 @@ class ServiceRequestResponseKeyController extends Controller
         );
         $responseKeys = $this->srResponseKeyService->getRequestResponseKeys(
             $serviceRequest,
+            [],
+            [],
+            $request->get('order_by', "name"),
+            $request->get('order_direction', "asc")
         );
         if ($request->query->getBoolean('minimal')) {
             return $this->sendSuccessResponse(

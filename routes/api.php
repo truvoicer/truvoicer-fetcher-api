@@ -21,6 +21,8 @@ use App\Http\Controllers\Api\Backend\Services\ServiceRequestController;
 use App\Http\Controllers\Api\Backend\Services\ServiceRequestParameterController;
 use App\Http\Controllers\Api\Backend\Services\ServiceRequestResponseKeyController;
 use App\Http\Controllers\Api\Backend\Services\ServiceResponseKeyController;
+use App\Http\Controllers\Api\Backend\Services\SrResponseKeyHighestPriorityController;
+use App\Http\Controllers\Api\Backend\Services\SrResponseKeyOrderSearchPriorityController;
 use App\Http\Controllers\Api\Backend\Services\SrResponseKeySrController;
 use App\Http\Controllers\Api\Backend\Tools\FileSystemController;
 use App\Http\Controllers\Api\Backend\Tools\ImportExportController;
@@ -30,6 +32,7 @@ use App\Http\Controllers\Api\Backend\User\UserSettingController;
 use App\Http\Controllers\Api\Frontend\ListController;
 use App\Http\Controllers\Api\Frontend\OperationsController;
 use App\Models\Provider;
+use App\Models\Sr;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -42,6 +45,7 @@ use Illuminate\Support\Facades\Route;
 | be assigned to the "api" middleware group. Make something great!
 |
 */
+
 Route::prefix('auth')->name('auth.')->group(function () {
     Route::post('/login', [AuthController::class, 'login'])->name('login');
 });
@@ -206,7 +210,6 @@ Route::middleware(['auth:sanctum', 'ability:api:admin,api:superuser,api:super_ad
                                 Route::patch('/{property}/update', [ServiceRequestConfigController::class, 'createRequestConfig'])->name('save');
                                 Route::delete('/{property}/delete', [ServiceRequestConfigController::class, 'deleteRequestConfig'])->name('delete');
                             });
-
                         });
                         Route::prefix('parameter')->name('parameter.')->group(function () {
                             Route::get('/list', [ServiceRequestParameterController::class, 'getServiceRequestParameterList'])->name('list');
@@ -225,6 +228,9 @@ Route::middleware(['auth:sanctum', 'ability:api:admin,api:superuser,api:super_ad
 
                             Route::post('/create', [ServiceRequestResponseKeyController::class, 'createRequestResponseKey'])->name('create');
 
+                            Route::prefix('order')->name('order.')->group(function () {
+                                Route::patch('/priority', SrResponseKeyOrderSearchPriorityController::class)->name('priority');
+                            });
                             Route::prefix('sr')->name('sr.')->group(function () {
                                 Route::get('/', [SrResponseKeySrController::class, 'index'])->name('index');
                                 Route::post('/create', [SrResponseKeySrController::class, 'store'])->name('store');
@@ -240,9 +246,15 @@ Route::middleware(['auth:sanctum', 'ability:api:admin,api:superuser,api:super_ad
                                 Route::post('/{sResponseKey}/save', [ServiceRequestResponseKeyController::class, 'saveRequestResponseKey'])->name('save');
                             });
 
-                            Route::get('/{srResponseKey}', [ServiceRequestResponseKeyController::class, 'getRequestResponseKey'])->name('detail');
-                            Route::delete('/{srResponseKey}/delete', [ServiceRequestResponseKeyController::class, 'deleteRequestResponseKey'])->name('delete');
-                            Route::patch('/{srResponseKey}/update', [ServiceRequestResponseKeyController::class, 'updateRequestResponseKey'])->name('update');
+                            Route::prefix('{srResponseKey}')->group(function () {
+                                Route::get('/', [ServiceRequestResponseKeyController::class, 'getRequestResponseKey'])->name('detail');
+
+                                Route::post('/highest-priority', SrResponseKeyHighestPriorityController::class)->name('highest-priority');
+
+                                Route::delete('/delete', [ServiceRequestResponseKeyController::class, 'deleteRequestResponseKey'])->name('delete');
+
+                                Route::patch('/update', [ServiceRequestResponseKeyController::class, 'updateRequestResponseKey'])->name('update');
+                            });
                         });
                     });
                 });

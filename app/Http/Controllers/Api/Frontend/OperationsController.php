@@ -27,14 +27,14 @@ class OperationsController extends Controller
         ini_set('max_execution_time', 60);
         $provider = $request->validated('provider', []);
         $service = $request->validated('service');
-        $apiRequestDataHandler->setUser($request->user());
+        $apiRequestDataHandler->setUser($request->user())
+            ->setRequestData($request->all());
 
         $results = $apiRequestDataHandler->searchOperation(
             $request->validated('api_fetch_type'),
             $type,
             $provider,
-            $service,
-            $request->all()
+            $service
         );
         if (!$results) {
             return $this->sendErrorResponse(

@@ -80,6 +80,7 @@ class Sr extends Model
             "show_in_response",
             "list_item",
             "custom_value",
+            "search_priority",
             "searchable",
             "is_date",
             "date_format",

@@ -4,6 +4,7 @@ namespace App\Services\ApiManager\Operations\DataHandler;
 
 use App\Models\S;
 use App\Models\Sr;
+use App\Repositories\MongoDB\MongoDBRaw;
 use App\Repositories\MongoDB\MongoDBRepository;
 use App\Services\ApiManager\Data\DataConstants;
 use App\Services\ApiManager\Data\DefaultData;
@@ -13,6 +14,7 @@ use App\Services\ApiServices\SResponseKeysService;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Arr;
+use MongoDB\Model\BSONDocument;
 
 class ApiRequestSearchService
 {
@@ -20,6 +22,7 @@ class ApiRequestSearchService
         'items_array',
     ];
     private Collection $srResponseKeys;
+    private MongoDBRaw $mongoDBRaw;
     private string $type;
     protected array $notFoundProviders;
     protected array $itemSearchData;
@@ -30,9 +33,7 @@ class ApiRequestSearchService
         private SrResponseKeyService $srResponseKeyService,
         private SrService            $srService,
         private S                    $service,
-    )
-    {
-    }
+    ) {}
 
     public function searchInit(): void
     {
@@ -40,9 +41,8 @@ class ApiRequestSearchService
             $this->service,
             $this->type
         );
-
-        $this->mongoDBRepository->setCollection($collectionName);
-
+        $this->mongoDBRaw = $this->mongoDBRepository->getMongoDBRaw();
+        $this->mongoDBRaw->setCollection($collectionName);
     }
 
     private function prepareItemSearch(string $type, array $providers): void
@@ -53,39 +53,27 @@ class ApiRequestSearchService
         foreach ($providers as $provider) {
             $providerName = $provider['provider_name'];
             $itemIds = $provider['ids'];
-            $this->mongoDBRepository->addWhereGroup([
-                $this->mongoDBRepository->buildWhereData(
-                    'item_id',
-                    $itemIds,
-                    'IN'
-                ),
-                $this->mongoDBRepository->buildWhereData(
-                    'item_id',
-                    array_map('intval', $itemIds),
-                    'IN',
-                    'OR'
-                ),
-                ...array_map(function ($itemId) {
-                    return $this->mongoDBRepository->addMatchArrayElement(
-                        'item_id',
-                        ['data' => (int)$itemId],
-                        'OR'
-                    );
-                }, $itemIds),
-            ]);
-            $this->mongoDBRepository->addWhereGroup([
-                $this->mongoDBRepository->buildWhereData(
-                    'provider',
-                    $providerName,
-                )
-            ]);
+
+            $this->mongoDBRaw->addWhereGroup(
+                'and',
+                function ($query) use ($itemIds) {
+                    $query->addWhere('item_id', 'in', $itemIds, 'and')
+                        ->addWhere('item_id', 'in', array_map('intval', $itemIds), 'or');
+                }
+            );
+            $this->mongoDBRaw->addWhereGroup(
+                'and',
+                function ($query) use ($providerName) {
+                    $query->addWhere('provider', '=', $providerName, 'and');
+                }
+            );
         }
     }
 
-    public function runSingleItemSearch(string $type): array|null
+    public function runSingleItemSearch(string $type): BSONDocument|null
     {
         $this->prepareItemSearch($type, $this->itemSearchData);
-        return $this->mongoDBRepository->findOne();
+        return $this->mongoDBRaw->findOne();
     }
 
     private function getOrderByFromResponseKeys(Sr $sr): string|null
@@ -123,7 +111,6 @@ class ApiRequestSearchService
         }
 
         return [$orderBy, $sortOrder];
-
     }
 
     private function prepareSearchForSavedProviders(array $queryData)
@@ -146,42 +133,25 @@ class ApiRequestSearchService
         }
 
         foreach ($this->providers as $provider) {
-            $whereGroup = [];
             $srs = $this->srService->flattenSrCollection($this->type, $provider->sr);
             if ($srs->count() === 0) {
                 continue;
             }
 
-            $whereGroup[] = $this->mongoDBRepository->buildWhereData(
-                'provider',
-                $provider->name,
-            );
-            $responseKeyWhereGroup = [];
             foreach ($srs as $sr) {
-//                $whereGroup[] = $this->mongoDBRepository->buildWhereData(
-//                    'serviceRequest.name',
-//                    $sr->name,
-//                );
+
                 list($orderBy, $sortOrder) = $this->getOrderBy($sr, $orderByData);
-                if (!empty($orderBy) && in_array($sortOrder, $this->mongoDBRepository::AVAILABLE_ORDER_DIRECTIONS)) {
+                if (!empty($orderBy) && in_array($sortOrder, $this->mongoDBRepository->getMongoDBQuery()::AVAILABLE_ORDER_DIRECTIONS)) {
                     $sort[] = [$orderBy, $sortOrder];
                 }
 
-
-                if (!empty($queryData['query'])) {
-                    $responseKeyWhereGroup[] = $this->mongoDBRepository->buildWhereData(
-                        'query_params.query',
-                        $queryData['query'],
-                        'like',
-                        'OR'
-                    );
-                }
                 $excludeKeys = [
                     'sort_by',
                     'sort_order',
                     'page_size',
                     'page_number',
-                    ...array_map(fn ($val) => $val[SResponseKeysService::RESPONSE_KEY_NAME],
+                    ...array_map(
+                        fn($val) => $val[SResponseKeysService::RESPONSE_KEY_NAME],
                         array_merge(array_values(Arr::collapse(DataConstants::S_RESPONSE_KEY_GROUPS)))
                     )
                 ];
@@ -190,57 +160,73 @@ class ApiRequestSearchService
                     $excludeKeys,
                     ['searchable' => true]
                 );
-                foreach ($queryData as $key => $queryItem) {
-                    foreach ($srResponseKeys as $srResponseKey) {
-                        if (in_array($srResponseKey->name, $reservedKeys)) {
-                            continue;
-                        }
-                        if (is_array($queryItem)) {
-                            $queryItemArray = array_filter($queryItem, function ($item) {
-                                return (is_string($item) || is_numeric($item));
-                            });
-                            foreach ($queryItemArray as $queryItemArrayItem) {
-                                $responseKeyWhereGroup[] = $this->mongoDBRepository->buildWhereData(
-                                    $srResponseKey->name,
-                                    "%{$queryItemArrayItem}%",
-                                    'like',
-                                    'OR'
-                                );
-                            }
-                        } elseif (is_string($queryItem) || is_numeric($queryItem)) {
-                            $responseKeyWhereGroup[] = $this->mongoDBRepository->buildWhereData(
-                                $srResponseKey->name,
-                                "%{$queryItem}%",
-                                'like',
-                                'OR'
-                            );
-                        }
-                    }
+                $srResponseKeyNames = $srResponseKeys->pluck('name')->toArray();
+
+                $searchQuery = null;
+                if (!empty($queryData['query'])) {
+                    $searchQuery = $queryData['query'];
                 }
-                if (count($responseKeyWhereGroup)) {
-                    $whereGroup[] = $this->mongoDBRepository->buildSubWhereGroup(
-                        $responseKeyWhereGroup,
+
+                if (
+                    !empty($queryData['search_fields']) &&
+                    is_array($queryData['search_fields'])
+                ) {
+                    $priorityFields = array_map(
+                        fn($name) => ['column' => $name, 'value' => $searchQuery],
+                        $queryData['search_fields']
+                    );
+                } else {
+                    $priorityFields = array_map(
+                        fn($name) => ['column' => $name, 'value' => $searchQuery],
+                        $srResponseKeyNames
                     );
                 }
-                $this->mongoDBRepository->addWhereGroup($whereGroup, 'OR');
+
+                $queryFields = [];
+
+                foreach ($queryData as $key => $queryItem) {
+                    if ($key === 'query' || $key == 'search_fields') {
+                        continue;
+                    }
+                    if (in_array($key, $srResponseKeyNames)) {
+                        continue;
+                    }
+                    if (!is_string($queryItem) && !is_numeric($queryItem)) {
+                        continue;
+                    }
+                    $queryFields[] = ['column' => $key, 'value' => $queryItem];
+                }
+
+                // Define the columns you want to search, in order of priority
+
+
+                $this->mongoDBRaw->addPriorityWhereGroup(
+                    $priorityFields,
+                    [
+                        ['column' => 'provider', 'value' => $provider->name],
+                        ['column' => 'serviceRequest', 'value' => $sr->name],
+                        // ...$queryFields
+                    ],
+                    'or'
+                );
             }
         }
 
 
         foreach ($sort as $sortData) {
-            $this->mongoDBRepository->addOrderBy($sortData[0], $sortData[1]);
+            $this->mongoDBRaw->addSort($sortData[0], $sortData[1]);
         }
     }
 
     private function preparePagination(array $query): void
     {
-        $this->mongoDBRepository->setPagination(true);
+        $this->mongoDBRaw->setPagination(true);
         if (!empty($query[DataConstants::PAGE_SIZE])) {
-            $this->mongoDBRepository->setPerPage((int)$query[DataConstants::PAGE_SIZE]);
+            $this->mongoDBRaw->setPerPage((int)$query[DataConstants::PAGE_SIZE]);
         }
 
         if (!empty($query[DataConstants::PAGE_NUMBER])) {
-            $this->mongoDBRepository->setPage((int)$query[DataConstants::PAGE_NUMBER]);
+            $this->mongoDBRaw->setPage((int)$query[DataConstants::PAGE_NUMBER]);
         }
     }
 
@@ -250,7 +236,7 @@ class ApiRequestSearchService
         if (!empty($this->itemSearchData) && count($this->itemSearchData)) {
             $this->prepareItemSearch($this->type, $this->itemSearchData);
             $this->preparePagination($queryData);
-            return $this->mongoDBRepository->findMany();
+            return $this->mongoDBRaw->findMany();
         }
         $this->searchInit();
 
@@ -258,10 +244,7 @@ class ApiRequestSearchService
         $this->prepareSearchForSavedProviders(
             $queryData
         );
-        return $this->mongoDBRepository->getResults(
-            $this->mongoDBRepository->getQuery()
-        );
-
+        return $this->mongoDBRaw->findMany();
     }
 
     public function setProviders(Collection $srs): void
@@ -288,6 +271,4 @@ class ApiRequestSearchService
     {
         $this->itemSearchData = $itemSearchData;
     }
-
-
 }

@@ -18,6 +18,7 @@ use Illuminate\Support\Collection;
 class ApiRequestDataInterface
 {
     private User $user;
+    private array $requestData = [];
 
     public function __construct(
         private ApiRequestMongoDbHandler   $apiRequestMongoDbHandler,
@@ -26,21 +27,24 @@ class ApiRequestDataInterface
         private SrService                  $srService
     ) {}
 
+
     public function searchOperation(
         string $fetchType,
         string $serviceType,
         array  $providers,
         string $serviceName,
-        ?array $data = []
     ) {
         // if (!count($providers)) {
         //     return false;
         // }
-        $filteredRequestData = array_filter($data, function ($value) {
+        $filteredRequestData = array_filter($this->requestData, function ($value) {
             return !in_array($value, ApiRequestDataHandler::RESERVED_REQUEST_KEYS);
         }, ARRAY_FILTER_USE_KEY);
-        $this->apiRequestMongoDbHandler->setUser($this->user);
-        $this->apiRequestApiDirectHandler->setUser($this->user);
+
+        $this->apiRequestMongoDbHandler->setUser($this->user)
+        ->setRequestData($this->requestData);
+        $this->apiRequestApiDirectHandler->setUser($this->user)
+        ->setRequestData($this->requestData);
 
         switch ($fetchType) {
             case 'mixed':
@@ -60,7 +64,7 @@ class ApiRequestDataInterface
                 return $this->prioritySearchHandler(
                     $compare,
                     $response,
-                    $data
+
                 );
                 break;
             case 'database':
@@ -76,7 +80,6 @@ class ApiRequestDataInterface
                         $serviceType,
                         $providers,
                         $serviceName,
-                        $data
                     );
                 }
                 return $response;
@@ -86,7 +89,6 @@ class ApiRequestDataInterface
                     $serviceType,
                     $providers,
                     $serviceName,
-                    $data
                 );
                 break;
             default:
@@ -94,7 +96,7 @@ class ApiRequestDataInterface
         }
     }
 
-    private function prioritySearchHandler(array $searchData, Collection|LengthAwarePaginator $results, ?array $data = []): Collection|LengthAwarePaginator
+    private function prioritySearchHandler(array $searchData, Collection|LengthAwarePaginator $results): Collection|LengthAwarePaginator
     {
         $this->apiRequestMongoDbHandler->setItemSearchData($searchData);
         foreach ($searchData as $searchItem) {
@@ -236,8 +238,14 @@ class ApiRequestDataInterface
         }, $filtered);
     }
 
-    public function setUser(User $user): void
+    public function setUser(User $user): self
     {
         $this->user = $user;
+        return $this;
+    }
+    public function setRequestData(array $data): self
+    {
+        $this->requestData = $data;
+        return $this;
     }
 }

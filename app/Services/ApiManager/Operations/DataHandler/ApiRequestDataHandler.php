@@ -3,6 +3,7 @@
 namespace App\Services\ApiManager\Operations\DataHandler;
 
 use App\Models\Provider;
+use App\Models\S;
 use App\Models\User;
 use App\Repositories\SrRepository;
 use App\Services\ApiManager\Operations\ApiRequestService;
@@ -31,6 +32,8 @@ class ApiRequestDataHandler
         'item_id',
     ];
 
+
+    protected array $requestData = [];
     protected array $notFoundProviders;
     protected array $itemSearchData;
 
@@ -41,8 +44,16 @@ class ApiRequestDataHandler
         protected ApiService         $apiService,
         protected ApiResponse        $apiResponse,
         protected ApiRequestService  $apiRequestService,
-    )
+    ) {}
+
+    public function getRequestData(): array
     {
+        return $this->requestData;
+    }
+    public function setRequestData(array $data): self
+    {
+        $this->requestData = $data;
+        return $this;
     }
 
     protected function getCategory(?array $data): ?Model
@@ -131,8 +142,22 @@ class ApiRequestDataHandler
             $providerNames = array_column($providers, 'name');
         }
 
-        $getProviders = $this->providerService->getProviderRepository()->newQuery()
-            ->whereIn('name', $providerNames)
+        $providersQuery = false;
+        if (
+            !count($providerNames) &&
+            !empty($this->requestData['service'])
+        ) {
+            $findService = S::where('name', $this->requestData['service'])->first();
+            if ($findService instanceof S) {
+                $providersQuery = $findService->providers();
+            }
+        }
+
+        if (!$providersQuery) {
+            $providersQuery = $this->providerService->getProviderRepository()->newQuery()->whereIn('name', $providerNames);
+        }
+
+        $getProviders = $providersQuery
             ->with(['sr' => function ($query) use ($type) {
                 $query->whereDoesntHave('parentSrs')
                     ->where('type', $type);
@@ -347,20 +372,21 @@ class ApiRequestDataHandler
         return $query;
     }
 
-    public function setUser(User $user): void
+    public function setUser(User $user): self
     {
         $this->user = $user;
         $this->apiRequestService->setUser($user);
+        return $this;
     }
 
-    public function setItemSearchData(array $itemSearchData): void
+    public function setItemSearchData(array $itemSearchData): self
     {
         $this->itemSearchData = $itemSearchData;
+        return $this;
     }
 
     public function getItemSearchData(): array
     {
         return $this->itemSearchData;
     }
-
 }
