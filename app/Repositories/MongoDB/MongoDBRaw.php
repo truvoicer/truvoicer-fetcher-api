@@ -43,9 +43,20 @@ class MongoDBRaw
     /**
      * @throws \Exception
      */
-    public function __construct() {}
+    public function __construct(
+        protected MongoAggregationBuilder $mongoAggregationBuilder,
+    ) {}
+
+    public function setAggregation(bool $aggregation): void
+    {
+        $this->aggregation = $aggregation;
+    }
 
 
+    public function getMongoAggregationBuilder(): MongoAggregationBuilder
+    {
+        return $this->mongoAggregationBuilder;
+    }
 
     public function setCollection(string $collection): void
     {
@@ -243,37 +254,6 @@ class MongoDBRaw
         return $this;
     }
 
-    public function addPriorityWhereGroupOld(array $fields, string $searchTerm, string $condition = 'or'): self
-    {
-        $this->aggregation = true;
-        $switchBranches = [];
-        foreach ($fields as $index => $field) {
-            $switchBranches[] = [
-                'case' => ['$regexMatch' => ['input' => '$' . $field, 'regex' => $searchTerm, 'options' => 'i']],
-                'then' => $index + 1 // Priority starts at 1
-            ];
-        }
-        // Default case if no fields match
-        $switchBranches[] = ['case' => true, 'then' => 0];
-
-        $newConditionFragment = [
-            '$expr' => [
-                '$gt' => [
-                    [
-                        '$switch' => [
-                            'branches' => $switchBranches,
-                            'default' => 0
-                        ]
-                    ],
-                    0
-                ]
-            ]
-        ];
-
-        $this->appendCondition($newConditionFragment, $condition);
-
-        return $this;
-    }
 
     /**
      * Appends a new condition or group to the main query array using a logical operator.
@@ -308,7 +288,6 @@ class MongoDBRaw
             ];
         }
     }
-
 
     /**
      * Maps common comparison operators to their MongoDB counterparts.
@@ -477,41 +456,55 @@ class MongoDBRaw
         }
 
 
-
         $query = $this->query;
         // dd($query);
         $aggregation = $this->aggregation;
+        $pipeline = $this->mongoAggregationBuilder->getPipeline();
+        $countPipeline = $pipeline;
+
+        // 2. Add the $count stage to the end
+        $countPipeline[] = ['$count' => 'total'];
 
         // First, we need to run a count query with the same filter to get the total number of documents.
-        // dd($query);
-        $total = $this->table->raw(function ($collection) use ($query, $aggregation) {
+
+        $totalCursor = $this->table->raw(function ($collection) use ($query, $aggregation, $countPipeline) {
             if ($aggregation) {
-                return $collection->aggregate($query);
+                return $collection->aggregate($countPipeline);
             }
+            return $collection->count($query);
         });
-        $total = count($total->toArray());
+
+        $totalArray = $totalCursor->toArray();
+        if (empty($totalArray)) {
+            return $this->responseHandler([], 0);
+        }
+        $totalCount = $totalArray[0]->total;
 
         // Now, we fetch the actual data for the current page.
         $options = $this->buildOptions();
 
         $this->reset();
 
-        $cursor = $this->table->raw(function ($collection) use ($query, $options, $aggregation) {
+
+        $cursor = $this->table->raw(function ($collection) use ($query, $options, $aggregation, $pipeline) {
             if ($aggregation) {
                 return $collection->aggregate(
-                    $this->addPaginationToPipeline($query)
+                    $this->addPaginationToPipeline($pipeline)
                 );
             }
             return $collection->find($query, $options);
         });
 
-        $items = $cursor->toArray();
+        return $this->responseHandler($cursor->toArray(), $totalCount);
+    }
 
+    private function responseHandler(array $items, int $totalCount): LengthAwarePaginator|Collection
+    {
         if ($this->paginate) {
             // If pagination is not enabled, return all items in a single page.
             return new LengthAwarePaginator(
                 $items,
-                $total,
+                $totalCount,
                 $this->perPage,
                 $this->page,
                 [

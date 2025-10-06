@@ -2,6 +2,7 @@
 
 namespace App\Repositories\MongoDB;
 
+
 class BaseRepository
 {
     public function __construct(
@@ -18,4 +19,6 @@ class BaseRepository
     {
         return $this->mongoDBRaw;
     }
+
 }
+

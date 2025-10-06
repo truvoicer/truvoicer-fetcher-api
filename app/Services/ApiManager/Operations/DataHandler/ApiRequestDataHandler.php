@@ -127,7 +127,10 @@ class ApiRequestDataHandler
                 $findIndex = array_search($provider['provider_name'], array_column($buildProviders, 'provider_name'));
             }
             if (is_array($provider['item_id'])) {
-                $buildProviders[$findIndex]['ids'] = array_merge($buildProviders[$findIndex]['ids'], $provider['item_id']);
+                $buildProviders[$findIndex]['ids'] = array_merge(
+                    $buildProviders[$findIndex]['ids'],
+                    $provider['item_id']
+                );
                 continue;
             }
             $buildProviders[$findIndex]['ids'][] = $provider['item_id'];
