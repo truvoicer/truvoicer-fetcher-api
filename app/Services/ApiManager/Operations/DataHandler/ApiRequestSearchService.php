@@ -131,12 +131,14 @@ class ApiRequestSearchService
             $orderByData['sort_order'] = $queryData['sort_order'];
             unset($queryData['sort_order']);
         }
+        $this->mongoDBRaw->setAggregation(true);
 
         foreach ($this->providers as $provider) {
             $srs = $this->srService->flattenSrCollection($this->type, $provider->sr);
             if ($srs->count() === 0) {
                 continue;
             }
+
 
             foreach ($srs as $sr) {
 
@@ -188,24 +190,35 @@ class ApiRequestSearchService
                     if ($key === 'query' || $key == 'search_fields') {
                         continue;
                     }
-                    if (in_array($key, $srResponseKeyNames)) {
+                    if (!in_array($key, $srResponseKeyNames)) {
                         continue;
                     }
                     if (!is_string($queryItem) && !is_numeric($queryItem)) {
                         continue;
                     }
-                    $queryFields[] = ['column' => $key, 'value' => $queryItem];
+                    if (
+                        array_key_exists('database', $queryData) &&
+                        is_array($queryData['database']) &&
+                        array_key_exists($key, $queryData['database']) &&
+                        !empty($queryData['database'][$key]['operator'])
+                    ) {
+                        $queryFields[] = [
+                            'column' => $key,
+                            'value' => $queryItem,
+                            'operator' => $queryData['database'][$key]['operator']
+                        ];
+                    } else {
+                        $queryFields[] = ['column' => $key, 'value' => $queryItem];
+                    }
                 }
 
                 // Define the columns you want to search, in order of priority
-
-
-                $this->mongoDBRaw->addPriorityWhereGroup(
+                $this->mongoDBRaw->getMongoAggregationBuilder()->addPrioritySearch(
                     $priorityFields,
                     [
                         ['column' => 'provider', 'value' => $provider->name],
                         ['column' => 'serviceRequest', 'value' => $sr->name],
-                        // ...$queryFields
+                        ...$queryFields
                     ],
                     'or'
                 );
