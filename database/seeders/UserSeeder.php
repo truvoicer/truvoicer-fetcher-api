@@ -41,5 +41,21 @@ class UserSeeder extends Seeder
         if (!$createUser) {
             throw new \Exception("Error creating user");
         }
+
+
+        $testUserData = DefaultData::TEST_USER_DATA;
+        $user = $userAdminService->getUserRepository()->findOneBy(
+            [['email', '=', $testUserData['email']]]
+        );
+        if (!$user instanceof User) {
+            throw new \Exception("Error finding user");
+        }
+        $token = $userAdminService->createUserToken($user);
+        $tokenData = [
+//            'data' => $token->accessToken->toArray(),
+            'token' => $token->plainTextToken,
+        ];
+        $this->command->info('User token created successfully');
+        var_dump($tokenData);
     }
 }

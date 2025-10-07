@@ -61,7 +61,7 @@ class CreateUser extends Command
             return CommandAlias::FAILURE;
         }
         unset($userData['role_id']);
-        if ($userAdminService->createUserByRoleId($userData, $role->id)) {
+        if ($userAdminService->createUserByRoleId($userData, [$role->id])) {
             $this->info('User created!');
             return CommandAlias::SUCCESS;
         }
