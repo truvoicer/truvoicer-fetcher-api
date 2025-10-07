@@ -21,6 +21,8 @@ class MongoDBRaw
     const DEFAULT_LIMIT = -1;
     const DEFAULT_OFFSET = 0;
 
+
+    protected MongoAggregationBuilder $mongoAggregationBuilder;
     protected DbHelpers $dbHelpers;
     private string $collection;
     private Connection $connection;
@@ -44,8 +46,9 @@ class MongoDBRaw
      * @throws \Exception
      */
     public function __construct(
-        protected MongoAggregationBuilder $mongoAggregationBuilder,
-    ) {}
+    ) {
+        $this->mongoAggregationBuilder = new MongoAggregationBuilder();
+    }
 
     public function setAggregation(bool $aggregation): void
     {
