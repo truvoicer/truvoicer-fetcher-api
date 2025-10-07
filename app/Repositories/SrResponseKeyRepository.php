@@ -116,7 +116,7 @@ class SrResponseKeyRepository extends BaseRepository
         $service->select('s_response_keys.*');
 
         // Join the related table
-        $service->join('sr_response_keys', function ($join) use ($serviceRequest) {
+        $service->leftJoin('sr_response_keys', function ($join) use ($serviceRequest) {
             // Define the relationship between the two tables for the join
             // Replace with your actual foreign key relationship
             $join->on('s_response_keys.id', '=', 'sr_response_keys.s_response_key_id')
