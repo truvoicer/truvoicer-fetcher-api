@@ -562,10 +562,6 @@ class SrOperationsService
         if (empty($paginationType)) {
             return;
         }
-        if (!is_array($sr->pagination_type) || empty($sr->pagination_type['value'])) {
-            return;
-        }
-        $paginationType = $sr->pagination_type['value'];
 
         Log::channel(self::LOGGING_NAME)->info('Pagination type: ' . $paginationType);
         switch ($paginationType) {
