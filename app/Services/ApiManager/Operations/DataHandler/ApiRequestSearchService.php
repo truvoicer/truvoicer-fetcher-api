@@ -113,6 +113,23 @@ class ApiRequestSearchService
         return [$orderBy, $sortOrder];
     }
 
+    private function getDatabaseFilter(array $queryData, string $key)
+    {
+        if (!array_key_exists('database_filters', $queryData)) {
+            return false;
+        }
+        if (!is_array($queryData['database_filters'])) {
+            return false;
+        }
+        if (!array_key_exists($key, $queryData['database_filters'])) {
+            return false;
+        }
+        if (empty($queryData['database_filters'][$key]['operator'])) {
+            return false;
+        }
+        return $queryData['database_filters'][$key]['operator'];
+    }
+
     private function prepareSearchForSavedProviders(array $queryData)
     {
         $reservedKeys = array_column(
@@ -196,16 +213,11 @@ class ApiRequestSearchService
                     if (!is_string($queryItem) && !is_numeric($queryItem)) {
                         continue;
                     }
-                    if (
-                        array_key_exists('database', $queryData) &&
-                        is_array($queryData['database']) &&
-                        array_key_exists($key, $queryData['database']) &&
-                        !empty($queryData['database'][$key]['operator'])
-                    ) {
+                    if ($this->getDatabaseFilter($queryData, $key)) {
                         $queryFields[] = [
                             'column' => $key,
                             'value' => $queryItem,
-                            'operator' => $queryData['database'][$key]['operator']
+                            'operator' => $queryData['database_filters'][$key]['operator']
                         ];
                     } else {
                         $queryFields[] = ['column' => $key, 'value' => $queryItem];
