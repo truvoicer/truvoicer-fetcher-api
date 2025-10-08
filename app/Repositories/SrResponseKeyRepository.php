@@ -263,12 +263,23 @@ class SrResponseKeyRepository extends BaseRepository
         return true;
     }
 
-    public function saveServiceRequestResponseKey(Sr $serviceRequest, SResponseKey $serviceResponseKey, array $data)
+    public function saveServiceRequestResponseKey(
+        Sr $serviceRequest,
+        SResponseKey $serviceResponseKey,
+        array $data
+    )
     {
         $find = $this->findServiceRequestResponseKeyByResponseKey($serviceRequest, $serviceResponseKey);
         if (!$find->srResponseKey instanceof SrResponseKey) {
+            $data = array_map(
+                fn($item) => (is_array($item)) ? json_encode($item) : $item,
+                $data
+            );
+
             $toggle = $this->dbHelpers->validateToggle(
-                $serviceRequest->srResponseKeys()->toggle([$serviceResponseKey->id => $data]),
+                $serviceRequest->srResponseKeys()->toggle(
+                    [$serviceResponseKey->id => $data]
+                ),
                 [$serviceResponseKey->id]
             );
             $find = $this->findServiceRequestResponseKeyByResponseKey($serviceRequest, $serviceResponseKey);
