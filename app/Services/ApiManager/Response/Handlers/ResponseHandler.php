@@ -79,7 +79,7 @@ class ResponseHandler extends ApiBase
         }, explode(".", $itemsArrayValue));
         $getArrayItems = $this->getArrayItems($responseArray, $itemsArray);
         if ($getArrayItems === "") {
-            throw new BadRequestHttpException("Items list is empty");
+            throw new BadRequestHttpException("Items list is empty, items_array_value: {$itemsArrayValue}");
         }
 
         return array_filter((array)$getArrayItems, function ($item) {
