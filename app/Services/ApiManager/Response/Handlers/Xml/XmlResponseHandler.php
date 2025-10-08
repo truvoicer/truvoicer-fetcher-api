@@ -43,7 +43,7 @@ class XmlResponseHandler extends ResponseHandler
         }
         $responseKeyValue = $this->findSrResponseKeyValueInArray('items_array');
         if (empty($responseKeyValue)) {
-            throw new BadRequestHttpException("Response key value is empty.");
+            throw new BadRequestHttpException("Response key value (items_array) is empty.");
         }
         $itemRepeaterKeyValue = $this->findSrResponseKeyValueInArray('item_repeater_key');
         if (empty($itemRepeaterKeyValue)) {
