@@ -34,6 +34,7 @@ class PopulateSrResponseKeysRequest extends FormRequest
                 )
             ),
             [
+                'query' => ['sometimes', 'array'],
                 'overwrite' => ['sometimes', 'boolean'],
                 'srs.*' => Rule::forEach(function ($value, string $attribute) {
                     return [

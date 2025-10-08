@@ -21,14 +21,10 @@ use App\Repositories\SrResponseKeySrRepository;
 use App\Services\ApiManager\Operations\ApiRequestService;
 use App\Services\ApiServices\ApiService;
 use App\Services\ApiServices\ServiceRequests\ResponseKeys\Populate\PopulateFactory;
-use App\Services\ApiServices\ServiceRequests\ResponseKeys\Populate\ResponseKeyPopulateService;
 use App\Services\ApiServices\ServiceRequests\SrOperationsService;
 use App\Services\ApiServices\ServiceRequests\SrService;
-use App\Services\Permission\AccessControlService;
 use App\Services\Permission\PermissionService;
 use App\Services\Provider\ProviderService;
-use App\Services\Tools\HttpRequestService;
-use App\Services\Tools\SerializerService;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
@@ -480,6 +476,7 @@ class ServiceRequestController extends Controller
         ) {
             return $this->sendErrorResponse("Access denied");
         }
+
         $populateFactory->setOverwrite($request->validated('overwrite', false));
         $populateFactory->setUser($request->user());
         $populateFactory->setData($request->validated());

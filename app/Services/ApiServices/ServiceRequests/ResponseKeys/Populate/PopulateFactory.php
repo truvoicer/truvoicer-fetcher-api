@@ -11,6 +11,7 @@ use App\Services\ApiServices\ServiceRequests\ResponseKeys\Populate\Types\Populat
 use App\Services\ApiServices\ServiceRequests\SrConfigService;
 use App\Traits\Error\ErrorTrait;
 use App\Traits\User\UserTrait;
+use Illuminate\Support\Arr;
 
 class PopulateFactory
 {
@@ -31,7 +32,20 @@ class PopulateFactory
     {
         $this->srRepository->addWhere('id', $sourceSrs, 'in');
         $fetchSourceSrs = $this->srRepository->findMany();
+        if (Arr::isList($query)) {
+            $query = Arr::mapWithKeys($query, function (array $item, int $key) {
+                if (
+                    array_key_exists('name', $item) &&
+                    array_key_exists('value', $item)
+                ) {
+                    return [$item['name'] => $item['value']];
+                }
 
+                $arrayKeys = array_keys($item);
+                $key = $arrayKeys[array_key_first($arrayKeys)];
+                return [$key => $item[$key]];
+            });
+        }
         foreach ($fetchSourceSrs as $sr) {
             $responseFormat = $this->srConfigService->getConfigValue($sr, DataConstants::RESPONSE_FORMAT);
 
