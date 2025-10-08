@@ -56,7 +56,7 @@ class ResponseHandler extends ApiBase
     {
         $responseKeyValue = $this->findSrResponseKeyValueInArray('items_array');
         if (empty($responseKeyValue)) {
-            throw new BadRequestHttpException("Response key value is empty.");
+            throw new BadRequestHttpException("Response key (items_array) value is empty.");
         }
         return $this->buildItemListFromResponseArray($responseKeyValue, $this->responseArray);
     }
