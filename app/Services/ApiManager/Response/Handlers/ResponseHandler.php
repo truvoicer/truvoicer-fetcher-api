@@ -23,6 +23,7 @@ use App\Services\Provider\ProviderService;
 use App\Services\Tools\XmlService;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\App;
+use Illuminate\Support\Facades\Log;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 
 class ResponseHandler extends ApiBase
@@ -77,9 +78,19 @@ class ResponseHandler extends ApiBase
             }
             return false;
         }, explode(".", $itemsArrayValue));
+
         $getArrayItems = $this->getArrayItems($responseArray, $itemsArray);
         if ($getArrayItems === "") {
-            throw new BadRequestHttpException("Items list is empty, items_array_value: {$itemsArrayValue}");
+            Log::error(
+                "Items list is empty, items_array_value: {$itemsArrayValue}",
+                [
+                    'responseArray' => $responseArray,
+                    'itemsArray' => $itemsArray
+                ]
+            );
+            throw new BadRequestHttpException(
+                "Items list is empty, items_array_value: {$itemsArrayValue}"
+            );
         }
 
         return array_filter((array)$getArrayItems, function ($item) {
