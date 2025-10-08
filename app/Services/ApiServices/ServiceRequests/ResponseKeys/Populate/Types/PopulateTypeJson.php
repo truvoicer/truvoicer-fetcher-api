@@ -2,24 +2,15 @@
 
 namespace App\Services\ApiServices\ServiceRequests\ResponseKeys\Populate\Types;
 
-use App\Models\S;
 use App\Models\Sr;
-use App\Models\SResponseKey;
-use App\Repositories\SResponseKeyRepository;
 use App\Repositories\SrRepository;
-use App\Repositories\SrResponseKeyRepository;
 use App\Services\ApiManager\Data\DataConstants;
 use App\Services\ApiManager\Operations\ApiRequestService;
 use App\Services\ApiManager\Response\Entity\ApiResponse;
 use App\Services\ApiManager\Response\Handlers\ResponseHandler;
 use App\Services\ApiManager\Response\ResponseManager;
 use App\Services\ApiServices\ServiceRequests\SrConfigService;
-use App\Services\Tools\XmlService;
-use App\Traits\Error\ErrorTrait;
-use App\Traits\User\UserTrait;
 use Illuminate\Support\Arr;
-use Illuminate\Support\Str;
-use SimpleXMLIterator;
 
 class PopulateTypeJson extends PopulateTypeBase
 {
@@ -159,6 +150,10 @@ class PopulateTypeJson extends PopulateTypeBase
             return false;
         }
 
+        if (!empty($this->data['items_array']) && $this->data['items_array'] === 'root_array') {
+            return $this->srTypeHandler($sr, $requestData);
+        }
+
         if (Arr::isList($requestData)) {
             if (!$this->saveSrResponseKeyByName('items_array', 'root_items')) {
                 $this->addError(
@@ -170,8 +165,10 @@ class PopulateTypeJson extends PopulateTypeBase
             return $this->srTypeHandler($sr, $requestData);
         }
 
+
         $this->prepareItemsArrayScoreData($requestData);
         $extractData = $this->extractDataFromScoreData($this->score);
+
         if (!$this->saveSrResponseKeyByName('items_array', $extractData['value'])) {
             $this->addError(
                 "error",
@@ -184,6 +181,7 @@ class PopulateTypeJson extends PopulateTypeBase
 
     private function srTypeHandler(Sr $sr, array $data): bool
     {
+
         return match ($sr->type) {
             SrRepository::SR_TYPE_LIST => $this->populateResponseKeys($data[array_key_first($data)]),
             SrRepository::SR_TYPE_SINGLE, SrRepository::SR_TYPE_DETAIL => $this->populateResponseKeys($data),
