@@ -20,6 +20,7 @@ use App\Services\ApiServices\SResponseKeysService;
 use App\Services\Provider\ProviderService;
 use App\Services\Task\ScheduleService;
 use App\Traits\Error\ErrorTrait;
+use Exception;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Log;
@@ -296,7 +297,35 @@ class SrOperationsService
                 continue;
             }
 
+
             $requestResponseKeys = $srResponseKeySr?->request_response_keys ?? [];
+
+            if (!$keyReqResponseValue) {
+                Log::channel(self::LOGGING_NAME)->info(
+                    sprintf(
+                        'runResponseKeySrItem: %s for service request: %s, provider: %s',
+                        $srResponseKeySr->action,
+                        $sr->label,
+                        $provider->label,
+                    ),
+                    [
+                        'sResponseKey-name' => $sResponseKey->name,
+                        'data' => $data,
+                        'requestResponseKeys' => $requestResponseKeys,
+                        'keyReqResponseValue' => $keyReqResponseValue,
+                        'srResponseKeySrId' => $srResponseKeySr->id,
+                        'parent_sr' => $parentSr->label,
+                    ]
+                );
+                throw new Exception(
+                    sprintf(
+                        'runResponseKeySrItem: %s for service request: %s, provider: %s',
+                        $srResponseKeySr->action,
+                        $sr->label,
+                        $provider->label,
+                    )
+                );
+            }
             Log::channel(self::LOGGING_NAME)->info(
                 sprintf(
                     'runResponseKeySrItem: %s for service request: %s, provider: %s',
@@ -305,9 +334,6 @@ class SrOperationsService
                     $provider->label,
                 ),
                 [
-                    'data' => $keyReqResponseValue,
-                    'srResponseKeySrId' => $srResponseKeySr->id,
-                    'parent_sr' => $parentSr->label,
                     'buildNestedSrResponseKeyData' => $this->buildNestedSrResponseKeyData(
                         $requestResponseKeys,
                         $keyReqResponseValue,
