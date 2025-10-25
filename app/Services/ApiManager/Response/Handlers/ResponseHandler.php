@@ -84,6 +84,7 @@ class ResponseHandler extends ApiBase
             Log::error(
                 "Items list is empty, items_array_value: {$itemsArrayValue}",
                 [
+                    
                     'responseArray' => $responseArray,
                     'itemsArray' => $itemsArray
                 ]

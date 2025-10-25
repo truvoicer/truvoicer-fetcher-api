@@ -476,7 +476,9 @@ class MongoDBRaw
             }
             return $collection->count($query);
         });
-
+        if (is_int($totalCursor)) {
+            return $this->responseHandler([], $totalCursor);
+        }
         $totalArray = $totalCursor->toArray();
         if (empty($totalArray)) {
             return $this->responseHandler([], 0);
