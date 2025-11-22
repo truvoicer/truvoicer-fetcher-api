@@ -240,7 +240,11 @@ class PopulateTypeBase
 
     protected function saveSrResponseKey(SResponseKey $sResponseKey, string $value, ?array $data = []): bool
     {
-        $srResponseKey = $sResponseKey->srResponseKey()->first();
+        $srResponseKey = $sResponseKey
+        ->srResponseKey()
+        ->where('sr_id', $this->destSr->id)
+        ->first();
+
         if ($srResponseKey && !empty($srResponseKey->value) && !$this->overwrite) {
             return true;
         }

@@ -181,7 +181,6 @@ class PopulateTypeJson extends PopulateTypeBase
 
     private function srTypeHandler(Sr $sr, array $data): bool
     {
-
         return match ($sr->type) {
             SrRepository::SR_TYPE_LIST => $this->populateResponseKeys($data[array_key_first($data)]),
             SrRepository::SR_TYPE_SINGLE, SrRepository::SR_TYPE_DETAIL => $this->populateResponseKeys($data),
