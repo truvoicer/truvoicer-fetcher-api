@@ -476,14 +476,23 @@ class MongoDBRaw
             }
             return $collection->count($query);
         });
+
         if (is_int($totalCursor)) {
-            return $this->responseHandler([], $totalCursor);
+            if ($totalCursor === 0) {
+                return $this->responseHandler([], 0);
+            }
+            $totalCount = $totalCursor;
+        } else {
+
+            $totalArray = $totalCursor->toArray();
+
+            if (empty($totalArray)) {
+                return $this->responseHandler([], 0);
+            }
+
+            $totalCount = $totalArray[0]->total;
         }
-        $totalArray = $totalCursor->toArray();
-        if (empty($totalArray)) {
-            return $this->responseHandler([], 0);
-        }
-        $totalCount = $totalArray[0]->total;
+
 
         // Now, we fetch the actual data for the current page.
         $options = $this->buildOptions();
