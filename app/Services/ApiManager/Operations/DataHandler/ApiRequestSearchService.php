@@ -57,8 +57,7 @@ class ApiRequestSearchService
             $this->mongoDBRaw->addWhereGroup(
                 'and',
                 function ($query) use ($itemIds) {
-                    $query->addWhere('item_id', 'in', $itemIds, 'and')
-                        ->addWhere('item_id', 'in', array_map('intval', $itemIds), 'or');
+                    $query->addWhere('_id', 'in', $itemIds, 'and');
                 }
             );
             $this->mongoDBRaw->addWhereGroup(
@@ -149,7 +148,6 @@ class ApiRequestSearchService
             unset($queryData['sort_order']);
         }
         $this->mongoDBRaw->setAggregation(true);
-
         foreach ($this->providers as $provider) {
             $srs = $this->srService->flattenSrCollection($this->type, $provider->sr);
             if ($srs->count() === 0) {
@@ -236,7 +234,9 @@ class ApiRequestSearchService
                 );
             }
         }
-
+        if (!empty($queryData['positions']) && is_array($queryData['positions'])) {
+            $this->mongoDBRaw->setPositionConfig($queryData['positions']);
+        }
 
         foreach ($sort as $sortData) {
             $this->mongoDBRaw->addSort($sortData[0], $sortData[1]);
@@ -257,7 +257,6 @@ class ApiRequestSearchService
 
     public function runListSearch(array $queryData): Collection|LengthAwarePaginator
     {
-
         if (!empty($this->itemSearchData) && count($this->itemSearchData)) {
             $this->prepareItemSearch($this->type, $this->itemSearchData);
             $this->preparePagination($queryData);

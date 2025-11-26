@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api\Frontend;
 
+use App\Helpers\Operation\Request\OperationRequestBuilder;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\OperationsRequest;
 use App\Services\ApiManager\Operations\DataHandler\ApiRequestDataInterface;
@@ -18,20 +19,27 @@ class OperationsController extends Controller
 {
 
     public function __construct(
+        protected OperationRequestBuilder $operationRequestBuilder,
     ) {
         parent::__construct();
     }
 
     public function searchOperation(string $type, ApiRequestDataInterface $apiRequestDataHandler, OperationsRequest $request)
     {
+        $validatedData = $request->validated();
+
+        $formRequestData =  $this->operationRequestBuilder
+            ->setData($validatedData)
+            ->build();
         ini_set('max_execution_time', 60);
-        $provider = $request->validated('provider', []);
-        $service = $request->validated('service');
+
+        $provider = $validatedData['provider'] ?? [];
+        $service = $validatedData['service'] ?? null;
         $apiRequestDataHandler->setUser($request->user())
-            ->setRequestData($request->all());
+            ->setRequestData($formRequestData);
 
         $results = $apiRequestDataHandler->searchOperation(
-            $request->validated('api_fetch_type'),
+            $validatedData['api_fetch_type'],
             $type,
             $provider,
             $service
@@ -45,5 +53,4 @@ class OperationsController extends Controller
         ini_restore('max_execution_time');
         return $results;
     }
-
 }
