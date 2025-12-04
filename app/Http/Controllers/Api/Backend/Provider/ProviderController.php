@@ -82,7 +82,7 @@ class ProviderController extends Controller
 
         return $this->sendSuccessResponse(
             "success",
-            new ProviderResource($provider)
+            new ProviderResource($provider->load(['categories']))
         );
     }
 

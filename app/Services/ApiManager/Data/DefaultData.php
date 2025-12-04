@@ -2,7 +2,7 @@
 
 namespace App\Services\ApiManager\Data;
 
-
+use App\Enums\Entity\EntityType;
 use App\Models\Sr;
 use App\Services\EntityService;
 
@@ -93,6 +93,17 @@ class DefaultData
     {
         return [
             [
+                DataConstants::REQUEST_CONFIG_ITEM_NAME => DataConstants::AI_PROMPT,
+                DataConstants::REQUEST_CONFIG_ITEM_LABEL => "AI Prompt",
+                DataConstants::REQUEST_CONFIG_ITEM_SELECTED_VALUE_TYPE => DataConstants::REQUEST_CONFIG_VALUE_TYPE_BIG_TEXT,
+            ],
+            [
+                DataConstants::REQUEST_CONFIG_ITEM_NAME => DataConstants::PROVIDER,
+                DataConstants::REQUEST_CONFIG_ITEM_LABEL => "Provider",
+                DataConstants::REQUEST_CONFIG_ITEM_SELECTED_VALUE_TYPE => DataConstants::REQUEST_CONFIG_VALUE_TYPE_ENTITY_LIST,
+                DataConstants::REQUEST_CONFIG_ITEM_VALUE_ENTITIES => [EntityType::ENTITY_PROVIDER->value]
+            ],
+            [
                 DataConstants::REQUEST_CONFIG_ITEM_NAME => DataConstants::API_AUTH_TYPE,
                 DataConstants::REQUEST_CONFIG_ITEM_LABEL => "Api Authentication Type",
                 DataConstants::REQUEST_CONFIG_ITEM_SELECTED_VALUE_TYPE => DataConstants::REQUEST_CONFIG_VALUE_TYPE_CHOICE,
@@ -122,7 +133,11 @@ class DefaultData
                 DataConstants::REQUEST_CONFIG_ITEM_SELECTED_VALUE_TYPE => DataConstants::REQUEST_CONFIG_VALUE_TYPE_CHOICE,
                 DataConstants::REQUEST_CONFIG_ITEM_VALUE_CHOICES => [
                     'query_string',
-                    'query_schema'
+                    'query_schema',
+                    'ai_gemini',
+                    'ai_gpt',
+                    'ai_grok',
+                    'ai_deepseek',
                 ]
             ],
             [
@@ -174,7 +189,10 @@ class DefaultData
                 DataConstants::REQUEST_CONFIG_ITEM_NAME => DataConstants::LIST_ITEM_SEARCH_PRIORITY,
                 DataConstants::REQUEST_CONFIG_ITEM_LABEL => "List Item Search Priority",
                 DataConstants::REQUEST_CONFIG_ITEM_SELECTED_VALUE_TYPE => DataConstants::REQUEST_CONFIG_VALUE_TYPE_ENTITY_LIST,
-                DataConstants::REQUEST_CONFIG_ITEM_VALUE_ENTITIES => EntityService::ENTITIES
+                DataConstants::REQUEST_CONFIG_ITEM_VALUE_ENTITIES => array_map(
+                    fn(EntityType $entityType) => $entityType->value,
+                    EntityType::cases()
+                )
             ],
             ...self::getServiceRequestOauthConfig(),
             ...self::getServiceRequestConfig(),

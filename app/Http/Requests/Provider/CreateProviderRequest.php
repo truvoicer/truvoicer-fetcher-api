@@ -26,6 +26,7 @@ class CreateProviderRequest extends FormRequest
         return [
             'name' => 'string|nullable',
             'label' => 'required|string',
+            'global' => 'sometimes|boolean',
             'categories' => 'sometimes|array',
             'categories.*.id' => Rule::forEach(function ($value, string $attribute) {
                 return [

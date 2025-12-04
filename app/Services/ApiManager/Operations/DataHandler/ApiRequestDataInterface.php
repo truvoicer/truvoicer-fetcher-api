@@ -2,6 +2,7 @@
 
 namespace App\Services\ApiManager\Operations\DataHandler;
 
+use App\Enums\Entity\EntityType;
 use App\Http\Resources\ApiMongoDbSearchListCollection;
 use App\Http\Resources\ApiDirectSearchListCollection;
 use App\Models\Provider;
@@ -215,19 +216,19 @@ class ApiRequestDataInterface
         );
         $filtered = array_filter($srSearchPriorityData, function ($srSearchPriorityDatum) {
             if (
-                empty($srSearchPriorityDatum[EntityService::ENTITY_SR]) ||
-                !is_array($srSearchPriorityDatum[EntityService::ENTITY_SR]) ||
-                !count($srSearchPriorityDatum[EntityService::ENTITY_SR])
+                empty($srSearchPriorityDatum[EntityType::ENTITY_SR->value]) ||
+                !is_array($srSearchPriorityDatum[EntityType::ENTITY_SR->value]) ||
+                !count($srSearchPriorityDatum[EntityType::ENTITY_SR->value])
             ) {
                 return false;
             }
-            $filtered = array_filter($srSearchPriorityDatum[EntityService::ENTITY_SR], function ($srSearchPriority) {
+            $filtered = array_filter($srSearchPriorityDatum[EntityType::ENTITY_SR->value], function ($srSearchPriority) {
                 return !empty($srSearchPriority['type']) && !empty($srSearchPriority['id']);
             });
             return count($filtered);
         }, ARRAY_FILTER_USE_BOTH);
         return array_map(function ($srSearchPriorityDatum) {
-            $filtered = array_filter($srSearchPriorityDatum[EntityService::ENTITY_SR], function ($srSearchPriority) {
+            $filtered = array_filter($srSearchPriorityDatum[EntityType::ENTITY_SR->value], function ($srSearchPriority) {
                 return !empty($srSearchPriority['type']) && !empty($srSearchPriority['id']);
             });
             $firstSr = $this->srService->getServiceRequestRepository()->findById($filtered[array_key_first($filtered)]['id']);

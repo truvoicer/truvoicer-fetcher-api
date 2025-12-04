@@ -20,6 +20,7 @@ class ProviderPropertyResource extends JsonResource
             "provider_id" => $this->provider_id,
             "property_id" => $this->property_id,
             "value" => $this->value,
+            "big_text_value" => $this->big_text_value,
             "array_value" => $this->array_value,
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,

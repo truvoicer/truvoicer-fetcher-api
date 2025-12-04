@@ -93,11 +93,31 @@ class SrConfigService extends BaseService
 
     public function requestConfigValidator(Sr $serviceRequest, ?bool $requiredOnly = false) {
         $provider = $serviceRequest->provider()->first();
+
+        $entityProviderProperty = $provider->providerProperties()
+        ->whereHas('property', function ($query) {
+            $query->where(
+                'name',
+                DataConstants::PROVIDER
+            );
+        })
+        ->first();
+        if ($entityProviderProperty) {
+            return true;
+        }
+
         $apiAuthTypeProviderProperty = $this->propertyRepository->getProviderPropertyByPropertyName(
             $provider, "api_authentication_type"
         );
         if (!($apiAuthTypeProviderProperty instanceof Property)) {
-            throw new BadRequestHttpException("Provider api_authentication_type property not found");
+
+            throw new BadRequestHttpException(
+                sprintf(
+                    "Provider (id:%s | name:%s) does not have a api_authentication_type property/config value.",
+                    $provider->id,
+                    $provider->name
+                )
+            );
         }
         $config = [];
         switch ($apiAuthTypeProviderProperty->providerProperty->value) {
@@ -129,31 +149,6 @@ class SrConfigService extends BaseService
         return true;
     }
 
-    private function getRequestConfigData(array $data)
-    {
-        $fields = [
-            'value',
-            'value_type',
-            'array_value',
-            'value_choices',
-        ];
-
-        $configData = [];
-        foreach ($fields as $field) {
-            if (isset($data[$field])) {
-                $configData[$field] = $data[$field];
-            }
-        }
-
-        if (isset($configData['array_value']) && !is_array($configData['array_value'])) {
-            throw new BadRequestHttpException("Array value is invalid");
-        }
-        if (isset($configData['value_choices']) && !is_array($configData['value_choices'])) {
-            throw new BadRequestHttpException("Value choices is invalid.");
-        }
-        return $data;
-    }
-
     public function saveRequestConfig(Sr $serviceRequest, Property $property, array $data)
     {
         if (empty($data['value_type'])) {
@@ -165,6 +160,10 @@ class SrConfigService extends BaseService
         return match ($data['value_type']) {
             'text', 'choice' => $this->requestConfigRepo->saveSrConfigProperty($serviceRequest, $property, [
                 'value' => $data['value'],
+                'array_value' => null
+            ]),
+            'big_text' => $this->requestConfigRepo->saveSrConfigProperty($serviceRequest, $property, [
+                'big_text_value' => $data['big_text_value'],
                 'array_value' => null
             ]),
             'list' => $this->requestConfigRepo->saveSrConfigProperty($serviceRequest, $property, [

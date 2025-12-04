@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Enums\Entity\EntityType;
 use App\Services\ApiManager\Data\DataConstants;
 use App\Services\EntityService;
 use Illuminate\Database\Eloquent\Factories\Factory;
@@ -26,7 +27,10 @@ class PropertyFactory extends Factory
         if ($valueType === DataConstants::REQUEST_CONFIG_VALUE_TYPE_CHOICE) {
             $valueChoices = $this->faker->words;
         } elseif ($valueType === DataConstants::REQUEST_CONFIG_VALUE_TYPE_ENTITY_LIST) {
-            $entities = EntityService::ENTITIES;
+            $entities = array_map(
+                fn(EntityType $entityType) => $entityType->value,
+                EntityType::cases()
+            );
         }
         return [
             'name' => Str::slug($label),

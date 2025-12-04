@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Repositories\SrConfigRepository;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 
 class SrConfig extends Model
 {
@@ -20,6 +21,7 @@ class SrConfig extends Model
     protected $fillable = [
         'sr_id',
         'value',
+        'big_text_value',
         'array_value',
     ];
 
@@ -40,6 +42,14 @@ class SrConfig extends Model
     public function entityLock()
     {
         return $this->morphMany(EntityLock::class, 'entity');
+    }
+
+    public function providerPropertyEntities(): MorphMany
+    {
+        return $this->morphMany(
+            ProviderPropertyEntity::class,
+            'entityable'
+        );
     }
 
 }

@@ -36,6 +36,7 @@ class ValidatorService extends BaseService
     public function validateAllProviderData(User $user): bool
     {
         $providers = $this->providerService->findProviders($user);
+
         foreach ($providers as $provider) {
             $serviceRequests = $provider->serviceRequest()->get();
             foreach ($serviceRequests as $serviceRequest) {

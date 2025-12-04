@@ -2,9 +2,13 @@
 
 namespace App\Repositories;
 
+use App\Enums\Entity\EntityType;
 use App\Models\Property;
 use App\Models\Provider;
 use App\Models\ProviderProperty;
+use App\Models\User;
+use App\Services\EntityService;
+use Exception;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -68,6 +72,40 @@ class ProviderPropertyRepository extends BaseRepository
             ->first();
     }
 
+    public function saveProviderPropertyEntity(User $user, Provider $provider, Property $property, array $data)
+    {
+        $findProviderProperty = $this->findProviderProperty($provider, $property);
+        if (!$findProviderProperty instanceof Property) {
+            $findProviderProperty = ProviderProperty::create(['provider_id' => $provider->id, 'property_id' => $property->id, ...$data]);
+            if (!$findProviderProperty->exists()) {
+                return false;
+            }
+        } else {
+            $findProviderProperty = $findProviderProperty->providerProperty;
+        }
+        $this->setModel($findProviderProperty);
+
+        foreach ($data as $index => $item) {
+            foreach ($item as $entity => $ids) {
+                $entityType = EntityType::tryFrom($entity);
+                if (!$entityType) {
+                    throw new Exception('Invalid entity type: ' . $entity);
+                }
+                if (!is_array($ids)) {
+                    continue;
+                }
+
+                EntityService::getInstance()
+                    ->syncProviderPropertyEntities(
+                        $user,
+                        $findProviderProperty,
+                        $entityType,
+                        $ids
+                    );
+            }
+        }
+        return true;
+    }
     public function saveProviderProperty(Provider $provider, Property $property, array $data)
     {
         $findProviderProperty = $this->findProviderProperty($provider, $property);
@@ -85,5 +123,4 @@ class ProviderPropertyRepository extends BaseRepository
     {
         return ($provider->properties()->detach($property->id) > 0);
     }
-
 }

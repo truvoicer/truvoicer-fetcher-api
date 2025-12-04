@@ -139,7 +139,7 @@ class DataProcessor
     }
 
     public function replaceListItemValueStr(string $placeholder, string|int $replace, string|int $value) {
-        
+
         return str_replace($placeholder, $replace, $value);
     }
 
@@ -240,6 +240,8 @@ class DataProcessor
                 return $property->value;
             case 'list':
                 return $property->array_value;
+            case 'big_text':
+                return $property->big_text_value;
         }
         return null;
     }

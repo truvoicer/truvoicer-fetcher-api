@@ -18,6 +18,7 @@ class ProviderMinimalResource extends JsonResource
             'id' => $this->id,
             'name' => $this->name,
             'label' => $this->label,
+            'global' => $this->global,
         ];
     }
 }

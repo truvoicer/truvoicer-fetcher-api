@@ -4,6 +4,7 @@ namespace App\Services\ApiServices\ServiceRequests\ResponseKeys;
 
 //use App\Models\ResponseKeyRequestItem;
 use App\Exceptions\SrValidationException;
+use App\Models\Provider;
 use App\Models\Sr;
 use App\Models\SResponseKey;
 use App\Models\SrResponseKey;
@@ -18,6 +19,7 @@ use App\Services\ApiServices\ServiceRequests\SrConfigService;
 use App\Services\ApiServices\ServiceRequests\SrService;
 use App\Services\BaseService;
 use App\Services\Permission\AccessControlService;
+use App\Services\Provider\ProviderService;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
@@ -70,20 +72,51 @@ class SrResponseKeyService extends BaseService
     }
 
 
-    public function validateSrResponseKeys(Sr $sr, ?bool $requiredOnly = false)
+    public function validateSrResponseKeys(Sr $sr, ?bool $requiredOnly = false): bool
     {
-        $responseFormatValue = $this->srConfigService->getConfigValue($sr, DataConstants::RESPONSE_FORMAT);
         $provider = $sr->provider()->first();
-        if (empty($responseFormatValue)) {
-            throw new SrValidationException(
-                sprintf(
-                    "Service request (id:%s | name:%s | provider id:%s name: %s) does not have a response_format property/config value.",
-                    $sr->id,
-                    $sr->name,
-                    $provider->id,
-                    $provider->name
-                )
+
+        $entityProviderProperty = $provider->providerProperties()
+        ->whereHas('property', function ($query) {
+            $query->where(
+                'name',
+                DataConstants::PROVIDER
             );
+        })
+        ->first();
+
+        if (!$entityProviderProperty) {
+            $responseFormatValue = $this->srConfigService->getConfigValue($sr, DataConstants::RESPONSE_FORMAT);
+
+            if (empty($responseFormatValue)) {
+                throw new SrValidationException(
+                    sprintf(
+                        "Service request (id:%s | name:%s | provider id:%s name: %s) does not have a response_format property/config value.",
+                        $sr->id,
+                        $sr->name,
+                        $provider->id,
+                        $provider->name
+                    )
+                );
+            }
+        } else {
+            $providerPropertyEntity = $entityProviderProperty->providerPropertyEntities->first();
+
+            $providerService = app(ProviderService::class);
+
+            $responseFormatValue = $providerService->getProviderPropertyValue(
+                $providerPropertyEntity->entityable,
+                DataConstants::RESPONSE_FORMAT
+            );
+            if (empty($responseFormatValue)) {
+                throw new SrValidationException(
+                    sprintf(
+                        "Provider (id:%s | name:%s) does not have a response_format property/config value.",
+                        $providerPropertyEntity->entityable->id,
+                        $providerPropertyEntity->entityable->name
+                    )
+                );
+            }
         }
         return $this->SResponseKeyRepository->createDefaultServiceResponseKeys(
             $sr->s()->first(),
