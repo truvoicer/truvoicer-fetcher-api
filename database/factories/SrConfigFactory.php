@@ -20,6 +20,7 @@ class SrConfigFactory extends Factory
         return [
             'value' => $this->faker->word,
             'array_value' => $this->faker->words,
+            'big_text_value' => $this->faker->sentences(7)
         ];
     }
 

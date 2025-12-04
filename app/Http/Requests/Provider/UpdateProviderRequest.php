@@ -24,6 +24,7 @@ class UpdateProviderRequest extends FormRequest
         return [
             'name' => 'string|nullable',
             'label' => 'string|nullable',
+            'global' => 'sometimes|boolean',
             'categories' => 'array|nullable',
         ];
     }

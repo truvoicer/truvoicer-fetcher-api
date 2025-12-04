@@ -2,10 +2,13 @@
 
 namespace App\Services\ApiManager\Client;
 
+use App\Enums\Api\Manager\ApiClientRequestType;
+use App\Services\Ai\Gemini\GeminiClient;
 use App\Services\ApiManager\ApiBase;
 use App\Services\ApiManager\Client\Entity\ApiRequest;
 use Exception;
 use Illuminate\Http\Client\PendingRequest;
+use Illuminate\Http\Client\Response;
 use Illuminate\Support\Facades\Http;
 
 class ApiClientHandler extends ApiBase
@@ -14,7 +17,39 @@ class ApiClientHandler extends ApiBase
     /**
      * @throws Exception
      */
-    public function sendRequest(ApiRequest $apiRequest)
+    public function sendRequest(ApiRequest $apiRequest): Response|null
+    {
+        switch($apiRequest->getApiClientRequestType()) {
+            case ApiClientRequestType::AI_DEEP_SEEK:
+
+                return null;
+            case ApiClientRequestType::AI_GEMINI:
+                return $this->sendAiGeminiRequest($apiRequest);
+            case ApiClientRequestType::AI_GPT:
+
+                return null;
+            case ApiClientRequestType::AI_GROK:
+
+                return null;
+            case ApiClientRequestType::DEFAULT:
+                return $this->sendDefaultRequest($apiRequest);
+            default:
+                throw new Exception('Invalid ApiClientRequestType');
+        }
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function sendAiGeminiRequest(ApiRequest $apiRequest): Response
+    {
+        $geminiService = app(GeminiClient::class);
+        return $geminiService->makeRequest();
+    }
+    /**
+     * @throws Exception
+     */
+    public function sendDefaultRequest(ApiRequest $apiRequest): Response
     {
         try {
             $headers = $apiRequest->getHeaders();

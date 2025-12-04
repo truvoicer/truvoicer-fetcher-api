@@ -18,11 +18,13 @@ class DataConstants
     const REQUEST_CONFIG_ITEM_VALUE_CHOICES = "value_choices";
     const REQUEST_CONFIG_ITEM_VALUE_ENTITIES = "entities";
 
+    public const REQUEST_CONFIG_VALUE_TYPE_BIG_TEXT = 'big_text';
     public const REQUEST_CONFIG_VALUE_TYPE_TEXT = 'text';
     public const REQUEST_CONFIG_VALUE_TYPE_CHOICE = 'choice';
     public const REQUEST_CONFIG_VALUE_TYPE_LIST = 'list';
     public const REQUEST_CONFIG_VALUE_TYPE_ENTITY_LIST = 'entity_list';
     public const REQUEST_CONFIG_VALUE_TYPES = [
+        self::REQUEST_CONFIG_VALUE_TYPE_BIG_TEXT,
         self::REQUEST_CONFIG_VALUE_TYPE_TEXT,
         self::REQUEST_CONFIG_VALUE_TYPE_CHOICE,
         self::REQUEST_CONFIG_VALUE_TYPE_LIST,
@@ -39,6 +41,8 @@ class DataConstants
     const AUTH_NONE = 'none';
 
     const LIST_ITEM_SEARCH_PRIORITY = "list_item_search_priority";
+    const AI_PROMPT = "ai_prompt";
+    const PROVIDER = "provider";
     const API_AUTH_TYPE = "api_authentication_type";
     const OAUTH_API_AUTH_TYPE = "oauth_api_authentication_type";
     const OAUTH_TOKEN_URL = "oauth_token_url";

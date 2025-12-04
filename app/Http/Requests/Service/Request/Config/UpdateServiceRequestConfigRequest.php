@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Service\Request\Config;
 
+use App\Services\ApiManager\Data\DataConstants;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -30,7 +31,12 @@ class UpdateServiceRequestConfigRequest extends FormRequest
                 Rule::requiredIf(fn () => in_array($this->get('value_type'), ['text', 'choice']))
             ],
             "value_type" => [
-                Rule::in(['list', 'text', 'choice'])
+                Rule::in(DataConstants::REQUEST_CONFIG_VALUE_TYPES)
+            ],
+            "big_text_value" => [
+                'string',
+                'nullable',
+                'required_if:value_type,big_text'
             ],
             "array_value" => [
                 'array',

@@ -54,8 +54,7 @@ class ProviderService extends BaseService
         ApiService           $apiService,
         SResponseKeysService $responseKeysService,
         AccessControlService $accessControlService
-    )
-    {
+    ) {
         parent::__construct();
         $this->apiService = $apiService;
         $this->responseKeysService = $responseKeysService;
@@ -80,7 +79,6 @@ class ProviderService extends BaseService
         return $this->providerRepository->findUserProviders($user);
     }
 
-
     public function findProvidersByService(S $service, $user): Collection
     {
         $this->providerRepository->setQuery(
@@ -97,7 +95,8 @@ class ProviderService extends BaseService
     {
         $provider = $this->providerRepository->findById($providerId);
         if ($provider === null) {
-            throw new BadRequestHttpException(sprintf("Provider id:%s not found in database.",
+            throw new BadRequestHttpException(sprintf(
+                "Provider id:%s not found in database.",
                 $providerId
             ));
         }
@@ -146,7 +145,7 @@ class ProviderService extends BaseService
         if (!$property instanceof Property) {
             return null;
         }
-        if (!$property->providerProperty instanceof ProviderProperty ) {
+        if (!$property->providerProperty instanceof ProviderProperty) {
             return null;
         }
         return $property;
@@ -170,11 +169,12 @@ class ProviderService extends BaseService
                 'entity_type' => Provider::class
             ],
             [
-            'user_id' => $user->id,
-            'status' => EntityLockStatus::LOCKED,
-            'locked_at' => now(),
-            'unlocked_at' => null
-        ]);
+                'user_id' => $user->id,
+                'status' => EntityLockStatus::LOCKED,
+                'locked_at' => now(),
+                'unlocked_at' => null
+            ]
+        );
         return $lockProvider->status === EntityLockStatus::LOCKED;
     }
     public function unlockProvider(User $user, Provider $provider)
@@ -192,6 +192,7 @@ class ProviderService extends BaseService
         $fields = [
             'name',
             'label',
+            'global'
         ];
         try {
             $data = [];
@@ -295,8 +296,12 @@ class ProviderService extends BaseService
         );
     }
 
-    public function createProviderProperty(Provider $provider, Property $property, array $data)
-    {
+    public function createProviderProperty(
+        User $user,
+        Provider $provider,
+        Property $property,
+        array $data
+    ) {
         if (empty($data['value_type'])) {
             if ($this->throwException) {
                 throw new BadRequestHttpException("Value type is required.");
@@ -309,12 +314,21 @@ class ProviderService extends BaseService
                 'value' => $data['value'],
                 'array_value' => null
             ]),
-            DataConstants::REQUEST_CONFIG_VALUE_TYPE_LIST,
-            DataConstants::REQUEST_CONFIG_VALUE_TYPE_ENTITY_LIST=> $this->providerPropertyRepository->saveProviderProperty($provider, $property, [
+            DataConstants::REQUEST_CONFIG_VALUE_TYPE_BIG_TEXT => $this->providerPropertyRepository->saveProviderProperty($provider, $property, [
+                'big_text_value' => $data['big_text_value'],
+                'array_value' => null
+            ]),
+            DataConstants::REQUEST_CONFIG_VALUE_TYPE_LIST => $this->providerPropertyRepository->saveProviderProperty($provider, $property, [
                 'array_value' => $data['array_value'],
                 'value' => null,
             ]),
-            default => ($this->throwException)? throw new BadRequestHttpException("Invalid value type.") : false,
+            DataConstants::REQUEST_CONFIG_VALUE_TYPE_ENTITY_LIST => $this->providerPropertyRepository->saveProviderPropertyEntity(
+                $user,
+                $provider,
+                $property,
+                $data['array_value']
+            ),
+            default => ($this->throwException) ? throw new BadRequestHttpException("Invalid value type.") : false,
         };
     }
 
@@ -356,5 +370,4 @@ class ProviderService extends BaseService
     {
         return $this->providerPropertyRepository;
     }
-
 }

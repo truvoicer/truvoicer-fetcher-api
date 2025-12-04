@@ -2,63 +2,130 @@
 
 namespace App\Services;
 
+use App\Enums\Entity\EntityType;
 use App\Enums\Import\EntityLockStatus;
+use App\Http\Resources\ProviderMinimalCollection;
 use App\Http\Resources\Service\ServiceRequest\SrTreeViewCollection;
 use App\Models\EntityLock;
 use App\Models\Provider;
+use App\Models\ProviderProperty;
+use App\Models\ProviderPropertyEntity;
 use App\Models\User;
+use App\Repositories\ProviderRepository;
 use App\Repositories\SrRepository;
-use App\Services\ApiServices\ServiceRequests\SrService;
 
 class EntityService extends BaseService
 {
-    public const ENTITY_SR = 'service_requests';
-    public const ENTITY_PROVIDER = 'provider';
-    public const ENTITY_USER = 'user';
-    public const ENTITY_SERVICE = 'service';
-    public const ENTITY_PROPERTY = 'property';
-    public const ENTITY_SR_CONFIG = 'sr_config';
-    public const ENTITY_SR_PARAMETER = 'sr_parameter';
-    public const ENTITIES = [
-        self::ENTITY_SR,
-        self::ENTITY_PROVIDER,
-        self::ENTITY_USER,
-        self::ENTITY_SERVICE,
-        self::ENTITY_PROPERTY,
-        self::ENTITY_SR_CONFIG,
-        self::ENTITY_SR_PARAMETER,
-    ];
 
     private SrRepository $srRepository;
+    private ProviderRepository $providerRepository;
 
-    public function __construct(
-
-    )
+    public function __construct()
     {
         parent::__construct();
         $this->srRepository = new SrRepository();
+        $this->providerRepository = new ProviderRepository();
     }
 
-    public function getEntityList(User $user, string $entity, ?array $ids): ?SrTreeViewCollection
+    public function getEntityList(User $user, string $entity, ?array $ids): SrTreeViewCollection|ProviderMinimalCollection|null
     {
         switch ($entity) {
-            case self::ENTITY_SR:
+            case EntityType::ENTITY_SR->value:
                 $this->srRepository->setPagination(false);
                 return new SrTreeViewCollection(
                     $this->srRepository->getUserServiceRequestByProviderIds(
-                        $user, $ids
+                        $user,
+                        $ids
+                    )
+                );
+            case EntityType::ENTITY_PROVIDER->value:
+                $this->providerRepository->setPagination(false);
+                return new ProviderMinimalCollection(
+                    $this->providerRepository->findUserProviders(
+                        $user
                     )
                 );
         }
         return null;
     }
-    public function getEntityListByEntityIds(User $user, string $entity, ?array $ids)
-    {
+    public function getEntityListByEntityIds(
+        User $user,
+        string $entity,
+        ?array $ids
+    ) {
         switch ($entity) {
-            case self::ENTITY_SR:
+            case EntityType::ENTITY_SR->value:
                 return  $this->srRepository->getUserServiceRequestByIds($user, $ids);
+            case EntityType::ENTITY_PROVIDER->value:
+                return $this->providerRepository
+                    ->setQuery(
+                        Provider::whereIn('id', $ids)
+                    )
+                    ->findUserProviders(
+                        $user
+                    );
         }
         return null;
+    }
+
+    public function findEntityId(
+        User $user,
+        string $entity,
+        int $id
+    ) {
+        switch ($entity) {
+            case EntityType::ENTITY_SR->value:
+                return $this->srRepository->getUserServiceRequestByIds($user, [$id])->first();
+            case EntityType::ENTITY_PROVIDER->value:
+                return $this->providerRepository
+                    ->setQuery(
+                        Provider::where('id', $id)
+                    )
+                    ->findUserProviders(
+                        $user
+                    )->first();
+        }
+        return null;
+    }
+
+    public function removeMissingProviderPropertyEntities(
+        EntityType $entityType,
+        array $ids
+    ): void {
+        $className = $entityType->className();
+        $instance = new $className();
+        ProviderPropertyEntity::whereDoesntHaveMorph(
+            'entityable',
+            $entityType->className(),
+            function ($query) use ($ids, $instance) {
+                $query->whereIn(
+                    $instance->getTable().'.id',
+                    $ids
+                );
+            }
+        )->delete();
+    }
+
+    public function syncProviderPropertyEntities(
+        User $user,
+        ProviderProperty $providerProperty,
+        EntityType $entityType,
+        array $ids
+    ): void {
+        $this->removeMissingProviderPropertyEntities(
+            $entityType,
+            $ids
+        );
+        $entities = $this->getEntityListByEntityIds(
+            $user,
+            $entityType->value,
+            $ids
+        );
+        foreach ($entities as $entity) {
+            $entity->providerPropertyEntities()->updateOrCreate([
+                'provider_property_id' => $providerProperty->id
+            ]);
+        }
     }
 
     public function lockEntity(User $user, int $id, string $class)
@@ -76,7 +143,8 @@ class EntityService extends BaseService
                 'status' => EntityLockStatus::LOCKED,
                 'locked_at' => now(),
                 'unlocked_at' => null
-            ]);
+            ]
+        );
         return $lockProvider->status === EntityLockStatus::LOCKED;
     }
 
@@ -94,5 +162,4 @@ class EntityService extends BaseService
     {
         return new EntityService();
     }
-
 }

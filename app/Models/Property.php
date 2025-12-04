@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Repositories\PropertyRepository;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 
 class Property extends Model
 {
@@ -58,5 +59,13 @@ class Property extends Model
     public function entityLock()
     {
         return $this->morphMany(EntityLock::class, 'entity');
+    }
+
+    public function providerPropertyEntities(): MorphMany
+    {
+        return $this->morphMany(
+            ProviderPropertyEntity::class,
+            'entityable'
+        );
     }
 }

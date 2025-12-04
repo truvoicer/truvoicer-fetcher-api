@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\Entity\EntityType;
 use App\Repositories\ProviderPropertyRepository;
 use App\Services\ApiManager\Data\DataConstants;
 use App\Services\EntityService;
@@ -9,6 +10,8 @@ use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Arr;
 
 class ProviderProperty extends Model
 {
@@ -25,73 +28,52 @@ class ProviderProperty extends Model
         'provider_id',
         'property_id',
         'value',
-        'array_value'
+        'big_text_value',
+        'array_value',
     ];
 
-//    protected $with = ['provider', 'property'];
+    //    protected $with = ['provider', 'property'];
     protected function arrayValue(): Attribute
     {
         return Attribute::make(
-            get: fn (mixed $value, array $attributes) => $this->getArrayValue($value, $attributes, request()->user()),
+            get: fn(mixed $value, array $attributes) => $this->getArrayValue($value, $attributes, request()->user()),
         );
+    }
+    public function findIndex(array $array, string $key) {
+        foreach ($array as $index => $item) {
+            if (array_key_exists($key, $item)) {
+                return $index;
+            }
+        }
+        return false;
     }
     public function getArrayValue(mixed $value, array $attributes, User $user)
     {
         $value = json_decode($value, true);
         switch ($this->property->value_type) {
             case DataConstants::REQUEST_CONFIG_VALUE_TYPE_ENTITY_LIST:
-                if (!is_array($value)) {
-                    return $value;
-                }
-                if (!count($value)) {
-                    return $value;
-                }
+
                 $data = [];
-                foreach ($value as $key => $valueItem) {
-                    foreach (EntityService::ENTITIES as $entity) {
-                        if (!array_key_exists($entity, $data)) {
-                            $data[$entity] = [];
+
+                $this->providerPropertyEntities->each(
+                    function (ProviderPropertyEntity $providerPropertyEntity) use(&$data) {
+                        $entityType = EntityType::fromClassName($providerPropertyEntity->entityable_type);
+                        if (!$entityType) {
+                            return;
                         }
-                        if (empty($valueItem[$entity])) {
-                            continue;
-                        }
-                        if (is_array($valueItem[$entity])) {
-                            $data[$entity] = [
-                                ...$data[$entity],
-                                ...$valueItem[$entity],
+                        $find = $this->findIndex($data, $entityType->value);
+                        if ($find === false) {
+                            $data[] = [
+                                $entityType->value => [
+                                    $providerPropertyEntity->entityable->only(['id', 'name', 'label'])
+                                ]
                             ];
-                            continue;
+                        } else {
+                            $data[$find][$entityType->value][] = $providerPropertyEntity->entityable->only(['id', 'name', 'label']);
                         }
-                        $data[$entity][] = $valueItem[$entity];
                     }
-                }
-                $data = array_filter($data, function ($item) {
-                    return !empty($item);
-                });
-                $collection = [];
-                foreach ($data as $key => $valueItem) {
-                    $srs = EntityService::getInstance()->getEntityListByEntityIds($user, $key, $valueItem);
-                    if ($srs instanceof Collection) {
-                        $collection[$key] = $srs;
-                    }
-                }
-
-                return array_map(function ($item) use ($collection) {
-                    foreach (EntityService::ENTITIES as $entity) {
-                        if (!array_key_exists($entity, $item)) {
-                            continue;
-                        }
-                        if (!is_array($item[$entity])) {
-                            continue;
-                        }
-                        $collectionItem = $collection[$entity];
-                        $item[$entity] = array_map(function ($entityItem) use($collectionItem) {
-                            return $collectionItem->firstWhere('id', $entityItem)->only(['id', 'name', 'label', 'type']);
-                        }, $item[$entity]);
-
-                    }
-                    return $item;
-                }, $value);
+                );
+                return $data;
             default:
                 return $value;
         }
@@ -110,5 +92,10 @@ class ProviderProperty extends Model
     public function entityLock()
     {
         return $this->morphMany(EntityLock::class, 'entity');
+    }
+
+    public function providerPropertyEntities(): HasMany
+    {
+        return $this->hasMany(ProviderPropertyEntity::class);
     }
 }

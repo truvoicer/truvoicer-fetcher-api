@@ -57,7 +57,13 @@ class ApiRequestSearchService
             $this->mongoDBRaw->addWhereGroup(
                 'and',
                 function ($query) use ($itemIds) {
-                    $query->addWhere('_id', 'in', $itemIds, 'and');
+                    $query->addWhere('item_id', 'in', $itemIds, 'and');
+                    foreach ($itemIds as $key => $value) {
+                        if (!is_numeric($value)) {
+                            continue;
+                        }
+                        $query->addWhere('item_id', intval($value), 'or');
+                    }
                 }
             );
             $this->mongoDBRaw->addWhereGroup(

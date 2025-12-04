@@ -154,6 +154,7 @@ class PopulateTypeBase
             $this->destSr,
         );
         $parsedData = $this->parseResponseKey($data);
+
         $srResponseKeySaveData = [
             'list_item' => true,
             'show_in_response' => true

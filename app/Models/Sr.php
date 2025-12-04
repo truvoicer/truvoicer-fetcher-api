@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Repositories\SrRepository;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 
 class Sr extends Model
 {
@@ -146,5 +147,13 @@ class Sr extends Model
     public function entityLock()
     {
         return $this->morphMany(EntityLock::class, 'entity');
+    }
+
+    public function providerPropertyEntities(): MorphMany
+    {
+        return $this->morphMany(
+            ProviderPropertyEntity::class,
+            'entityable'
+        );
     }
 }

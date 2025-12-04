@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Enums\Entity\EntityType;
 use App\Services\EntityService;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -24,7 +25,7 @@ class EntityRequest extends FormRequest
     public function rules(): array
     {
         return [
-            "entity" => ["required", "string", Rule::in(EntityService::ENTITIES)],
+            "entity" => ["required", "string", Rule::enum(EntityType::class)],
             'ids' => 'array',
         ];
     }

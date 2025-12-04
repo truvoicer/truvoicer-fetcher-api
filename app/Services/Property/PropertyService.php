@@ -33,6 +33,8 @@ class PropertyService extends BaseService {
             case 'choice':
             case 'text':
                 return $property->value;
+            case 'big_text':
+                return $property->big_text_value;
             case 'list':
             case 'entity_list':
                 return $property->array_value;

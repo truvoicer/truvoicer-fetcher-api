@@ -32,6 +32,11 @@ class SaveProviderPropertyRequest extends FormRequest
             "value_type" => [
                 Rule::in(DataConstants::REQUEST_CONFIG_VALUE_TYPES)
             ],
+            "big_text_value" => [
+                'string',
+                'nullable',
+                'required_if:value_type,big_text'
+            ],
             "array_value" => [
                 'array',
                 'nullable',

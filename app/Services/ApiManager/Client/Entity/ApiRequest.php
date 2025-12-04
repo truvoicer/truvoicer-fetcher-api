@@ -1,6 +1,7 @@
 <?php
 namespace App\Services\ApiManager\Client\Entity;
 
+use App\Enums\Api\Manager\ApiClientRequestType;
 use App\Traits\ObjectTrait;
 
 class ApiRequest
@@ -17,7 +18,8 @@ class ApiRequest
     public const USERNAME = 'username';
     public const PASSWORD = 'password';
 
-
+    private ApiClientRequestType $apiClientRequestType = ApiClientRequestType::DEFAULT;
+    private string $accessToken;
     private string $method = "";
     private string $url = "";
     private array $headers = [];
@@ -25,6 +27,41 @@ class ApiRequest
     private array $postBody = [];
     private ?string $body = null;
     private array $authentication = [];
+
+    /**
+     * @return ApiClientRequestType
+     */
+    public function getApiClientRequestType(): ApiClientRequestType
+    {
+        return $this->apiClientRequestType;
+    }
+
+    /**
+     * @param ApiClientRequestType $apiClientRequestType
+     */
+    public function setApiClientRequestType(
+        ApiClientRequestType $apiClientRequestType
+    ): static
+    {
+        $this->apiClientRequestType = $apiClientRequestType;
+        return $this;
+    }
+
+    /**
+     * @return string
+     */
+    public function getAccessToken(): string
+    {
+        return $this->accessToken;
+    }
+
+    /**
+     * @param string $accessToken
+     */
+    public function setAccessToken(string $accessToken): void
+    {
+        $this->accessToken = $accessToken;
+    }
 
     /**
      * @return string

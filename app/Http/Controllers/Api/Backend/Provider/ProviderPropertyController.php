@@ -127,6 +127,7 @@ class ProviderPropertyController extends Controller
         }
 
         $create = $this->providerService->createProviderProperty(
+            $request->user(),
             $provider,
             $property,
             $request->validated()

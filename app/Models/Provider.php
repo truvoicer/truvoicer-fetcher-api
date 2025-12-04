@@ -6,6 +6,8 @@ use App\Repositories\ProviderRepository;
 use App\Repositories\ProviderUserRepository;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Provider extends Model
 {
@@ -18,6 +20,11 @@ class Provider extends Model
     protected $fillable = [
         'name',
         'label',
+        'global',
+    ];
+
+    protected $casts = [
+        'global' => 'boolean'
     ];
 
     public function users()
@@ -85,7 +92,14 @@ class Provider extends Model
             'provider_id',
             'property_id',
             'value',
-            'array_value'
+            'array_value',
+            'big_text_value',
+        );
+    }
+    public function providerProperties(): HasMany
+    {
+        return $this->hasMany(
+            ProviderProperty::class
         );
     }
     public function oauthAccessToken()
@@ -96,5 +110,13 @@ class Provider extends Model
     public function entityLock()
     {
         return $this->morphMany(EntityLock::class, 'entity');
+    }
+
+    public function providerPropertyEntities(): MorphMany
+    {
+        return $this->morphMany(
+            ProviderPropertyEntity::class,
+            'entityable'
+        );
     }
 }

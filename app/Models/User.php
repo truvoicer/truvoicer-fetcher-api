@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Repositories\UserRepository;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
@@ -102,5 +103,13 @@ class User extends Authenticatable
 
     public function settings(): HasOne {
         return $this->hasOne(UserSetting::class);
+    }
+
+    public function providerPropertyEntities(): MorphMany
+    {
+        return $this->morphMany(
+            ProviderPropertyEntity::class,
+            'entityable'
+        );
     }
 }
