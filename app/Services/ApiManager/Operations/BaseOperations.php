@@ -216,7 +216,6 @@ class BaseOperations extends ApiBase
         $postBody = $this->dataProcessor->getConfigValue(DataConstants::POST_BODY);
         $query = $this->dataProcessor->getConfigValue(DataConstants::QUERY);
 
-
         if ($headers) {
             $headers = $this->dataProcessor->replaceListItemsOffsetPlaceholders($headers);
             $headers = $this->buildListValues($headers);
