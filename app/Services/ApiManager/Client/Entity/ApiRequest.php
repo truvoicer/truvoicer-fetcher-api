@@ -18,7 +18,7 @@ class ApiRequest
     public const USERNAME = 'username';
     public const PASSWORD = 'password';
 
-    private ApiClientRequestType $apiClientRequestType = ApiClientRequestType::DEFAULT;
+
     private string $accessToken;
     private string $method = "";
     private string $url = "";
@@ -28,6 +28,7 @@ class ApiRequest
     private ?string $body = null;
     private array $authentication = [];
 
+    private ApiClientRequestType $apiClientRequestType = ApiClientRequestType::DEFAULT;
     /**
      * @return ApiClientRequestType
      */
@@ -45,6 +46,79 @@ class ApiRequest
     {
         $this->apiClientRequestType = $apiClientRequestType;
         return $this;
+    }
+
+
+    /**
+     * @var string|null The AI prompt text.
+     */
+    private ?string $aiPrompt = null;
+
+    /**
+     * @var string|null The AI System prompt text.
+     */
+    private ?string $aiSystemPrompt = null;
+
+    /**
+     * @var int|float|null The AI Ai Temperature text.
+     */
+    private int|float|null $aiTemperature = null;
+
+    /**
+     * Retrieves the current value of the AI prompt.
+     * * @return string|null The AI prompt string, or null if it has not been set.
+     */
+    public function getAiPrompt(): ?string
+    {
+        return $this->aiPrompt;
+    }
+
+    /**
+     * Sets the value of the AI prompt.
+     * * @param string $aiPrompt The new AI prompt string.
+     * @return void
+     */
+    public function setAiPrompt(string $aiPrompt): void
+    {
+        $this->aiPrompt = $aiPrompt;
+    }
+
+    /**
+     * Retrieves the current value of the AI prompt.
+     * * @return string|null The AI prompt string, or null if it has not been set.
+     */
+    public function getAiSystemPrompt(): ?string
+    {
+        return $this->aiSystemPrompt;
+    }
+
+    /**
+     * Sets the value of the AI prompt.
+     * * @param string $aiPrompt The new AI prompt string.
+     * @return void
+     */
+    public function setAiSystemPrompt(string $aiSystemPrompt): void
+    {
+        $this->aiSystemPrompt = $aiSystemPrompt;
+    }
+
+    /**
+     * Retrieves the current value of the AI Temperature.
+     * * @return int|float|null The AI Temperature, or null if it has not been set.
+     */
+    public function getAiTemperature(): int|float|null
+    {
+        return $this->aiTemperature;
+    }
+
+    /**
+     * Sets the value of the AI temperature.
+     * * @param int|float|null  $aiPrompt The new AI temperature.
+     * @return void
+     */
+    public function setAiTemperature(int|float|null $aiTemperature): void
+    {
+        $this->aiTemperature = $aiTemperature;
     }
 
     /**

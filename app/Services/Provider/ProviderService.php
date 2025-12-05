@@ -27,6 +27,8 @@ use App\Services\Permission\PermissionService;
 use App\Services\Property\PropertyService;
 use App\Services\ApiServices\SResponseKeysService;
 use App\Helpers\Tools\UtilHelpers;
+use App\Models\Sr;
+use App\Models\SrConfig;
 use App\Services\Task\ScheduleService;
 use App\Services\User\UserAdminService;
 use Illuminate\Console\Scheduling\Schedule;
@@ -137,6 +139,64 @@ class ProviderService extends BaseService
             return $property['name'];
         }, DefaultData::getProviderProperties());
         return $this->providerPropertyRepository->findAllProviderProperties($provider, $properties);
+    }
+
+    public function getProviderEntityFromSrConfig(
+        Sr $sr
+    ): Provider|null
+    {
+   /** @var \App\Models\SrConfig $srConfigProviderProperty */
+        $srConfigProviderProperty = $sr->srConfig()
+            ->whereHas('property', function ($query) {
+                $query->where(
+                    'name',
+                    DataConstants::PROVIDER
+                );
+            })
+            ->first();
+
+        if (!$srConfigProviderProperty) {
+            return null;
+        }
+        $srConfigEntity = $srConfigProviderProperty->srConfigEntities?->first();
+        if (!$srConfigEntity) {
+            return null;
+        }
+        $provider = $srConfigEntity->entityable;
+
+        if (!$provider instanceof Provider) {
+            return null;
+        }
+        return $provider;
+    }
+
+    public function getProviderEntityFromProviderProperties(
+        Provider $provider
+    ): Provider|null
+    {
+        /** @var \App\Models\ProviderProperty $providersProviderProperty */
+        $providersProviderProperty = $provider->providerProperties()
+            ->whereHas('property', function ($query) {
+                $query->where(
+                    'name',
+                    DataConstants::PROVIDER
+                );
+            })
+            ->first();
+
+        if (!$providersProviderProperty) {
+            return null;
+        }
+        $providerPropertyEntity = $providersProviderProperty->providerPropertyEntities->first();
+        if (!$providerPropertyEntity) {
+            return null;
+        }
+        $provider = $providerPropertyEntity->entityable;
+
+        if (!$provider instanceof Provider) {
+            return null;
+        }
+        return $provider;
     }
 
     public function getProviderPropertyItem(Provider $provider, string $propertyName)

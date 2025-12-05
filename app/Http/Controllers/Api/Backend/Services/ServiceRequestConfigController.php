@@ -53,9 +53,7 @@ class ServiceRequestConfigController extends Controller
         ) {
             return $this->sendErrorResponse("Access denied");
         }
-//        if (!$this->requestConfigService->requestConfigValidator($serviceRequest, true)) {
-//            return $this->sendErrorResponse("Error validating request config");
-//        }
+
         $findRequestConfigs = $this->requestConfigService->findByParams(
             $serviceRequest,
         );
@@ -125,6 +123,7 @@ class ServiceRequestConfigController extends Controller
             return $this->sendErrorResponse("Access denied");
         }
         $create = $this->requestConfigService->saveRequestConfig(
+            $request->user(),
             $serviceRequest,
             $property,
             $request->all()

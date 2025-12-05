@@ -5,13 +5,10 @@ namespace App\Models;
 use App\Enums\Entity\EntityType;
 use App\Repositories\ProviderPropertyRepository;
 use App\Services\ApiManager\Data\DataConstants;
-use App\Services\EntityService;
 use Illuminate\Database\Eloquent\Casts\Attribute;
-use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Support\Arr;
 
 class ProviderProperty extends Model
 {
@@ -32,7 +29,6 @@ class ProviderProperty extends Model
         'array_value',
     ];
 
-    //    protected $with = ['provider', 'property'];
     protected function arrayValue(): Attribute
     {
         return Attribute::make(

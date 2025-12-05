@@ -35,6 +35,7 @@ class PopulateTypeJson extends PopulateTypeBase
         $this->requestOperation->setProviderName($provider->name);
         $this->requestOperation->setApiRequestName($sr->name);
         $this->requestOperation->setUser($this->getUser());
+
         return $this->requestOperation->getOperationRequestContent('raw', $query);
     }
 
@@ -150,8 +151,20 @@ class PopulateTypeJson extends PopulateTypeBase
             return false;
         }
 
-        if (!empty($this->data['items_array']) && $this->data['items_array'] === 'root_array') {
-            return $this->srTypeHandler($sr, $requestData);
+        if (
+            !empty($this->data['items_array']) &&
+            $this->data['items_array'] === 'root_item'
+        ) {
+            return $this->srTypeHandler($sr, [$requestData]);
+        }
+        if (
+            !empty($this->data['items_array']) &&
+            $this->data['items_array'] === 'root_array'
+        ) {
+            return $this->srTypeHandler(
+                $sr,
+                $requestData
+            );
         }
 
         if (Arr::isList($requestData)) {
@@ -182,7 +195,9 @@ class PopulateTypeJson extends PopulateTypeBase
     private function srTypeHandler(Sr $sr, array $data): bool
     {
         return match ($sr->type) {
-            SrRepository::SR_TYPE_LIST => $this->populateResponseKeys($data[array_key_first($data)]),
+            SrRepository::SR_TYPE_LIST => $this->populateResponseKeys(
+                $data[array_key_first($data)]
+            ),
             SrRepository::SR_TYPE_SINGLE, SrRepository::SR_TYPE_DETAIL => $this->populateResponseKeys($data),
             default => false,
         };

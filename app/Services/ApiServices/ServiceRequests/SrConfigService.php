@@ -4,6 +4,7 @@ namespace App\Services\ApiServices\ServiceRequests;
 use App\Models\Property;
 use App\Models\Sr;
 use App\Models\SrConfig;
+use App\Models\User;
 use App\Repositories\PropertyRepository;
 use App\Repositories\SrConfigRepository;
 use App\Services\ApiManager\ApiBase;
@@ -92,17 +93,14 @@ class SrConfigService extends BaseService
     }
 
     public function requestConfigValidator(Sr $serviceRequest, ?bool $requiredOnly = false) {
+        /** @var \App\Models\Provider|null $provider */
         $provider = $serviceRequest->provider()->first();
 
-        $entityProviderProperty = $provider->providerProperties()
-        ->whereHas('property', function ($query) {
-            $query->where(
-                'name',
-                DataConstants::PROVIDER
-            );
-        })
-        ->first();
-        if ($entityProviderProperty) {
+        /** @var \App\Models\Provider|null $entityProvider */
+        $entityProvider = $this->providerService->getProviderEntityFromProviderProperties(
+            $provider
+        );
+        if ($entityProvider) {
             return true;
         }
 
@@ -149,7 +147,12 @@ class SrConfigService extends BaseService
         return true;
     }
 
-    public function saveRequestConfig(Sr $serviceRequest, Property $property, array $data)
+    public function saveRequestConfig(
+        User $user,
+        Sr $serviceRequest,
+        Property $property,
+        array $data
+    )
     {
         if (empty($data['value_type'])) {
             if ($this->throwException) {
@@ -170,6 +173,12 @@ class SrConfigService extends BaseService
                 'array_value' => $data['array_value'],
                 'value' => null,
             ]),
+            DataConstants::REQUEST_CONFIG_VALUE_TYPE_ENTITY_LIST => $this->requestConfigRepo->saveSrConfigEntity(
+                $user,
+                $serviceRequest,
+                $property,
+                $data['array_value']
+            ),
             default => ($this->throwException)? throw new BadRequestHttpException("Invalid value type.") : false
         };
     }

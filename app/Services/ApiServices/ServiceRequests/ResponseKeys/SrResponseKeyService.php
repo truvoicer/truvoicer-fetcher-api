@@ -74,18 +74,16 @@ class SrResponseKeyService extends BaseService
 
     public function validateSrResponseKeys(Sr $sr, ?bool $requiredOnly = false): bool
     {
+
+        $providerService = app(ProviderService::class);
+
         $provider = $sr->provider()->first();
+        /** @var \App\Models\Provider|null $provider */
+        $entityProvider = $providerService->getProviderEntityFromProviderProperties(
+            $provider
+        );
 
-        $entityProviderProperty = $provider->providerProperties()
-        ->whereHas('property', function ($query) {
-            $query->where(
-                'name',
-                DataConstants::PROVIDER
-            );
-        })
-        ->first();
-
-        if (!$entityProviderProperty) {
+        if (!$entityProvider) {
             $responseFormatValue = $this->srConfigService->getConfigValue($sr, DataConstants::RESPONSE_FORMAT);
 
             if (empty($responseFormatValue)) {
@@ -100,20 +98,16 @@ class SrResponseKeyService extends BaseService
                 );
             }
         } else {
-            $providerPropertyEntity = $entityProviderProperty->providerPropertyEntities->first();
-
-            $providerService = app(ProviderService::class);
-
             $responseFormatValue = $providerService->getProviderPropertyValue(
-                $providerPropertyEntity->entityable,
+                $entityProvider,
                 DataConstants::RESPONSE_FORMAT
             );
             if (empty($responseFormatValue)) {
                 throw new SrValidationException(
                     sprintf(
                         "Provider (id:%s | name:%s) does not have a response_format property/config value.",
-                        $providerPropertyEntity->entityable->id,
-                        $providerPropertyEntity->entityable->name
+                        $entityProvider->id,
+                        $entityProvider->name
                     )
                 );
             }
