@@ -2,6 +2,7 @@
 
 namespace App\Services\ApiManager\Operations;
 
+use App\Enums\Api\Manager\ApiClientRequestType;
 use App\Exceptions\OauthResponseException;
 use App\Models\Provider;
 use App\Models\ProviderRateLimit;
@@ -23,11 +24,9 @@ use App\Services\Category\CategoryService;
 use App\Services\Tools\EventsService;
 use App\Services\Provider\ProviderService;
 use App\Services\ApiServices\ServiceRequests\SrService;
-use App\Services\Tools\SerializerService;
+use App\Services\Provider\PrioritisedProviderProperty;
 use App\Traits\User\UserTrait;
-use DateTime;
 use Exception;
-use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\RateLimiter;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 
@@ -43,8 +42,10 @@ class BaseOperations extends ApiBase
     protected array $queryArray;
     protected string $category;
     protected string $timestamp;
+    private ApiClientRequestType $apiClientRequestType = ApiClientRequestType::DEFAULT;
 
     public function __construct(
+        private PrioritisedProviderProperty $prioritisedProviderProperty,
         private ProviderService     $providerService,
         private Oauth               $oath,
         private ResponseManager     $responseManager,
@@ -57,9 +58,7 @@ class BaseOperations extends ApiBase
         private SrParametersService $srParameterService,
         private RateLimitService    $rateLimitService,
         private DataProcessor       $dataProcessor
-    )
-    {
-    }
+    ) {}
 
     public function getOperationResponse(string $requestType, ?string $providerName = null): ApiResponse
     {
@@ -71,6 +70,9 @@ class BaseOperations extends ApiBase
 
     private function responseHandler(string $requestType, $response)
     {
+        $this->responseManager->setApiClientRequestType(
+            $this->getApiClientRequestType()
+        );
         $this->responseManager->setUser($this->user);
         $this->responseManager->setServiceRequest($this->apiService);
         $this->responseManager->setProvider($this->provider);
@@ -160,10 +162,38 @@ class BaseOperations extends ApiBase
         if (!$parameters) {
             throw new BadRequestHttpException("Request parameters not found for operation.");
         }
-        $providerProperties = $this->providerService->getAllProviderProperties($this->provider);
+
+        $providerPriority = [];
+
+        /** @var \App\Models\Provider|null $srProvider */
+        $srProvider = $this->providerService->getProviderEntityFromSrConfig(
+            $this->apiService
+        );
+
+        if ($srProvider) {
+            $providerPriority[] = $srProvider;
+        }
+
+        /** @var \App\Models\Provider|null $provider */
+        $provider = $this->providerService->getProviderEntityFromProviderProperties(
+            $this->provider
+        );
+
+        if ($provider) {
+            $providerPriority[] = $provider;
+        } else {
+            $providerPriority[] = $this->provider;
+        }
+
+        $providerProperties = $this->prioritisedProviderProperty->getPrioritisedProviderProperties(
+            $providerPriority
+        );
+
         if (!$providerProperties) {
             throw new BadRequestHttpException("Provider properties not found for operation.");
         }
+
+        $this->dataProcessor->setProvider($this->provider);
         $this->dataProcessor->setRequestConfigs($config);
         $this->dataProcessor->setRequestParameters($parameters);
         $this->dataProcessor->setProviderProperties($providerProperties);
@@ -186,6 +216,14 @@ class BaseOperations extends ApiBase
 
     private function runPreRequestTasks()
     {
+
+        $apiType = $this->dataProcessor->getConfigValue(DataConstants::API_TYPE);
+
+        $apiTypeEum = ApiClientRequestType::tryFrom($apiType);
+        if ($apiTypeEum) {
+            $this->apiClientRequestType = $apiTypeEum;
+        }
+
         switch ($this->dataProcessor->getConfigValue(DataConstants::API_AUTH_TYPE)) {
             case DataConstants::OAUTH2:
                 $this->initOauth();
@@ -229,6 +267,35 @@ class BaseOperations extends ApiBase
             $query = $this->buildListValues($query);
         }
 
+        $this->apiRequest->setApiClientRequestType(
+            $this->apiClientRequestType
+        );
+
+        $aiPrompt = $this->dataProcessor->getConfigValue(DataConstants::AI_PROMPT);
+        if ($aiPrompt) {
+            $this->apiRequest->setAiPrompt(
+                $aiPrompt
+            );
+        }
+
+        $aiSystemPrompt = $this->dataProcessor->getConfigValue(DataConstants::AI_SYSTEM_PROMPT);
+        if ($aiSystemPrompt) {
+            $this->apiRequest->setAiSystemPrompt(
+                $aiSystemPrompt
+            );
+        }
+
+        $aiTemperature = $this->dataProcessor->getConfigValue(DataConstants::AI_TEMPERATURE);
+        $this->apiRequest->setAiTemperature(
+            $aiTemperature
+        );
+
+        $accessToken = $this->dataProcessor->getConfigValue(DataConstants::ACCESS_TOKEN);
+        if ($accessToken) {
+            $this->apiRequest->setAccessToken(
+                $accessToken
+            );
+        }
         if (is_array($headers)) {
             $this->apiRequest->setHeaders($headers);
         }
@@ -241,6 +308,10 @@ class BaseOperations extends ApiBase
         }
         if (is_string($baseUrl . $endpoint)) {
             $this->apiRequest->setUrl($this->dataProcessor->filterParameterValue($baseUrl) . $this->dataProcessor->filterParameterValue($endpoint));
+        } elseif ($baseUrl) {
+            $this->apiRequest->setUrl(
+                $this->dataProcessor->filterParameterValue($baseUrl)
+            );
         }
         if (is_array($query)) {
             $this->apiRequest->setQuery($query);
@@ -376,10 +447,7 @@ class BaseOperations extends ApiBase
         );
     }
 
-    private function runAmazonRequest()
-    {
-
-    }
+    private function runAmazonRequest() {}
 
     public function setApiRequestName(string $apiRequestName)
     {
@@ -440,6 +508,21 @@ class BaseOperations extends ApiBase
         $this->queryArray = $queryArray;
         $this->dataProcessor->setQueryArray($queryArray);
     }
+    /**
+     * @return ApiClientRequestType
+     */
+    public function getApiClientRequestType(): ApiClientRequestType
+    {
+        return $this->apiClientRequestType;
+    }
 
-
+    /**
+     * @param ApiClientRequestType $apiClientRequestType
+     */
+    public function setApiClientRequestType(
+        ApiClientRequestType $apiClientRequestType
+    ): static {
+        $this->apiClientRequestType = $apiClientRequestType;
+        return $this;
+    }
 }

@@ -2,10 +2,15 @@
 
 namespace App\Services\ApiManager\Response;
 
+use App\Enums\Api\Manager\ApiClientRequestType;
 use App\Models\Provider;
 use App\Models\Sr;
 use App\Models\User;
 use App\Repositories\SrRepository;
+use App\Services\Ai\DeepSeek\DeepSeekClient;
+use App\Services\Ai\Gemini\GeminiClient;
+use App\Services\Ai\Grok\GrokClient;
+use App\Services\Ai\OpenAi\OpenAiClient;
 use App\Services\ApiManager\Client\Entity\ApiRequest;
 use App\Services\ApiManager\Data\DataConstants;
 use App\Services\ApiManager\Data\DataProcessor;
@@ -32,6 +37,7 @@ class ResponseManager extends BaseService
     private Provider $provider;
     public string $responseFormat;
     public string $requestType;
+    private ApiClientRequestType $apiClientRequestType = ApiClientRequestType::DEFAULT;
 
     public function __construct(
         private readonly JsonResponseHandler $jsonResponseHandler,
@@ -61,7 +67,7 @@ class ResponseManager extends BaseService
                     switch ($this->getContentType($response)) {
                         case self::CONTENT_TYPE_JSON:
                             $contentType = "json";
-                            $content = $response->json() ?? [];
+                            $content =$this->getJsonBody($response);
                             break;
                         case self::CONTENT_TYPE_XML:
                             $contentType = "xml";
@@ -73,7 +79,7 @@ class ResponseManager extends BaseService
                     switch ($this->getContentType($response)) {
                         case self::CONTENT_TYPE_JSON:
                             $contentType = "json";
-                            $content = $response->json() ?? [];
+                            $content =$this->getJsonBody($response);
                             break;
                         case self::CONTENT_TYPE_XML:
                             $contentType = "xml";
@@ -95,6 +101,41 @@ class ResponseManager extends BaseService
         }
     }
 
+
+    /**
+     * @throws Exception
+     */
+    public function getJsonBody(Response $response): array|null
+    {
+        switch ($this->getApiClientRequestType()) {
+            case ApiClientRequestType::AI_DEEP_SEEK:
+                $deepSeekClient = app(DeepSeekClient::class);
+                return $deepSeekClient->formatApiResponse(
+                    $response
+                );
+            case ApiClientRequestType::AI_GEMINI:
+                $geminiClient = app(GeminiClient::class);
+                return $geminiClient->formatApiResponse(
+                    $response
+                );
+            case ApiClientRequestType::AI_GPT:
+                $openAiClient = app(OpenAiClient::class);
+                return $openAiClient->formatApiResponse(
+                    $response
+                );
+            case ApiClientRequestType::AI_GROK:
+                $openAiClient = app(GrokClient::class);
+                return $openAiClient->formatApiResponse(
+                    $response
+                );
+            case ApiClientRequestType::DEFAULT:
+                return $response->json();
+            default:
+                throw new Exception('Invalid ApiClientRequestType');
+        }
+    }
+
+
     public function processResponse(Response $response, ApiRequest $apiRequest)
     {
         try {
@@ -108,7 +149,9 @@ class ResponseManager extends BaseService
                     }
                     $contentType = "json";
                     $this->jsonResponseHandler->setApiService($this->serviceRequest);
-                    $this->jsonResponseHandler->setResponseArray($response->json());
+                    $this->jsonResponseHandler->setResponseArray(
+                        $this->getJsonBody($response)
+                    );
                     $this->jsonResponseHandler->setProvider($this->provider);
                     $listItems = $this->jsonResponseHandler->getListItems();
                     $listData = $this->jsonResponseHandler->getListData();
@@ -302,6 +345,24 @@ class ResponseManager extends BaseService
         $this->user = $user;
         $this->jsonResponseHandler->setUser($user);
         $this->xmlResponseHandler->setUser($user);
+        return $this;
+    }
+    /**
+     * @return ApiClientRequestType
+     */
+    public function getApiClientRequestType(): ApiClientRequestType
+    {
+        return $this->apiClientRequestType;
+    }
+
+    /**
+     * @param ApiClientRequestType $apiClientRequestType
+     */
+    public function setApiClientRequestType(
+        ApiClientRequestType $apiClientRequestType
+    ): static
+    {
+        $this->apiClientRequestType = $apiClientRequestType;
         return $this;
     }
 

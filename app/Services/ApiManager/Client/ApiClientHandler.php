@@ -3,7 +3,10 @@
 namespace App\Services\ApiManager\Client;
 
 use App\Enums\Api\Manager\ApiClientRequestType;
+use App\Services\Ai\DeepSeek\DeepSeekClient;
 use App\Services\Ai\Gemini\GeminiClient;
+use App\Services\Ai\Grok\GrokClient;
+use App\Services\Ai\OpenAi\OpenAiClient;
 use App\Services\ApiManager\ApiBase;
 use App\Services\ApiManager\Client\Entity\ApiRequest;
 use Exception;
@@ -19,18 +22,15 @@ class ApiClientHandler extends ApiBase
      */
     public function sendRequest(ApiRequest $apiRequest): Response|null
     {
-        switch($apiRequest->getApiClientRequestType()) {
+        switch ($apiRequest->getApiClientRequestType()) {
             case ApiClientRequestType::AI_DEEP_SEEK:
-
-                return null;
+                return $this->sendAiDeepSeekRequest($apiRequest);
             case ApiClientRequestType::AI_GEMINI:
                 return $this->sendAiGeminiRequest($apiRequest);
             case ApiClientRequestType::AI_GPT:
-
-                return null;
+                return $this->sendOpenAiRequest($apiRequest);
             case ApiClientRequestType::AI_GROK:
-
-                return null;
+                return $this->sendAiGrokRequest($apiRequest);
             case ApiClientRequestType::DEFAULT:
                 return $this->sendDefaultRequest($apiRequest);
             default:
@@ -44,8 +44,81 @@ class ApiClientHandler extends ApiBase
     public function sendAiGeminiRequest(ApiRequest $apiRequest): Response
     {
         $geminiService = app(GeminiClient::class);
+        $geminiService
+            ->setPrompt($apiRequest->getAiPrompt())
+            ->setApiKey($apiRequest->getAccessToken())
+            ->makeRequest();
+        $url = $apiRequest->getUrl();
+        if (!empty($url)) {
+            $geminiService->setApiEndpoint($url);
+        }
         return $geminiService->makeRequest();
     }
+
+    /**
+     * @throws Exception
+     */
+    public function sendAiDeepSeekRequest(ApiRequest $apiRequest): Response
+    {
+        $deepSeekService = app(DeepSeekClient::class);
+        $deepSeekService
+            ->setPrompt($apiRequest->getAiPrompt())
+            ->setApiKey($apiRequest->getAccessToken());
+        $url = $apiRequest->getUrl();
+        if (!empty($url)) {
+            $deepSeekService->setApiEndpoint($url);
+        }
+        $temperature = $apiRequest->getAiTemperature();
+        if ($temperature !== null) {
+            $deepSeekService->setTemperature((float)$temperature);
+        }
+        $systemPrompt = $apiRequest->getAiSystemPrompt();
+        if ($systemPrompt) {
+            $deepSeekService->setSystemPrompt($systemPrompt);
+        }
+        return $deepSeekService->makeRequest();
+    }
+    /**
+     * @throws Exception
+     */
+    public function sendAiGrokRequest(ApiRequest $apiRequest): Response
+    {
+        $deepSeekService = app(GrokClient::class);
+        $deepSeekService
+            ->setPrompt($apiRequest->getAiPrompt())
+            ->setApiKey($apiRequest->getAccessToken())
+            ->setWebSearch(true);
+        $url = $apiRequest->getUrl();
+        if (!empty($url)) {
+            $deepSeekService->setApiEndpoint($url);
+        }
+        $temperature = $apiRequest->getAiTemperature();
+        if ($temperature !== null) {
+            $deepSeekService->setTemperature((float)$temperature);
+        }
+        $systemPrompt = $apiRequest->getAiSystemPrompt();
+        if ($systemPrompt) {
+            $deepSeekService->setSystemPrompt($systemPrompt);
+        }
+        return $deepSeekService->makeRequest();
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function sendOpenAiRequest(ApiRequest $apiRequest): Response
+    {
+        $openAiService = app(OpenAiClient::class);
+        $openAiService
+            ->setPrompt($apiRequest->getAiPrompt())
+            ->setApiKey($apiRequest->getAccessToken());
+        $url = $apiRequest->getUrl();
+        if (!empty($url)) {
+            $openAiService->setApiEndpoint($url);
+        }
+        return $openAiService->makeRequest();
+    }
+
     /**
      * @throws Exception
      */
@@ -120,5 +193,4 @@ class ApiClientHandler extends ApiBase
         }
         return $client;
     }
-
 }

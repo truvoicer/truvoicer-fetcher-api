@@ -112,4 +112,12 @@ class User extends Authenticatable
             'entityable'
         );
     }
+
+    public function srConfigEntities(): MorphMany
+    {
+        return $this->morphMany(
+            SrConfigEntity::class,
+            'entityable'
+        );
+    }
 }

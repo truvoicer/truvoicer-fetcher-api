@@ -35,4 +35,12 @@ class SrParameter extends Model
             'entityable'
         );
     }
+
+    public function srConfigEntities(): MorphMany
+    {
+        return $this->morphMany(
+            SrConfigEntity::class,
+            'entityable'
+        );
+    }
 }

@@ -2,6 +2,7 @@
 
 namespace App\Services\ApiServices\ServiceRequests\ResponseKeys\Populate;
 
+use App\Models\Provider;
 use App\Models\Sr;
 use App\Repositories\SrRepository;
 use App\Services\ApiManager\Data\DataConstants;
@@ -9,8 +10,10 @@ use App\Services\ApiManager\Response\ResponseManager;
 use App\Services\ApiServices\ServiceRequests\ResponseKeys\Populate\Types\PopulateTypeJson;
 use App\Services\ApiServices\ServiceRequests\ResponseKeys\Populate\Types\PopulateTypeXml;
 use App\Services\ApiServices\ServiceRequests\SrConfigService;
+use App\Services\Provider\ProviderService;
 use App\Traits\Error\ErrorTrait;
 use App\Traits\User\UserTrait;
+use Exception;
 use Illuminate\Support\Arr;
 
 class PopulateFactory
@@ -20,11 +23,11 @@ class PopulateFactory
     private SrRepository $srRepository;
 
     public function __construct(
+        private ProviderService $providerService,
         private SrConfigService $srConfigService,
         private PopulateTypeXml $populateTypeXml,
         private PopulateTypeJson $populateTypeJson
-    )
-    {
+    ) {
         $this->srRepository = new SrRepository();
     }
 
@@ -47,7 +50,23 @@ class PopulateFactory
             });
         }
         foreach ($fetchSourceSrs as $sr) {
-            $responseFormat = $this->srConfigService->getConfigValue($sr, DataConstants::RESPONSE_FORMAT);
+            $provider = $sr->provider;
+
+
+            /** @var \App\Models\Provider|null $provider */
+            $entityProvider = $this->providerService->getProviderEntityFromProviderProperties(
+                $provider
+            );
+
+            if ($entityProvider) {
+                $responseFormat = $this->providerService
+                    ->getProviderPropertyValue(
+                        $entityProvider,
+                        DataConstants::RESPONSE_FORMAT
+                    );
+            } else {
+                $responseFormat = $this->srConfigService->getConfigValue($sr, DataConstants::RESPONSE_FORMAT);
+            }
 
             if (!$responseFormat) {
                 continue;

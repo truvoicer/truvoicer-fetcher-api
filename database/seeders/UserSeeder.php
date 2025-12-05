@@ -56,6 +56,6 @@ class UserSeeder extends Seeder
             'token' => $token->plainTextToken,
         ];
         $this->command->info('User token created successfully');
-        var_dump($tokenData);
+
     }
 }

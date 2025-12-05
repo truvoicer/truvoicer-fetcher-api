@@ -94,7 +94,7 @@ class DataProcessor
                 return $this->query;
 
             case DataConstants::PARAM_FILTER_KEYS["TIMESTAMP"]['placeholder']:
-                $date = new DateTime();
+                $date = new \DateTime();
                 return $date->format("Y-m-d h:i:s");
         }
         return $this->formatValue($this->getQueryFilterValue($paramValue));

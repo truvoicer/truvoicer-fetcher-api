@@ -6,10 +6,6 @@ use App\Helpers\Operation\Request\OperationRequestBuilder;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\OperationsRequest;
 use App\Services\ApiManager\Operations\DataHandler\ApiRequestDataInterface;
-use App\Services\Permission\AccessControlService;
-use App\Services\Tools\HttpRequestService;
-use App\Services\Tools\SerializerService;
-use Illuminate\Http\Request;
 
 /**
  * Require ROLE_ADMIN for *every* controller method in this class.

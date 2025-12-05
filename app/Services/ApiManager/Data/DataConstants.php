@@ -42,6 +42,8 @@ class DataConstants
 
     const LIST_ITEM_SEARCH_PRIORITY = "list_item_search_priority";
     const AI_PROMPT = "ai_prompt";
+    const AI_SYSTEM_PROMPT = "ai_system_prompt";
+    const AI_TEMPERATURE = "ai_temperature";
     const PROVIDER = "provider";
     const API_AUTH_TYPE = "api_authentication_type";
     const OAUTH_API_AUTH_TYPE = "oauth_api_authentication_type";

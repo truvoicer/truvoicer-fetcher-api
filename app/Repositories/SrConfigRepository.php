@@ -2,12 +2,16 @@
 
 namespace App\Repositories;
 
+use App\Enums\Entity\EntityType;
 use App\Models\Property;
 use App\Models\PropertySrConfig;
 use App\Models\Provider;
 use App\Models\ProviderProperty;
 use App\Models\Sr;
 use App\Models\SrConfig;
+use App\Models\User;
+use App\Services\EntityService;
+use Exception;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class SrConfigRepository extends BaseRepository
@@ -52,7 +56,6 @@ class SrConfigRepository extends BaseRepository
             ->with(['srConfig' => function ($query) use ($serviceRequest) {
                 $query->whereHas('sr', function ($query) use ($serviceRequest) {
                     $query->where('id', '=', $serviceRequest->id);
-
                 });
             }]);
         return $this->getResults($query);
@@ -92,11 +95,51 @@ class SrConfigRepository extends BaseRepository
         return $create->exists;
     }
 
+
+    public function saveSrConfigEntity(
+        User $user,
+        Sr $sr,
+        Property $property,
+        array $data
+    ) {
+        $findSrConfig = $this->findSrConfigProperty($sr, $property);
+        if (!$findSrConfig instanceof Property) {
+
+            $findSrConfig = SrConfig::create(['sr_id' => $sr->id, 'property_id' => $property->id, ...$data]);
+            if (!$findSrConfig->exists()) {
+                return false;
+            }
+        } else {
+            $findSrConfig = $findSrConfig->srConfig;
+        }
+        $this->setModel($findSrConfig);
+
+        foreach ($data as $index => $item) {
+            foreach ($item as $entity => $ids) {
+                $entityType = EntityType::tryFrom($entity);
+                if (!$entityType) {
+                    throw new Exception('Invalid entity type: ' . $entity);
+                }
+                if (!is_array($ids)) {
+                    continue;
+                }
+
+                EntityService::getInstance()
+                    ->syncSrConfigEntities(
+                        $user,
+                        $findSrConfig,
+                        $entityType,
+                        $ids
+                    );
+            }
+        }
+        return true;
+    }
+
     public function deleteSrConfigProperty(Sr $sr, Property $property): int
     {
         return $sr->srConfig()
             ->where('property_id', '=', $property->id)
             ->delete();
     }
-
 }

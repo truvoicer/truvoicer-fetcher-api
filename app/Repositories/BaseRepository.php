@@ -295,7 +295,7 @@ class BaseRepository
         }
         return $query;
     }
-    protected function getResults(Relation|EloquentBuilder $query): Collection|LengthAwarePaginator
+    public function getResults(Relation|EloquentBuilder $query): Collection|LengthAwarePaginator
     {
         if ($this->paginate) {
             return $query->paginate(

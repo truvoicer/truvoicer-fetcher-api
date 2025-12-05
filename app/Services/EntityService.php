@@ -10,6 +10,8 @@ use App\Models\EntityLock;
 use App\Models\Provider;
 use App\Models\ProviderProperty;
 use App\Models\ProviderPropertyEntity;
+use App\Models\SrConfig;
+use App\Models\SrConfigEntity;
 use App\Models\User;
 use App\Repositories\ProviderRepository;
 use App\Repositories\SrRepository;
@@ -105,6 +107,23 @@ class EntityService extends BaseService
             }
         )->delete();
     }
+    public function removeMissingSrConfigEntities(
+        EntityType $entityType,
+        array $ids
+    ): void {
+        $className = $entityType->className();
+        $instance = new $className();
+        SrConfigEntity::whereDoesntHaveMorph(
+            'entityable',
+            $entityType->className(),
+            function ($query) use ($ids, $instance) {
+                $query->whereIn(
+                    $instance->getTable().'.id',
+                    $ids
+                );
+            }
+        )->delete();
+    }
 
     public function syncProviderPropertyEntities(
         User $user,
@@ -124,6 +143,27 @@ class EntityService extends BaseService
         foreach ($entities as $entity) {
             $entity->providerPropertyEntities()->updateOrCreate([
                 'provider_property_id' => $providerProperty->id
+            ]);
+        }
+    }
+    public function syncSrConfigEntities(
+        User $user,
+        SrConfig $srConfig,
+        EntityType $entityType,
+        array $ids
+    ): void {
+        $this->removeMissingSrConfigEntities(
+            $entityType,
+            $ids
+        );
+        $entities = $this->getEntityListByEntityIds(
+            $user,
+            $entityType->value,
+            $ids
+        );
+        foreach ($entities as $entity) {
+            $entity->srConfigEntities()->updateOrCreate([
+                'sr_config_id' => $srConfig->id
             ]);
         }
     }

@@ -93,6 +93,16 @@ class DefaultData
     {
         return [
             [
+                DataConstants::REQUEST_CONFIG_ITEM_NAME => DataConstants::AI_TEMPERATURE,
+                DataConstants::REQUEST_CONFIG_ITEM_LABEL => "AI System Prompt (E.g. 0.8.)",
+                DataConstants::REQUEST_CONFIG_ITEM_SELECTED_VALUE_TYPE => DataConstants::REQUEST_CONFIG_VALUE_TYPE_TEXT,
+            ],
+            [
+                DataConstants::REQUEST_CONFIG_ITEM_NAME => DataConstants::AI_SYSTEM_PROMPT,
+                DataConstants::REQUEST_CONFIG_ITEM_LABEL => "AI System Prompt (E.g. You are a data fetcher etc.)",
+                DataConstants::REQUEST_CONFIG_ITEM_SELECTED_VALUE_TYPE => DataConstants::REQUEST_CONFIG_VALUE_TYPE_BIG_TEXT,
+            ],
+            [
                 DataConstants::REQUEST_CONFIG_ITEM_NAME => DataConstants::AI_PROMPT,
                 DataConstants::REQUEST_CONFIG_ITEM_LABEL => "AI Prompt",
                 DataConstants::REQUEST_CONFIG_ITEM_SELECTED_VALUE_TYPE => DataConstants::REQUEST_CONFIG_VALUE_TYPE_BIG_TEXT,

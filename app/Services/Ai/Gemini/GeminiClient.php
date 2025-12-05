@@ -3,6 +3,7 @@
 namespace App\Services\Ai\Gemini;
 
 use Exception;
+use Illuminate\Http\Client\Response;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
@@ -21,9 +22,34 @@ class GeminiClient
      */
     protected string $apiEndpoint;
 
+    protected int $timeout = 120;
+
     protected string $prompt;
 
     private UploadedFile $file;
+
+
+    /**
+     * Get the current operation timeout value.
+     * * @return int The timeout in seconds.
+     */
+    public function getTimeout(): int
+    {
+        return $this->timeout;
+    }
+
+    /**
+     * Set the operation timeout value.
+     * * @param int $timeout The new timeout value in seconds.
+     * @return $this Allows for method chaining (fluent interface).
+     */
+    public function setTimeout(int $timeout): self
+    {
+        // Basic validation could be added here (e.g., $timeout > 0)
+        $this->timeout = $timeout;
+
+        return $this;
+    }
 
     public function setApiKey(string $apiKey): static
     {
@@ -47,7 +73,7 @@ class GeminiClient
         return $this->apiEndpoint;
     }
 
-    public function makeRequest(): array
+    public function makeRequest(): Response
     {
 
         $promptText = mb_convert_encoding($this->getPrompt(), 'UTF-8', 'UTF-8');
@@ -72,15 +98,11 @@ class GeminiClient
                 ]
             ];
         }
-        $response = Http::withOptions(['timeout' => 120]) // Increase timeout for large files
+        return Http::withOptions([
+            'timeout' => $this->timeout
+        ])
             ->post($this->apiEndpoint . '?key=' . $this->apiKey, $data);
 
-        if ($response->failed()) {
-            Log::error('Gemini API request failed', ['response' => json_encode($response->body())]);
-            throw new Exception('Failed to parse resume due to an API error.');
-        }
-
-        return $this->formatApiResponse($response->json());
     }
 
     /**
@@ -90,11 +112,17 @@ class GeminiClient
      * @return array
      * @throws Exception
      */
-    private function formatApiResponse(array $responseBody): array
+    public function formatApiResponse(Response $response): array
     {
+        if ($response->failed()) {
+             Log::warning('Gemini API returned an empty response.', ['response' => $response->json()]);
+             throw $response->toException();
+        }
+
+        $responseBody = $response->json();
         if (empty($responseBody['candidates'][0]['content']['parts'][0]['text'])) {
             Log::warning('Gemini API returned an empty response.', ['response' => $responseBody]);
-            throw new Exception('The resume could not be read or parsed.');
+            throw new Exception('The response could not be read or parsed.');
         }
 
         $rawText = $responseBody['candidates'][0]['content']['parts'][0]['text'];
