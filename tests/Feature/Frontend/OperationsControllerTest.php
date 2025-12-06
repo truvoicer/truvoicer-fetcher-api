@@ -47,9 +47,9 @@ class OperationsControllerTest extends TestCase
             $this->superUser,
             ['*']
         );
-        S::factory();
-        Category::factory();
-        Provider::factory()
+        $s = S::factory()->create();
+        $category = Category::factory()->create();
+        $provider = Provider::factory()
             ->has(
                 ProviderProperty::factory()
             )
@@ -64,7 +64,8 @@ class OperationsControllerTest extends TestCase
                     ->has(
                         SrParameter::factory()
                     )
-            );
+            )->create();
+            dd($provider);
         $postData = [
             "page_id" => 1,
             "api_fetch_type" => "database",
