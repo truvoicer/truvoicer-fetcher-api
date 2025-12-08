@@ -2,7 +2,8 @@
 
 namespace App\Services\ApiManager\Operations;
 
-use App\Enums\Api\Manager\ApiClientRequestType;
+use App\Enums\Api\ApiType;
+use App\Enums\Property\PropertyType;
 use App\Exceptions\OauthResponseException;
 use App\Models\Provider;
 use App\Models\ProviderRateLimit;
@@ -42,7 +43,7 @@ class BaseOperations extends ApiBase
     protected array $queryArray;
     protected string $category;
     protected string $timestamp;
-    private ApiClientRequestType $apiClientRequestType = ApiClientRequestType::DEFAULT;
+    private ?ApiType $apiType = null;
 
     public function __construct(
         private PrioritisedProviderProperty $prioritisedProviderProperty,
@@ -70,13 +71,13 @@ class BaseOperations extends ApiBase
 
     private function responseHandler(string $requestType, $response)
     {
-        $this->responseManager->setApiClientRequestType(
-            $this->getApiClientRequestType()
+        $this->responseManager->setApiType(
+            $this->getApiType()
         );
         $this->responseManager->setUser($this->user);
         $this->responseManager->setServiceRequest($this->apiService);
         $this->responseManager->setProvider($this->provider);
-        $this->responseManager->setResponseFormat($this->dataProcessor->getConfigValue(DataConstants::RESPONSE_FORMAT));
+        $this->responseManager->setResponseFormat($this->dataProcessor->getConfigValue(PropertyType::RESPONSE_FORMAT->value));
         $this->responseManager->setRequestType($requestType);
         $apiResponse = new ApiResponse();
         $apiResponse->setStatus("error");
@@ -100,6 +101,7 @@ class BaseOperations extends ApiBase
     private function requestHandler()
     {
         $srRateLimit = $this->rateLimitService->findParentOrChildRateLimitBySr($this->apiService);
+
         if (!$srRateLimit) {
             return $this->getRequest();
         }
@@ -216,15 +218,11 @@ class BaseOperations extends ApiBase
 
     private function runPreRequestTasks()
     {
+        $this->apiType = ApiType::tryFrom(
+            $this->dataProcessor->getConfigValue(PropertyType::API_TYPE->value)
+        );
 
-        $apiType = $this->dataProcessor->getConfigValue(DataConstants::API_TYPE);
-
-        $apiTypeEum = ApiClientRequestType::tryFrom($apiType);
-        if ($apiTypeEum) {
-            $this->apiClientRequestType = $apiTypeEum;
-        }
-
-        switch ($this->dataProcessor->getConfigValue(DataConstants::API_AUTH_TYPE)) {
+        switch ($this->dataProcessor->getConfigValue(PropertyType::API_AUTH_TYPE->value)) {
             case DataConstants::OAUTH2:
                 $this->initOauth();
                 $this->oath->getAccessToken();
@@ -239,20 +237,20 @@ class BaseOperations extends ApiBase
     private function getRequest()
     {
         $this->runPreRequestTasks();
-        $baseUrl = $this->dataProcessor->getProviderPropertyValue(DataConstants::BASE_URL);
-        $apiAuthType = $this->dataProcessor->getConfigValue(DataConstants::API_AUTH_TYPE);
+        $baseUrl = $this->dataProcessor->getProviderPropertyValue(PropertyType::BASE_URL->value);
+        $apiAuthType = $this->dataProcessor->getConfigValue(PropertyType::API_AUTH_TYPE->value);
         switch ($apiAuthType) {
             case DataConstants::OAUTH2:
-                $apiAuthType = $this->dataProcessor->getConfigValue(DataConstants::OAUTH_API_AUTH_TYPE);
+                $apiAuthType = $this->dataProcessor->getConfigValue(PropertyType::OAUTH_API_AUTH_TYPE->value);
                 break;
         }
 
-        $endpoint = $this->dataProcessor->getConfigValue(DataConstants::ENDPOINT);
-        $method = $this->dataProcessor->getConfigValue(DataConstants::METHOD);
-        $headers = $this->dataProcessor->getConfigValue(DataConstants::HEADERS);
-        $body = $this->dataProcessor->getConfigValue(DataConstants::BODY);
-        $postBody = $this->dataProcessor->getConfigValue(DataConstants::POST_BODY);
-        $query = $this->dataProcessor->getConfigValue(DataConstants::QUERY);
+        $endpoint = $this->dataProcessor->getConfigValue(PropertyType::ENDPOINT->value);
+        $method = $this->dataProcessor->getConfigValue(PropertyType::METHOD->value);
+        $headers = $this->dataProcessor->getConfigValue(PropertyType::HEADERS->value);
+        $body = $this->dataProcessor->getConfigValue(PropertyType::BODY->value);
+        $postBody = $this->dataProcessor->getConfigValue(PropertyType::POST_BODY->value);
+        $query = $this->dataProcessor->getConfigValue(PropertyType::QUERY->value);
 
         if ($headers) {
             $headers = $this->dataProcessor->replaceListItemsOffsetPlaceholders($headers);
@@ -267,30 +265,30 @@ class BaseOperations extends ApiBase
             $query = $this->buildListValues($query);
         }
 
-        $this->apiRequest->setApiClientRequestType(
-            $this->apiClientRequestType
+        $this->apiRequest->setApiType(
+            $this->apiType
         );
 
-        $aiPrompt = $this->dataProcessor->getConfigValue(DataConstants::AI_PROMPT);
+        $aiPrompt = $this->dataProcessor->getConfigValue(PropertyType::AI_PROMPT->value);
         if ($aiPrompt) {
             $this->apiRequest->setAiPrompt(
                 $aiPrompt
             );
         }
 
-        $aiSystemPrompt = $this->dataProcessor->getConfigValue(DataConstants::AI_SYSTEM_PROMPT);
+        $aiSystemPrompt = $this->dataProcessor->getConfigValue(PropertyType::AI_SYSTEM_PROMPT->value);
         if ($aiSystemPrompt) {
             $this->apiRequest->setAiSystemPrompt(
                 $aiSystemPrompt
             );
         }
 
-        $aiTemperature = $this->dataProcessor->getConfigValue(DataConstants::AI_TEMPERATURE);
+        $aiTemperature = $this->dataProcessor->getConfigValue(PropertyType::AI_TEMPERATURE->value);
         $this->apiRequest->setAiTemperature(
             $aiTemperature
         );
 
-        $accessToken = $this->dataProcessor->getConfigValue(DataConstants::ACCESS_TOKEN);
+        $accessToken = $this->dataProcessor->getConfigValue(PropertyType::ACCESS_TOKEN->value);
         if ($accessToken) {
             $this->apiRequest->setAccessToken(
                 $accessToken
@@ -327,7 +325,7 @@ class BaseOperations extends ApiBase
             case DataConstants::AUTH_BASIC:
                 $this->getBasicAuthentication();
                 break;
-            case DataConstants::ACCESS_TOKEN:
+            case PropertyType::ACCESS_TOKEN->value:
             case DataConstants::AUTH_NONE:
                 break;
         }
@@ -342,10 +340,10 @@ class BaseOperations extends ApiBase
 
     private function initOauth()
     {
-        $tokenRequestHeaders = $this->dataProcessor->getConfigValue(DataConstants::TOKEN_REQUEST_HEADERS);
-        $tokenRequestPostBody = $this->dataProcessor->getConfigValue(DataConstants::TOKEN_REQUEST_POST_BODY);
-        $tokenRequestBody = $this->dataProcessor->getConfigValue(DataConstants::TOKEN_REQUEST_BODY);
-        $tokenRequestQuery = $this->dataProcessor->getConfigValue(DataConstants::TOKEN_REQUEST_QUERY);
+        $tokenRequestHeaders = $this->dataProcessor->getConfigValue(PropertyType::TOKEN_REQUEST_HEADERS->value);
+        $tokenRequestPostBody = $this->dataProcessor->getConfigValue(PropertyType::TOKEN_REQUEST_POST_BODY->value);
+        $tokenRequestBody = $this->dataProcessor->getConfigValue(PropertyType::TOKEN_REQUEST_BODY->value);
+        $tokenRequestQuery = $this->dataProcessor->getConfigValue(PropertyType::TOKEN_REQUEST_QUERY->value);
 
         $headers = $body = $query = [];
         if (is_array($tokenRequestHeaders)) {
@@ -366,35 +364,35 @@ class BaseOperations extends ApiBase
             $this->oath->setTokenRequestBody($tokenRequestBody);
         }
 
-        $tokenRequestAuthType = $this->dataProcessor->getConfigValue(DataConstants::TOKEN_REQUEST_AUTH_TYPE);
+        $tokenRequestAuthType = $this->dataProcessor->getConfigValue(PropertyType::TOKEN_REQUEST_AUTH_TYPE->value);
         if (empty($tokenRequestAuthType)) {
             throw new BadRequestHttpException("Token request auth type not found.");
         }
 
         $this->oath->setAuthType($tokenRequestAuthType);
 
-        $tokenRequestUsername = $this->dataProcessor->getConfigValue(DataConstants::TOKEN_REQUEST_USERNAME);
+        $tokenRequestUsername = $this->dataProcessor->getConfigValue(PropertyType::TOKEN_REQUEST_USERNAME->value);
         if (!empty($tokenRequestUsername)) {
             $this->oath->setUsername(trim($this->dataProcessor->filterParameterValue($tokenRequestUsername)));
         }
 
-        $tokenRequestPassword = $this->dataProcessor->getConfigValue(DataConstants::TOKEN_REQUEST_PASSWORD);
+        $tokenRequestPassword = $this->dataProcessor->getConfigValue(PropertyType::TOKEN_REQUEST_PASSWORD->value);
         if (!empty($tokenRequestPassword)) {
             $this->oath->setPassword(trim($this->dataProcessor->filterParameterValue($tokenRequestPassword)));
         }
 
-        $tokenRequestToken = $this->dataProcessor->getConfigValue(DataConstants::TOKEN_REQUEST_TOKEN);
+        $tokenRequestToken = $this->dataProcessor->getConfigValue(PropertyType::TOKEN_REQUEST_TOKEN->value);
         if (!empty($tokenRequestToken)) {
             $this->oath->setToken($tokenRequestToken);
         }
 
-        $tokenRequestMethod = $this->dataProcessor->getConfigValue(DataConstants::TOKEN_REQUEST_METHOD);
+        $tokenRequestMethod = $this->dataProcessor->getConfigValue(PropertyType::TOKEN_REQUEST_METHOD->value);
 
         if (!empty($tokenRequestMethod)) {
             $this->oath->setMethod($tokenRequestMethod);
         }
 
-        $tokenRequestUrl = $this->dataProcessor->getConfigValue(DataConstants::OAUTH_TOKEN_URL);
+        $tokenRequestUrl = $this->dataProcessor->getConfigValue(PropertyType::OAUTH_TOKEN_URL->value);
         if (!empty($tokenRequestUrl)) {
             $this->oath->setUrl($tokenRequestUrl);
         }
@@ -403,8 +401,8 @@ class BaseOperations extends ApiBase
 
     private function getBasicAuthentication()
     {
-        $username = $this->dataProcessor->getConfigValue(DataConstants::USERNAME);
-        $password = $this->dataProcessor->getConfigValue(DataConstants::PASSWORD);
+        $username = $this->dataProcessor->getConfigValue(PropertyType::USERNAME->value);
+        $password = $this->dataProcessor->getConfigValue(PropertyType::PASSWORD->value);
 
         if ($username === null && $password === null) {
             throw new BadRequestHttpException("Request config username and password are both not set.");
@@ -423,7 +421,7 @@ class BaseOperations extends ApiBase
 
     private function getAuthBearerAuthentication()
     {
-        $apiAuthType = $this->dataProcessor->getConfigValue(DataConstants::API_AUTH_TYPE);
+        $apiAuthType = $this->dataProcessor->getConfigValue(PropertyType::API_AUTH_TYPE->value);
         if ($apiAuthType == DataConstants::OAUTH2) {
             $getAccessToken = $this->oath->getAccessToken();
             if (!$getAccessToken?->access_token) {
@@ -435,7 +433,7 @@ class BaseOperations extends ApiBase
             return;
         }
 
-        $bearerToken = $this->dataProcessor->getSrConfigItem(DataConstants::BEARER_TOKEN);
+        $bearerToken = $this->dataProcessor->getSrConfigItem(PropertyType::BEARER_TOKEN->value);
         if (!$bearerToken instanceof SrConfig) {
             throw new BadRequestHttpException("Request config bearer token not found.");
         }
@@ -509,20 +507,20 @@ class BaseOperations extends ApiBase
         $this->dataProcessor->setQueryArray($queryArray);
     }
     /**
-     * @return ApiClientRequestType
+     * @return ApiType
      */
-    public function getApiClientRequestType(): ApiClientRequestType
+    public function getApiType(): ApiType
     {
-        return $this->apiClientRequestType;
+        return $this->apiType;
     }
 
     /**
-     * @param ApiClientRequestType $apiClientRequestType
+     * @param ApiType $apiType
      */
-    public function setApiClientRequestType(
-        ApiClientRequestType $apiClientRequestType
+    public function setApiType(
+        ApiType $apiType
     ): static {
-        $this->apiClientRequestType = $apiClientRequestType;
+        $this->apiType = $apiType;
         return $this;
     }
 }

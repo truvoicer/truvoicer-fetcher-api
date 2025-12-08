@@ -2,7 +2,10 @@
 
 namespace App\Services\ApiManager\Response;
 
-use App\Enums\Api\Manager\ApiClientRequestType;
+use App\Enums\Api\ApiType;
+use App\Enums\Property\PropertyType;
+use App\Enums\Sr\SrType;
+use App\Exceptions\Api\Response\ApiResponseException;
 use App\Models\Provider;
 use App\Models\Sr;
 use App\Models\User;
@@ -37,7 +40,7 @@ class ResponseManager extends BaseService
     private Provider $provider;
     public string $responseFormat;
     public string $requestType;
-    private ApiClientRequestType $apiClientRequestType = ApiClientRequestType::DEFAULT;
+    private ?ApiType $apiType = null;
 
     public function __construct(
         private readonly JsonResponseHandler $jsonResponseHandler,
@@ -97,7 +100,9 @@ class ResponseManager extends BaseService
                 $response
             );
         } catch (Exception $exception) {
-            return $this->errorResponse($exception, $apiRequest, $response);
+            throw new ApiResponseException(
+                $exception->getMessage()
+            );
         }
     }
 
@@ -107,31 +112,29 @@ class ResponseManager extends BaseService
      */
     public function getJsonBody(Response $response): array|null
     {
-        switch ($this->getApiClientRequestType()) {
-            case ApiClientRequestType::AI_DEEP_SEEK:
+        switch ($this->getApiType()) {
+            case ApiType::AI_DEEP_SEEK:
                 $deepSeekClient = app(DeepSeekClient::class);
                 return $deepSeekClient->formatApiResponse(
                     $response
                 );
-            case ApiClientRequestType::AI_GEMINI:
+            case ApiType::AI_GEMINI:
                 $geminiClient = app(GeminiClient::class);
                 return $geminiClient->formatApiResponse(
                     $response
                 );
-            case ApiClientRequestType::AI_GPT:
+            case ApiType::AI_OPEN_AI:
                 $openAiClient = app(OpenAiClient::class);
                 return $openAiClient->formatApiResponse(
                     $response
                 );
-            case ApiClientRequestType::AI_GROK:
+            case ApiType::AI_GROK:
                 $openAiClient = app(GrokClient::class);
                 return $openAiClient->formatApiResponse(
                     $response
                 );
-            case ApiClientRequestType::DEFAULT:
-                return $response->json();
             default:
-                throw new Exception('Invalid ApiClientRequestType');
+                return $response->json();
         }
     }
 
@@ -173,7 +176,9 @@ class ResponseManager extends BaseService
                 $apiRequest, $response
             );
         } catch (Exception $exception) {
-            return $this->errorResponse($exception, $apiRequest, $response);
+            throw new ApiResponseException(
+                $exception->getMessage()
+            );
         }
     }
 
@@ -199,15 +204,16 @@ class ResponseManager extends BaseService
     private function errorResponse(Exception $exception, ApiRequest $apiRequest, Response $response)
     {
         $apiResponse = new ApiResponse();
+        $apiResponse->setException($exception);
         $apiResponse->setStatus("error");
         $apiResponse->setMessage($exception->getMessage());
-        $apiResponse->setApiRequest($apiRequest);
-        $apiResponse->setRequestData([
-            "error" => $exception->getMessage(),
-            'code' => $exception->getCode(),
-            'line' => $exception->getLine(),
-            'trace' => $exception->getTrace()
-        ]);
+        // $apiResponse->setApiRequest($apiRequest);
+        // $apiResponse->setRequestData([
+        //     "error" => $exception->getMessage(),
+        //     'code' => $exception->getCode(),
+        //     'line' => $exception->getLine(),
+        //     'trace' => $exception->getTrace()
+        // ]);
 //        $apiResponse->setResponse($response);
         return $this->setResponseDefaults($apiResponse);
     }
@@ -246,10 +252,10 @@ class ResponseManager extends BaseService
     private function buildArray(array $array)
     {
         switch ($this->serviceRequest->type) {
-            case SrRepository::SR_TYPE_SINGLE:
-            case SrRepository::SR_TYPE_DETAIL:
+            case SrType::SINGLE:
+            case SrType::DETAIL:
                 return DataProcessor::buildSingleArray($array);
-            case SrRepository::SR_TYPE_LIST:
+            case SrType::LIST:
                 return DataProcessor::buildListArray($array);
             default:
                 return $array;
@@ -267,7 +273,7 @@ class ResponseManager extends BaseService
 
     public static function getSrResponseContentType(Sr $sr, Response $response): bool|string
     {
-        $contentType = SrConfigService::getInstance()->getConfigValue($sr, DataConstants::RESPONSE_FORMAT);
+        $contentType = SrConfigService::getInstance()->getConfigValue($sr, PropertyType::RESPONSE_FORMAT->value);
         if ($contentType) {
             return $contentType;
         }
@@ -348,21 +354,21 @@ class ResponseManager extends BaseService
         return $this;
     }
     /**
-     * @return ApiClientRequestType
+     * @return ApiType
      */
-    public function getApiClientRequestType(): ApiClientRequestType
+    public function getApiType(): ApiType
     {
-        return $this->apiClientRequestType;
+        return $this->apiType;
     }
 
     /**
-     * @param ApiClientRequestType $apiClientRequestType
+     * @param ApiType $apiType
      */
-    public function setApiClientRequestType(
-        ApiClientRequestType $apiClientRequestType
+    public function setApiType(
+        ApiType $apiType
     ): static
     {
-        $this->apiClientRequestType = $apiClientRequestType;
+        $this->apiType = $apiType;
         return $this;
     }
 

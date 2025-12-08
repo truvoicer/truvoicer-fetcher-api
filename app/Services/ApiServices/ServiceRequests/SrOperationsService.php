@@ -2,6 +2,7 @@
 
 namespace App\Services\ApiServices\ServiceRequests;
 
+use App\Enums\Sr\SrType;
 use App\Models\Provider;
 use App\Models\S;
 use App\Models\Sr;
@@ -550,6 +551,7 @@ class SrOperationsService
             $sr,
             $this->executeSrOperationRequest($sr, $queryData)
         );
+
         if (!$apiResponse) {
             return false;
         }
@@ -560,8 +562,8 @@ class SrOperationsService
     {
 
         return match ($sr->type) {
-            SrRepository::SR_TYPE_DETAIL, SrRepository::SR_TYPE_SINGLE => $this->processSingleSrData($sr, $action, $queryData, $apiResponse),
-            SrRepository::SR_TYPE_LIST => $this->processListSrData($sr, $action, $queryData, $apiResponse),
+            SrType::DETAIL, SrType::SINGLE => $this->processSingleSrData($sr, $action, $queryData, $apiResponse),
+            SrType::LIST => $this->processListSrData($sr, $action, $queryData, $apiResponse),
             default => false,
         };
     }

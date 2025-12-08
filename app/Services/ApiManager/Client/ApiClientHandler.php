@@ -2,7 +2,7 @@
 
 namespace App\Services\ApiManager\Client;
 
-use App\Enums\Api\Manager\ApiClientRequestType;
+use App\Enums\Api\ApiType;
 use App\Services\Ai\DeepSeek\DeepSeekClient;
 use App\Services\Ai\Gemini\GeminiClient;
 use App\Services\Ai\Grok\GrokClient;
@@ -22,19 +22,17 @@ class ApiClientHandler extends ApiBase
      */
     public function sendRequest(ApiRequest $apiRequest): Response|null
     {
-        switch ($apiRequest->getApiClientRequestType()) {
-            case ApiClientRequestType::AI_DEEP_SEEK:
+        switch ($apiRequest->getApiType()) {
+            case ApiType::AI_DEEP_SEEK:
                 return $this->sendAiDeepSeekRequest($apiRequest);
-            case ApiClientRequestType::AI_GEMINI:
+            case ApiType::AI_GEMINI:
                 return $this->sendAiGeminiRequest($apiRequest);
-            case ApiClientRequestType::AI_GPT:
+            case ApiType::AI_OPEN_AI:
                 return $this->sendOpenAiRequest($apiRequest);
-            case ApiClientRequestType::AI_GROK:
+            case ApiType::AI_GROK:
                 return $this->sendAiGrokRequest($apiRequest);
-            case ApiClientRequestType::DEFAULT:
-                return $this->sendDefaultRequest($apiRequest);
             default:
-                throw new Exception('Invalid ApiClientRequestType');
+                return $this->sendDefaultRequest($apiRequest);
         }
     }
 

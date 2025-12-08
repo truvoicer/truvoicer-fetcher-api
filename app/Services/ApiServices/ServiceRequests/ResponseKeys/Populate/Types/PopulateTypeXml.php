@@ -2,6 +2,7 @@
 
 namespace App\Services\ApiServices\ServiceRequests\ResponseKeys\Populate\Types;
 
+use App\Enums\Sr\SrType;
 use App\Models\S;
 use App\Models\Sr;
 use App\Models\SResponseKey;
@@ -237,8 +238,8 @@ class PopulateTypeXml extends PopulateTypeBase
     private function srTypeHandler(Sr $sr, array $data, string $itemArrayType): bool
     {
         return match ($sr->type) {
-            SrRepository::SR_TYPE_LIST => $this->populateResponseKeys($data[array_key_first($data)]),
-            SrRepository::SR_TYPE_SINGLE, SrRepository::SR_TYPE_DETAIL => $this->populateResponseKeys($data),
+            SrType::LIST => $this->populateResponseKeys($data[array_key_first($data)]),
+            SrType::SINGLE, SrType::DETAIL => $this->populateResponseKeys($data),
             default => false,
         };
     }

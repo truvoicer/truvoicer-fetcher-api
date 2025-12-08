@@ -2,6 +2,7 @@
 
 namespace App\Services\Property;
 
+use App\Enums\Property\PropertyType;
 use App\Services\ApiManager\Data\DataConstants;
 
 class PropertyProfilesService {
@@ -9,11 +10,11 @@ class PropertyProfilesService {
         [
             'name' => 'rss_feed',
             'properties' => [
-                DataConstants::API_AUTH_TYPE,
-                DataConstants::API_TYPE,
-                DataConstants::RESPONSE_FORMAT,
-                DataConstants::BASE_URL,
-                DataConstants::METHOD
+                PropertyType::API_AUTH_TYPE->value,
+                PropertyType::API_TYPE->value,
+                PropertyType::RESPONSE_FORMAT->value,
+                PropertyType::BASE_URL->value,
+                PropertyType::METHOD->value
             ]
         ]
     ];

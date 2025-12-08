@@ -40,42 +40,6 @@ class DataConstants
     const AUTH_BEARER = 'auth_bearer';
     const AUTH_NONE = 'none';
 
-    const LIST_ITEM_SEARCH_PRIORITY = "list_item_search_priority";
-    const AI_PROMPT = "ai_prompt";
-    const AI_SYSTEM_PROMPT = "ai_system_prompt";
-    const AI_TEMPERATURE = "ai_temperature";
-    const PROVIDER = "provider";
-    const API_AUTH_TYPE = "api_authentication_type";
-    const OAUTH_API_AUTH_TYPE = "oauth_api_authentication_type";
-    const OAUTH_TOKEN_URL = "oauth_token_url";
-    const CLIENT_ID = "client_id";
-    const CLIENT_SECRET = "client_secret";
-    const SECRET_KEY = "secret_key";
-    const USER_ID = "user_id";
-    const BASE_URL = "base_url";
-
-    public const TOKEN_REQUEST_AUTH_TYPE = 'token_request_auth_type';
-    public const TOKEN_REQUEST_HEADERS = 'token_request_headers';
-    public const TOKEN_REQUEST_POST_BODY = 'token_request_post_body';
-    public const TOKEN_REQUEST_BODY = 'token_request_body';
-    public const TOKEN_REQUEST_QUERY = 'token_request_query';
-    public const TOKEN_REQUEST_METHOD = 'token_request_method';
-    public const TOKEN_REQUEST_USERNAME = 'token_request_username';
-    public const TOKEN_REQUEST_PASSWORD = 'token_request_password';
-    public const TOKEN_REQUEST_TOKEN = 'token_request_token';
-
-    public const BEARER_TOKEN = 'bearer_token';
-    public const HEADERS = 'headers';
-    public const BODY = 'body';
-    public const POST_BODY = 'post_body';
-    public const QUERY = 'query';
-    public const METHOD = 'method';
-    public const USERNAME = 'username';
-    public const PASSWORD = 'password';
-    public const TOKEN = 'token';
-    public const ENDPOINT = 'endpoint';
-    public const RESPONSE_FORMAT = 'response_format';
-
     const PARAM_FILTER_KEYS = [
         "API_BASE_URL" => [
             'placeholder' => "[API_BASE_URL]",

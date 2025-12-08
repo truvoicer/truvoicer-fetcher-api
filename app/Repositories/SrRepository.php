@@ -21,16 +21,6 @@ class SrRepository extends BaseRepository
     private ProviderRepository $providerRepository;
     private SrChildSrRepository $srChildSrRepository;
 
-    public const SR_TYPE_LIST = 'list';
-    public const SR_TYPE_SINGLE = 'single';
-    public const SR_TYPE_DETAIL = 'detail';
-    public const SR_TYPE_MIXED = 'mixed';
-    public const SR_TYPES = [
-        self::SR_TYPE_LIST,
-        self::SR_TYPE_SINGLE,
-        self::SR_TYPE_DETAIL,
-    ];
-
     public function __construct()
     {
         parent::__construct(Sr::class);

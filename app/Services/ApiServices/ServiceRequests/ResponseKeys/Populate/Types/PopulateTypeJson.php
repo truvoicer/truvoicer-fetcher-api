@@ -2,6 +2,7 @@
 
 namespace App\Services\ApiServices\ServiceRequests\ResponseKeys\Populate\Types;
 
+use App\Enums\Sr\SrType;
 use App\Models\Sr;
 use App\Repositories\SrRepository;
 use App\Services\ApiManager\Data\DataConstants;
@@ -195,10 +196,10 @@ class PopulateTypeJson extends PopulateTypeBase
     private function srTypeHandler(Sr $sr, array $data): bool
     {
         return match ($sr->type) {
-            SrRepository::SR_TYPE_LIST => $this->populateResponseKeys(
+            SrType::LIST => $this->populateResponseKeys(
                 $data[array_key_first($data)]
             ),
-            SrRepository::SR_TYPE_SINGLE, SrRepository::SR_TYPE_DETAIL => $this->populateResponseKeys($data),
+            SrType::SINGLE, SrType::DETAIL => $this->populateResponseKeys($data),
             default => false,
         };
     }

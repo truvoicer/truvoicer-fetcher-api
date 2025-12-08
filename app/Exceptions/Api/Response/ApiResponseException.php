@@ -7,7 +7,7 @@ use Exception;
 class ApiResponseException extends Exception
 {
     public function __construct(
-        string         $message = "Import error",
+        string         $message = "Api operation error",
         private ?array $errors = [],
         private ?int   $statusCode = 400,
     )

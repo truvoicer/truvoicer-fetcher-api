@@ -3,6 +3,8 @@
 namespace App\Services\ApiManager\Operations\DataHandler;
 
 use App\Enums\Entity\EntityType;
+use App\Enums\Property\PropertyType;
+use App\Enums\Sr\SrType;
 use App\Http\Resources\ApiMongoDbSearchListCollection;
 use App\Http\Resources\ApiDirectSearchListCollection;
 use App\Models\Provider;
@@ -75,7 +77,6 @@ class ApiRequestDataInterface
                     $serviceName,
                     $filteredRequestData
                 );
-
                 if (!$response?->resource) {
                     return $this->apiRequestApiDirectHandler->searchOperation(
                         $serviceType,
@@ -138,14 +139,14 @@ class ApiRequestDataInterface
     {
         foreach ($srs as $sr) {
             switch ($sr->type) {
-                case SrRepository::SR_TYPE_LIST:
+                case SrType::LIST:
                     $response = $this->apiSearchBySr($sr, $id);
                     if (!$response) {
                         break;
                     }
                     return $response->first();
-                case SrRepository::SR_TYPE_DETAIL:
-                case SrRepository::SR_TYPE_SINGLE:
+                case SrType::DETAIL:
+                case SrType::SINGLE:
                     $response = $this->apiRequestMongoDbHandler->runItemSearch(
                         $sr->type,
                         [
@@ -171,6 +172,7 @@ class ApiRequestDataInterface
 
     private function apiSearchBySr(Sr $sr, string|int $id): Collection|array|null
     {
+        dd(1);
         $response = $this->apiRequestApiDirectHandler->searchOperationBySr(
             $sr,
             ['item_id' => $id]
@@ -179,7 +181,7 @@ class ApiRequestDataInterface
             return null;
         }
         switch ($sr->type) {
-            case SrRepository::SR_TYPE_LIST:
+            case SrType::LIST:
                 if ($response->isEmpty()) {
                     return null;
                 }
@@ -192,8 +194,8 @@ class ApiRequestDataInterface
                     return null;
                 }
                 return $response->first();
-            case SrRepository::SR_TYPE_DETAIL:
-            case SrRepository::SR_TYPE_SINGLE:
+            case SrType::DETAIL:
+            case SrType::SINGLE:
                 $itemId = $this->apiRequestMongoDbHandler->findItemId($response);
                 if (!$itemId) {
                     return null;
@@ -212,7 +214,7 @@ class ApiRequestDataInterface
 
         $srSearchPriorityData = $this->providerService->getProviderPropertyValue(
             $provider,
-            DataConstants::LIST_ITEM_SEARCH_PRIORITY
+            PropertyType::LIST_ITEM_SEARCH_PRIORITY->value
         );
         $filtered = array_filter($srSearchPriorityData, function ($srSearchPriorityDatum) {
             if (

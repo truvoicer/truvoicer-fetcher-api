@@ -14,6 +14,7 @@ class SrResponseKey extends Model
     public const REPOSITORY = SrResponseKeyRepository::class;
 
     protected $fillable = [
+        's_response_key_id',
         "value",
         "show_in_response",
         "list_item",

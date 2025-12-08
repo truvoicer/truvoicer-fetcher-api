@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Service\Request;
 
+use App\Enums\Sr\SrType;
 use App\Models\Sr;
 use App\Repositories\SrRepository;
 use Illuminate\Foundation\Http\FormRequest;
@@ -28,7 +29,7 @@ class UpdateSrRequest extends FormRequest
             'type' => [
                 'nullable',
                 'string',
-                Rule::in(SrRepository::SR_TYPES)
+                Rule::enum(SrType::class)
             ],
             'default_sr' => 'boolean|nullable',
             'name' => 'string|nullable',
