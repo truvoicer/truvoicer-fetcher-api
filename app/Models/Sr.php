@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\Sr\SrType;
 use App\Repositories\SrRepository;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -24,6 +25,7 @@ class Sr extends Model
         'default_data',
     ];
     protected $casts = [
+        'type' => SrType::class,
         'query_parameters' => 'json',
         'default_sr' => 'boolean',
         'default_data' => 'json',

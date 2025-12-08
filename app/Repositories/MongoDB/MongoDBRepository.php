@@ -18,7 +18,7 @@ class MongoDBRepository extends BaseRepository
         if (!$service instanceof S) {
             return false;
         }
-        return $this->getCollectionNameByService($service, $sr->type);
+        return $this->getCollectionNameByService($service, $sr->type->value);
     }
     public function getCollectionNameByService(S $service, string $type)
     {

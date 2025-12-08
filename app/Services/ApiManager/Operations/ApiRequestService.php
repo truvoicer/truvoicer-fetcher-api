@@ -36,6 +36,7 @@ class ApiRequestService extends BaseOperations
     }
 
     public function runOperation(array $query = []): ApiResponse|array {
+
         if (array_key_exists("query_type", $query) && $query["query_type"] === "array") {
             return $this->multipleQueryOperation($query);
         }
@@ -44,6 +45,7 @@ class ApiRequestService extends BaseOperations
         if (!empty($this->providerName)) {
             $providerName = $this->providerName;
         }
+
         return $this->getOperationResponse('response_keys', $providerName);
     }
 

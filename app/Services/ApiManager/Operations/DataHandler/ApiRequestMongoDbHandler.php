@@ -2,6 +2,7 @@
 
 namespace App\Services\ApiManager\Operations\DataHandler;
 
+use App\Enums\Sr\SrType;
 use App\Http\Resources\ApiMongoDbSearchListCollection;
 use App\Http\Resources\ApiSearchItemResource;
 use App\Models\S;
@@ -16,6 +17,7 @@ use App\Services\Provider\ProviderService;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
+use Illuminate\Http\Resources\Json\ResourceCollection;
 use MongoDB\Model\BSONDocument;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 
@@ -119,7 +121,7 @@ class ApiRequestMongoDbHandler extends ApiRequestDataHandler
         });
     }
 
-    public function searchOperation(string $type, array $providers, string $serviceName, ?array $data = [])
+    public function searchOperation(string $type, array $providers, string $serviceName, ?array $data = []): ResourceCollection|ApiSearchItemResource|null
     {
         // if (!count($providers)) {
         //     return false;
@@ -127,22 +129,15 @@ class ApiRequestMongoDbHandler extends ApiRequestDataHandler
 
         $getService = $this->findService($serviceName);
         if (!$getService instanceof S) {
-            return false;
+            return null;
         }
         $this->setService($getService);
 
         $providerData = $this->buildProviderData($providers);
 
         switch ($type) {
-            case SrRepository::SR_TYPE_LIST:
-            case SrRepository::SR_TYPE_MIXED:
-                // dd(
-                //     $this->runListSearch(
-                //         $type,
-                //         $providerData,
-                //         $data
-                //     )
-                // );
+            case SrType::LIST:
+            case SrType::MIXED:
                 return new ApiMongoDbSearchListCollection(
                     $this->runListSearch(
                         $type,
@@ -150,8 +145,8 @@ class ApiRequestMongoDbHandler extends ApiRequestDataHandler
                         $data
                     )
                 );
-            case SrRepository::SR_TYPE_DETAIL:
-            case SrRepository::SR_TYPE_SINGLE:
+            case SrType::DETAIL:
+            case SrType::SINGLE:
                 return new ApiSearchItemResource(
                     $this->runItemSearch(
                         $type,
@@ -159,7 +154,7 @@ class ApiRequestMongoDbHandler extends ApiRequestDataHandler
                     )
                 );
             default:
-                return false;
+                return null;
         }
     }
 

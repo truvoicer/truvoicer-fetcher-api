@@ -2,6 +2,7 @@
 
 namespace App\Services\ApiManager\Operations\DataHandler;
 
+use App\Enums\Sr\SrType;
 use App\Models\Provider;
 use App\Models\S;
 use App\Models\User;
@@ -97,8 +98,8 @@ class ApiRequestDataHandler
         switch ($type) {
             case 'mixed':
             case 'list':
-            case SrRepository::SR_TYPE_DETAIL:
-            case SrRepository::SR_TYPE_SINGLE:
+            case SrType::DETAIL:
+            case SrType::SINGLE:
                 $this->buildSrsForList($providers, $type);
                 $this->notFoundProviders = $this->prepareNotFoundProviders($providers);
                 break;
@@ -155,7 +156,6 @@ class ApiRequestDataHandler
                 $providersQuery = $findService->providers();
             }
         }
-
         if (!$providersQuery) {
             $providersQuery = $this->providerService->getProviderRepository()->newQuery()->whereIn('name', $providerNames);
         }

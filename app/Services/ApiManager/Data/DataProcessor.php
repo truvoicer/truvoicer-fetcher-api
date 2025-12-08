@@ -2,6 +2,7 @@
 
 namespace App\Services\ApiManager\Data;
 
+use App\Enums\Property\PropertyType;
 use App\Models\Property;
 use App\Models\Provider;
 use App\Models\ProviderProperty;
@@ -75,20 +76,20 @@ class DataProcessor
 
         switch ($paramValue) {
             case DataConstants::PARAM_FILTER_KEYS["PROVIDER_USER_ID"]['placeholder']:
-                return $this->getProviderPropertyValue(DataConstants::USER_ID);
+                return $this->getProviderPropertyValue(PropertyType::USER_ID->value);
 
             case DataConstants::PARAM_FILTER_KEYS["SECRET_KEY"]['placeholder']:
-                return $this->getProviderPropertyValue(DataConstants::SECRET_KEY);
+                return $this->getProviderPropertyValue(PropertyType::SECRET_KEY->value);
 
             case DataConstants::PARAM_FILTER_KEYS["CLIENT_ID"]['placeholder']:
-                return $this->getProviderPropertyValue(DataConstants::CLIENT_ID);
+                return $this->getProviderPropertyValue(PropertyType::CLIENT_ID->value);
 
             case DataConstants::PARAM_FILTER_KEYS["CLIENT_SECRET"]['placeholder']:
-                return $this->getProviderPropertyValue(DataConstants::CLIENT_SECRET);
+                return $this->getProviderPropertyValue(PropertyType::CLIENT_SECRET->value);
 
             case DataConstants::PARAM_FILTER_KEYS["ACCESS_KEY"]['placeholder']:
             case DataConstants::PARAM_FILTER_KEYS["ACCESS_TOKEN"]['placeholder']:
-                return $this->getProviderPropertyValue(DataConstants::ACCESS_TOKEN);
+                return $this->getProviderPropertyValue(PropertyType::ACCESS_TOKEN->value);
 
             case DataConstants::PARAM_FILTER_KEYS["QUERY"]['placeholder']:
                 return $this->query;

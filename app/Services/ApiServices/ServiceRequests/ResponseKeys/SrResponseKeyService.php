@@ -3,6 +3,8 @@
 namespace App\Services\ApiServices\ServiceRequests\ResponseKeys;
 
 //use App\Models\ResponseKeyRequestItem;
+
+use App\Enums\Property\PropertyType;
 use App\Exceptions\SrValidationException;
 use App\Models\Provider;
 use App\Models\Sr;
@@ -84,7 +86,7 @@ class SrResponseKeyService extends BaseService
         );
 
         if (!$entityProvider) {
-            $responseFormatValue = $this->srConfigService->getConfigValue($sr, DataConstants::RESPONSE_FORMAT);
+            $responseFormatValue = $this->srConfigService->getConfigValue($sr, PropertyType::RESPONSE_FORMAT->value);
 
             if (empty($responseFormatValue)) {
                 throw new SrValidationException(
@@ -100,7 +102,7 @@ class SrResponseKeyService extends BaseService
         } else {
             $responseFormatValue = $providerService->getProviderPropertyValue(
                 $entityProvider,
-                DataConstants::RESPONSE_FORMAT
+                PropertyType::RESPONSE_FORMAT->value
             );
             if (empty($responseFormatValue)) {
                 throw new SrValidationException(

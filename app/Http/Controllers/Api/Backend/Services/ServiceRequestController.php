@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api\Backend\Services;
 
+use App\Enums\Sr\SrType;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Service\Request\CreateChildSrRequest;
 use App\Http\Requests\Service\Request\CreateSrRequest;
@@ -51,7 +52,7 @@ class ServiceRequestController extends Controller
     {
         return $this->sendSuccessResponse(
             "success",
-            $this->srService->getServiceRequestRepository()::SR_TYPES
+            SrType::values()
         );
     }
 

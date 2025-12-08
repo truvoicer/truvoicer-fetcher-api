@@ -316,6 +316,7 @@ class DeepSeekClient
         }
 
         $responseBody = $response->json();
+
         if (!isset($responseBody['choices'][0]['message']['content'])) {
             Log::warning('DeepSeek API returned an empty response.', ['response' => $responseBody]);
             throw new Exception('The response could not be read or parsed.');

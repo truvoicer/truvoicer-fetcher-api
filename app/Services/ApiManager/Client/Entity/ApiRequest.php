@@ -1,7 +1,7 @@
 <?php
 namespace App\Services\ApiManager\Client\Entity;
 
-use App\Enums\Api\Manager\ApiClientRequestType;
+use App\Enums\Api\ApiType;
 use App\Traits\ObjectTrait;
 
 class ApiRequest
@@ -28,23 +28,24 @@ class ApiRequest
     private ?string $body = null;
     private array $authentication = [];
 
-    private ApiClientRequestType $apiClientRequestType = ApiClientRequestType::DEFAULT;
+    private ?ApiType $apiType = null;
+
     /**
-     * @return ApiClientRequestType
+     * @return ApiType
      */
-    public function getApiClientRequestType(): ApiClientRequestType
+    public function getApiType(): ApiType
     {
-        return $this->apiClientRequestType;
+        return $this->apiType;
     }
 
     /**
-     * @param ApiClientRequestType $apiClientRequestType
+     * @param ApiType $apiType
      */
-    public function setApiClientRequestType(
-        ApiClientRequestType $apiClientRequestType
+    public function setApiType(
+        ApiType $apiType
     ): static
     {
-        $this->apiClientRequestType = $apiClientRequestType;
+        $this->apiType = $apiType;
         return $this;
     }
 

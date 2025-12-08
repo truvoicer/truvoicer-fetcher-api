@@ -20,7 +20,7 @@ class GeminiClient
      * The Gemini API endpoint.
      * @var string
      */
-    protected string $apiEndpoint;
+    protected string $apiEndpoint = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent';
 
     protected int $timeout = 120;
 

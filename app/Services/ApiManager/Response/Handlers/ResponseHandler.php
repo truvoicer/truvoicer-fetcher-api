@@ -2,7 +2,8 @@
 
 namespace App\Services\ApiManager\Response\Handlers;
 
-
+use App\Enums\Property\PropertyType;
+use App\Enums\Sr\SrType;
 use App\Helpers\Tools\DateHelpers;
 use App\Models\Provider;
 use App\Models\S;
@@ -10,7 +11,6 @@ use App\Models\Sr;
 use App\Models\SResponseKey;
 use App\Models\SrResponseKey;
 use App\Models\SrResponseKeySr;
-use App\Repositories\SrRepository;
 use App\Repositories\SrResponseKeySrRepository;
 use App\Services\ApiManager\ApiBase;
 use App\Services\ApiManager\Data\DataConstants;
@@ -56,6 +56,8 @@ class ResponseHandler extends ApiBase
     protected function getItemList()
     {
         $responseKeyValue = $this->findSrResponseKeyValueInArray('items_array');
+
+
         if (empty($responseKeyValue)) {
             throw new BadRequestHttpException("Response key (items_array) value is empty.");
         }
@@ -84,7 +86,7 @@ class ResponseHandler extends ApiBase
             Log::error(
                 "Items list is empty, items_array_value: {$itemsArrayValue}",
                 [
-                    
+
                     'responseArray' => $responseArray,
                     'itemsArray' => $itemsArray
                 ]
@@ -174,6 +176,7 @@ class ResponseHandler extends ApiBase
                 }
             }
         }
+
         return $buildItems;
     }
 
@@ -388,7 +391,7 @@ class ResponseHandler extends ApiBase
         switch ($value) {
             case DataConstants::PARAM_FILTER_KEYS["API_BASE_URL"]['placeholder']:
             case DataConstants::PARAM_FILTER_KEYS["BASE_URL"]['placeholder']:
-                return $this->providerService->getProviderPropertyValue($this->provider, DataConstants::BASE_URL);
+                return $this->providerService->getProviderPropertyValue($this->provider, PropertyType::BASE_URL->value);
             default:
                 return $value;
         }
@@ -411,8 +414,8 @@ class ResponseHandler extends ApiBase
         }
 
         switch ($sr->type) {
-            case SrRepository::SR_TYPE_DETAIL:
-            case SrRepository::SR_TYPE_SINGLE:
+            case SrType::DETAIL:
+            case SrType::SINGLE:
                 if (count($responseKeyNames) === 1) {
                     return $data[$responseKeyNames[0]];
                 }
@@ -420,7 +423,7 @@ class ResponseHandler extends ApiBase
                     return in_array($key, $responseKeyNames);
                 }, ARRAY_FILTER_USE_KEY);
 
-            case SrRepository::SR_TYPE_LIST:
+            case SrType::LIST:
                 return array_map(function ($item) use ($responseKeyNames) {
                     if (count($responseKeyNames) === 1) {
                         return $item[$responseKeyNames[0]];

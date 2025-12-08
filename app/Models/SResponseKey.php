@@ -13,6 +13,7 @@ class SResponseKey extends Model
     public const TABLE_NAME = 's_response_keys';
     public const REPOSITORY = SResponseKeyRepository::class;
     protected $fillable = [
+        's_id',
         'name',
     ];
 

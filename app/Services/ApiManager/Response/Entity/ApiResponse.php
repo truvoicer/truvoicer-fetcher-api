@@ -4,11 +4,15 @@ namespace App\Services\ApiManager\Response\Entity;
 
 use App\Services\ApiManager\Client\Entity\ApiRequest;
 use App\Traits\ObjectTrait;
+use Exception;
 use Illuminate\Http\Client\Response;
 
 class ApiResponse
 {
     use ObjectTrait;
+
+    public Exception $exception;
+
     public string $status;
     public string $requestType;
     public string $responseFormat;
@@ -36,6 +40,16 @@ class ApiResponse
     public ?string $paginationType = null;
     public ?ApiRequest $apiRequest = null;
     public ?Response $response = null;
+
+    public function getException(): Exception
+    {
+        return $this->exception;
+    }
+
+    public function setException(Exception $exception): void
+    {
+        $this->exception = $exception;
+    }
 
     public function getRequestType(): string
     {

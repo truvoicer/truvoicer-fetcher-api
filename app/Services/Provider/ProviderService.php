@@ -3,6 +3,7 @@
 namespace App\Services\Provider;
 
 use App\Enums\Import\EntityLockStatus;
+use App\Enums\Property\PropertyType;
 use App\Models\Category;
 use App\Models\Property;
 use App\Models\Provider;
@@ -150,7 +151,7 @@ class ProviderService extends BaseService
             ->whereHas('property', function ($query) {
                 $query->where(
                     'name',
-                    DataConstants::PROVIDER
+                    PropertyType::PROVIDER->value
                 );
             })
             ->first();
@@ -179,7 +180,7 @@ class ProviderService extends BaseService
             ->whereHas('property', function ($query) {
                 $query->where(
                     'name',
-                    DataConstants::PROVIDER
+                    PropertyType::PROVIDER->value
                 );
             })
             ->first();

@@ -2,6 +2,7 @@
 
 namespace App\Services\ApiServices\ServiceRequests\ResponseKeys\Populate;
 
+use App\Enums\Property\PropertyType;
 use App\Models\Provider;
 use App\Models\Sr;
 use App\Repositories\SrRepository;
@@ -62,10 +63,10 @@ class PopulateFactory
                 $responseFormat = $this->providerService
                     ->getProviderPropertyValue(
                         $entityProvider,
-                        DataConstants::RESPONSE_FORMAT
+                        PropertyType::RESPONSE_FORMAT->value
                     );
             } else {
-                $responseFormat = $this->srConfigService->getConfigValue($sr, DataConstants::RESPONSE_FORMAT);
+                $responseFormat = $this->srConfigService->getConfigValue($sr, PropertyType::RESPONSE_FORMAT->value);
             }
 
             if (!$responseFormat) {

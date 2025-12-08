@@ -40,6 +40,7 @@ class OperationsController extends Controller
             $provider,
             $service
         );
+
         if (!$results) {
             return $this->sendErrorResponse(
                 'No results found',

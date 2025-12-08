@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Enums\Sr\SrType;
 use App\Repositories\SrRepository;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Str;
@@ -23,8 +24,8 @@ class SrFactory extends Factory
             'name' => Str::slug($label),
             'label' => $label,
             'default_sr' => $this->faker->boolean,
-            'type' => $this->faker->randomElement(SrRepository::SR_TYPES),
-            'pagination_type' => $this->faker->randomElement(SrRepository::SR_TYPES),
+            'type' => $this->faker->randomElement(SrType::values()),
+            'pagination_type' => $this->faker->randomElement(SrType::values()),
             'query_parameters' => array_combine($this->faker->words(3), $this->faker->words(3)),
             'default_data' => array_combine($this->faker->words(3), $this->faker->words(3)),
         ];

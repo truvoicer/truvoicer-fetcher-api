@@ -2,6 +2,7 @@
 
 namespace App\Services\ApiManager\Operations\DataHandler;
 
+use App\Enums\Sr\SrType;
 use App\Events\ProcessSrOperationDataEvent;
 use App\Http\Resources\ApiDirectSearchListCollection;
 use App\Http\Resources\ApiSearchItemResource;
@@ -15,6 +16,7 @@ use App\Services\ApiServices\ApiService;
 use App\Services\ApiServices\ServiceRequests\SrOperationsService;
 use App\Services\Category\CategoryService;
 use App\Services\Provider\ProviderService;
+use Exception;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
@@ -47,13 +49,14 @@ class ApiRequestApiDirectHandler extends ApiRequestDataHandler
         array  $providers,
         string $serviceName,
     ) {
-
-        if (!count($providers)) {
-            return false;
-        }
+        $data = $this->getRequestData();
+        // if (!count($providers)) {
+        //     return false;
+        // }
         $this->prepareProviders($providers, $serviceType);
+
         if ($this->providers->count() === 0) {
-            throw new BadRequestHttpException("Providers not found");
+            throw new Exception("Providers not found");
         }
 
         $collection = new Collection();
@@ -73,21 +76,21 @@ class ApiRequestApiDirectHandler extends ApiRequestDataHandler
                     $totalItems = count($requestData);
                 }
                 switch ($sr->type) {
-                    case SrRepository::SR_TYPE_LIST:
+                    case SrType::LIST:
                         foreach ($requestData as $item) {
                             $collection->add($item);
                         }
                         break;
-                    case SrRepository::SR_TYPE_DETAIL:
-                    case SrRepository::SR_TYPE_SINGLE:
+                    case SrType::DETAIL:
+                    case SrType::SINGLE:
                         return new ApiSearchItemResource($requestData);
                 }
             }
         }
 
         switch ($serviceType) {
-            case SrRepository::SR_TYPE_MIXED:
-            case SrRepository::SR_TYPE_LIST:
+            case SrType::MIXED->value:
+            case SrType::LIST->value:
                 $paginator = new ApiDirectSearchListCollection(
                     new CollectionPaginator(
                         $collection,
@@ -106,6 +109,7 @@ class ApiRequestApiDirectHandler extends ApiRequestDataHandler
     ): ApiResponse|bool {
         $provider = $sr->provider;
         $this->apiRequestService->setProvider($provider);
+
         if ($this->user->cannot('view', $provider)) {
             return false;
         }
