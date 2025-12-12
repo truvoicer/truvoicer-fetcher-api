@@ -1,14 +1,22 @@
 <?php
 
-namespace Tests\Feature\Frontend\OperationsControllerData;
+namespace Tests\Feature\Frontend\Operations\Data\ApiDirect;
 
 use App\Enums\Api\ApiResponseFormat;
 use App\Enums\Api\ApiType;
 use App\Enums\Property\PropertyType;
 use App\Exceptions\Api\Response\ApiResponseException;
+use Illuminate\Testing\TestResponse;
 
-class OpenAiData
+class DeepSeekData
 {
+    static public function labels(): array
+    {
+        return [
+            ['label' => 'DeepSeek: Without an items_array response key'],
+            ['label' => 'DeepSeek: Valid configs'],
+        ];
+    }
     static public function providerProperties(): array
     {
         return [
@@ -19,7 +27,7 @@ class OpenAiData
                 ],
                 [
                     'name' => PropertyType::API_TYPE->value,
-                    'value' => ApiType::AI_OPEN_AI->value
+                    'value' => ApiType::AI_DEEP_SEEK->value
                 ],
                 [
                     'name' => PropertyType::BASE_URL->value,
@@ -37,7 +45,7 @@ class OpenAiData
                 ],
                 [
                     'name' => PropertyType::API_TYPE->value,
-                    'value' => ApiType::AI_OPEN_AI->value
+                    'value' => ApiType::AI_DEEP_SEEK->value
                 ],
                 [
                     'name' => PropertyType::BASE_URL->value,
@@ -58,11 +66,19 @@ class OpenAiData
                     'name' => PropertyType::AI_PROMPT->value,
                     'big_text_value' => '12345'
                 ],
+                [
+                    'name' => PropertyType::AI_SYSTEM_PROMPT->value,
+                    'big_text_value' => '1234567789'
+                ],
             ],
             [
                 [
                     'name' => PropertyType::AI_PROMPT->value,
                     'big_text_value' => '12345'
+                ],
+                [
+                    'name' => PropertyType::AI_SYSTEM_PROMPT->value,
+                    'big_text_value' => '1234567789'
                 ],
             ]
         ];
@@ -177,7 +193,7 @@ class OpenAiData
         return [
             [
                 'status' => 400,
-                'message' => '',
+                'message' => 'Response key (items_array) value is empty.',
                 'exception' => ApiResponseException::class
             ],
             [
@@ -202,13 +218,16 @@ class OpenAiData
             $requestResponse = self::requestResponse($index)[$index];
             $responseData = self::responseData($index)[$index];
             $afterResponseData = self::afterResponse($index)[$index];
-            $data[] = [
+            $data[self::labels()[$index]['label']] = [
                 'properties' => $providerProperty,
                 'srConfigs' => $srConfigs,
                 'srResponseKeys' => $srResponseKeys,
                 'requestResponse' => $requestResponse,
                 'responseData' => $responseData,
-                'afterResponseData' => $afterResponseData
+                'afterResponseData' => $afterResponseData,
+                'callback' => function (TestResponse $response) {
+
+                }
             ];
         }
 

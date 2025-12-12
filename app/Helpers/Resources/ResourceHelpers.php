@@ -31,7 +31,7 @@ class ResourceHelpers
     {
         foreach ($data as $key => $value) {
             if ($value instanceof \MongoDB\BSON\UTCDateTime) {
-                $data[$key] = Carbon::createFromImmutable($value->toDateTimeImmutable());
+                $data[$key] = Carbon::createFromImmutable($value->toDateTimeImmutable())->toString();
             }
         }
         return $data;
@@ -43,7 +43,7 @@ class ResourceHelpers
         $responseVars = array_map(function ($var) {
             return $var->getName();
         }, $rc->getProperties(\ReflectionProperty::IS_PUBLIC));
-        
+
         $result = array_filter($result, function ($value, $key) use ($responseVars) {
             if (in_array($key, self::INCLUDE_IN_COLLECTION_ITEMS)) {
                 return true;
@@ -51,7 +51,7 @@ class ResourceHelpers
             return !in_array($key, $responseVars) ;
         }, ARRAY_FILTER_USE_BOTH);
         return self::processDates($result);
-    
+
     }
     public static function buildCollectionResponseProperties(Collection|LengthAwarePaginator $data)
     {

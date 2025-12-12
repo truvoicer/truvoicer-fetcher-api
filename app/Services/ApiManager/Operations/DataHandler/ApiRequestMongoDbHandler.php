@@ -56,6 +56,7 @@ class ApiRequestMongoDbHandler extends ApiRequestDataHandler
     {
         $this->prepareProviders($providers, $type);
         $this->searchInit($type);
+
         return $this->apiRequestSearchService->runListSearch($query);
     }
 
@@ -126,7 +127,6 @@ class ApiRequestMongoDbHandler extends ApiRequestDataHandler
         // if (!count($providers)) {
         //     return false;
         // }
-
         $getService = $this->findService($serviceName);
         if (!$getService instanceof S) {
             return null;
@@ -136,8 +136,8 @@ class ApiRequestMongoDbHandler extends ApiRequestDataHandler
         $providerData = $this->buildProviderData($providers);
 
         switch ($type) {
-            case SrType::LIST:
-            case SrType::MIXED:
+            case SrType::LIST->value:
+            case SrType::MIXED->value:
                 return new ApiMongoDbSearchListCollection(
                     $this->runListSearch(
                         $type,
@@ -145,8 +145,8 @@ class ApiRequestMongoDbHandler extends ApiRequestDataHandler
                         $data
                     )
                 );
-            case SrType::DETAIL:
-            case SrType::SINGLE:
+            case SrType::DETAIL->value:
+            case SrType::SINGLE->value:
                 return new ApiSearchItemResource(
                     $this->runItemSearch(
                         $type,

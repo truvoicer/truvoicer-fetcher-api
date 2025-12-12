@@ -9,11 +9,12 @@ class MongoAggregationBuilder
     /**
      * Adds filtering, priority scoring, and sorting stages.
      *
-     * @param array $priorityFields  Fields for prioritized searching.
+     * @param array $priorityFields Fields for prioritized searching.
      * @param array $mandatoryFields Fields that must match, now with operator support.
+     * @param string $mandatoryLogic How to combine mandatory fields ('and' or 'or')
      * @return $this
      */
-    public function addPrioritySearch(array $priorityFields, array $mandatoryFields = []): self
+    public function addPrioritySearch(array $priorityFields, array $mandatoryFields = [], string $mandatoryLogic = 'and'): self
     {
         $priorityOrConditions = [];
         $switchBranches = [];
@@ -50,7 +51,7 @@ class MongoAggregationBuilder
             $allMatchConditions[] = [$field['column'] => $mongoExpr];
         }
 
-        // 2. Build conditions for prioritized fields (this logic is unchanged)
+        // 2. Build conditions for prioritized fields
         foreach ($priorityFields as $index => $field) {
             if (empty($field['column']) || !isset($field['value'])) continue;
 
@@ -76,7 +77,19 @@ class MongoAggregationBuilder
 
         // 4. Add the stages to the main pipeline
         if (!empty($allMatchConditions)) {
-            $matchQuery = count($allMatchConditions) === 1 ? $allMatchConditions[0] : ['$and' => $allMatchConditions];
+            // CHANGED: Use the specified logic for mandatory fields
+            $matchQuery = [];
+
+            if (strtolower($mandatoryLogic) === 'or') {
+                // Use OR logic: match ANY of the mandatory conditions
+                $matchQuery = ['$or' => $allMatchConditions];
+            } else {
+                // Default AND logic: match ALL mandatory conditions
+                $matchQuery = count($allMatchConditions) === 1 ?
+                    $allMatchConditions[0] :
+                    ['$and' => $allMatchConditions];
+            }
+
             $this->pipeline[] = ['$match' => $matchQuery];
         }
 

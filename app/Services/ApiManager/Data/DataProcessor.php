@@ -146,7 +146,17 @@ class DataProcessor
 
     public function replaceListItemsValueStr(string $placeholder, string|int $replace, array $data) {
         foreach ($data as $key => $item) {
-            $data[$key]['value'] = $this->replaceListItemValueStr($placeholder, $replace, $item['value']);
+            if (
+                is_array($data[$key]) &&
+                array_key_exists('value', $data[$key])
+            ) {
+                $data[$key]['value'] = $this->replaceListItemValueStr($placeholder, $replace, $item['value']);
+            } elseif (
+                is_array($data) &&
+                array_key_exists($key, $data)
+            ) {
+                $data[$key] = $this->replaceListItemValueStr($placeholder, $replace, $item);
+            }
         }
         return $data;
     }

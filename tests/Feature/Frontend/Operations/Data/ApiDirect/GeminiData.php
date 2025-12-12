@@ -1,14 +1,21 @@
 <?php
 
-namespace Tests\Feature\Frontend\OperationsControllerData;
+namespace Tests\Feature\Frontend\Operations\Data\ApiDirect;
 
 use App\Enums\Api\ApiResponseFormat;
 use App\Enums\Api\ApiType;
 use App\Enums\Property\PropertyType;
 use App\Exceptions\Api\Response\ApiResponseException;
 
-class DeepSeekData
+class GeminiData
 {
+    static public function labels(): array
+    {
+        return [
+            ['label' => 'Gemini: Without an items_array response key'],
+            ['label' => 'Gemini: Valid configs'],
+        ];
+    }
     static public function providerProperties(): array
     {
         return [
@@ -19,7 +26,7 @@ class DeepSeekData
                 ],
                 [
                     'name' => PropertyType::API_TYPE->value,
-                    'value' => ApiType::AI_DEEP_SEEK->value
+                    'value' => ApiType::AI_GEMINI->value
                 ],
                 [
                     'name' => PropertyType::BASE_URL->value,
@@ -37,7 +44,7 @@ class DeepSeekData
                 ],
                 [
                     'name' => PropertyType::API_TYPE->value,
-                    'value' => ApiType::AI_DEEP_SEEK->value
+                    'value' => ApiType::AI_GEMINI->value
                 ],
                 [
                     'name' => PropertyType::BASE_URL->value,
@@ -58,19 +65,11 @@ class DeepSeekData
                     'name' => PropertyType::AI_PROMPT->value,
                     'big_text_value' => '12345'
                 ],
-                [
-                    'name' => PropertyType::AI_SYSTEM_PROMPT->value,
-                    'big_text_value' => '1234567789'
-                ],
             ],
             [
                 [
                     'name' => PropertyType::AI_PROMPT->value,
                     'big_text_value' => '12345'
-                ],
-                [
-                    'name' => PropertyType::AI_SYSTEM_PROMPT->value,
-                    'big_text_value' => '1234567789'
                 ],
             ]
         ];
@@ -132,24 +131,30 @@ class DeepSeekData
     {
         return [
             [
-                'choices' => [
+                'candidates' => [
                     [
-                        'message' => [
-                            'content' => json_encode(self::responseData()[$index])
+                        'content' => [
+                            'parts' => [
+                                [
+                                    'text' => json_encode(self::responseData()[1])
+                                ]
+                            ]
                         ]
                     ]
                 ]
-
             ],
             [
-                'choices' => [
+                'candidates' => [
                     [
-                        'message' => [
-                            'content' => json_encode(self::responseData()[$index])
+                        'content' => [
+                            'parts' => [
+                                [
+                                    'text' => json_encode(self::responseData()[$index])
+                                ]
+                            ]
                         ]
                     ]
                 ]
-
             ],
         ];
     }
@@ -185,7 +190,7 @@ class DeepSeekData
         return [
             [
                 'status' => 400,
-                'message' => '',
+                'message' => 'Response key (items_array) value is empty.',
                 'exception' => ApiResponseException::class
             ],
             [
@@ -210,7 +215,7 @@ class DeepSeekData
             $requestResponse = self::requestResponse($index)[$index];
             $responseData = self::responseData($index)[$index];
             $afterResponseData = self::afterResponse($index)[$index];
-            $data[] = [
+            $data[self::labels()[$index]['label']] = [
                 'properties' => $providerProperty,
                 'srConfigs' => $srConfigs,
                 'srResponseKeys' => $srResponseKeys,

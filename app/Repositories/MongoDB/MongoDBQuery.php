@@ -50,22 +50,28 @@ class MongoDBQuery
         return $this->builder;
     }
 
-    public function setBuilder(Builder $builder): self
+    public function setBuilder(Builder $builder): static
     {
         $this->builder = $builder;
         return $this;
     }
 
-    public function setCollection(string $collection): void
+    public function setCollection(string $collection): static
     {
         $this->collection = $collection;
         $this->connection = DB::connection('mongodb');
         $this->builder = $this->connection->table($this->collection);
+        return $this;
     }
 
     public function getCollection(): string
     {
         return $this->collection;
+    }
+
+    public function getConnection(): Connection
+    {
+        return DB::connection('mongodb');
     }
 
     public function getCollectionBuilder(): Builder
@@ -378,7 +384,7 @@ class MongoDBQuery
     }
 
 
-    public function addWhere(string $field, $value, ?string $compare = '=', ?string $op = 'AND'): self
+    public function addWhere(string $field, $value, ?string $compare = '=', ?string $op = 'AND'): static
     {
         $this->where[] = $this->buildWhereData($field, $value, $compare, $op);
         return $this;
@@ -402,7 +408,7 @@ class MongoDBQuery
             'op' => $op
         ];
     }
-    public function addWhereGroup(array $whereData, ?string $op = 'AND'): self
+    public function addWhereGroup(array $whereData, ?string $op = 'AND'): static
     {
         $this->whereGroups[] = [
             'where' => $whereData,
@@ -416,7 +422,7 @@ class MongoDBQuery
         return $this->where;
     }
 
-    public function setWhere(array $where): self
+    public function setWhere(array $where): static
     {
         $this->where = $where;
         return $this;
@@ -427,7 +433,7 @@ class MongoDBQuery
         return $this->sortField;
     }
 
-    public function setSortField(string $sortField): self
+    public function setSortField(string $sortField): static
     {
         $this->sortField = $sortField;
         return $this;
@@ -438,7 +444,7 @@ class MongoDBQuery
         return $this->orderDir;
     }
 
-    public function setOrderDir(string $orderDir): self
+    public function setOrderDir(string $orderDir): static
     {
         $this->orderDir = $orderDir;
         return $this;
@@ -449,7 +455,7 @@ class MongoDBQuery
         return $this->limit;
     }
 
-    public function setLimit(int $limit): self
+    public function setLimit(int $limit): static
     {
         $this->limit = $limit;
         return $this;
@@ -460,7 +466,7 @@ class MongoDBQuery
         return $this->offset;
     }
 
-    public function setOffset(int $offset): self
+    public function setOffset(int $offset): static
     {
         $this->offset = $offset;
         return $this;
@@ -471,13 +477,15 @@ class MongoDBQuery
         return $this->whereGroups;
     }
 
-    public function setOrderBy(array $orderBy): void
+    public function setOrderBy(array $orderBy): static
     {
         $this->orderBy = $orderBy;
+        return $this;
     }
 
-    public function addOrderBy(string $column, string $direction): void
+    public function addOrderBy(string $column, string $direction): static
     {
         $this->orderBy[] = [$column, $direction];
+        return $this;
     }
 }

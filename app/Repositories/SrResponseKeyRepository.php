@@ -110,13 +110,14 @@ class SrResponseKeyRepository extends BaseRepository
         // Define the relationship name you want to load
         // Based on your original code, it seems to be 'srResponseKey'
         $relationshipToLoad = 'srResponseKey';
-        $service = $serviceRequest->s()->first()->sResponseKey();
+        $service = $serviceRequest->s()->first();
+        $sResponseKey = $service->sResponseKey();
 
         // Use select() to avoid column name conflicts (e.g., 'id')
-        $service->select('s_response_keys.*');
+        $sResponseKey->select('s_response_keys.*');
 
         // Join the related table
-        $service->leftJoin('sr_response_keys', function ($join) use ($serviceRequest) {
+        $sResponseKey->leftJoin('sr_response_keys', function ($join) use ($serviceRequest) {
             // Define the relationship between the two tables for the join
             // Replace with your actual foreign key relationship
             $join->on('s_response_keys.id', '=', 'sr_response_keys.s_response_key_id')
@@ -126,23 +127,24 @@ class SrResponseKeyRepository extends BaseRepository
         // Apply your existing conditions
         foreach ($conditions as $key => $value) {
             // Be specific with the table name if column names could clash
-            $service->where('s_response_keys.' . $key, '=', $value);
+            $sResponseKey->where('s_response_keys.' . $key, '=', $value);
         }
         if (!empty($excludeKeys)) {
-            $service->whereNotIn('s_response_keys.name', $excludeKeys);
+            $sResponseKey->whereNotIn('s_response_keys.name', $excludeKeys);
         }
         if (!empty($orderBy)) {
             // Be specific with the table name if column names could clash
-            $service->orderBy($orderBy, $orderDirection ?? 'asc');
+            $sResponseKey->orderBy($orderBy, $orderDirection ?? 'asc');
         }
 
         // 4. EAGER LOAD the relationship to get the nested object in the final result
-        $service->with([$relationshipToLoad => function ($query) use ($serviceRequest) {
+        $sResponseKey->with([$relationshipToLoad => function ($query) use ($serviceRequest) {
             // You can add constraints to the eager-loaded data here if needed
             // This ensures the loaded relationship is the same one you joined against
             $query->where('sr_id', '=', $serviceRequest->id);
         }]);
-        return $service;
+
+        return $sResponseKey;
     }
     public function findSrResponseKeysWithRelation(
         Sr $serviceRequest,
@@ -267,8 +269,7 @@ class SrResponseKeyRepository extends BaseRepository
         Sr $serviceRequest,
         SResponseKey $serviceResponseKey,
         array $data
-    )
-    {
+    ) {
         $find = $this->findServiceRequestResponseKeyByResponseKey($serviceRequest, $serviceResponseKey);
         if (!$find->srResponseKey instanceof SrResponseKey) {
             $data = array_map(
