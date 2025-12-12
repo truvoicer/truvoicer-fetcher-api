@@ -135,7 +135,6 @@ class GeminiClient
         }
 
         $decoded = json_decode($jsonString, true);
-
         if (json_last_error() !== JSON_ERROR_NONE) {
             Log::error('Failed to decode JSON from Gemini.', ['raw_text' => $rawText]);
             throw new Exception('Failed to process the parsed resume data.');

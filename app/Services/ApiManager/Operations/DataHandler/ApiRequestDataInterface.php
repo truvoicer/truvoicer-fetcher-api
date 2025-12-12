@@ -77,6 +77,7 @@ class ApiRequestDataInterface
                     $serviceName,
                     $filteredRequestData
                 );
+
                 if (!$response?->resource) {
                     return $this->apiRequestApiDirectHandler->searchOperation(
                         $serviceType,

@@ -7,8 +7,7 @@ enum ApiType: string {
 
     use EnumUtillityTrait;
 
-    case QUERY_STRING = 'query_string';
-    case QUERY_SCHEMA = 'query_schema';
+    case DEFAULT = 'default';
     case AI_GEMINI = 'ai_gemini';
     case AI_OPEN_AI = 'ai_gpt';
     case AI_GROK = 'ai_grok';

@@ -64,7 +64,7 @@ return [
         'mongodb' => [
             'driver' => 'mongodb',
             'dsn' => env('MONGODB_URI', ''),
-            'database' => 'fetcher_data',
+            'database' => env('MONGODB_DATABASE', 'fetcher_data'),
         ],
         'pgsql' => [
             'driver' => 'pgsql',

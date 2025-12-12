@@ -1,14 +1,22 @@
 <?php
 
-namespace Tests\Feature\Frontend\OperationsControllerData;
+namespace Tests\Feature\Frontend\Operations\Data\ApiDirect;
 
 use App\Enums\Api\ApiResponseFormat;
 use App\Enums\Api\ApiType;
 use App\Enums\Property\PropertyType;
 use App\Exceptions\Api\Response\ApiResponseException;
 
-class GrokData
+class OpenAiData
 {
+    static public function labels(): array
+    {
+        return [
+            ['label' => 'OpenAi: Without an items_array response key'],
+            ['label' => 'OpenAi: Valid configs'],
+        ];
+    }
+
     static public function providerProperties(): array
     {
         return [
@@ -19,7 +27,7 @@ class GrokData
                 ],
                 [
                     'name' => PropertyType::API_TYPE->value,
-                    'value' => ApiType::AI_GROK->value
+                    'value' => ApiType::AI_OPEN_AI->value
                 ],
                 [
                     'name' => PropertyType::BASE_URL->value,
@@ -37,7 +45,7 @@ class GrokData
                 ],
                 [
                     'name' => PropertyType::API_TYPE->value,
-                    'value' => ApiType::AI_GROK->value
+                    'value' => ApiType::AI_OPEN_AI->value
                 ],
                 [
                     'name' => PropertyType::BASE_URL->value,
@@ -177,7 +185,7 @@ class GrokData
         return [
             [
                 'status' => 400,
-                'message' => '',
+                'message' => 'Response key (items_array) value is empty.',
                 'exception' => ApiResponseException::class
             ],
             [
@@ -202,7 +210,7 @@ class GrokData
             $requestResponse = self::requestResponse($index)[$index];
             $responseData = self::responseData($index)[$index];
             $afterResponseData = self::afterResponse($index)[$index];
-            $data[] = [
+            $data[self::labels()[$index]['label']] = [
                 'properties' => $providerProperty,
                 'srConfigs' => $srConfigs,
                 'srResponseKeys' => $srResponseKeys,

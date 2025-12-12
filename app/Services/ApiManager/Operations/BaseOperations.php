@@ -4,6 +4,7 @@ namespace App\Services\ApiManager\Operations;
 
 use App\Enums\Api\ApiType;
 use App\Enums\Property\PropertyType;
+use App\Exceptions\Api\Operation\ApiOperationException;
 use App\Exceptions\OauthResponseException;
 use App\Models\Provider;
 use App\Models\ProviderRateLimit;
@@ -207,11 +208,21 @@ class BaseOperations extends ApiBase
 
     private function buildListValues(array $listValues)
     {
+        $filter = array_filter($listValues, function ($value) {
+            return (
+                is_array($value) &&
+                array_key_exists('name', $value) &&
+                array_key_exists('value', $value)
+            );
+        });
+        if (!count($filter)) {
+            return $listValues;
+        }
         return array_combine(
-            array_column($listValues, 'name'),
+            array_column($filter, 'name'),
             array_map(
                 fn($value) => $this->dataProcessor->filterParameterValue($value),
-                array_column($listValues, 'value')
+                array_column($filter, 'value')
             )
         );
     }
@@ -221,7 +232,9 @@ class BaseOperations extends ApiBase
         $this->apiType = ApiType::tryFrom(
             $this->dataProcessor->getConfigValue(PropertyType::API_TYPE->value)
         );
-
+        if (!$this->apiType) {
+            $this->apiType = ApiType::DEFAULT;
+        }
         switch ($this->dataProcessor->getConfigValue(PropertyType::API_AUTH_TYPE->value)) {
             case DataConstants::OAUTH2:
                 $this->initOauth();
@@ -263,6 +276,7 @@ class BaseOperations extends ApiBase
         if ($query) {
             $query = $this->dataProcessor->replaceListItemsOffsetPlaceholders($query);
             $query = $this->buildListValues($query);
+
         }
 
         $this->apiRequest->setApiType(
@@ -334,7 +348,7 @@ class BaseOperations extends ApiBase
         try {
             return $this->apiClientHandler->sendRequest($this->apiRequest);
         } catch (Exception $exception) {
-            throw new BadRequestHttpException($exception->getMessage());
+            throw new ApiOperationException($exception->getMessage());
         }
     }
 

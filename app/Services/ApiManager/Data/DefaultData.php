@@ -2,6 +2,7 @@
 
 namespace App\Services\ApiManager\Data;
 
+use App\Enums\Api\ApiMethod;
 use App\Enums\Api\ApiResponseFormat;
 use App\Enums\Api\ApiType;
 use App\Enums\Entity\EntityType;
@@ -222,7 +223,7 @@ class DefaultData
                 DataConstants::REQUEST_CONFIG_ITEM_SELECTED_VALUE_TYPE => DataConstants::REQUEST_CONFIG_VALUE_TYPE_CHOICE,
                 DataConstants::REQUEST_CONFIG_ITEM_VALUE => '',
                 DataConstants::REQUEST_CONFIG_ITEM_ARRAY_VALUE => [],
-                DataConstants::REQUEST_CONFIG_ITEM_VALUE_CHOICES => ['get', 'post'],
+                DataConstants::REQUEST_CONFIG_ITEM_VALUE_CHOICES => ApiMethod::values(),
             ],
             [
                 DataConstants::REQUEST_CONFIG_ITEM_NAME => PropertyType::HEADERS->value,

@@ -14,6 +14,7 @@ use App\Services\ApiServices\SResponseKeysService;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Facades\DB;
 use MongoDB\Model\BSONDocument;
 
 class ApiRequestSearchService
@@ -160,9 +161,7 @@ class ApiRequestSearchService
                 continue;
             }
 
-
             foreach ($srs as $sr) {
-
                 list($orderBy, $sortOrder) = $this->getOrderBy($sr, $orderByData);
                 if (!empty($orderBy) && in_array($sortOrder, $this->mongoDBRepository->getMongoDBQuery()::AVAILABLE_ORDER_DIRECTIONS)) {
                     $sort[] = [$orderBy, $sortOrder];
@@ -263,6 +262,7 @@ class ApiRequestSearchService
 
     public function runListSearch(array $queryData): Collection|LengthAwarePaginator
     {
+
         if (!empty($this->itemSearchData) && count($this->itemSearchData)) {
             $this->prepareItemSearch($this->type, $this->itemSearchData);
             $this->preparePagination($queryData);

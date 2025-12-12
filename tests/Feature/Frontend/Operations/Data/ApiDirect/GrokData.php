@@ -1,14 +1,22 @@
 <?php
 
-namespace Tests\Feature\Frontend\OperationsControllerData;
+namespace Tests\Feature\Frontend\Operations\Data\ApiDirect;
 
 use App\Enums\Api\ApiResponseFormat;
 use App\Enums\Api\ApiType;
 use App\Enums\Property\PropertyType;
 use App\Exceptions\Api\Response\ApiResponseException;
 
-class GeminiData
+class GrokData
 {
+    static public function labels(): array
+    {
+        return [
+            ['label' => 'Grok: Without an items_array response key'],
+            ['label' => 'Grok: Valid configs'],
+        ];
+    }
+
     static public function providerProperties(): array
     {
         return [
@@ -19,7 +27,7 @@ class GeminiData
                 ],
                 [
                     'name' => PropertyType::API_TYPE->value,
-                    'value' => ApiType::AI_GEMINI->value
+                    'value' => ApiType::AI_GROK->value
                 ],
                 [
                     'name' => PropertyType::BASE_URL->value,
@@ -37,7 +45,7 @@ class GeminiData
                 ],
                 [
                     'name' => PropertyType::API_TYPE->value,
-                    'value' => ApiType::AI_GEMINI->value
+                    'value' => ApiType::AI_GROK->value
                 ],
                 [
                     'name' => PropertyType::BASE_URL->value,
@@ -91,7 +99,7 @@ class GeminiData
             [
                 [
                     'name' => 'items_array',
-                    'value' => 'root_array'
+                    'value' => 'content'
                 ],
                 [
                     'name' => 'id',
@@ -124,30 +132,24 @@ class GeminiData
     {
         return [
             [
-                'candidates' => [
+                'choices' => [
                     [
-                        'content' => [
-                            'parts' => [
-                                [
-                                    'text' => json_encode(self::responseData()[1])
-                                ]
-                            ]
+                        'message' => [
+                            'content' => json_encode(self::responseData()[$index])
                         ]
                     ]
                 ]
+
             ],
             [
-                'candidates' => [
+                'choices' => [
                     [
-                        'content' => [
-                            'parts' => [
-                                [
-                                    'text' => json_encode(self::responseData()[$index])
-                                ]
-                            ]
+                        'message' => [
+                            'content' => json_encode(self::responseData()[$index])
                         ]
                     ]
                 ]
+
             ],
         ];
     }
@@ -183,7 +185,7 @@ class GeminiData
         return [
             [
                 'status' => 400,
-                'message' => '',
+                'message' => 'Response key (items_array) value is empty.',
                 'exception' => ApiResponseException::class
             ],
             [
@@ -208,7 +210,7 @@ class GeminiData
             $requestResponse = self::requestResponse($index)[$index];
             $responseData = self::responseData($index)[$index];
             $afterResponseData = self::afterResponse($index)[$index];
-            $data[] = [
+            $data[self::labels()[$index]['label']] = [
                 'properties' => $providerProperty,
                 'srConfigs' => $srConfigs,
                 'srResponseKeys' => $srResponseKeys,

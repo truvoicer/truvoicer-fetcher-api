@@ -62,7 +62,8 @@ class ApiRequestApiDirectHandler extends ApiRequestDataHandler
         $collection = new Collection();
         $totalItems = 0;
         foreach ($this->providers as $index => $provider) {
-            foreach ($provider->sr as $sr) {
+
+            foreach ($provider->sr as $index => $sr) {
                 $response = $this->searchOperationBySr($sr);
 
                 if (!$response) {

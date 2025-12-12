@@ -156,6 +156,7 @@ class ApiRequestDataHandler
                 $providersQuery = $findService->providers();
             }
         }
+
         if (!$providersQuery) {
             $providersQuery = $this->providerService->getProviderRepository()->newQuery()->whereIn('name', $providerNames);
         }

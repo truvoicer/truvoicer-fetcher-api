@@ -46,7 +46,15 @@ class ResponseHandler extends ApiBase
 
     protected function findSrResponseKeyValueInArray(string $name)
     {
-        $responseKey = $this->responseKeysArray->where("name", $name)->first();
+        $responseKey = $this->responseKeysArray
+            ->where("name", $name)
+            ->where(function ($item) {
+                $item = $item->toArray();
+                return isset($item['sr_response_key']['sr_id']) &&
+                    $item['sr_response_key']['sr_id'] == $this->apiService->id;
+            })
+            ->first();
+
         if (!$responseKey instanceof SResponseKey || !$responseKey->srResponseKey instanceof SrResponseKey) {
             return null;
         }
@@ -56,7 +64,7 @@ class ResponseHandler extends ApiBase
     protected function getItemList()
     {
         $responseKeyValue = $this->findSrResponseKeyValueInArray('items_array');
-
+        // var_dump($responseKeyValue);
 
         if (empty($responseKeyValue)) {
             throw new BadRequestHttpException("Response key (items_array) value is empty.");
@@ -66,6 +74,7 @@ class ResponseHandler extends ApiBase
 
     public function buildItemListFromResponseArray(string $itemsArrayValue, array $responseArray)
     {
+
         if ($itemsArrayValue === "root_items") {
             return [$responseArray];
         }
@@ -157,6 +166,7 @@ class ResponseHandler extends ApiBase
             $itemList["service"] = $this->apiService->s()->first()->only('id', 'name');
             return $itemList;
         }, $itemList);
+
 
         $srResponseKeySrs = SrResponseKeySr::query()
             ->whereHas('srResponseKey', function ($query) {
