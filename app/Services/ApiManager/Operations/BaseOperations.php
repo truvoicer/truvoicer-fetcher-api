@@ -17,6 +17,7 @@ use App\Services\ApiManager\Client\Entity\ApiRequest;
 use App\Services\ApiManager\Client\Oauth\Oauth;
 use App\Services\ApiManager\Data\DataConstants;
 use App\Services\ApiManager\Data\DataProcessor;
+use App\Services\ApiManager\Response\Entity\ApiDetailedResponse;
 use App\Services\ApiManager\Response\Entity\ApiResponse;
 use App\Services\ApiManager\Response\ResponseManager;
 use App\Services\ApiServices\RateLimitService;
@@ -62,15 +63,16 @@ class BaseOperations extends ApiBase
         private DataProcessor       $dataProcessor
     ) {}
 
-    public function getOperationResponse(string $requestType, ?string $providerName = null): ApiResponse
+    public function getOperationResponse(string $requestType, ?string $providerName = null, ?bool $detailedResponse = false): ApiResponse|ApiDetailedResponse
     {
         return $this->responseHandler(
             $requestType,
-            $this->runRequest($providerName)
+            $this->runRequest($providerName),
+            $detailedResponse
         );
     }
 
-    private function responseHandler(string $requestType, $response)
+    private function responseHandler(string $requestType, $response, ?bool $detailedResponse = false): ApiResponse|ApiDetailedResponse
     {
         $this->responseManager->setApiType(
             $this->getApiType()
@@ -89,10 +91,10 @@ class BaseOperations extends ApiBase
         }
         switch ($requestType) {
             case "response_keys":
-                return $this->responseManager->processResponse($response, $this->apiRequest);
+                return $this->responseManager->processResponse($response, $this->apiRequest, $detailedResponse);
             case "json":
             case "raw":
-                return $this->responseManager->getRequestContent($response, $this->apiRequest);
+                return $this->responseManager->getRequestContent($response, $this->apiRequest, $detailedResponse);
             default:
                 $apiResponse->setMessage('Invalid request type.');
                 return $apiResponse;

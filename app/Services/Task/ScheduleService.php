@@ -2,7 +2,6 @@
 
 namespace App\Services\Task;
 
-use App\Services\Provider\ProviderEventService;
 use App\Services\Provider\ProviderScheduleService;
 use Illuminate\Console\Scheduling\Schedule;
 

@@ -25,7 +25,6 @@ class Kernel extends ConsoleKernel
 
         $this->scheduleService->setSchedule($schedule);
         $this->scheduleService->run();
-        // $schedule->command('inspire')->hourly();
     }
 
     /**
