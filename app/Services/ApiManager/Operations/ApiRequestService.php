@@ -1,6 +1,7 @@
 <?php
 namespace App\Services\ApiManager\Operations;
 
+use App\Services\ApiManager\Response\Entity\ApiDetailedResponse;
 use App\Services\ApiManager\Response\Entity\ApiResponse;
 use App\Traits\User\UserTrait;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
@@ -35,7 +36,7 @@ class ApiRequestService extends BaseOperations
         }, $queryItems);
     }
 
-    public function runOperation(array $query = []): ApiResponse|array {
+    public function runOperation(array $query = []): ApiResponse|array|ApiDetailedResponse {
 
         if (array_key_exists("query_type", $query) && $query["query_type"] === "array") {
             return $this->multipleQueryOperation($query);
