@@ -49,9 +49,9 @@ class ApiRequestService extends BaseOperations
         return $this->getOperationResponse('response_keys', $providerName);
     }
 
-    public function getOperationRequestContent(string $requestType, array $query = []) {
+    public function getOperationRequestContent(string $requestType, array $query = [], ?bool $detailedResponse = false) {
         $this->initialize($query);
-        return $this->getOperationResponse($requestType, $this->providerName);
+        return $this->getOperationResponse($requestType, $this->providerName, $detailedResponse);
     }
 
     public function setProviderName(string $providerName)

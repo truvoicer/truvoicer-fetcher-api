@@ -189,7 +189,7 @@ class ProviderScheduleService
             function () use ($sr, $schedule, $method) {
                 $this->providerEventsService->dispatchSrScheduleOperationEvent($this->user, $sr, $schedule, $method);
             },
-        );
+        )->description('Sr operation schedules');
     }
 
     public function setSchedule(Schedule $schedule): void

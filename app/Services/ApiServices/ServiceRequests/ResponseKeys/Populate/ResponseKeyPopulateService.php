@@ -10,7 +10,8 @@ use App\Repositories\SResponseKeyRepository;
 use App\Repositories\SrRepository;
 use App\Repositories\SrResponseKeyRepository;
 use App\Services\ApiManager\Operations\ApiRequestService;
-use App\Services\ApiManager\Response\Entity\ApiResponse;
+use App\Services\ApiManager\Response\Entity\ApiDetailedResponse;
+use App\Services\ApiManager\Response\Entity\ApiDetailedResponse;
 use App\Services\ApiManager\Response\Handlers\ResponseHandler;
 use App\Services\ApiManager\Response\ResponseManager;
 use App\Services\ApiServices\ServiceRequests\SrConfigService;
@@ -30,7 +31,7 @@ class ResponseKeyPopulateService
     private SResponseKeyRepository $responseKeyRepository;
     private Sr $destSr;
     private S $destService;
-    private ApiResponse $response;
+    private ApiDetailedResponse $response;
 
     private ?array $data = [];
     private bool $overwrite = false;
@@ -71,16 +72,16 @@ class ResponseKeyPopulateService
 
     }
 
-    public function runSrRequest(Sr $sr, ?array $query = []): ApiResponse
+    public function runSrRequest(Sr $sr, ?array $query = []): ApiDetailedResponse
     {
         $provider = $sr->provider()->first();
         $this->requestOperation->setProviderName($provider->name);
         $this->requestOperation->setApiRequestName($sr->name);
         $this->requestOperation->setUser($this->getUser());
-        return $this->requestOperation->getOperationRequestContent('raw', $query);
+        return $this->requestOperation->getOperationRequestContent('raw', $query, true);
     }
 
-    public function handleResponse(Sr $sr, ApiResponse $response): bool
+    public function handleResponse(Sr $sr, ApiDetailedResponse $response): bool
     {
         $this->score = [];
         $this->response = $response;

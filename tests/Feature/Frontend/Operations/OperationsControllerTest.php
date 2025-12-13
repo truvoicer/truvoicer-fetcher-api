@@ -8,6 +8,7 @@ use App\Enums\Api\ApiType;
 use App\Enums\Property\PropertyType;
 use App\Enums\Sr\SrType;
 use App\Events\ProcessSrOperationDataEvent;
+use App\Jobs\ProcessSrOperationData;
 use App\Models\Category;
 use App\Models\Property;
 use App\Models\Provider;
@@ -22,6 +23,7 @@ use Database\Seeders\UserSeeder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Queue;
 use Laravel\Sanctum\Sanctum;
 use Mockery;
 use Mockery\MockInterface;
@@ -442,181 +444,16 @@ class OperationsControllerTest extends TestCase
             PropertySeeder::class
         ]);
 
-        Sanctum::actingAs(
-            $this->superUser,
-            ['*']
-        );
+        list(
+            $normalizedExpected,
+            $normalizedActual,
+            $responseData
+        ) = $this->sharedPreparation();
 
-        $s = S::factory()->create();
-        $category = Category::factory()->create();
-        $provider = Provider::factory()
-            ->has(
-                Sr::factory()->state([
-                    's_id' => $s->id,
-                    'category_id' => $category->id,
-                    'type' => SrType::LIST->value,
-                    'default_sr' => true
-                ])
-            )
-            ->create();
-
-        $srResponseKeys = [
-            [
-                'name' => 'items_array',
-                'value' => 'results'
-            ],
-            [
-                'name' => 'id',
-                'value' => 'id',
-                'show_in_response' => true,
-                'list_item' => true,
-            ],
-            [
-                'name' => 'name',
-                'value' => 'name',
-                'show_in_response' => true,
-                'list_item' => true,
-            ],
-            [
-                'name' => 'title',
-                'value' => 'title',
-                'show_in_response' => true,
-                'list_item' => true,
-            ],
-            [
-                'name' => 'description',
-                'value' => 'description',
-                'show_in_response' => true,
-                'list_item' => true,
-            ],
-        ];
-        $properties = [
-            [
-                'name' => PropertyType::ACCESS_TOKEN->value,
-                'value' => '12345'
-            ],
-            [
-                'name' => PropertyType::API_TYPE->value,
-                'value' => ApiType::DEFAULT->value
-            ],
-            [
-                'name' => PropertyType::BASE_URL->value,
-                'value' => 'http://aurl.com/v1'
-            ],
-            [
-                'name' => PropertyType::RESPONSE_FORMAT->value,
-                'value' => ApiResponseFormat::JSON->value
-            ],
-            [
-                'name' => PropertyType::METHOD->value,
-                'value' => ApiMethod::GET->value
-            ],
-        ];
-        $srConfigs = [
-            [
-                'name' => PropertyType::ENDPOINT->value,
-                'value' => '/test-endpoint-1'
-            ],
-            [
-                'name' => PropertyType::QUERY->value,
-                'array_value' => [
-                    'sort' => 'title',
-                    'direction' => 'asc',
-                ],
-            ],
-        ];
-        $responseData = [
-            [
-                'id' => 1,
-                'name' => 'test-name',
-                'title' => 'Test Title',
-                'description' => 'This is a test description for test title'
-            ],
-            [
-                'id' => 2,
-                'name' => 'test-name-2',
-                'title' => 'Test Title 2',
-                'description' => 'This is a test description for test title 2'
-            ],
-            [
-                'id' => 3,
-                'name' => 'test-name-3',
-                'title' => 'Test Title 3',
-                'description' => 'This is a test description for test title 3'
-            ],
-        ];
-
-        $this->operationsDbHelpers->dataInit(
-            $provider,
-            $srResponseKeys,
-            $s,
-            $category,
-            $properties,
-            $srConfigs,
-            $responseData,
-            count($responseData)
-        );
-
-        // First create a real instance
-        $handler = app(ApiRequestMongoDbHandler::class);
-
-        // Then mock it
-        $this->instance(
-            ApiRequestMongoDbHandler::class,
-            Mockery::mock($handler, function (MockInterface $mock) {
-                $mock->shouldReceive('searchOperation')
-                    ->andReturn(null);
-            })
-        );
-
-        $requestResponse = [
-            'results' => $responseData
-        ];
-
-        Http::fake([
-            '*' => Http::response($requestResponse, 200),
-        ]);
-
-
-        $postData = [
-            "page_id" => 1,
-            "api_fetch_type" => "database",
-            "date_key" => "created_at",
-            "page_number" => 1,
-            "page_size" => 10,
-            "service" => $s->name,
-            "sort_by" => "created_at",
-            "sort_order" => "desc",
-        ];
-
-        $response = $this->post(
-            route('front.operation.search', ['type' => 'list']),
-            $postData
-        )
-            ->assertStatus(200)
-            ->assertJsonCount(3, 'results');
-
-
-        $resultData = json_decode($response->baseResponse->getContent(), true)['results'];
-
-        // For arrays with different key order
-        $normalizedExpected = array_map(function ($item) {
-            ksort($item);
-            return $item;
-        }, $responseData);
-
-        $normalizedActual = array_map(function ($item) use ($responseData) {
-            ksort($item);
-            return array_filter($item, function ($key) use ($responseData) {
-                $responseDataItemKeys = array_keys(array_first($responseData));
-                return in_array($key, $responseDataItemKeys);
-            }, ARRAY_FILTER_USE_KEY);
-        }, $resultData);
-
-        $this->assertEqualsCanonicalizing($normalizedExpected, $normalizedActual);
     }
 
-    public function test_list_search_operation_can_queue_data(): void
+
+    public function test_list_search_operation_can_dispatch_save_data_event(): void
     {
 
         Event::fake([
@@ -627,6 +464,65 @@ class OperationsControllerTest extends TestCase
             PropertySeeder::class
         ]);
 
+        list(
+            $normalizedExpected,
+            $normalizedActual,
+            $responseData
+        ) = $this->sharedPreparation();
+
+        Event::assertDispatched(ProcessSrOperationDataEvent::class, function (ProcessSrOperationDataEvent $event) use ($normalizedExpected, $responseData) {
+            $this->assertEquals($this->superUser->id, $event->userId);
+            $this->assertEquals(Sr::first()->id, $event->srId);
+
+            $normalizedActual = array_map(function ($item) use ($responseData) {
+                ksort($item);
+                return array_filter($item, function ($key) use ($responseData) {
+                    $responseDataItemKeys = array_keys(array_first($responseData));
+                    return in_array($key, $responseDataItemKeys);
+                }, ARRAY_FILTER_USE_KEY);
+            }, $event->apiResponse->getRequestData());
+
+            $this->assertEqualsCanonicalizing($normalizedExpected, $normalizedActual);
+            return true;
+        });
+    }
+
+    public function test_list_search_operation_can_queue_save_data_event_job(): void
+    {
+
+        Queue::fake([
+            ProcessSrOperationData::class,
+        ]);
+
+        $this->seed([
+            PropertySeeder::class
+        ]);
+
+        list(
+            $normalizedExpected,
+            $normalizedActual,
+            $responseData
+        ) = $this->sharedPreparation();
+
+        Queue::assertPushed(ProcessSrOperationData::class, function (ProcessSrOperationData $job) use ($normalizedExpected, $responseData) {
+
+            $this->assertEquals(S::first()->id, $job->apiResponse->service['id']);
+            $this->assertEquals(Sr::first()->id, $job->apiResponse->serviceRequest['id']);
+            $normalizedActual = array_map(function ($item) use ($responseData) {
+                ksort($item);
+                return array_filter($item, function ($key) use ($responseData) {
+                    $responseDataItemKeys = array_keys(array_first($responseData));
+                    return in_array($key, $responseDataItemKeys);
+                }, ARRAY_FILTER_USE_KEY);
+            }, $job->apiResponse->getRequestData());
+
+            $this->assertEqualsCanonicalizing($normalizedExpected, $normalizedActual);
+            return true;
+        });
+    }
+
+    public function sharedPreparation()
+    {
         Sanctum::actingAs(
             $this->superUser,
             ['*']
@@ -799,21 +695,10 @@ class OperationsControllerTest extends TestCase
 
         $this->assertEqualsCanonicalizing($normalizedExpected, $normalizedActual);
 
-
-        Event::assertDispatched(ProcessSrOperationDataEvent::class, function (ProcessSrOperationDataEvent $event) use($normalizedExpected, $responseData) {
-            $this->assertEquals($this->superUser->id, $event->userId);
-            $this->assertEquals(Sr::first()->id, $event->srId);
-
-            $normalizedActual = array_map(function ($item) use ($responseData) {
-                ksort($item);
-                return array_filter($item, function ($key) use ($responseData) {
-                    $responseDataItemKeys = array_keys(array_first($responseData));
-                    return in_array($key, $responseDataItemKeys);
-                }, ARRAY_FILTER_USE_KEY);
-            }, $event->apiResponse->getRequestData());
-
-            $this->assertEqualsCanonicalizing($normalizedExpected, $normalizedActual);
-            return true;
-        });
+        return [
+            $normalizedExpected,
+            $normalizedActual,
+            $responseData
+        ];
     }
 }

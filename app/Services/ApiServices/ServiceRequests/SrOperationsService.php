@@ -11,7 +11,6 @@ use App\Models\SrSchedule;
 use App\Models\User;
 use App\Repositories\MongoDB\MongoDBQuery;
 use App\Repositories\MongoDB\MongoDBRepository;
-use App\Repositories\SrRepository;
 use App\Repositories\SrResponseKeyRepository;
 use App\Repositories\SrResponseKeySrRepository;
 use App\Services\ApiManager\Data\DataConstants;
@@ -384,8 +383,6 @@ class SrOperationsService
         }
         $requestData = $apiResponse->getRequestData();
         if (count($requestData) === 0) {
-            $apiRequest = $apiResponse->getApiRequest();
-            $response = $apiResponse->getResponse();
             Log::channel(self::LOGGING_NAME)->info(
                 sprintf(
                     'No request data found for service request: %s | Provider: %s',
@@ -394,12 +391,6 @@ class SrOperationsService
                 ),
                 [
                     'data' => $apiResponse->toArray(),
-                    'request_data' => ($apiRequest) ? $apiRequest->toArray() : [],
-                    'response' => (empty($response)) ? null : [
-                        'status' => $response->status(),
-                        'headers' => $response->headers(),
-                        'body' => $response->body(),
-                    ]
                 ]
             );
             return false;

@@ -51,6 +51,7 @@ class SrScheduleFactory extends Factory
             'weekday' => $this->faker->randomElement([0, 1, 2, 3, 4, 5, 6]),
             'every_month' => $this->faker->boolean,
             'month' => $this->faker->randomNumber(1, 12),
+            'parameters' => $this->faker->randomElement(['a', 'b', 'c']),
         ];
     }
 }

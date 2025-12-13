@@ -9,7 +9,6 @@ use App\Exceptions\Api\Response\ApiResponseException;
 use App\Models\Provider;
 use App\Models\Sr;
 use App\Models\User;
-use App\Repositories\SrRepository;
 use App\Services\Ai\DeepSeek\DeepSeekClient;
 use App\Services\Ai\Gemini\GeminiClient;
 use App\Services\Ai\Grok\GrokClient;
@@ -17,6 +16,7 @@ use App\Services\Ai\OpenAi\OpenAiClient;
 use App\Services\ApiManager\Client\Entity\ApiRequest;
 use App\Services\ApiManager\Data\DataConstants;
 use App\Services\ApiManager\Data\DataProcessor;
+use App\Services\ApiManager\Response\Entity\ApiDetailedResponse;
 use App\Services\ApiManager\Response\Entity\ApiResponse;
 use App\Services\ApiManager\Response\Handlers\Json\JsonResponseHandler;
 use App\Services\ApiManager\Response\Handlers\Xml\XmlResponseHandler;
@@ -24,7 +24,6 @@ use App\Services\ApiServices\ServiceRequests\SrConfigService;
 use App\Services\BaseService;
 use Exception;
 use Illuminate\Http\Client\Response;
-use Illuminate\Support\Facades\App;
 
 
 class ResponseManager extends BaseService
@@ -45,22 +44,15 @@ class ResponseManager extends BaseService
     public function __construct(
         private readonly JsonResponseHandler $jsonResponseHandler,
         private readonly XmlResponseHandler $xmlResponseHandler
-    )
-    {
+    ) {
         parent::__construct();
     }
 
-    private function getContentTypesFromHeaders(Response $response)
-    {
-        $headers = $response->headers();
-        if (isset($headers['Content-Type']) && is_array($headers['Content-Type'])) {
-            return $headers['Content-Type'];
-        }
-        return [];
-    }
-
-    public function getRequestContent(Response $response, ApiRequest $apiRequest)
-    {
+    public function getRequestContent(
+        Response $response,
+        ApiRequest $apiRequest,
+        ?bool $detailedResponse = false
+    ) {
         try {
             $contentType = 'unknown';
             $content = [];
@@ -70,7 +62,7 @@ class ResponseManager extends BaseService
                     switch ($this->getContentType($response)) {
                         case self::CONTENT_TYPE_JSON:
                             $contentType = "json";
-                            $content =$this->getJsonBody($response);
+                            $content = $this->getJsonBody($response);
                             break;
                         case self::CONTENT_TYPE_XML:
                             $contentType = "xml";
@@ -82,7 +74,7 @@ class ResponseManager extends BaseService
                     switch ($this->getContentType($response)) {
                         case self::CONTENT_TYPE_JSON:
                             $contentType = "json";
-                            $content =$this->getJsonBody($response);
+                            $content = $this->getJsonBody($response);
                             break;
                         case self::CONTENT_TYPE_XML:
                             $contentType = "xml";
@@ -97,7 +89,8 @@ class ResponseManager extends BaseService
                 $content,
                 [],
                 $apiRequest,
-                $response
+                $response,
+                $detailedResponse
             );
         } catch (Exception $exception) {
             throw new ApiResponseException(
@@ -139,8 +132,11 @@ class ResponseManager extends BaseService
     }
 
 
-    public function processResponse(Response $response, ApiRequest $apiRequest)
-    {
+    public function processResponse(
+        Response $response,
+        ApiRequest $apiRequest,
+        ?bool $detailedResponse = false
+    ) {
         try {
             $listItems = [];
             $listData = [];
@@ -173,7 +169,9 @@ class ResponseManager extends BaseService
                 $contentType,
                 $this->buildArray($listItems),
                 $listData,
-                $apiRequest, $response
+                $apiRequest,
+                $response,
+                $detailedResponse
             );
         } catch (Exception $exception) {
             throw new ApiResponseException(
@@ -201,26 +199,23 @@ class ResponseManager extends BaseService
         $apiResponse->setProvider($this->provider->name);
         return $apiResponse;
     }
-    private function errorResponse(Exception $exception, ApiRequest $apiRequest, Response $response)
-    {
-        $apiResponse = new ApiResponse();
-        $apiResponse->setException($exception);
-        $apiResponse->setStatus("error");
-        $apiResponse->setMessage($exception->getMessage());
-        // $apiResponse->setApiRequest($apiRequest);
-        // $apiResponse->setRequestData([
-        //     "error" => $exception->getMessage(),
-        //     'code' => $exception->getCode(),
-        //     'line' => $exception->getLine(),
-        //     'trace' => $exception->getTrace()
-        // ]);
-//        $apiResponse->setResponse($response);
-        return $this->setResponseDefaults($apiResponse);
-    }
 
-    private function contentSuccessResponse(?string $contentType, array $requestData, array $extraData, ApiRequest $apiRequest, Response $response)
-    {
-        $apiResponse = new ApiResponse();
+    private function contentSuccessResponse(
+        ?string $contentType,
+        array $requestData,
+        array $extraData,
+        ApiRequest $apiRequest,
+        Response $response,
+        ?bool $detailedResponse = false
+    ) {
+        if ($detailedResponse) {
+            $apiResponse = new ApiDetailedResponse();
+            $apiResponse->setApiRequest($apiRequest);
+            $apiResponse->setResponse($response);
+        } else {
+            $apiResponse = new ApiResponse();
+        }
+
         $apiResponse->setContentType($contentType);
         switch ($contentType) {
             case 'json':
@@ -233,19 +228,28 @@ class ResponseManager extends BaseService
         $apiResponse->setStatus("success");
         $apiResponse->setRequestData($requestData);
         $apiResponse->setExtraData($extraData);
-        $apiResponse->setApiRequest($apiRequest);
-        $apiResponse->setResponse($response);
         return $this->setResponseDefaults($apiResponse);
     }
-    private function successResponse(?string $contentType, array $requestData, array $extraData, ApiRequest $apiRequest, Response $response)
-    {
-        $apiResponse = new ApiResponse();
+    private function successResponse(
+        ?string $contentType,
+        array $requestData,
+        array $extraData,
+        ApiRequest $apiRequest,
+        Response $response,
+        ?bool $detailedResponse = false
+    ) {
+
+        if ($detailedResponse) {
+            $apiResponse = new ApiDetailedResponse();
+            $apiResponse->setApiRequest($apiRequest);
+            $apiResponse->setResponse($response);
+        } else {
+            $apiResponse = new ApiResponse();
+        }
         $apiResponse->setContentType($contentType);
         $apiResponse->setStatus("success");
         $apiResponse->setRequestData($requestData);
         $apiResponse->setExtraData($extraData);
-        $apiResponse->setApiRequest($apiRequest);
-        $apiResponse->setResponse($response);
         return $this->setResponseDefaults($apiResponse);
     }
 
@@ -260,7 +264,6 @@ class ResponseManager extends BaseService
             default:
                 return $array;
         }
-
     }
 
     private function getContentType(Response $response)
@@ -366,10 +369,8 @@ class ResponseManager extends BaseService
      */
     public function setApiType(
         ApiType $apiType
-    ): static
-    {
+    ): static {
         $this->apiType = $apiType;
         return $this;
     }
-
 }
