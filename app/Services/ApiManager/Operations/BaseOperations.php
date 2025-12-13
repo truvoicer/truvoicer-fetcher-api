@@ -262,6 +262,7 @@ class BaseOperations extends ApiBase
 
         $endpoint = $this->dataProcessor->getConfigValue(PropertyType::ENDPOINT->value);
         $method = $this->dataProcessor->getConfigValue(PropertyType::METHOD->value);
+
         $headers = $this->dataProcessor->getConfigValue(PropertyType::HEADERS->value);
         $body = $this->dataProcessor->getConfigValue(PropertyType::BODY->value);
         $postBody = $this->dataProcessor->getConfigValue(PropertyType::POST_BODY->value);

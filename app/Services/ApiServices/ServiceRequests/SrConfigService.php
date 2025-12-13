@@ -1,6 +1,7 @@
 <?php
 namespace App\Services\ApiServices\ServiceRequests;
 
+use App\Enums\Property\PropertyType;
 use App\Models\Property;
 use App\Models\Sr;
 use App\Models\SrConfig;
@@ -105,7 +106,7 @@ class SrConfigService extends BaseService
         }
 
         $apiAuthTypeProviderProperty = $this->propertyRepository->getProviderPropertyByPropertyName(
-            $provider, "api_authentication_type"
+            $provider, PropertyType::API_AUTH_TYPE->value
         );
         if (!($apiAuthTypeProviderProperty instanceof Property)) {
 

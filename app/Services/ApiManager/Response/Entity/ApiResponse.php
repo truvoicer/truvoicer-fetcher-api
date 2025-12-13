@@ -1,10 +1,11 @@
 <?php
 namespace App\Services\ApiManager\Response\Entity;
 
+use App\Traits\ObjectTrait;
 
 class ApiResponse
 {
-    // use ObjectTrait;
+    use ObjectTrait;
 
 
     public string $status;
@@ -190,8 +191,5 @@ class ApiResponse
     public function setPaginationType(?string $paginationType): void
     {
         $this->paginationType = $paginationType;
-    }
-    public function toArray() {
-        return [];
     }
 }

@@ -303,5 +303,9 @@ class DataProcessor
     {
         $this->providerProperties = $providerProperties;
     }
+    public function getProviderProperties(): Collection
+    {
+        return $this->providerProperties;
+    }
 
 }
