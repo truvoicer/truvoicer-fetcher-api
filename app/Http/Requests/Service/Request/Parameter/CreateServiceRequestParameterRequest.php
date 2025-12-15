@@ -2,7 +2,9 @@
 
 namespace App\Http\Requests\Service\Request\Parameter;
 
+use App\Enums\MbEncoding;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class CreateServiceRequestParameterRequest extends FormRequest
 {
@@ -26,6 +28,18 @@ class CreateServiceRequestParameterRequest extends FormRequest
             'value' => [
                 'required',
                 'string'
+            ],
+            'encode_value' => [
+                'sometimes',
+                'boolean'
+            ],
+            'encode_from' => [
+                'sometimes',
+                Rule::enum(MbEncoding::class)
+            ],
+            'encode_to' => [
+                'sometimes',
+                Rule::enum(MbEncoding::class)
             ],
         ];
     }

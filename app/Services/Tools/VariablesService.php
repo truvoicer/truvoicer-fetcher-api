@@ -2,18 +2,18 @@
 
 namespace App\Services\Tools;
 
-use App\Services\ApiManager\ApiBase;
-use App\Services\ApiManager\Data\DataConstants;
+use App\Enums\Variable\VariableType;
+use App\Services\ApiServices\ServiceRequests\SrVariableService;
+use App\Services\Provider\ProviderVariableService;
 
 class VariablesService
 {
 
-    public function getVariables(string $type)
+    public function getVariables(VariableType $variableType)
     {
-        return match ($type) {
-            'service_request' => array_map(function ($item) {
-                return $item['placeholder'];
-            }, DataConstants::PARAM_FILTER_KEYS),
+        return match ($variableType) {
+            VariableType::SR => app(SrVariableService::class),
+            VariableType::PROVIDER => app(ProviderVariableService::class),
             default => [],
         };
     }

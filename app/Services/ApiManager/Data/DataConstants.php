@@ -134,8 +134,6 @@ class DataConstants
         ],
     ];
 
-
-    public const ITEMS_ARRAY = 'items_array';
     public const TOTAL_ITEMS = 'total_items';
     public const TOTAL_PAGES = 'total_pages';
     public const PAGE_SIZE = 'page_size';
@@ -175,20 +173,8 @@ class DataConstants
         ],
     ];
     public const XML_SERVICE_RESPONSE_KEYS = [
-        "ITEM_REPEATER_KEY" => [
-            self::RESPONSE_KEY_REQUIRED => true,
-            self::RESPONSE_KEY_NAME => "item_repeater_key"
-        ],
-        "ITEMS_ARRAY" => [
-            self::RESPONSE_KEY_REQUIRED => true,
-            self::RESPONSE_KEY_NAME => self::ITEMS_ARRAY,
-        ],
     ];
     public const JSON_SERVICE_RESPONSE_KEYS = [
-        "ITEMS_ARRAY" => [
-            self::RESPONSE_KEY_REQUIRED => true,
-            self::RESPONSE_KEY_NAME => self::ITEMS_ARRAY,
-        ],
     ];
 
     public const CONTENT_TYPE_RESERVED_RESPONSE_KEYS = [

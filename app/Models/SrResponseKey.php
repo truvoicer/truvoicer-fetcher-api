@@ -37,6 +37,7 @@ class SrResponseKey extends Model
         'date_format' => 'string',
         'append_extra_data_value' => 'string',
         'prepend_extra_data_value' => 'string',
+        'array_keys' => 'array'
     ];
     public function sr()
     {

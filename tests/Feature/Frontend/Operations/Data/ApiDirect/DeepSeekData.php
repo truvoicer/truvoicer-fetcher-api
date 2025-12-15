@@ -13,8 +13,19 @@ class DeepSeekData
     static public function labels(): array
     {
         return [
-            ['label' => 'DeepSeek: Without an items_array response key'],
+            ['label' => 'DeepSeek: Without an items_array_key'],
             ['label' => 'DeepSeek: Valid configs'],
+        ];
+    }
+    static public function srData(): array
+    {
+        return [
+            [
+
+            ],
+            [
+               'items_array_key' => 'root_array'
+            ]
         ];
     }
     static public function providerProperties(): array
@@ -106,10 +117,6 @@ class DeepSeekData
             ],
             [
                 [
-                    'name' => 'items_array',
-                    'value' => 'root_array'
-                ],
-                [
                     'name' => 'id',
                     'value' => 'id',
                     'show_in_response' => true,
@@ -193,7 +200,7 @@ class DeepSeekData
         return [
             [
                 'status' => 400,
-                'message' => 'Response key (items_array) value is empty.',
+                'message' => 'items_array_key value is empty.',
                 'exception' => ApiResponseException::class
             ],
             [
@@ -213,12 +220,14 @@ class DeepSeekData
                 continue;
             }
 
+            $srData = self::srData($index)[$index];
             $srConfigs = self::srConfigs($index)[$index];
             $srResponseKeys = self::srResponseKeys($index)[$index];
             $requestResponse = self::requestResponse($index)[$index];
             $responseData = self::responseData($index)[$index];
             $afterResponseData = self::afterResponse($index)[$index];
             $data[self::labels()[$index]['label']] = [
+                'srData' => $srData,
                 'properties' => $providerProperty,
                 'srConfigs' => $srConfigs,
                 'srResponseKeys' => $srResponseKeys,

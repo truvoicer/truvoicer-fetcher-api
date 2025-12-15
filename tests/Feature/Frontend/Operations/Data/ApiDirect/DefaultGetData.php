@@ -23,11 +23,30 @@ class DefaultGetData
     {
         return [
             ['label' => 'Without a method provider property'],
-            ['label' => 'Without an items_array response key'],
+            ['label' => 'Without an items_array_key'],
             ['label' => 'With query srConfig, testing in ApiClientHandler'],
             ['label' => 'With query srConfig, testing e2e'],
         ];
     }
+
+    static public function srData(): array
+    {
+        return [
+            [
+
+            ],
+            [
+
+            ],
+            [
+               'items_array_key' => 'results'
+            ],
+            [
+               'items_array_key' => 'results'
+            ]
+        ];
+    }
+
     static public function providerProperties(): array
     {
         return [
@@ -223,10 +242,6 @@ class DefaultGetData
             ],
             [
                 [
-                    'name' => 'items_array',
-                    'value' => 'results'
-                ],
-                [
                     'name' => 'id',
                     'value' => 'id',
                     'show_in_response' => true,
@@ -252,10 +267,6 @@ class DefaultGetData
                 ],
             ],
             [
-                [
-                    'name' => 'items_array',
-                    'value' => 'results'
-                ],
                 [
                     'name' => 'id',
                     'value' => 'id',
@@ -358,7 +369,7 @@ class DefaultGetData
             ],
             [
                 'status' => 400,
-                'message' => 'Response key (items_array) value is empty.',
+                'message' => 'items_array_key value is empty.',
                 'exception' => ApiResponseException::class
             ],
             [
@@ -417,12 +428,14 @@ class DefaultGetData
                 continue;
             }
 
+            $srData = self::srData($index)[$index];
             $srConfigs = self::srConfigs($index)[$index];
             $srResponseKeys = self::srResponseKeys($index)[$index];
             $requestResponse = self::requestResponse($index)[$index];
             $responseData = self::responseData($index)[$index];
             $afterResponseData = self::afterResponse($index)[$index];
             $data[self::labels()[$index]['label']] = [
+                'srData' => $srData,
                 'properties' => $providerProperty,
                 'srConfigs' => $srConfigs,
                 'srResponseKeys' => $srResponseKeys,

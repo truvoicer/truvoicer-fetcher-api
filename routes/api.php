@@ -146,6 +146,8 @@ Route::middleware(['auth:sanctum', 'ability:api:admin,api:superuser,api:super_ad
                 Route::delete('/delete', [ProviderController::class, 'deleteBatchProviders'])->name('delete');
             });
             Route::prefix('{provider}')->name('single.')->group(function () {
+
+                Route::get('/variables', [ProviderController::class, 'variables'])->name('variables');
                 Route::patch('/update', [ProviderController::class, 'updateProvider'])->name('update')->can('update', 'provider');
                 Route::delete('/delete', [ProviderController::class, 'deleteProvider'])->name('delete')->can('delete', 'provider');
                 Route::prefix('rate-limits')->name('rate-limits.')->group(function () {
@@ -180,7 +182,7 @@ Route::middleware(['auth:sanctum', 'ability:api:admin,api:superuser,api:super_ad
                             Route::patch('/{childSr}/override', [ServiceRequestController::class, 'overrideChildServiceRequest'])->name('override');
                             Route::post('/{childSr}/duplicate', [ServiceRequestController::class, 'duplicateChildServiceRequest'])->name('duplicate');
                         });
-
+                        Route::get('/variables', [ServiceRequestController::class, 'variables'])->name('variables');
                         Route::post('/populate-response-keys', [ServiceRequestController::class, 'populateSrResponseKeys'])->name('populate-response-keys');
                         Route::delete('/delete', [ServiceRequestController::class, 'deleteServiceRequest'])->name('delete');
                         Route::patch('/defaults/update', [ServiceRequestController::class, 'updateSrDefaults'])->name('defaults.update');

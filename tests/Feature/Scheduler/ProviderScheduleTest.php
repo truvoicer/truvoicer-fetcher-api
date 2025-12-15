@@ -209,16 +209,13 @@ class ProviderScheduleTest extends TestCase
                     's_id' => $s->id,
                     'category_id' => $category->id,
                     'type' => SrType::LIST->value,
-                    'default_sr' => true
+                    'default_sr' => true,
+                    'items_array_key' => 'results'
                 ])
             )
             ->create();
 
         $srResponseKeys = [
-            [
-                'name' => 'items_array',
-                'value' => 'results'
-            ],
             [
                 'name' => 'id',
                 'value' => 'id',

@@ -32,6 +32,8 @@ class CreateSrRequest extends FormRequest
                 Rule::enum(SrType::class)
             ],
             'default_sr' => 'boolean|nullable',
+            'items_array_key' => 'string|nullable',
+            'item_repeater_key' => 'string|nullable',
             'name' => 'string|nullable',
             'label' => 'required|string',
             'service' => 'required|integer',

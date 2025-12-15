@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api\Backend\Services;
 
 use App\Enums\Sr\SrType;
+use App\Enums\Variable\VariableType;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Service\Request\CreateChildSrRequest;
 use App\Http\Requests\Service\Request\CreateSrRequest;
@@ -26,6 +27,7 @@ use App\Services\ApiServices\ServiceRequests\SrOperationsService;
 use App\Services\ApiServices\ServiceRequests\SrService;
 use App\Services\Permission\PermissionService;
 use App\Services\Provider\ProviderService;
+use App\Services\Tools\VariablesService;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
@@ -138,6 +140,23 @@ class ServiceRequestController extends Controller
         return $this->sendSuccessResponse(
             "success",
             new ServiceRequestCollection($getServices)
+        );
+    }
+
+    /**
+     * Get list of service requests variables
+     * Returns a list of service requests variables based on the request query parameters
+     *
+     */
+    public function variables(
+        Provider $provider,
+        Sr $serviceRequest,
+        VariablesService $variablesService
+    ) {
+        return $this->sendSuccessResponse(
+            "success",
+            $variablesService->getVariables(VariableType::SR)
+                ->getVariableList($provider, $serviceRequest)
         );
     }
 

@@ -28,8 +28,12 @@ use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 
 class ResponseHandler extends ApiBase
 {
+    private array $dateCache = [];
+
+    private array $parsedDateCache = [];
+
     protected Provider $provider;
-    protected Sr $apiService;
+    protected Sr $sr;
     protected array $responseArray;
     protected Collection $responseKeysArray;
 
@@ -51,7 +55,7 @@ class ResponseHandler extends ApiBase
             ->where(function ($item) {
                 $item = $item->toArray();
                 return isset($item['sr_response_key']['sr_id']) &&
-                    $item['sr_response_key']['sr_id'] == $this->apiService->id;
+                    $item['sr_response_key']['sr_id'] == $this->sr->id;
             })
             ->first();
 
@@ -63,22 +67,21 @@ class ResponseHandler extends ApiBase
 
     protected function getItemList()
     {
-        $responseKeyValue = $this->findSrResponseKeyValueInArray('items_array');
-        // var_dump($responseKeyValue);
+        $responseKeyValue = $this->sr->items_array_key;
 
         if (empty($responseKeyValue)) {
-            throw new BadRequestHttpException("Response key (items_array) value is empty.");
+            throw new BadRequestHttpException("items_array_key value is empty.");
         }
         return $this->buildItemListFromResponseArray($responseKeyValue, $this->responseArray);
     }
 
-    public function buildItemListFromResponseArray(string $itemsArrayValue, array $responseArray)
+    public function buildItemListFromResponseArray(string $itemsArrayKey, array $responseArray)
     {
 
-        if ($itemsArrayValue === "root_items") {
+        if ($itemsArrayKey === "root_items") {
             return [$responseArray];
         }
-        if ($itemsArrayValue === "root_array") {
+        if ($itemsArrayKey === "root_array") {
             return $responseArray;
         }
 
@@ -88,12 +91,12 @@ class ResponseHandler extends ApiBase
                 return $data["value"];
             }
             return false;
-        }, explode(".", $itemsArrayValue));
+        }, explode(".", $itemsArrayKey));
 
         $getArrayItems = $this->getArrayItems($responseArray, $itemsArray);
         if ($getArrayItems === "") {
             Log::error(
-                "Items list is empty, items_array_value: {$itemsArrayValue}",
+                "Items list is empty, items_array_key: {$itemsArrayKey}",
                 [
 
                     'responseArray' => $responseArray,
@@ -101,7 +104,7 @@ class ResponseHandler extends ApiBase
                 ]
             );
             throw new BadRequestHttpException(
-                "Items list is empty, items_array_value: {$itemsArrayValue}"
+                "Items list is empty, items_array_key: {$itemsArrayKey}"
             );
         }
 
@@ -112,16 +115,18 @@ class ResponseHandler extends ApiBase
 
     protected function getParentItemList()
     {
+        if ($this->sr->items_array_key === null) {
+            return [];
+        }
+
         $array = [];
-        $itemsArrayString = $this->findSrResponseKeyValueInArray('items_array');
-        if ($itemsArrayString !== null) {
-            foreach ($this->responseArray as $key => $value) {
-                if ($key !== $itemsArrayString) {
-                    $itemsArray = explode(".", $key);
-                    $array[$key] = $this->getArrayItems($this->responseArray, $itemsArray);
-                }
+        foreach ($this->responseArray as $key => $value) {
+            if ($key !== $this->sr->items_array_key) {
+                $itemsArray = explode(".", $key);
+                $array[$key] = $this->getArrayItems($this->responseArray, $itemsArray);
             }
         }
+
         return $array;
     }
 
@@ -161,16 +166,16 @@ class ResponseHandler extends ApiBase
                 }
             }
             $itemList["provider"] = $this->provider->name;
-            $itemList["requestCategory"] = $this->apiService->category->name;
-            $itemList["serviceRequest"] = $this->apiService->name;
-            $itemList["service"] = $this->apiService->s()->first()->only('id', 'name');
+            $itemList["requestCategory"] = $this->sr->category->name;
+            $itemList["serviceRequest"] = $this->sr->name;
+            $itemList["service"] = $this->sr->s()->first()->only('id', 'name');
             return $itemList;
         }, $itemList);
 
 
         $srResponseKeySrs = SrResponseKeySr::query()
             ->whereHas('srResponseKey', function ($query) {
-                $query->where('sr_id', $this->apiService->id);
+                $query->where('sr_id', $this->sr->id);
             })
             ->get();
 
@@ -298,13 +303,35 @@ class ResponseHandler extends ApiBase
         return $buildArray;
     }
 
+    // private function buildDateValue(SrResponseKey $requestResponseKey, $value)
+    // {
+    //     $newDate = DateHelpers::parseDateString($value, $requestResponseKey->date_format);
+    //     if ($newDate) {
+    //         return $newDate;
+    //     }
+    //     return $value;
+    // }
+
+
+    private function isValidDateCached(string $date): bool
+    {
+        if (!isset($this->dateCache[$date])) {
+            $this->dateCache[$date] = DateHelpers::isValidDateString($date);
+        }
+        return $this->dateCache[$date];
+    }
+
     private function buildDateValue(SrResponseKey $requestResponseKey, $value)
     {
-        $newDate = DateHelpers::parseDateString($value, $requestResponseKey->date_format);
-        if ($newDate) {
-            return $newDate;
+        // Cache parsed dates too
+        $cacheKey = $value . ($requestResponseKey->date_format ?? '');
+
+        if (!isset($this->parsedDateCache[$cacheKey])) {
+            $this->parsedDateCache[$cacheKey] =
+                DateHelpers::parseDateString($value, $requestResponseKey->date_format) ?? $value;
         }
-        return $value;
+
+        return $this->parsedDateCache[$cacheKey];
     }
 
     private function buildRequestKeyTextValue(SrResponseKey $requestResponseKey, $itemArrayValue)
@@ -601,17 +628,17 @@ class ResponseHandler extends ApiBase
     /**
      * @return mixed
      */
-    public function getApiService()
+    public function getSr()
     {
-        return $this->apiService;
+        return $this->sr;
     }
 
     /**
-     * @param mixed $apiService
+     * @param mixed $sr
      */
-    public function setApiService(Sr $apiService): void
+    public function setSr(Sr $sr): void
     {
-        $this->apiService = $apiService;
+        $this->sr = $sr;
     }
 
     /**
@@ -636,6 +663,6 @@ class ResponseHandler extends ApiBase
 
     public function setResponseKeysArray(): void
     {
-        $this->responseKeysArray = $this->srResponseKeyService->findResponseKeysForOperationBySr($this->apiService);
+        $this->responseKeysArray = $this->srResponseKeyService->findResponseKeysForOperationBySr($this->sr);
     }
 }

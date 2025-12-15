@@ -142,6 +142,8 @@ class SrRepository extends BaseRepository
             'pagination_type',
             'query_parameters',
             'type',
+            'items_array_key',
+            'item_repeater_key',
             'default_sr',
             'default_data',
         ];

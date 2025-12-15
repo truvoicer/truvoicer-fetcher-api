@@ -200,18 +200,21 @@ class PopulateTypeXml extends PopulateTypeBase
             if (!count($buildItemList)) {
                 return false;
             }
-            if (!$this->saveSrResponseKeyByName('items_array', $itemsArrayValue)) {
+
+            $this->destSr->items_array_key = $itemsArrayValue;
+            if (!$this->destSr->save()) {
                 $this->addError(
                     "error",
-                    "Error saving items_array response key."
+                    "Error saving items_array_key."
                 );
                 return false;
             }
 
-            if (!$this->saveSrResponseKeyByName('item_repeater_key', $itemRepeaterKey)) {
+            $this->destSr->item_repeater_key = $itemRepeaterKey;
+            if (!$this->destSr->save()) {
                 $this->addError(
                     "error",
-                    "Error saving item_repeater_key response key."
+                    "Error saving item_repeater_key."
                 );
                 return false;
             }

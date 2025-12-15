@@ -20,7 +20,7 @@ use MongoDB\Model\BSONDocument;
 class ApiRequestSearchService
 {
     const RESERVED_SEARCH_RESPONSE_KEYS = [
-        'items_array',
+
     ];
     private Collection $srResponseKeys;
     private MongoDBRaw $mongoDBRaw;

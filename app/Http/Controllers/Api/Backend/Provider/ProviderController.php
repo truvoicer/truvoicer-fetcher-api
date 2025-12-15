@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api\Backend\Provider;
 
+use App\Enums\Variable\VariableType;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Provider\CreateProviderRequest;
 use App\Http\Requests\Provider\DeleteBatchProvidersRequest;
@@ -16,6 +17,7 @@ use App\Services\Permission\PermissionService;
 use App\Services\Tools\HttpRequestService;
 use App\Services\Provider\ProviderService;
 use App\Services\Tools\SerializerService;
+use App\Services\Tools\VariablesService;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 
@@ -83,6 +85,22 @@ class ProviderController extends Controller
         return $this->sendSuccessResponse(
             "success",
             new ProviderResource($provider->load(['categories']))
+        );
+    }
+
+    /**
+     * Get list of provider variables
+     * Returns a list of provider variables based on the request query parameters
+     *
+     */
+    public function variables(
+        Provider $provider,
+        VariablesService $variablesService
+    ) {
+        return $this->sendSuccessResponse(
+            "success",
+            $variablesService->getVariables(VariableType::PROVIDER)
+                ->getVariableList($provider)
         );
     }
 

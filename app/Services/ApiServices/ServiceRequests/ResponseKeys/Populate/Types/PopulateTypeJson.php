@@ -154,7 +154,7 @@ class PopulateTypeJson extends PopulateTypeBase
 
         if (
             !empty($this->data['items_array']) &&
-            $this->data['items_array'] === 'root_item'
+            $this->data['items_array'] === 'root_items'
         ) {
             return $this->srTypeHandler($sr, [$requestData]);
         }
@@ -169,10 +169,11 @@ class PopulateTypeJson extends PopulateTypeBase
         }
 
         if (Arr::isList($requestData)) {
-            if (!$this->saveSrResponseKeyByName('items_array', 'root_items')) {
+            $this->destSr->items_array_key = 'root_items';
+            if (!$this->destSr->save()) {
                 $this->addError(
                     "error",
-                    "Error saving items_array response key."
+                    "Error saving items_array_key."
                 );
                 return false;
             }
@@ -182,11 +183,11 @@ class PopulateTypeJson extends PopulateTypeBase
 
         $this->prepareItemsArrayScoreData($requestData);
         $extractData = $this->extractDataFromScoreData($this->score);
-
-        if (!$this->saveSrResponseKeyByName('items_array', $extractData['value'])) {
+        $this->destSr->items_array_key = $extractData['value'];
+        if (!$this->destSr->save()) {
             $this->addError(
                 "error",
-                "Error saving items_array response key."
+                "Error saving items_array_key."
             );
             return false;
         }

@@ -84,6 +84,7 @@ class OperationsControllerTest extends TestCase
 
     #[DataProvider('providerPropertyProvider')]
     public function test_list_api_direct_search_operation(
+        array $srData,
         array $properties,
         array $srConfigs,
         array $srResponseKeys,
@@ -105,13 +106,17 @@ class OperationsControllerTest extends TestCase
         );
         $s = S::factory()->create();
         $category = Category::factory()->create();
+
         $provider = Provider::factory()
             ->has(
                 Sr::factory()->state([
                     's_id' => $s->id,
                     'category_id' => $category->id,
                     'type' => SrType::LIST->value,
-                    'default_sr' => true
+                    'default_sr' => true,
+                    'items_array_key' => (!empty($srData['items_array_key']))
+                        ? $srData['items_array_key']
+                        : null
                 ])
             )->create();
 
@@ -293,16 +298,13 @@ class OperationsControllerTest extends TestCase
                     's_id' => $s->id,
                     'category_id' => $category->id,
                     'type' => SrType::LIST->value,
-                    'default_sr' => true
+                    'default_sr' => true,
+                    'items_array_key' => 'results'
                 ])
             )
             ->create();
 
         $srResponseKeys = [
-            [
-                'name' => 'items_array',
-                'value' => 'results'
-            ],
             [
                 'name' => 'id',
                 'value' => 'id',
@@ -449,7 +451,6 @@ class OperationsControllerTest extends TestCase
             $normalizedActual,
             $responseData
         ) = $this->sharedPreparation();
-
     }
 
 
@@ -536,16 +537,13 @@ class OperationsControllerTest extends TestCase
                     's_id' => $s->id,
                     'category_id' => $category->id,
                     'type' => SrType::LIST->value,
-                    'default_sr' => true
+                    'default_sr' => true,
+                    'items_array_key' => 'results'
                 ])
             )
             ->create();
 
         $srResponseKeys = [
-            [
-                'name' => 'items_array',
-                'value' => 'results'
-            ],
             [
                 'name' => 'id',
                 'value' => 'id',

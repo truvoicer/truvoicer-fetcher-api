@@ -22,7 +22,7 @@ class DefaultPostData
     static public function labels(): array
     {
         return [
-            ['label' => 'Without an items_array response key'],
+            ['label' => 'Without an items_array_key'],
             ['label' => 'With post body srConfig, testing in ApiClientHandler'],
             ['label' => 'With body srConfig, testing in ApiClientHandler'],
         ];
@@ -108,6 +108,22 @@ class DefaultPostData
             ],
         ];
     }
+
+    static public function srData(): array
+    {
+        return [
+            [
+
+            ],
+            [
+               'items_array_key' => 'results'
+            ],
+            [
+               'items_array_key' => 'results'
+            ]
+        ];
+    }
+
     static public function srResponseKeys(): array
     {
         return [
@@ -130,10 +146,6 @@ class DefaultPostData
                 ],
             ],
             [
-                [
-                    'name' => 'items_array',
-                    'value' => 'results'
-                ],
                 [
                     'name' => 'id',
                     'value' => 'id',
@@ -160,10 +172,6 @@ class DefaultPostData
                 ],
             ],
             [
-                [
-                    'name' => 'items_array',
-                    'value' => 'results'
-                ],
                 [
                     'name' => 'id',
                     'value' => 'id',
@@ -257,7 +265,7 @@ class DefaultPostData
         return [
             [
                 'status' => 400,
-                'message' => 'Response key (items_array) value is empty.',
+                'message' => 'items_array_key value is empty.',
                 'exception' => ApiResponseException::class
             ],
             [
@@ -342,12 +350,14 @@ class DefaultPostData
                 continue;
             }
 
+            $srData = self::srData($index)[$index];
             $srConfigs = self::srConfigs($index)[$index];
             $srResponseKeys = self::srResponseKeys($index)[$index];
             $requestResponse = self::requestResponse($index)[$index];
             $responseData = self::responseData($index)[$index];
             $afterResponseData = self::afterResponse($index)[$index];
             $data[self::labels()[$index]['label']] = [
+                'srData' => $srData,
                 'properties' => $providerProperty,
                 'srConfigs' => $srConfigs,
                 'srResponseKeys' => $srResponseKeys,

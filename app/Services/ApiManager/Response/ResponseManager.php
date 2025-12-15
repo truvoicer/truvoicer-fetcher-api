@@ -83,6 +83,11 @@ class ResponseManager extends BaseService
                     }
             }
 
+            if (!$content) {
+                throw new ApiResponseException(
+                    'Response content/json is empty, this is probably due to an incorrect config/properties configuration.'
+                );
+            }
 
             return $this->contentSuccessResponse(
                 $contentType,
@@ -147,7 +152,7 @@ class ResponseManager extends BaseService
                         throw new Exception("Empty JSON response from provider");
                     }
                     $contentType = "json";
-                    $this->jsonResponseHandler->setApiService($this->serviceRequest);
+                    $this->jsonResponseHandler->setSr($this->serviceRequest);
                     $this->jsonResponseHandler->setResponseArray(
                         $this->getJsonBody($response)
                     );
@@ -157,7 +162,7 @@ class ResponseManager extends BaseService
                     break;
                 case self::CONTENT_TYPE_XML:
                     $contentType = "xml";
-                    $this->xmlResponseHandler->setApiService($this->serviceRequest);
+                    $this->xmlResponseHandler->setSr($this->serviceRequest);
                     $this->xmlResponseHandler->setProvider($this->provider);
                     $this->xmlResponseHandler->setResponseKeysArray();
                     $this->xmlResponseHandler->setResponseArray($response->body());

@@ -208,7 +208,31 @@ class BaseOperations extends ApiBase
         return $getRequest;
     }
 
-    private function buildListValues(array $listValues)
+    private function isNameValueArray(array $data): bool
+    {
+        // Check if array is empty
+        if (empty($data)) {
+            return false;
+        }
+
+        foreach ($data as $item) {
+            // Check if each item is an array
+            if (!is_array($item)) {
+                return false;
+            }
+
+            // Check if the item has both 'name' and 'value' keys
+            if (!array_key_exists('name', $item) || !array_key_exists('value', $item)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+
+
+    private function buildNameValueListValues(array $listValues)
     {
         $filter = array_filter($listValues, function ($value) {
             return (
@@ -227,6 +251,27 @@ class BaseOperations extends ApiBase
                 array_column($filter, 'value')
             )
         );
+    }
+
+    private function buildDefaultListValues(array $data)
+    {
+        foreach ($data as $key => $item) {
+            if (is_array($item)) {
+                $data[$key] = $this->buildDefaultListValues($item);
+                continue;
+            }
+            $data[$key] = $this->dataProcessor->filterParameterValue($item);
+        }
+        return $data;
+    }
+
+    private function buildListValues(array $listValues)
+    {
+        if ($this->isNameValueArray($listValues)) {
+            return $this->buildNameValueListValues($listValues);
+        }
+
+        return $this->buildDefaultListValues($listValues);
     }
 
     private function runPreRequestTasks()
@@ -273,13 +318,14 @@ class BaseOperations extends ApiBase
             $headers = $this->buildListValues($headers);
         }
         if ($postBody) {
+
             $postBody = $this->dataProcessor->replaceListItemsOffsetPlaceholders($postBody);
             $postBody = $this->buildListValues($postBody);
+            dd($postBody);
         }
         if ($query) {
             $query = $this->dataProcessor->replaceListItemsOffsetPlaceholders($query);
             $query = $this->buildListValues($query);
-
         }
 
         $this->apiRequest->setApiType(

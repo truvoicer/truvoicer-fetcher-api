@@ -41,9 +41,9 @@ class XmlResponseHandler extends ResponseHandler
         if ($this->xmlService->checkXmlErrors($responseContent)) {
             throw new BadRequestHttpException("item_request_error");
         }
-        $responseKeyValue = $this->findSrResponseKeyValueInArray('items_array');
-        if (empty($responseKeyValue)) {
-            throw new BadRequestHttpException("Response key value (items_array) is empty.");
+
+        if (empty($this->sr->items_array_key)) {
+            throw new BadRequestHttpException("items_array_key is empty.");
         }
         $itemRepeaterKeyValue = $this->findSrResponseKeyValueInArray('item_repeater_key');
         if (empty($itemRepeaterKeyValue)) {
@@ -51,9 +51,9 @@ class XmlResponseHandler extends ResponseHandler
         }
         $this->responseArray = $this->xmlService->parseXmlContent(
             $responseContent,
-            $this->filterItemsArrayValue($responseKeyValue)["value"],
-            $this->filterItemsArrayValue($responseKeyValue)["brackets"],
-            $this->filterItemsArrayValue($itemRepeaterKeyValue)["value"]
+            $this->filterItemsArrayValue($this->sr->items_array_key)["value"],
+            $this->filterItemsArrayValue($this->sr->items_array_key)["brackets"],
+            $this->filterItemsArrayValue($this->sr->item_repeater_key)["value"]
         );
     }
 

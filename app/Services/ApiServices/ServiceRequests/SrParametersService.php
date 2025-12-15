@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Services\ApiServices\ServiceRequests;
 
 use App\Models\Sr;
@@ -14,17 +15,18 @@ class SrParametersService extends BaseService
 
     public function __construct(
         SrService $srService
-    )
-    {
+    ) {
         parent::__construct();
         $this->requestParametersRepo = new SrParameterRepository();
         $this->srService = $srService;
     }
 
-    public function findBySr(Sr $serviceRequest) {
+    public function findBySr(Sr $serviceRequest)
+    {
         return $this->requestParametersRepo->findBySr($serviceRequest);
     }
-    public function findParametersForOperationBySr(Sr $serviceRequest) {
+    public function findParametersForOperationBySr(Sr $serviceRequest)
+    {
         $parentServiceRequest = $this->srService->findParentSr($serviceRequest);
         if (!$parentServiceRequest instanceof Sr) {
             return $this->findBySr($serviceRequest);
@@ -34,7 +36,8 @@ class SrParametersService extends BaseService
         }
         return $this->findBySr($serviceRequest);
     }
-    public function findByParams(Sr $serviceRequest, string $sort, string $order, ?int $count = null) {
+    public function findByParams(Sr $serviceRequest, string $sort, string $order, ?int $count = null)
+    {
         $this->requestParametersRepo->setPagination(true);
         return $this->requestParametersRepo->findByParams($serviceRequest, $sort, $order, $count);
     }
@@ -44,6 +47,9 @@ class SrParametersService extends BaseService
         $fields = [
             'name',
             'value',
+            'encode_value',
+            'encode_from',
+            'encode_to',
         ];
 
         $configData = [];
@@ -71,7 +77,8 @@ class SrParametersService extends BaseService
         );
     }
 
-    public function deleteRequestParameter(SrParameter $serviceRequestParameter) {
+    public function deleteRequestParameter(SrParameter $serviceRequestParameter)
+    {
         $this->requestParametersRepo->setModel($serviceRequestParameter);
         return $this->requestParametersRepo->delete();
     }
@@ -87,5 +94,4 @@ class SrParametersService extends BaseService
     {
         return $this->requestParametersRepo;
     }
-
 }

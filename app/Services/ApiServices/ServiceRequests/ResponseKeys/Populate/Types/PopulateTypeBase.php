@@ -10,6 +10,7 @@ use App\Repositories\SrRepository;
 use App\Repositories\SrResponseKeyRepository;
 use App\Services\ApiManager\Operations\ApiRequestService;
 use App\Services\ApiManager\Response\Entity\ApiResponse;
+use App\Services\ApiManager\Response\Entity\ApiDetailedResponse;
 use App\Services\ApiManager\Response\Handlers\ResponseHandler;
 use App\Services\ApiServices\ServiceRequests\ResponseKeys\Populate\PopulateTrait;
 use App\Services\ApiServices\ServiceRequests\SrConfigService;
@@ -29,7 +30,7 @@ class PopulateTypeBase
 
     protected Sr $destSr;
     protected S $destService;
-    protected ApiResponse $response;
+    protected ApiDetailedResponse $response;
 
     protected array $findItemsArray = [];
     protected array $score = [];

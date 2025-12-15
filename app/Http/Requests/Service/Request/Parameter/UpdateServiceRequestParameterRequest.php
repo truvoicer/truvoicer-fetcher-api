@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Service\Request\Parameter;
 
+use App\Enums\MbEncoding;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -25,18 +26,21 @@ class UpdateServiceRequestParameterRequest extends FormRequest
         return [
             'name' => 'string',
             'value' => [
-                'string',
-                'nullable',
-                Rule::requiredIf(fn () => in_array($this->get('value_type'), ['text', 'choice']))
+                'sometimes',
+                'string'
             ],
-            "value_type" => [
-                Rule::in(['list', 'text', 'choice'])
+            'encode_value' => [
+                'sometimes',
+                'boolean'
             ],
-            "array_value" => [
-                'array',
-                'nullable',
-                'required_if:value_type,list'
-            ]
+            'encode_from' => [
+                'sometimes',
+                Rule::enum(MbEncoding::class)
+            ],
+            'encode_to' => [
+                'sometimes',
+                Rule::enum(MbEncoding::class)
+            ],
         ];
     }
 }

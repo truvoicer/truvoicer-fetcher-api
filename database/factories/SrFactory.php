@@ -21,6 +21,8 @@ class SrFactory extends Factory
     {
         $label = $this->faker->word;
         return [
+            'items_array_key' => $this->faker->word,
+            'item_repeater_key' => $this->faker->word,
             'name' => Str::slug($label),
             'label' => $label,
             'default_sr' => $this->faker->boolean,

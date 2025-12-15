@@ -51,14 +51,14 @@ class DataProcessor
     {
         if (preg_match_all('~\[(.*?)\]~', $paramValue, $output)) {
             foreach ($output[1] as $key => $value) {
-                $filterReservedParam = $this->getReservedParamsValues($output[0][$key]);
+                $filterReservedParam = $this->getReservedParamsValues($output[0][$key], $value);
                 $paramValue = str_replace($output[0][$key], $filterReservedParam, $paramValue, $count);
             }
         }
         return $paramValue;
     }
 
-    public function getReservedParamsValues($paramValue)
+    public function getReservedParamsValues($paramValue, $origValue)
     {
         foreach (DataConstants::PARAM_FILTER_KEYS as $key => $value) {
             if ($value['placeholder'] !== $paramValue) {
@@ -98,7 +98,29 @@ class DataProcessor
                 $date = new \DateTime();
                 return $date->format("Y-m-d h:i:s");
         }
+        $parameterValue = $this->replaceWithSrParameterValues($paramValue, $origValue);
+        if ($parameterValue !== null) {
+            return $parameterValue;
+        }
+        $configValue = $this->replaceWithSrConfigValues($paramValue, $origValue);if ($configValue !== null) {
+            return $configValue;
+        }
         return $this->formatValue($this->getQueryFilterValue($paramValue));
+    }
+
+    private function replaceWithSrParameterValues($paramValue, $origValue) {
+        $getSrParam = $this->requestParameters->where('name', $origValue)->first();
+        if ($getSrParam === null) {
+            return null;
+        }
+        return $getSrParam->value;
+    }
+    private function replaceWithSrConfigValues($paramValue, $origValue) {
+        $getSrParam = $this->requestConfigs->where('name', $origValue)->first();
+        if ($getSrParam === null) {
+            return null;
+        }
+        return $getSrParam->value;
     }
 
     public function formatValue($value)
@@ -155,7 +177,13 @@ class DataProcessor
                 is_array($data) &&
                 array_key_exists($key, $data)
             ) {
-                $data[$key] = $this->replaceListItemValueStr($placeholder, $replace, $item);
+                if (is_array($item)) {
+                    $data[$key] = $this->replaceListItemsValueStr(
+                        $placeholder, $replace, $item
+                    );
+                } else {
+                    $data[$key] = $this->replaceListItemValueStr($placeholder, $replace, $item);
+                }
             }
         }
         return $data;
@@ -210,38 +238,6 @@ class DataProcessor
             }
         }
         return $string;
-    }
-
-    public function getRequestBody()
-    {
-        $queryArray = [];
-        foreach ($this->requestParameters as $requestParameter) {
-            $queryArray[] = $this->filterParameterValue($requestParameter->value);
-        }
-        return implode(" ", $queryArray);
-    }
-
-    public function buildRequestQuery()
-    {
-        $queryArray = [];
-        foreach ($this->requestParameters as $requestParameter) {
-            $paramValue = $this->filterParameterValue($requestParameter->value);
-            if (empty($paramValue)) {
-                continue;
-            }
-            $value = trim($paramValue);
-            if (!array_key_exists($requestParameter->name, $queryArray)) {
-                $queryArray[$requestParameter->name] = $value;
-                continue;
-            }
-            if (empty($queryArray[$requestParameter->name])) {
-                $queryArray[$requestParameter->name] = $value;
-                continue;
-            }
-            $queryArray[$requestParameter->name] = $queryArray[$requestParameter->name] . "," . $value;
-
-        }
-        return $queryArray;
     }
 
     public function getPropertyValue(string $valueType, ProviderProperty|SrConfig $property) {
