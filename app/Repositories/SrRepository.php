@@ -144,6 +144,8 @@ class SrRepository extends BaseRepository
             'type',
             'items_array_key',
             'item_repeater_key',
+            'items_array_format_options',
+            'items_array_format_preg_match',
             'default_sr',
             'default_data',
         ];
@@ -248,11 +250,11 @@ class SrRepository extends BaseRepository
     public function saveChildSrOverrides(Sr $serviceRequest, array $data)
     {
         $this->setModel($serviceRequest);
-//        $parentSr = $serviceRequest->parentSrs()->first();
-//
-//        if (!$parentSr instanceof Sr) {
-//            return false;
-//        }
+        //        $parentSr = $serviceRequest->parentSrs()->first();
+        //
+        //        if (!$parentSr instanceof Sr) {
+        //            return false;
+        //        }
         return $this->getModel()->pivot->update($data);
     }
 
@@ -302,7 +304,8 @@ class SrRepository extends BaseRepository
         }
         return true;
     }
-    private function deleteSingleChildSr(Sr $sr) {
+    private function deleteSingleChildSr(Sr $sr)
+    {
         $childSrs = $sr->childSrs()->get();
         if ($childSrs->count() > 0) {
             $this->deleteChildSrs($childSrs);
@@ -333,6 +336,4 @@ class SrRepository extends BaseRepository
         }
         return true;
     }
-
-
 }

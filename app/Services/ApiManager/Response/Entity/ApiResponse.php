@@ -28,7 +28,7 @@ class ApiResponse
 
     public array $requestData;
 
-    public array $requiredResponseKeys;
+    public array $requiredSrFields;
 
     public array $extraData = [];
 
@@ -45,9 +45,9 @@ class ApiResponse
         return $this->serviceRequest;
     }
 
-    public function setRequiredResponseKeys(array $requiredResponseKeys): void
+    public function setRequiredSrFields(array $requiredSrFields): void
     {
-        $this->requiredResponseKeys = $requiredResponseKeys;
+        $this->requiredSrFields = $requiredSrFields;
     }
 
     public function setServiceRequest(array $serviceRequest): void

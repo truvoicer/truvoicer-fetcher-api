@@ -9,12 +9,10 @@ use App\Repositories\SResponseKeyRepository;
 use App\Repositories\SrRepository;
 use App\Repositories\SrResponseKeyRepository;
 use App\Services\ApiManager\Operations\ApiRequestService;
-use App\Services\ApiManager\Response\Entity\ApiResponse;
 use App\Services\ApiManager\Response\Entity\ApiDetailedResponse;
 use App\Services\ApiManager\Response\Handlers\ResponseHandler;
 use App\Services\ApiServices\ServiceRequests\ResponseKeys\Populate\PopulateTrait;
 use App\Services\ApiServices\ServiceRequests\SrConfigService;
-use App\Services\Tools\XmlService;
 use App\Traits\Error\ErrorTrait;
 use App\Traits\User\UserTrait;
 use Illuminate\Support\Arr;
@@ -266,14 +264,14 @@ class PopulateTypeBase
         }
         return true;
     }
-    public function handleResponse(Sr $sr, ApiResponse $response): bool
+    public function handleResponse(Sr $sr, ApiDetailedResponse $response): bool
     {
         return false;
     }
 
-    public function runSrRequest(Sr $sr, ?array $query = []): ApiResponse
+    public function runSrRequest(Sr $sr, ?array $query = []): ApiDetailedResponse
     {
-        return new ApiResponse();
+        return new ApiDetailedResponse();
     }
 
 }

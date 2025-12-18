@@ -18,8 +18,7 @@ class SrScheduleService extends BaseService
     public function __construct(
         private ProviderEventService $providerEventService,
         private SrService $srService
-    )
-    {
+    ) {
         parent::__construct();
         $this->srScheduleRepository = new SrScheduleRepository();
     }
@@ -32,7 +31,8 @@ class SrScheduleService extends BaseService
         return $this->srScheduleRepository->findMany();
     }
 
-    public function findScheduleForOperationBySr(Sr $serviceRequest) {
+    public function findScheduleForOperationBySr(Sr $serviceRequest)
+    {
         $parentServiceRequest = $this->srService->findParentSr($serviceRequest);
         if (!$parentServiceRequest instanceof Sr) {
             return [
@@ -67,11 +67,18 @@ class SrScheduleService extends BaseService
             Arr::get($data, 'execute_immediately_choice')
         );
     }
-    public function saveSrSchedule(User $user, SrSchedule $srSchedule, array $data)
+    public function saveSrSchedule(User $user, Sr $sr, array $data)
     {
-        $this->srScheduleRepository->setModel($srSchedule);
-        if (!$this->srScheduleRepository->saveSrSchedule($data)) {
-            return false;
+        $srSchedule = $sr->srSchedule;
+        if (!$srSchedule) {
+            if (!$this->srScheduleRepository->createSrSchedule($sr, $data)) {
+                return false;
+            }
+        } else {
+            $this->srScheduleRepository->setModel($srSchedule);
+            if (!$this->srScheduleRepository->saveSrSchedule($data)) {
+                return false;
+            }
         }
         return $this->runServiceRequest(
             $user,
@@ -80,7 +87,8 @@ class SrScheduleService extends BaseService
         );
     }
 
-    public function runServiceRequest(User $user, SrSchedule $srSchedule, ?string $executeImmediatelyOp = null) {
+    public function runServiceRequest(User $user, SrSchedule $srSchedule, ?string $executeImmediatelyOp = null)
+    {
         if (!$srSchedule->execute_immediately) {
             return true;
         }
@@ -99,7 +107,6 @@ class SrScheduleService extends BaseService
             default:
                 $this->providerEventService->dispatchSrOperationEvent($user, $sr);
                 break;
-
         }
         return true;
     }
@@ -118,5 +125,4 @@ class SrScheduleService extends BaseService
     {
         return $this->srScheduleRepository;
     }
-
 }

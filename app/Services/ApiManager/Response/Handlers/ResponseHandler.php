@@ -2,8 +2,10 @@
 
 namespace App\Services\ApiManager\Response\Handlers;
 
+use App\Enums\FormatOptions;
 use App\Enums\Property\PropertyType;
 use App\Enums\Sr\SrType;
+use App\Helpers\Array\DotNotationArrayAccess;
 use App\Helpers\Tools\DateHelpers;
 use App\Models\Provider;
 use App\Models\S;
@@ -24,6 +26,7 @@ use App\Services\Tools\XmlService;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Log;
+use Pusher\ApiErrorException;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 
 class ResponseHandler extends ApiBase
@@ -85,32 +88,74 @@ class ResponseHandler extends ApiBase
             return $responseArray;
         }
 
-        $itemsArray = array_map(function ($item) {
-            $data = $this->filterItemsArrayValue($item);
-            if (is_array($data) && isset($data["value"])) {
-                return $data["value"];
-            }
-            return false;
-        }, explode(".", $itemsArrayKey));
+        $getArrayItemsValue = $this->formatArrayItemsValue(
+            DotNotationArrayAccess::get($responseArray, $itemsArrayKey)
+        );
 
-        $getArrayItems = $this->getArrayItems($responseArray, $itemsArray);
-        if ($getArrayItems === "") {
-            Log::error(
-                "Items list is empty, items_array_key: {$itemsArrayKey}",
-                [
 
-                    'responseArray' => $responseArray,
-                    'itemsArray' => $itemsArray
-                ]
-            );
-            throw new BadRequestHttpException(
-                "Items list is empty, items_array_key: {$itemsArrayKey}"
-            );
+        if (!is_array($getArrayItemsValue)) {
+            throw new ApiErrorException('Error array items value is not an array.');
         }
 
-        return array_filter((array)$getArrayItems, function ($item) {
-            return is_array($item);
-        });
+        $filterArrayItems = array_filter(
+            (array)$getArrayItemsValue,
+            function ($item) {
+                return is_array($item);
+            }
+        );
+
+        return $filterArrayItems;
+    }
+
+    protected function formatArrayItemsValue(mixed $arrayItemsValue): mixed
+    {
+        $formatOptions = $this->sr->items_array_format_options;
+        if (!is_array($formatOptions) || !count($formatOptions)) {
+            return $arrayItemsValue;
+        }
+
+        foreach ($formatOptions as $formatOption) {
+            $formatOptionEnum = FormatOptions::tryFrom($formatOption);
+            if (!$formatOptionEnum) {
+                continue;
+            }
+            switch ($formatOptionEnum) {
+                case FormatOptions::JSON_DECODE:
+                    if (is_array($arrayItemsValue)) {
+                        break;
+                    }
+                    $arrayItemsValue = json_decode($arrayItemsValue, true);
+                    if (json_last_error() !== JSON_ERROR_NONE) {
+                        $errorMsg =
+                            sprintf(
+                                'Failed to decode JSON from sr response. json error_code: %d | json_error_message: %s',
+                                json_last_error(),
+                                json_last_error_msg()
+                            );
+                        Log::error(
+                            $errorMsg,
+                            ['text' => $arrayItemsValue]
+                        );
+                        throw new ApiErrorException(
+                            $errorMsg
+                        );
+                    }
+                    break;
+                case FormatOptions::PREG_MATCH:
+                    if (!is_string($arrayItemsValue) && !is_numeric($arrayItemsValue)) {
+                        break;
+                    }
+                    $pregMatchExp = $this->sr->items_array_format_preg_match;
+                    if (empty($pregMatchExp)) {
+                        break;
+                    }
+                    if (preg_match($pregMatchExp, $arrayItemsValue, $matches)) {
+                        $arrayItemsValue = $matches[1];
+                    }
+                    break;
+            }
+        }
+        return $arrayItemsValue;
     }
 
     protected function getParentItemList()

@@ -321,7 +321,6 @@ class BaseOperations extends ApiBase
 
             $postBody = $this->dataProcessor->replaceListItemsOffsetPlaceholders($postBody);
             $postBody = $this->buildListValues($postBody);
-            dd($postBody);
         }
         if ($query) {
             $query = $this->dataProcessor->replaceListItemsOffsetPlaceholders($query);

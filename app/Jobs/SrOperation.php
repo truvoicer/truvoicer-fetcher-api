@@ -27,14 +27,20 @@ class SrOperation implements ShouldQueue
     public $timeout = 600;
 
     /**
+     * The number of times the job may be attempted.
+     *
+     * @var int
+     */
+    public $tries = 3;
+
+    /**
      * Create a new job instance.
      */
     public function __construct(
         public int $userId,
         public int     $srId,
         public array $queryData
-    )
-    {
+    ) {
         $this->srOperationsService = app(SrOperationsService::class);
         $this->srService = app(SrService::class);
     }
@@ -82,5 +88,17 @@ class SrOperation implements ShouldQueue
             SrResponseKeySrRepository::ACTION_STORE,
             $queryData
         );
+    }
+
+    public function failed(\Throwable $exception): void
+    {
+        Log::error('SrOperation job failed', [
+            'user_id' => $this->userId,
+            'sr_id' => $this->srId,
+            'error' => $exception->getMessage(),
+            'trace' => $exception->getTraceAsString()
+        ]);
+
+        // Optional: notify admin or mark SR as failed
     }
 }

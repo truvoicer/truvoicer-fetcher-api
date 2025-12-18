@@ -83,12 +83,6 @@ enum MbEncoding: string
     case QUOTED_PRINTABLE = 'Quoted-Printable';
     case UUENCODE = 'UUENCODE';
 
-    // Aliases
-    case LATIN1 = 'ISO-8859-1';
-    case WIN1252 = 'CP1252';
-    case WIN1251 = 'CP1251';
-    case SHIFT_JIS = 'SJIS';
-
     /**
      * Check if this encoding is a Unicode encoding
      */
@@ -102,7 +96,7 @@ enum MbEncoding: string
      */
     public function isWindowsEncoding(): bool
     {
-        return str_starts_with($this->value, 'CP') || str_starts_with($this->value, 'WIN');
+        return str_starts_with($this->value, 'CP');
     }
 
     /**
@@ -151,6 +145,62 @@ enum MbEncoding: string
     }
 
     /**
+     * Get common aliases for this encoding
+     */
+    public function getAliases(): array
+    {
+        return match($this) {
+            self::ISO_8859_1 => ['LATIN1', 'LATIN-1'],
+            self::CP1252 => ['WIN1252', 'WINDOWS-1252'],
+            self::CP1251 => ['WIN1251', 'WINDOWS-1251'],
+            self::SJIS => ['SHIFT_JIS', 'SHIFTJIS'],
+            self::CP932 => ['SHIFT_JIS', 'SHIFTJIS'],
+            self::CP936 => ['GBK'],
+            self::CP949 => ['UHC'],
+            self::CP950 => ['BIG5'],
+            self::ISO_8859_15 => ['LATIN9', 'LATIN-9'],
+            default => [],
+        };
+    }
+
+    /**
+     * Find encoding by alias or value (case-insensitive)
+     */
+    public static function tryFromAlias(string $value): ?self
+    {
+        $value = strtoupper(trim($value));
+
+        // Check common aliases first
+        $fromAlias = match($value) {
+            'LATIN1', 'LATIN-1' => self::ISO_8859_1,
+            'WIN1252', 'WINDOWS-1252' => self::CP1252,
+            'WIN1251', 'WINDOWS-1251' => self::CP1251,
+            'WIN1250', 'WINDOWS-1250' => self::CP1250,
+            'WIN1253', 'WINDOWS-1253' => self::CP1253,
+            'WIN1254', 'WINDOWS-1254' => self::CP1254,
+            'WIN1255', 'WINDOWS-1255' => self::CP1255,
+            'WIN1256', 'WINDOWS-1256' => self::CP1256,
+            'WIN1257', 'WINDOWS-1257' => self::CP1257,
+            'SHIFT_JIS', 'SHIFTJIS' => self::SJIS,
+            'LATIN9', 'LATIN-9' => self::ISO_8859_15,
+            default => null,
+        };
+
+        if ($fromAlias !== null) {
+            return $fromAlias;
+        }
+
+        // Check exact enum values
+        foreach (self::cases() as $case) {
+            if (strtoupper($case->value) === $value) {
+                return $case;
+            }
+        }
+
+        return null;
+    }
+
+    /**
      * Get all available encodings as an array of values
      */
     public static function getAllValues(): array
@@ -159,18 +209,129 @@ enum MbEncoding: string
     }
 
     /**
-     * Find encoding by value (case-insensitive)
+     * Get all encodings grouped by category
      */
-    public static function tryFromCaseInsensitive(string $value): ?self
+    public static function getGroupedEncodings(): array
     {
-        $value = strtoupper(trim($value));
+        return [
+            'ASCII & Extended ASCII' => [
+                self::ASCII,
+                self::ISO_8859_1,
+                self::ISO_8859_2,
+                self::ISO_8859_3,
+                self::ISO_8859_4,
+                self::ISO_8859_5,
+                self::ISO_8859_6,
+                self::ISO_8859_7,
+                self::ISO_8859_8,
+                self::ISO_8859_9,
+                self::ISO_8859_10,
+                self::ISO_8859_13,
+                self::ISO_8859_14,
+                self::ISO_8859_15,
+                self::ISO_8859_16,
+            ],
+            'Unicode' => [
+                self::UTF_8,
+                self::UTF_7,
+                self::UTF_7_IMAP,
+                self::UTF_16,
+                self::UTF_16BE,
+                self::UTF_16LE,
+                self::UTF_32,
+                self::UTF_32BE,
+                self::UTF_32LE,
+            ],
+            'Windows Codepages' => [
+                self::CP1252,
+                self::CP1251,
+                self::CP1250,
+                self::CP1253,
+                self::CP1254,
+                self::CP1255,
+                self::CP1256,
+                self::CP1257,
+                self::CP932,
+                self::CP936,
+                self::CP949,
+                self::CP950,
+                self::CP874,
+            ],
+            'Japanese' => [
+                self::EUC_JP,
+                self::SJIS,
+                self::SJIS_WIN,
+                self::JIS,
+                self::ISO_2022_JP,
+                self::CP932,
+            ],
+            'Chinese' => [
+                self::EUC_CN,
+                self::GB2312,
+                self::GBK,
+                self::GB18030,
+                self::BIG5,
+                self::BIG5_HKSCS,
+                self::EUC_TW,
+                self::CP936,
+                self::CP950,
+            ],
+            'Korean' => [
+                self::EUC_KR,
+                self::UHC,
+                self::CP949,
+            ],
+            'Cyrillic' => [
+                self::KOI8_R,
+                self::KOI8_U,
+                self::KOI8_RU,
+                self::CP1251,
+                self::ISO_8859_5,
+            ],
+            'Other Asian' => [
+                self::TIS_620,
+                self::ISO_8859_11,
+                self::CP874,
+            ],
+            'Special' => [
+                self::AUTO,
+                self::BASE64,
+                self::HTML_ENTITIES,
+                self::QUOTED_PRINTABLE,
+                self::UUENCODE,
+            ],
+        ];
+    }
 
-        foreach (self::cases() as $case) {
-            if (strtoupper($case->value) === $value) {
-                return $case;
-            }
+    /**
+     * Check if the encoding is supported by mbstring extension
+     */
+    public function isMbSupported(): bool
+    {
+        return in_array($this->value, mb_list_encodings(), true);
+    }
+
+    /**
+     * Convert string from this encoding to UTF-8
+     */
+    public function toUtf8(string $string): string|false
+    {
+        if ($this === self::UTF_8) {
+            return $string;
         }
 
-        return null;
+        return mb_convert_encoding($string, 'UTF-8', $this->value);
+    }
+
+    /**
+     * Convert string from UTF-8 to this encoding
+     */
+    public function fromUtf8(string $string): string|false
+    {
+        if ($this === self::UTF_8) {
+            return $string;
+        }
+
+        return mb_convert_encoding($string, $this->value, 'UTF-8');
     }
 }

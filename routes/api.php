@@ -24,7 +24,9 @@ use App\Http\Controllers\Api\Backend\Services\ServiceResponseKeyController;
 use App\Http\Controllers\Api\Backend\Services\SrResponseKeyHighestPriorityController;
 use App\Http\Controllers\Api\Backend\Services\SrResponseKeyOrderSearchPriorityController;
 use App\Http\Controllers\Api\Backend\Services\SrResponseKeySrController;
+use App\Http\Controllers\Api\Backend\Tools\Encoding\MbEncodingController;
 use App\Http\Controllers\Api\Backend\Tools\FileSystemController;
+use App\Http\Controllers\Api\Backend\Tools\Format\FormatOptionController;
 use App\Http\Controllers\Api\Backend\Tools\ImportExportController;
 use App\Http\Controllers\Api\Backend\Tools\UtilsController;
 use App\Http\Controllers\Api\Backend\User\UserController;
@@ -110,6 +112,13 @@ Route::middleware(['auth:sanctum', 'ability:api:admin,api:superuser,api:super_ad
 });
 Route::middleware(['auth:sanctum', 'ability:api:admin,api:superuser,api:super_admin,api:user'])->group(function () {
     Route::prefix('backend')->name('backend.')->group(function () {
+
+        Route::prefix('format')->name('format.')->group(function () {
+            Route::get('/option', [FormatOptionController::class, 'index'])->name('option.index');
+        });
+        Route::prefix('encoding')->name('encoding.')->group(function () {
+            Route::get('/mb', [MbEncodingController::class, 'index'])->name('mb.index');
+        });
         Route::prefix('validation')->name('validation.')->group(function () {
             Route::get('/all', [ValidationController::class, 'validateAll'])->name('all');
         });
@@ -191,10 +200,10 @@ Route::middleware(['auth:sanctum', 'ability:api:admin,api:superuser,api:super_ad
                             ->name('request.run');
                         Route::post('/duplicate', [ServiceRequestController::class, 'duplicateServiceRequest'])->name('duplicate');
                         Route::prefix('schedule')->name('schedule.')->group(function () {
-                            Route::post('/create', [ServiceRequestScheduleController::class, 'createRequestSchedule'])->name('create');
-                            Route::get('/{srSchedule}', [ServiceRequestScheduleController::class, 'getServiceSchedule'])->name('detail');
-                            Route::delete('/{srSchedule}/delete', [ServiceRequestScheduleController::class, 'deleteRequestSchedule'])->name('delete');
-                            Route::patch('/{srSchedule}/update', [ServiceRequestScheduleController::class, 'updateRequestSchedule'])->name('update');
+                            Route::post('/create', [ServiceRequestScheduleController::class, 'create'])->name('create');
+                            Route::get('/', [ServiceRequestScheduleController::class, 'show'])->name('show');
+                            Route::delete('/delete', [ServiceRequestScheduleController::class, 'destroy'])->name('destroy');
+                            Route::post('/update', [ServiceRequestScheduleController::class, 'update'])->name('update');
                         });
                         Route::prefix('rate-limits')->name('rate-limits.')->group(function () {
                             Route::post('/create', [SrRateLimitController::class, 'createRequestRateLimit'])->name('create');

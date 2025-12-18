@@ -2,6 +2,7 @@
 
 namespace App\Services\ApiManager\Data;
 
+use App\Enums\Property\PropertyType;
 
 class DataConstants
 {
@@ -170,6 +171,19 @@ class DataConstants
         "ITEM_ID" => [
             self::RESPONSE_KEY_REQUIRED => true,
             self::RESPONSE_KEY_NAME => self::ITEM_ID,
+        ],
+    ];
+    public const REQ_SR_FIELDS_FOR_XML_POPULATE = [
+        'items_array_key' => [
+            'name' => 'items_array_key',
+        ],
+        'item_repeater_key' => [
+            'name' => 'item_repeater_key',
+        ],
+    ];
+    public const REQ_SR_FIELDS_FOR_JSON_POPULATE = [
+        'items_array_key' => [
+            'name' => 'items_array_key',
         ],
     ];
     public const XML_SERVICE_RESPONSE_KEYS = [

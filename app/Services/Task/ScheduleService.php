@@ -2,9 +2,6 @@
 
 namespace App\Services\Task;
 
-use App\Services\Provider\ProviderScheduleService;
-use Illuminate\Console\Scheduling\Schedule;
-
 class ScheduleService
 {
     const SCHEDULE_EVERY_MINUTE = 'every_minute';
@@ -35,24 +32,5 @@ class ScheduleService
             'method' => 'monthly'
         ],
     ];
-
-    private Schedule $schedule;
-
-    public function __construct(
-        private ProviderScheduleService $providerScheduleService
-    )
-    {
-    }
-
-    public function run(): void
-    {
-        $this->providerScheduleService->setSchedule($this->schedule);
-        $this->providerScheduleService->run();
-    }
-
-    public function setSchedule(Schedule $schedule): void
-    {
-        $this->schedule = $schedule;
-    }
 
 }

@@ -60,6 +60,7 @@ class ProviderScheduleService
 
     public function run(): void
     {
+            Log::log('info', 'No schedule user found');
         $scheduleUserEmail = config('services.scheduler.schedule_user_email');
         if (empty($scheduleUserEmail)) {
             Log::log('info', 'No schedule user email found');
@@ -121,21 +122,22 @@ class ProviderScheduleService
         }
 
         if ($schedule->every_minute) {
-            $this->getSrScheduleCall($sr, $schedule, 'everyMinute')->everyMinute();
+            $this->getSrScheduleCall($sr, $schedule, 'everyMinute')->everyMinute()->withoutOverlapping();
             $this->runChildSrSchedule($sr);
         }
         if ($schedule->every_hour) {
             $minute = $schedule->minute;
+
             if (empty($minute)) {
                 $minute = '00';
             }
             $scheduleCall = $this->getSrScheduleCall($sr, $schedule, "hourlyAt({$minute})");
-            $scheduleCall->hourlyAt($minute);
+            $scheduleCall->hourlyAt($minute)->withoutOverlapping();
             $this->runChildSrSchedule($sr);
         } else if ($schedule->every_day) {
             $hourMinutes = $this->getHourMinutes($schedule);
             $this->getSrScheduleCall($sr, $schedule, "dailyAt({$hourMinutes})")
-                ->dailyAt($hourMinutes);
+                ->dailyAt($hourMinutes)->withoutOverlapping();
             $this->runChildSrSchedule($sr);
         } else if ($schedule->every_weekday) {
             $hourMinutes = $this->getHourMinutes($schedule);
@@ -144,7 +146,7 @@ class ProviderScheduleService
                 $weekday = 1;
             }
             $this->getSrScheduleCall($sr, $schedule, "weeklyOn({$weekday} '{$hourMinutes}')")
-                ->weeklyOn($weekday, $hourMinutes);
+                ->weeklyOn($weekday, $hourMinutes)->withoutOverlapping();
             $this->runChildSrSchedule($sr);
         } else if ($schedule->every_month) {
             $hourMinutes = $this->getHourMinutes($schedule);
@@ -153,7 +155,7 @@ class ProviderScheduleService
                 $day = 1;
             }
             $this->getSrScheduleCall($sr, $schedule, "monthlyOn({$day} '{$hourMinutes}')")
-                ->monthlyOn($day, $hourMinutes);
+                ->monthlyOn($day, $hourMinutes)->withoutOverlapping();
             if (!$schedule->disable_child_srs) {
                 $this->runChildSrSchedule($sr);
             }
@@ -192,9 +194,10 @@ class ProviderScheduleService
         )->description('Sr operation schedules');
     }
 
-    public function setSchedule(Schedule $schedule): void
+    public function setSchedule(Schedule $schedule): self
     {
         $this->schedule = $schedule;
+        return $this;
     }
 
 }

@@ -2,8 +2,6 @@
 
 namespace App\Services\ApiManager\Response\Handlers\Xml;
 
-use App\Models\SResponseKey;
-use App\Models\SrResponseKey;
 use App\Services\ApiManager\Response\Handlers\ResponseHandler;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 
@@ -45,9 +43,9 @@ class XmlResponseHandler extends ResponseHandler
         if (empty($this->sr->items_array_key)) {
             throw new BadRequestHttpException("items_array_key is empty.");
         }
-        $itemRepeaterKeyValue = $this->findSrResponseKeyValueInArray('item_repeater_key');
+        $itemRepeaterKeyValue = $this->sr->item_repeater_key;
         if (empty($itemRepeaterKeyValue)) {
-            throw new BadRequestHttpException("item_repeater_key value is empty.");
+            throw new BadRequestHttpException("item_repeater_key value is empty. item_repeater_key: " . $itemRepeaterKeyValue . ' | items_array_key: ' . $this->sr->items_array_key);
         }
         $this->responseArray = $this->xmlService->parseXmlContent(
             $responseContent,

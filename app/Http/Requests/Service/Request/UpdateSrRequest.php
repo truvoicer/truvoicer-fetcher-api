@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Service\Request;
 
+use App\Enums\FormatOptions;
 use App\Enums\Sr\SrType;
 use App\Models\Sr;
 use App\Repositories\SrRepository;
@@ -34,6 +35,18 @@ class UpdateSrRequest extends FormRequest
             'default_sr' => 'boolean|nullable',
             'items_array_key' => 'string|nullable',
             'item_repeater_key' => 'string|nullable',
+            'items_array_format_options' => [
+                'sometimes',
+                'array'
+            ],
+            'items_array_format_options.*' => [
+                'required',
+                Rule::enum(FormatOptions::class)
+            ],
+            'items_array_format_preg_match' => [
+                'sometimes',
+                'string'
+            ],
             'name' => 'string|nullable',
             'label' => 'string|nullable',
             'service' => 'integer|nullable',

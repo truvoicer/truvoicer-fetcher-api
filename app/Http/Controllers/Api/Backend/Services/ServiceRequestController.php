@@ -479,7 +479,7 @@ class ServiceRequestController extends Controller
      */
     public function populateSrResponseKeys(
         Provider          $provider,
-        Sr                $sr,
+        Sr                $serviceRequest,
         PopulateFactory $populateFactory,
         PopulateSrResponseKeysRequest           $request
     ): JsonResponse|\Illuminate\Http\JsonResponse
@@ -501,7 +501,7 @@ class ServiceRequestController extends Controller
         $populateFactory->setUser($request->user());
         $populateFactory->setData($request->validated());
         $populateFactory->create(
-            $sr,
+            $serviceRequest,
             $request->validated('srs'),
             $request->validated('query', [])
         );

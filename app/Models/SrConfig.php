@@ -33,7 +33,7 @@ class SrConfig extends Model
     protected function arrayValue(): Attribute
     {
         return Attribute::make(
-            get: fn(mixed $value, array $attributes) => $this->getArrayValue($value, $attributes, request()->user()),
+            get: fn(mixed $value, array $attributes) => $this->getArrayValue($value),
         );
     }
     public function findIndex(array $array, string $key) {
@@ -44,7 +44,7 @@ class SrConfig extends Model
         }
         return false;
     }
-    public function getArrayValue(mixed $value, array $attributes, User $user)
+    public function getArrayValue(mixed $value)
     {
         $value = json_decode($value, true);
         switch ($this->property->value_type) {

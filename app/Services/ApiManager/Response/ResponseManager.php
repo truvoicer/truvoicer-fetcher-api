@@ -224,10 +224,10 @@ class ResponseManager extends BaseService
         $apiResponse->setContentType($contentType);
         switch ($contentType) {
             case 'json':
-                $apiResponse->setRequiredResponseKeys(DataConstants::JSON_SERVICE_RESPONSE_KEYS);
+                $apiResponse->setRequiredSrFields(DataConstants::REQ_SR_FIELDS_FOR_JSON_POPULATE);
                 break;
             case 'xml':
-                $apiResponse->setRequiredResponseKeys(DataConstants::XML_SERVICE_RESPONSE_KEYS);
+                $apiResponse->setRequiredSrFields(DataConstants::REQ_SR_FIELDS_FOR_XML_POPULATE);
                 break;
         }
         $apiResponse->setStatus("success");

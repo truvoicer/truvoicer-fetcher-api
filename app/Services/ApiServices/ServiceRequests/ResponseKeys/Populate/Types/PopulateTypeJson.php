@@ -4,10 +4,9 @@ namespace App\Services\ApiServices\ServiceRequests\ResponseKeys\Populate\Types;
 
 use App\Enums\Sr\SrType;
 use App\Models\Sr;
-use App\Repositories\SrRepository;
 use App\Services\ApiManager\Data\DataConstants;
 use App\Services\ApiManager\Operations\ApiRequestService;
-use App\Services\ApiManager\Response\Entity\ApiResponse;
+use App\Services\ApiManager\Response\Entity\ApiDetailedResponse;
 use App\Services\ApiManager\Response\Handlers\ResponseHandler;
 use App\Services\ApiManager\Response\ResponseManager;
 use App\Services\ApiServices\ServiceRequests\SrConfigService;
@@ -30,17 +29,17 @@ class PopulateTypeJson extends PopulateTypeBase
             )
         );
     }
-    public function runSrRequest(Sr $sr, ?array $query = []): ApiResponse
+    public function runSrRequest(Sr $sr, ?array $query = []): ApiDetailedResponse
     {
         $provider = $sr->provider()->first();
         $this->requestOperation->setProviderName($provider->name);
         $this->requestOperation->setApiRequestName($sr->name);
         $this->requestOperation->setUser($this->getUser());
 
-        return $this->requestOperation->getOperationRequestContent('raw', $query);
+        return $this->requestOperation->getOperationRequestContent('raw', $query, true);
     }
 
-    public function handleResponse(Sr $sr, ApiResponse $response): bool
+    public function handleResponse(Sr $sr, ApiDetailedResponse $response): bool
     {
         $this->score = [];
         $this->response = $response;

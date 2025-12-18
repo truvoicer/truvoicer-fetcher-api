@@ -32,13 +32,11 @@ class ServiceRequestScheduleController extends Controller
         parent::__construct();
     }
 
-    public function getServiceSchedule(
+    public function show(
         Provider $provider,
         Sr       $serviceRequest,
-        SrSchedule $srSchedule,
         Request  $request
-    ): \Illuminate\Http\JsonResponse
-    {
+    ): \Illuminate\Http\JsonResponse {
         $this->setAccessControlUser($request->user());
         if (
             !$this->accessControlService->checkPermissionsForEntity(
@@ -50,6 +48,21 @@ class ServiceRequestScheduleController extends Controller
             )
         ) {
             return $this->sendErrorResponse("Access denied");
+        }
+
+        $srSchedule = $serviceRequest->srSchedule;
+        if (!$srSchedule) {
+            if (!$this->srScheduleService->saveSrSchedule(
+                $request->user(),
+                $serviceRequest,
+                []
+            )) {
+                return $this->sendErrorResponse("Failed to initialise schedule");
+            }
+            $srSchedule = $this->srScheduleService->getSrScheduleRepository()->getModel();
+            if (!$srSchedule || !$srSchedule->exists()) {
+                return $this->sendErrorResponse("Failed to initialise schedule");
+            }
         }
         return $this->sendSuccessResponse(
             "success",
@@ -63,12 +76,11 @@ class ServiceRequestScheduleController extends Controller
      * Returns error response and message on fail
      *
      */
-    public function createRequestSchedule(
+    public function create(
         Provider                          $provider,
         Sr                                $serviceRequest,
         CreateSrRateLimitRequest $request
-    ): \Illuminate\Http\JsonResponse
-    {
+    ): \Illuminate\Http\JsonResponse {
         $this->setAccessControlUser($request->user());
         if (
             !$this->accessControlService->checkPermissionsForEntity(
@@ -82,14 +94,15 @@ class ServiceRequestScheduleController extends Controller
         ) {
             return $this->sendErrorResponse("Access denied");
         }
-        $create = $this->srScheduleService->createSrSchedule(
+
+        $update = $this->srScheduleService->saveSrSchedule(
             $request->user(),
             $serviceRequest,
-            $request->all()
+            $request->validated()
         );
 
-        if (!$create) {
-            return $this->sendErrorResponse("Error creating schedule");
+        if (!$update) {
+            return $this->sendErrorResponse("Error updating schedule");
         }
         return $this->sendSuccessResponse(
             "Schedule created",
@@ -105,13 +118,11 @@ class ServiceRequestScheduleController extends Controller
      *
      * Returns error response and message on fail
      */
-    public function updateRequestSchedule(
+    public function update(
         Provider                          $provider,
         Sr                                $serviceRequest,
-        SrSchedule                    $srSchedule,
         UpdateSrScheduleRequest $request
-    ): \Illuminate\Http\JsonResponse
-    {
+    ): \Illuminate\Http\JsonResponse {
         $this->setAccessControlUser($request->user());
         if (
             !$this->accessControlService->checkPermissionsForEntity(
@@ -126,7 +137,7 @@ class ServiceRequestScheduleController extends Controller
         }
         $update = $this->srScheduleService->saveSrSchedule(
             $request->user(),
-            $srSchedule,
+            $serviceRequest,
             $request->validated()
         );
 
@@ -147,13 +158,11 @@ class ServiceRequestScheduleController extends Controller
      *
      * Returns error response and message on fail
      */
-    public function deleteRequestSchedule(
+    public function destroy(
         Provider $provider,
-        Sr       $serviceRequest,
-        SrSchedule $srSchedule,
+        Sr $serviceRequest,
         Request  $request
-    ): \Illuminate\Http\JsonResponse
-    {
+    ): \Illuminate\Http\JsonResponse {
         $this->setAccessControlUser($request->user());
         if (
             !$this->accessControlService->checkPermissionsForEntity(
@@ -165,6 +174,12 @@ class ServiceRequestScheduleController extends Controller
             )
         ) {
             return $this->sendErrorResponse("Access denied");
+        }
+        $srSchedule = $serviceRequest->srSchedule;
+        if (!$srSchedule) {
+            return $this->sendErrorResponse(
+                "Sr schedule does not exist"
+            );
         }
         if (!$this->srScheduleService->deleteSrSchedule($srSchedule)) {
             return $this->sendErrorResponse(

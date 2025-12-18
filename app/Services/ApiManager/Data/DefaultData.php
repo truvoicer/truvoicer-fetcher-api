@@ -19,17 +19,6 @@ class DefaultData
         'password' => 'password',
     ];
 
-    public static function getContentTypeReservedResponseKeys(): array
-    {
-        $keys = DataConstants::JSON_SERVICE_RESPONSE_KEYS;
-        $keys = array_merge(
-            $keys,
-            array_filter(DataConstants::XML_SERVICE_RESPONSE_KEYS, function ($data, $key) use ($keys) {
-                return !array_key_exists($key, array_keys($keys));
-            }, ARRAY_FILTER_USE_BOTH)
-        );
-        return $keys;
-    }
     public static function getServiceResponseKeys(array $contentType = ['json']): array
     {
         $keys = DataConstants::SERVICE_RESPONSE_KEYS;

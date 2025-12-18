@@ -2,6 +2,7 @@
 
 namespace App\Services\ApiManager\Data;
 
+use App\Enums\MbEncoding;
 use App\Enums\Property\PropertyType;
 use App\Models\Property;
 use App\Models\Provider;
@@ -113,7 +114,19 @@ class DataProcessor
         if ($getSrParam === null) {
             return null;
         }
-        return $getSrParam->value;
+        if (!$getSrParam->encode_value) {
+            return $getSrParam->value;
+        }
+        $encodeFrom = $encodeTo = 'UTF-8';
+        if ($getSrParam->encode_from) {
+            $encodeFrom = $getSrParam->encode_from->value;
+        }
+
+        if ($getSrParam->encode_to) {
+            $encodeTo = $getSrParam->encode_to->value;
+        }
+        return mb_convert_encoding($getSrParam->value, $encodeFrom, $encodeTo);
+
     }
     private function replaceWithSrConfigValues($paramValue, $origValue) {
         $getSrParam = $this->requestConfigs->where('name', $origValue)->first();

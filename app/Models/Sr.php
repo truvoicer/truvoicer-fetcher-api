@@ -25,10 +25,13 @@ class Sr extends Model
         'item_repeater_key',
         'default_sr',
         'default_data',
+        'items_array_format_options',
+        'items_array_format_preg_match',
     ];
     protected $casts = [
         'type' => SrType::class,
         'query_parameters' => 'json',
+        'items_array_format_options' => 'json',
         'default_sr' => 'boolean',
         'default_data' => 'json',
     ];

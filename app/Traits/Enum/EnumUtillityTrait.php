@@ -13,4 +13,12 @@ trait EnumUtillityTrait {
         return array_map(fn($case) => $case->value, static::cases());
     }
 
+    public static function labelAndValueArray(): array
+    {
+        return array_map(fn($case) => [
+            'value' => $case->value,
+            'label' => $case->label()
+        ], static::cases());
+    }
+
 }
