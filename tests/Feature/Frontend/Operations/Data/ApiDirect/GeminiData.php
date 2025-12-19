@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Frontend\Operations\Data\ApiDirect;
 
+use App\Enums\Api\ApiListKey;
 use App\Enums\Api\ApiResponseFormat;
 use App\Enums\Api\ApiType;
 use App\Enums\Property\PropertyType;
@@ -12,7 +13,7 @@ class GeminiData
     static public function labels(): array
     {
         return [
-            ['label' => 'Gemini: Without an items_array_key'],
+            ['label' => 'Gemini: Without an ' . ApiListKey::LIST_KEY->value],
             ['label' => 'Gemini: Valid configs'],
         ];
     }
@@ -82,7 +83,7 @@ class GeminiData
 
             ],
             [
-               'items_array_key' => 'root_array'
+               ApiListKey::LIST_KEY->value => 'root_array'
             ]
         ];
     }
@@ -199,7 +200,7 @@ class GeminiData
         return [
             [
                 'status' => 400,
-                'message' => 'items_array_key value is empty.',
+                'message' => ApiListKey::LIST_KEY->value . ' value is empty.',
                 'exception' => ApiResponseException::class
             ],
             [

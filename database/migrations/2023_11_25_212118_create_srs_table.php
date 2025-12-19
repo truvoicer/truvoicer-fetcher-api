@@ -13,9 +13,18 @@ return new class extends Migration
     {
         Schema::create('srs', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('s_id')->nullable()->constrained('s')->onDelete('cascade');
-            $table->foreignId('provider_id')->constrained('providers')->onDelete('cascade');
-            $table->foreignId('category_id')->nullable()->constrained('categories')->onDelete('cascade');
+            $table->foreignId('s_id')
+                ->nullable()
+                ->constrained('s')
+                ->nullOnDelete();
+            $table->foreignId('provider_id')
+                ->nullable()
+                ->constrained('providers')
+                ->nullOnDelete();
+            $table->foreignId('category_id')
+                ->nullable()
+                ->constrained('categories')
+                ->nullOnDelete();
             $table->string('name');
             $table->string('label');
             $table->string('pagination_type')->nullable();

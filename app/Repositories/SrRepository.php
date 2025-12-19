@@ -2,6 +2,7 @@
 
 namespace App\Repositories;
 
+use App\Enums\Api\ApiListKey;
 use App\Helpers\Tools\UtilHelpers;
 use App\Models\Category;
 use App\Models\Provider;
@@ -142,10 +143,10 @@ class SrRepository extends BaseRepository
             'pagination_type',
             'query_parameters',
             'type',
-            'items_array_key',
-            'item_repeater_key',
-            'items_array_format_options',
-            'items_array_format_preg_match',
+            ApiListKey::LIST_KEY->value,
+            ApiListKey::LIST_ITEM_REPEATER_KEY->value,
+            ApiListKey::LIST_FORMAT_OPTIONS->value,
+            ApiListKey::LIST_FORMAT_OPTION_PREG_MATCH->value,
             'default_sr',
             'default_data',
         ];

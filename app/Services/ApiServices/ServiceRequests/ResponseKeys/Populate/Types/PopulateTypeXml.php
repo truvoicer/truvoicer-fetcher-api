@@ -2,9 +2,11 @@
 
 namespace App\Services\ApiServices\ServiceRequests\ResponseKeys\Populate\Types;
 
+use App\Enums\Api\ApiListKey;
 use App\Enums\Sr\SrType;
 use App\Models\Sr;
 use App\Services\ApiManager\Data\DataConstants;
+use App\Services\ApiManager\Data\DataProcessor;
 use App\Services\ApiManager\Operations\ApiRequestService;
 use App\Services\ApiManager\Response\Entity\ApiDetailedResponse;
 use App\Services\ApiManager\Response\Handlers\ResponseHandler;
@@ -42,6 +44,7 @@ class PopulateTypeXml extends PopulateTypeBase
         $this->requestOperation->setProviderName($provider->name);
         $this->requestOperation->setApiRequestName($sr->name);
         $this->requestOperation->setUser($this->getUser());
+
         return $this->requestOperation->getOperationRequestContent('raw', $query, true);
     }
 
@@ -65,17 +68,17 @@ class PopulateTypeXml extends PopulateTypeBase
             return false;
         }
 
-        if (empty($this->data['items_array_key'])) {
-            throw new Exception('items_array_key is missing from the request data.');
+        if (empty($this->data[ApiListKey::LIST_KEY->value])) {
+            throw new Exception(ApiListKey::LIST_KEY->value .' is missing from the request data.');
         }
-        if (empty($this->data['item_repeater_key'])) {
-            throw new Exception('item_repeater_key is missing from request data.');
+        if (empty($this->data[ApiListKey::LIST_ITEM_REPEATER_KEY->value])) {
+            throw new Exception(ApiListKey::LIST_ITEM_REPEATER_KEY->value . ' is missing from request data.');
         }
-
         $this->responseHandler->setSr($this->destSr);
-        $itemsArrayValue = $this->data['items_array_key'];
-        $itemRepeaterKey = $this->data['item_repeater_key'];
+        $itemsArrayValue = $this->data[ApiListKey::LIST_KEY->value];
+        $itemRepeaterKey = $this->data[ApiListKey::LIST_ITEM_REPEATER_KEY->value];
         $filterItemsArrayValue = $this->responseHandler->filterItemsArrayValue($itemsArrayValue);
+
         $responseArray = $this->xmlService->parseXmlContent(
             $responseContent,
             $filterItemsArrayValue["value"],
@@ -85,25 +88,26 @@ class PopulateTypeXml extends PopulateTypeBase
         if (!count($responseArray)) {
             return false;
         }
+
         $buildItemList = $this->responseHandler->buildItemListFromResponseArray($itemsArrayValue, $responseArray);
         if (!count($buildItemList)) {
             return false;
         }
 
-        $this->destSr->items_array_key = $itemsArrayValue;
+        $this->destSr->{ApiListKey::LIST_KEY->value} = $itemsArrayValue;
         if (!$this->destSr->save()) {
             $this->addError(
                 "error",
-                "Error saving items_array_key."
+                "Error saving " . ApiListKey::LIST_KEY->value . '.'
             );
             return false;
         }
 
-        $this->destSr->item_repeater_key = $itemRepeaterKey;
+        $this->destSr->{ApiListKey::LIST_ITEM_REPEATER_KEY->value} = $itemRepeaterKey;
         if (!$this->destSr->save()) {
             $this->addError(
                 "error",
-                "Error saving item_repeater_key."
+                "Error saving " . ApiListKey::LIST_ITEM_REPEATER_KEY->value . '.'
             );
             return false;
         }

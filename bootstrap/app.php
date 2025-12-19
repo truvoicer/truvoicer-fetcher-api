@@ -28,6 +28,10 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withExceptions(function (Exceptions $exceptions) {
         // Configure exception handling here
     })->withSchedule(function (Schedule $schedule) {
+
+        if (! app()->runningInConsole() || app()->environment('testing')) {
+            return;
+        }
         app(ProviderScheduleService::class)->setSchedule($schedule)->run();
     })
     ->create();

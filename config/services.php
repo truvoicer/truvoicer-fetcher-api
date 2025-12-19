@@ -34,5 +34,22 @@ return [
     'scheduler' => [
         'schedule_user_email' => env('SCHEDULE_USER_EMAIL'),
     ],
+    'ai_client' => [
+        'gemini' => [
+            'api_key' => env('GEMINI_API_KEY')
+        ],
+
+        'open_ai' => [
+            'api_key' => env('OPEN_AI_API_KEY')
+        ],
+
+        'deep_seek' => [
+            'api_key' => env('DEEP_SEEK_API_KEY')
+        ],
+
+        'grok' => [
+            'api_key' => env('GROK_API_KEY')
+        ],
+    ],
 
 ];

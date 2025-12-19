@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Service\Request;
 
+use App\Enums\Api\ApiListKey;
 use App\Enums\FormatOptions;
 use App\Enums\Sr\SrType;
 use App\Models\Sr;
@@ -33,17 +34,17 @@ class UpdateSrRequest extends FormRequest
                 Rule::enum(SrType::class)
             ],
             'default_sr' => 'boolean|nullable',
-            'items_array_key' => 'string|nullable',
-            'item_repeater_key' => 'string|nullable',
-            'items_array_format_options' => [
+            ApiListKey::LIST_KEY->value => 'string|nullable',
+            ApiListKey::LIST_ITEM_REPEATER_KEY->value => 'string|nullable',
+            ApiListKey::LIST_FORMAT_OPTIONS->value => [
                 'sometimes',
                 'array'
             ],
-            'items_array_format_options.*' => [
+            ApiListKey::LIST_FORMAT_OPTIONS->value .'.*' => [
                 'required',
                 Rule::enum(FormatOptions::class)
             ],
-            'items_array_format_preg_match' => [
+            ApiListKey::LIST_FORMAT_OPTION_PREG_MATCH->value => [
                 'sometimes',
                 'string'
             ],

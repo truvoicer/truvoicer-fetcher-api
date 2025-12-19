@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Frontend\Operations\Data\ApiDirect;
 
+use App\Enums\Api\ApiListKey;
 use App\Enums\Api\ApiMethod;
 use App\Enums\Api\ApiResponseFormat;
 use App\Enums\Api\ApiType;
@@ -22,7 +23,7 @@ class DefaultPostData
     static public function labels(): array
     {
         return [
-            ['label' => 'Without an items_array_key'],
+            ['label' => 'Without an ' . ApiListKey::LIST_KEY->value],
             ['label' => 'With post body srConfig, testing in ApiClientHandler'],
             ['label' => 'With body srConfig, testing in ApiClientHandler'],
         ];
@@ -116,10 +117,10 @@ class DefaultPostData
 
             ],
             [
-               'items_array_key' => 'results'
+               ApiListKey::LIST_KEY->value => 'results'
             ],
             [
-               'items_array_key' => 'results'
+               ApiListKey::LIST_KEY->value => 'results'
             ]
         ];
     }
@@ -265,7 +266,7 @@ class DefaultPostData
         return [
             [
                 'status' => 400,
-                'message' => 'items_array_key value is empty.',
+                'message' => ApiListKey::LIST_KEY->value . ' value is empty.',
                 'exception' => ApiResponseException::class
             ],
             [

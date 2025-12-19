@@ -114,8 +114,20 @@ class SrResponseKeyService extends BaseService
                 );
             }
         }
+        $s = $sr->s()->first();
+        if (!$s) {
+            throw new SrValidationException(
+                sprintf(
+                    "This sr (id: %s | name: %s | label: %s) has not been assigned a service.",
+                    $sr->id,
+                    $sr->name,
+                    $sr->label,
+                )
+            );
+        }
+
         return $this->SResponseKeyRepository->createDefaultServiceResponseKeys(
-            $sr->s()->first(),
+            $s,
             $responseFormatValue,
             $requiredOnly
         );

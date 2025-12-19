@@ -2,10 +2,10 @@
 
 namespace Database\Factories;
 
+use App\Enums\Api\ApiListKey;
 use App\Enums\FormatOptions;
 use App\Enums\Sr\PaginationType;
 use App\Enums\Sr\SrType;
-use App\Repositories\SrRepository;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Str;
 
@@ -169,15 +169,15 @@ class SrFactory extends Factory
     {
         $label = $this->faker->word;
         return [
-            'items_array_key' => $this->faker->word,
-            'item_repeater_key' => $this->faker->word,
+            ApiListKey::LIST_KEY->value => $this->faker->word,
+            ApiListKey::LIST_ITEM_REPEATER_KEY->value => $this->faker->word,
             'name' => Str::slug($label),
             'label' => $label,
             'default_sr' => $this->faker->boolean,
             'type' => $this->faker->randomElement(SrType::values()),
             'pagination_type' => $this->faker->randomElement(PaginationType::values()),
-            'items_array_format_options' => $this->faker->randomElement(FormatOptions::values()),
-            'items_array_format_preg_match' => $this->faker->randomElement(
+            ApiListKey::LIST_FORMAT_OPTIONS->value => $this->faker->randomElement(FormatOptions::values()),
+            ApiListKey::LIST_FORMAT_OPTION_PREG_MATCH->value => $this->faker->randomElement(
                 array_values($this->availablePregMatches)
             ),
             'query_parameters' => array_combine($this->faker->words(3), $this->faker->words(3)),

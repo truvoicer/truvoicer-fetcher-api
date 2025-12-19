@@ -456,11 +456,14 @@ class ServiceRequestController extends Controller
             $requestType = $data['request_type'];
         }
         $requestOperation->setUser($request->user());
+
+        ini_set('max_execution_time', 60);
         if ($requestType === 'response_keys') {
             $runApiRequest = $requestOperation->runOperation($data)->toArray();
         } else {
             $runApiRequest = $requestOperation->getOperationRequestContent($requestType, $data);
         }
+        ini_restore('max_execution_time');
 
         return new JsonResponse(
             $runApiRequest,
@@ -484,6 +487,7 @@ class ServiceRequestController extends Controller
         PopulateSrResponseKeysRequest           $request
     ): JsonResponse|\Illuminate\Http\JsonResponse
     {
+
         $this->setAccessControlUser($request->user());
         if (
             !$this->accessControlService->checkPermissionsForEntity(
@@ -500,11 +504,14 @@ class ServiceRequestController extends Controller
         $populateFactory->setOverwrite($request->validated('overwrite', false));
         $populateFactory->setUser($request->user());
         $populateFactory->setData($request->validated());
+
+        ini_set('max_execution_time', 60);
         $populateFactory->create(
             $serviceRequest,
             $request->validated('srs'),
             $request->validated('query', [])
         );
+        ini_restore('max_execution_time');
 
         if ($populateFactory->hasErrors()) {
             return $this->sendErrorResponse(

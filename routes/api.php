@@ -25,6 +25,7 @@ use App\Http\Controllers\Api\Backend\Services\SrResponseKeyHighestPriorityContro
 use App\Http\Controllers\Api\Backend\Services\SrResponseKeyOrderSearchPriorityController;
 use App\Http\Controllers\Api\Backend\Services\SrResponseKeySrController;
 use App\Http\Controllers\Api\Backend\Tools\Encoding\MbEncodingController;
+use App\Http\Controllers\Api\Backend\Tools\EnumController;
 use App\Http\Controllers\Api\Backend\Tools\FileSystemController;
 use App\Http\Controllers\Api\Backend\Tools\Format\FormatOptionController;
 use App\Http\Controllers\Api\Backend\Tools\ImportExportController;
@@ -63,6 +64,8 @@ Route::middleware(['auth:sanctum', 'ability:api:app_user'])->group(function () {
     });
 });
 Route::middleware(['auth:sanctum', 'ability:api:admin,api:superuser,api:super_admin,api:user,api:app_user'])->group(function () {
+
+    Route::get('/enum/{enum}', [EnumController::class, 'show'])->name('enum.show');
     Route::prefix('notification')->name('notification.')->group(function () {
         Route::get('/list', [NotificationController::class, 'index'])->name('list');
         Route::get('/read/count', [NotificationController::class, 'getReadCount'])->name('read.count');
@@ -277,9 +280,9 @@ Route::middleware(['auth:sanctum', 'ability:api:admin,api:superuser,api:super_ad
             Route::prefix('batch')->name('batch.')->group(function () {
                 Route::delete('/delete', [ServiceController::class, 'deleteBatch'])->name('delete');
             });
-            Route::get('/{service:name}/providers', [ServiceController::class, 'getServiceProviders'])->name('detail.name.provider.list');
-            Route::get('/{service}', [ServiceController::class, 'getService'])->name('detail');
             Route::prefix('{service}')->name('single.')->group(function () {
+
+                Route::get('/', [ServiceController::class, 'getService'])->name('detail');
                 Route::get('/provider/list', [ServiceController::class, 'getServiceProviders'])->name('provider.list');
                 Route::patch('/update', [ServiceController::class, 'updateService'])->name('update');
                 Route::delete('/delete', [ServiceController::class, 'deleteService'])->name('delete');
@@ -295,6 +298,8 @@ Route::middleware(['auth:sanctum', 'ability:api:admin,api:superuser,api:super_ad
                     Route::patch('/{serviceResponseKey}/update', [ServiceResponseKeyController::class, 'updateServiceResponseKey'])->name('update');
                 });
             });
+
+            Route::get('/{service:name}/providers', [ServiceController::class, 'getServiceProviders'])->name('detail.name.provider.list');
         });
         Route::prefix('tools')->name('tools.')->group(function () {
             Route::get('/export/list', [ImportExportController::class, 'getExportList'])->name('export.list');

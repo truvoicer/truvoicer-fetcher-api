@@ -2,21 +2,28 @@
 
 namespace App\Services\ApiServices\ServiceRequests\ResponseKeys\Populate\Types;
 
+use App\Enums\Ai\AiClient;
 use App\Models\S;
 use App\Models\Sr;
 use App\Models\SResponseKey;
 use App\Repositories\SResponseKeyRepository;
 use App\Repositories\SrRepository;
 use App\Repositories\SrResponseKeyRepository;
+use App\Services\ApiManager\Client\ApiClientHandler;
+use App\Services\ApiManager\Client\Entity\ApiRequest;
 use App\Services\ApiManager\Operations\ApiRequestService;
 use App\Services\ApiManager\Response\Entity\ApiDetailedResponse;
 use App\Services\ApiManager\Response\Handlers\ResponseHandler;
+use App\Services\ApiManager\Response\ResponseManager;
 use App\Services\ApiServices\ServiceRequests\ResponseKeys\Populate\PopulateTrait;
 use App\Services\ApiServices\ServiceRequests\SrConfigService;
 use App\Traits\Error\ErrorTrait;
 use App\Traits\User\UserTrait;
+use Exception;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
+use Pusher\ApiErrorException;
 
 class PopulateTypeBase
 {
@@ -37,8 +44,7 @@ class PopulateTypeBase
         protected ApiRequestService $requestOperation,
         protected SrConfigService   $srConfigService,
         protected ResponseHandler   $responseHandler
-    )
-    {
+    ) {
         $this->srRepository = new SrRepository();
         $this->srResponseKeyRepository = new SrResponseKeyRepository();
         $this->responseKeyRepository = new SResponseKeyRepository();
@@ -47,8 +53,15 @@ class PopulateTypeBase
     public function populate(Sr $destSr, Sr $sourceSr, ?array $query = [])
     {
         $destService = $destSr->s()->first();
+
         if (!$destService) {
-            return false;
+            throw new Exception(
+                sprintf(
+                    'This sr does not have a service attached. sr: %s (%s)',
+                    $destSr->label,
+                    $destSr->name
+                )
+            );
         }
 
         $this->destSr = $destSr;
@@ -58,7 +71,6 @@ class PopulateTypeBase
             $sourceSr,
             $this->runSrRequest($sourceSr, $query)
         );
-
     }
 
 
@@ -75,6 +87,7 @@ class PopulateTypeBase
             'attribute' => $attribute
         ];
     }
+
 
     protected function parseResponseKey(array $data): array
     {
@@ -134,24 +147,14 @@ class PopulateTypeBase
         }
         return $keys;
     }
-    private function removeStringFromKey(string $string, string $haystack): string
+
+    protected function parseAndSaveResponseKey(array $data): void
     {
-        $split = explode('.', $haystack);
-        $findAttIndex = array_search($string, $split);
-        if ($findAttIndex !== false) {
-            unset($split[$findAttIndex]);
-            $haystack = implode('.', $split);
-        }
-        return $haystack;
-    }
-    protected function populateResponseKeys(array $data): bool
-    {
-        if (!Arr::isAssoc($data)) {
-            return false;
-        }
+
         $responseKeys = $this->srResponseKeyRepository->findSrResponseKeysWithRelation(
             $this->destSr,
         );
+
         $parsedData = $this->parseResponseKey($data);
 
         $srResponseKeySaveData = [
@@ -208,6 +211,145 @@ class PopulateTypeBase
 
             $this->saveSrResponseKey($responseKey, $key, $srResponseKeySaveData);
         }
+    }
+
+    private function removeStringFromKey(string $string, string $haystack): string
+    {
+        $split = explode('.', $haystack);
+        $findAttIndex = array_search($string, $split);
+        if ($findAttIndex !== false) {
+            unset($split[$findAttIndex]);
+            $haystack = implode('.', $split);
+        }
+        return $haystack;
+    }
+
+
+    protected function parseAndSaveResponseKeyWithAi(array $data): void
+    {
+        if (empty($this->data['ai_clients'])) {
+            throw new Exception('ai_clients is missing from request.');
+        }
+        if (!is_array($this->data['ai_clients'])) {
+            throw new Exception('ai_clients is not an array.');
+        }
+        if (!count($this->data['ai_clients'])) {
+            throw new Exception('ai_clients is empty.');
+        }
+        $apiClient = app(ApiClientHandler::class);
+        $apiRequest = app(ApiRequest::class);
+        $responseKeys = $this->srResponseKeyRepository->findSrResponseKeysWithRelation(
+            $this->destSr,
+
+        );
+
+        $aiClients = $this->data['ai_clients'];
+        $successResponse = false;
+        foreach ($aiClients as $aiClient) {
+            if ($successResponse) {
+                continue;
+            }
+            $aiClientEnum = AiClient::tryFrom($aiClient);
+            if (!$aiClientEnum) {
+                throw new Exception('AI client is invalid enum.');
+            }
+            $apiTypeEnum = $aiClientEnum->apiType();
+            $apiRequest->setApiType(
+                $apiTypeEnum
+            );
+
+            $accessToken = $aiClientEnum->apiKey();
+            if ($accessToken) {
+                $apiRequest->setAccessToken(
+                    $accessToken
+                );
+            }
+
+            $prompt = $aiClientEnum->populatePrompt(
+                $data,
+                $responseKeys->pluck('name')->toArray()
+            );
+            $apiRequest->setAiPrompt(
+                $prompt
+            );
+            try {
+                $response = $apiClient->sendRequest($apiRequest);
+                $responseManager = app(ResponseManager::class)->setApiType($apiTypeEnum);
+
+                $parseResponse = $responseManager->getJsonBody($response);
+
+                if (!empty($parseResponse['mappings']) && is_array($parseResponse['mappings'])) {
+                    foreach ($parseResponse['mappings'] as $apiResponseKey => $sResponseKey) {
+                        $this->updateOrCreateResponseKey(
+                            $responseKeys,
+                            $sResponseKey,
+                            $apiResponseKey
+                        );
+                    }
+                }
+                if (!empty($parseResponse['new_keys_created']) && is_array($parseResponse['new_keys_created'])) {
+                    foreach ($parseResponse['new_keys_created'] as $apiResponseKey => $sResponseKey) {
+                        $this->updateOrCreateResponseKey(
+                            $responseKeys,
+                            $sResponseKey,
+                            $apiResponseKey
+                        );
+                    }
+                }
+
+                $successResponse = true;
+            } catch (Exception $e) {
+                $provider = $this->destSr->provider;
+                $this->addError(
+                    'populate_response_key_error',
+                    sprintf(
+                        'Error populating response keys for: provider: [%d] %s (%) | sr [%d] %s (%s) | ai client: %s | message: %s',
+                        $provider->id,
+                        $provider->label,
+                        $provider->name,
+                        $this->destSr->id,
+                        $this->destSr->label,
+                        $this->destSr->name,
+                        $aiClientEnum->label(),
+                        $e->getMessage()
+                    )
+                );
+                continue;
+            }
+        }
+    }
+    private function updateOrCreateResponseKey(Collection $responseKeys, string $sResponseKeyName, string $apiResponseKeyName)
+    {
+
+        $srResponseKeySaveData = [
+            'list_item' => true,
+            'show_in_response' => true
+        ];
+        $responseKey = $responseKeys->firstWhere('name', $sResponseKeyName);
+        if (!$responseKey) {
+            $createSResponseKey = $this->responseKeyRepository->createServiceResponseKey(
+                $this->destService,
+                ['name' => $sResponseKeyName]
+            );
+            if (!$createSResponseKey) {
+                return false;
+            }
+            $responseKey = $this->responseKeyRepository->getModel();
+        }
+
+        $this->saveSrResponseKey($responseKey, $apiResponseKeyName, $srResponseKeySaveData);
+    }
+    protected function populateResponseKeys(array $data): bool
+    {
+        if (!Arr::isAssoc($data)) {
+            return false;
+        }
+
+        if (!empty($this->data['enable_ai'])) {
+            $this->parseAndSaveResponseKeyWithAi($data);
+        } else {
+            $this->parseAndSaveResponseKey($data);
+        }
 
         return $this->hasErrors();
     }
@@ -241,9 +383,9 @@ class PopulateTypeBase
     protected function saveSrResponseKey(SResponseKey $sResponseKey, string $value, ?array $data = []): bool
     {
         $srResponseKey = $sResponseKey
-        ->srResponseKey()
-        ->where('sr_id', $this->destSr->id)
-        ->first();
+            ->srResponseKey()
+            ->where('sr_id', $this->destSr->id)
+            ->first();
 
         if ($srResponseKey && !empty($srResponseKey->value) && !$this->overwrite) {
             return true;
@@ -273,5 +415,4 @@ class PopulateTypeBase
     {
         return new ApiDetailedResponse();
     }
-
 }

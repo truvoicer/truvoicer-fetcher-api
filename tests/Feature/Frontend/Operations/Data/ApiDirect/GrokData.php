@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Frontend\Operations\Data\ApiDirect;
 
+use App\Enums\Api\ApiListKey;
 use App\Enums\Api\ApiResponseFormat;
 use App\Enums\Api\ApiType;
 use App\Enums\Property\PropertyType;
@@ -12,7 +13,7 @@ class GrokData
     static public function labels(): array
     {
         return [
-            ['label' => 'Grok: Without an items_array_key'],
+            ['label' => 'Grok: Without an ' . ApiListKey::LIST_KEY->value],
             ['label' => 'Grok: Valid configs'],
         ];
     }
@@ -83,7 +84,7 @@ class GrokData
 
             ],
             [
-               'items_array_key' => 'content'
+               ApiListKey::LIST_KEY->value => 'content'
             ]
         ];
     }
@@ -194,7 +195,7 @@ class GrokData
         return [
             [
                 'status' => 400,
-                'message' => 'items_array_key value is empty.',
+                'message' => ApiListKey::LIST_KEY->value . ' value is empty.',
                 'exception' => ApiResponseException::class
             ],
             [

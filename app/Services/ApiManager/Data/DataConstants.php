@@ -2,6 +2,7 @@
 
 namespace App\Services\ApiManager\Data;
 
+use App\Enums\Api\ApiListKey;
 use App\Enums\Property\PropertyType;
 
 class DataConstants
@@ -174,16 +175,16 @@ class DataConstants
         ],
     ];
     public const REQ_SR_FIELDS_FOR_XML_POPULATE = [
-        'items_array_key' => [
-            'name' => 'items_array_key',
+        ApiListKey::LIST_KEY->value => [
+            'name' => ApiListKey::LIST_KEY->value,
         ],
-        'item_repeater_key' => [
-            'name' => 'item_repeater_key',
+        ApiListKey::LIST_ITEM_REPEATER_KEY->value => [
+            'name' => ApiListKey::LIST_ITEM_REPEATER_KEY->value,
         ],
     ];
     public const REQ_SR_FIELDS_FOR_JSON_POPULATE = [
-        'items_array_key' => [
-            'name' => 'items_array_key',
+        ApiListKey::LIST_KEY->value => [
+            'name' => ApiListKey::LIST_KEY->value,
         ],
     ];
     public const XML_SERVICE_RESPONSE_KEYS = [

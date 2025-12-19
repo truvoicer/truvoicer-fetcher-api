@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources\Service\ServiceRequest;
 
+use App\Enums\Api\ApiListKey;
 use App\Enums\FormatOptions;
 use App\Http\Resources\CategoryResource;
 use App\Http\Resources\ProviderMinimalResource;
@@ -40,11 +41,11 @@ class ServiceRequestResource extends JsonResource
             'pagination_type' => $this->pagination_type,
             'query_parameters' => $this->query_parameters,
             'type' => $this->type,
-            'items_array_key' => $this->items_array_key,
-            'item_repeater_key' => $this->item_repeater_key,
+            ApiListKey::LIST_KEY->value => $this->{ApiListKey::LIST_KEY->value},
+            ApiListKey::LIST_ITEM_REPEATER_KEY->value => $this->{ApiListKey::LIST_ITEM_REPEATER_KEY->value},
             'default_sr' => $this->default_sr,
             'default_data' => $this->default_data,
-            'items_array_format_options' => (is_array($this->items_array_format_options))
+            ApiListKey::LIST_FORMAT_OPTIONS->value => (is_array($this->{ApiListKey::LIST_FORMAT_OPTIONS->value}))
                 ?
 
                 array_map(
@@ -56,14 +57,14 @@ class ServiceRequestResource extends JsonResource
                         ];
                     },
                     array_filter(
-                        $this->items_array_format_options,
+                        $this->{ApiListKey::LIST_FORMAT_OPTIONS->value},
 
                         fn(string $value) => FormatOptions::tryFrom($value),
                         ARRAY_FILTER_USE_BOTH
                     )
                 )
                 : [],
-            'items_array_format_preg_match' => $this->items_array_format_preg_match,
+            ApiListKey::LIST_FORMAT_OPTION_PREG_MATCH->value => $this->{ApiListKey::LIST_FORMAT_OPTION_PREG_MATCH->value},
         ];
     }
 }

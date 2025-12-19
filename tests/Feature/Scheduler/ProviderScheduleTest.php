@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Scheduler;
 
+use App\Enums\Api\ApiListKey;
 use App\Enums\Api\ApiMethod;
 use App\Enums\Api\ApiResponseFormat;
 use App\Enums\Api\ApiType;
@@ -16,6 +17,7 @@ use App\Models\SrSchedule;
 use App\Models\User;
 use App\Repositories\MongoDB\MongoDBRepository;
 use App\Services\ApiManager\Operations\DataHandler\ApiRequestMongoDbHandler;
+use App\Services\Provider\ProviderScheduleService;
 use Database\Seeders\PropertySeeder;
 use Database\Seeders\RoleSeeder;
 use Database\Seeders\UserSeeder;
@@ -77,9 +79,12 @@ class ProviderScheduleTest extends TestCase
                 'every_minute' => true,
             ]);
         });
-
         // Get the scheduler instance from the application container
-        $schedule = app()->make(Schedule::class);
+        $schedule = app(Schedule::class);
+
+        app(ProviderScheduleService::class)
+            ->setSchedule($schedule)
+            ->run();
 
         // Get all scheduled events and filter for your job
         $events = collect($schedule->events())->filter(function ($event) {
@@ -145,8 +150,11 @@ class ProviderScheduleTest extends TestCase
         });
 
         // Get the scheduler instance from the application container
-        $schedule = app()->make(Schedule::class);
+        $schedule = app(Schedule::class);
 
+        app(ProviderScheduleService::class)
+            ->setSchedule($schedule)
+            ->run();
         // Get all scheduled events and filter for your job
         $events = collect($schedule->events())->filter(function ($event) {
 
@@ -210,7 +218,7 @@ class ProviderScheduleTest extends TestCase
                     'category_id' => $category->id,
                     'type' => SrType::LIST->value,
                     'default_sr' => true,
-                    'items_array_key' => 'results'
+                    ApiListKey::LIST_KEY->value => 'results'
                 ])
             )
             ->create();

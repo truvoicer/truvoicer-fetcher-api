@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Frontend\Operations;
 
+use App\Enums\Api\ApiListKey;
 use App\Enums\Api\ApiMethod;
 use App\Enums\Api\ApiResponseFormat;
 use App\Enums\Api\ApiType;
@@ -20,6 +21,7 @@ use App\Services\ApiManager\Operations\DataHandler\ApiRequestMongoDbHandler;
 use Database\Seeders\PropertySeeder;
 use Database\Seeders\RoleSeeder;
 use Database\Seeders\UserSeeder;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Http;
@@ -39,6 +41,7 @@ use Tests\TestCase;
 
 class OperationsControllerTest extends TestCase
 {
+
     private User $superUser;
     private MongoDBRepository $mongoDbRepository;
     private OperationsDbHelpers $operationsDbHelpers;
@@ -114,8 +117,8 @@ class OperationsControllerTest extends TestCase
                     'category_id' => $category->id,
                     'type' => SrType::LIST->value,
                     'default_sr' => true,
-                    'items_array_key' => (!empty($srData['items_array_key']))
-                        ? $srData['items_array_key']
+                    ApiListKey::LIST_KEY->value => (!empty($srData[ApiListKey::LIST_KEY->value]))
+                        ? $srData[ApiListKey::LIST_KEY->value]
                         : null
                 ])
             )->create();
@@ -299,7 +302,7 @@ class OperationsControllerTest extends TestCase
                     'category_id' => $category->id,
                     'type' => SrType::LIST->value,
                     'default_sr' => true,
-                    'items_array_key' => 'results'
+                    ApiListKey::LIST_KEY->value => 'results'
                 ])
             )
             ->create();
@@ -538,7 +541,7 @@ class OperationsControllerTest extends TestCase
                     'category_id' => $category->id,
                     'type' => SrType::LIST->value,
                     'default_sr' => true,
-                    'items_array_key' => 'results'
+                    ApiListKey::LIST_KEY->value => 'results'
                 ])
             )
             ->create();

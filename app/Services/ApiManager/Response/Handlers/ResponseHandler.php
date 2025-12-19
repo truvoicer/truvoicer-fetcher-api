@@ -2,6 +2,7 @@
 
 namespace App\Services\ApiManager\Response\Handlers;
 
+use App\Enums\Api\ApiListKey;
 use App\Enums\FormatOptions;
 use App\Enums\Property\PropertyType;
 use App\Enums\Sr\SrType;
@@ -70,17 +71,16 @@ class ResponseHandler extends ApiBase
 
     protected function getItemList()
     {
-        $responseKeyValue = $this->sr->items_array_key;
+        $responseKeyValue = $this->sr->{ApiListKey::LIST_KEY->value};
 
         if (empty($responseKeyValue)) {
-            throw new BadRequestHttpException("items_array_key value is empty.");
+            throw new BadRequestHttpException(ApiListKey::LIST_KEY->value . " value is empty.");
         }
         return $this->buildItemListFromResponseArray($responseKeyValue, $this->responseArray);
     }
 
     public function buildItemListFromResponseArray(string $itemsArrayKey, array $responseArray)
     {
-
         if ($itemsArrayKey === "root_items") {
             return [$responseArray];
         }
@@ -109,7 +109,7 @@ class ResponseHandler extends ApiBase
 
     protected function formatArrayItemsValue(mixed $arrayItemsValue): mixed
     {
-        $formatOptions = $this->sr->items_array_format_options;
+        $formatOptions = $this->sr->{ApiListKey::LIST_FORMAT_OPTIONS->value};
         if (!is_array($formatOptions) || !count($formatOptions)) {
             return $arrayItemsValue;
         }
@@ -145,7 +145,7 @@ class ResponseHandler extends ApiBase
                     if (!is_string($arrayItemsValue) && !is_numeric($arrayItemsValue)) {
                         break;
                     }
-                    $pregMatchExp = $this->sr->items_array_format_preg_match;
+                    $pregMatchExp = $this->sr->{ApiListKey::LIST_FORMAT_OPTION_PREG_MATCH->value};
                     if (empty($pregMatchExp)) {
                         break;
                     }
@@ -160,13 +160,13 @@ class ResponseHandler extends ApiBase
 
     protected function getParentItemList()
     {
-        if ($this->sr->items_array_key === null) {
+        if ($this->sr->{ApiListKey::LIST_KEY->value} === null) {
             return [];
         }
 
         $array = [];
         foreach ($this->responseArray as $key => $value) {
-            if ($key !== $this->sr->items_array_key) {
+            if ($key !== $this->sr->{ApiListKey::LIST_KEY->value}) {
                 $itemsArray = explode(".", $key);
                 $array[$key] = $this->getArrayItems($this->responseArray, $itemsArray);
             }

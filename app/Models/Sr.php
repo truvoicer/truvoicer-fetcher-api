@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\Api\ApiListKey;
 use App\Enums\Sr\SrType;
 use App\Repositories\SrRepository;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -21,17 +22,17 @@ class Sr extends Model
         'pagination_type',
         'query_parameters',
         'type',
-        'items_array_key',
-        'item_repeater_key',
+        ApiListKey::LIST_KEY->value,
+        ApiListKey::LIST_ITEM_REPEATER_KEY->value,
         'default_sr',
         'default_data',
-        'items_array_format_options',
-        'items_array_format_preg_match',
+        ApiListKey::LIST_FORMAT_OPTIONS->value,
+        ApiListKey::LIST_FORMAT_OPTION_PREG_MATCH->value,
     ];
     protected $casts = [
         'type' => SrType::class,
         'query_parameters' => 'json',
-        'items_array_format_options' => 'json',
+        ApiListKey::LIST_FORMAT_OPTIONS->value => 'json',
         'default_sr' => 'boolean',
         'default_data' => 'json',
     ];

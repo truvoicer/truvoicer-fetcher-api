@@ -146,7 +146,6 @@ class ApiClientHandler extends ApiBase
             if ($apiRequest->getQuery()) {
                 $client->withQueryParameters($apiRequest->getQuery());
             }
-
             return match ($apiRequest->getMethod()) {
                 ApiRequest::METHOD_GET => $client
                     ->get($apiRequest->getUrl()),

@@ -46,6 +46,7 @@ class ValidatorService extends BaseService
                         'validator_error',
                         sprintf("Service not found for service request: %s", $serviceRequest->name)
                     );
+                    continue;
                 }
                 if (!$this->responseKeysService->createDefaultServiceResponseKeys($service)) {
                     $this->addError(

@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Frontend\Operations\Data\ApiDirect;
 
+use App\Enums\Api\ApiListKey;
 use App\Enums\Api\ApiMethod;
 use App\Enums\Api\ApiResponseFormat;
 use App\Enums\Api\ApiType;
@@ -23,7 +24,7 @@ class DefaultGetData
     {
         return [
             ['label' => 'Without a method provider property'],
-            ['label' => 'Without an items_array_key'],
+            ['label' => 'Without an ' . ApiListKey::LIST_KEY->value],
             ['label' => 'With query srConfig, testing in ApiClientHandler'],
             ['label' => 'With query srConfig, testing e2e'],
         ];
@@ -39,10 +40,10 @@ class DefaultGetData
 
             ],
             [
-               'items_array_key' => 'results'
+               ApiListKey::LIST_KEY->value => 'results'
             ],
             [
-               'items_array_key' => 'results'
+               ApiListKey::LIST_KEY->value => 'results'
             ]
         ];
     }
@@ -369,7 +370,7 @@ class DefaultGetData
             ],
             [
                 'status' => 400,
-                'message' => 'items_array_key value is empty.',
+                'message' => ApiListKey::LIST_KEY->value .' value is empty.',
                 'exception' => ApiResponseException::class
             ],
             [

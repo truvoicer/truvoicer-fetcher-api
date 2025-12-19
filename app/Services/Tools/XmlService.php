@@ -183,6 +183,7 @@ class XmlService
     {
         $simpleXMLIterator = new SimpleXmlIterator($xmlContent, null, false);
         $xmlarray = $this->getXmlArray($simpleXMLIterator, $childKey, $parentItemArray, $itemRepeaterKey);
+
         return $xmlarray;
     }
 
@@ -201,13 +202,17 @@ class XmlService
         $i = 0;
 
         for ($xmlIterator->rewind(); $xmlIterator->valid(); $xmlIterator->next()) {
+
+
             if ($xmlIterator->getName() === $childKey) {
+
                 $items[$i] = $xmlIterator;
                 $rootItem = true;
                 break;
             }
             if ($xmlIterator->hasChildren()) {
                 if ($xmlIterator->key() === $childKey) {
+
                     $items[$i] = $xmlIterator->current();
                     $i++;
                 }
@@ -217,9 +222,12 @@ class XmlService
             return $this->xmlToArrayIterator($iterator, $itemRepeaterKey);
         }, $items);
 
-        if ($rootItem || $parentItemArray) {
-            $xmlArray[$childKey] = $items;
-        } elseif (count($items) === 1 && array_key_exists(0, $items) && is_array($items[0])) {
+        // if ($rootItem || $parentItemArray) {
+        //     $xmlArray[$childKey] = $items;
+        // } elseif (count($items) === 1 && array_key_exists(0, $items) && is_array($items[0])) {
+        //     $xmlArray[$childKey] = $items[0];
+        // }
+        if (count($items) === 1 && array_key_exists(0, $items) && is_array($items[0])) {
             $xmlArray[$childKey] = $items[0];
         }
         return $xmlArray;

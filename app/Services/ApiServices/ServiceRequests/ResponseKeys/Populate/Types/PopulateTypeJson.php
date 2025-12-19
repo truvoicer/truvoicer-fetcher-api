@@ -2,6 +2,7 @@
 
 namespace App\Services\ApiServices\ServiceRequests\ResponseKeys\Populate\Types;
 
+use App\Enums\Api\ApiListKey;
 use App\Enums\Sr\SrType;
 use App\Models\Sr;
 use App\Services\ApiManager\Data\DataConstants;
@@ -19,8 +20,7 @@ class PopulateTypeJson extends PopulateTypeBase
         protected ApiRequestService $requestOperation,
         protected SrConfigService   $srConfigService,
         protected ResponseHandler   $responseHandler
-    )
-    {
+    ) {
         parent::__construct($requestOperation, $srConfigService, $responseHandler);
         $this->setReservedKeys(
             array_column(
@@ -168,11 +168,11 @@ class PopulateTypeJson extends PopulateTypeBase
         }
 
         if (Arr::isList($requestData)) {
-            $this->destSr->items_array_key = 'root_items';
+            $this->destSr->{ApiListKey::LIST_KEY->value} = 'root_items';
             if (!$this->destSr->save()) {
                 $this->addError(
                     "error",
-                    "Error saving items_array_key."
+                    "Error saving " . ApiListKey::LIST_KEY->value . '.'
                 );
                 return false;
             }
@@ -182,11 +182,11 @@ class PopulateTypeJson extends PopulateTypeBase
 
         $this->prepareItemsArrayScoreData($requestData);
         $extractData = $this->extractDataFromScoreData($this->score);
-        $this->destSr->items_array_key = $extractData['value'];
+        $this->destSr->{ApiListKey::LIST_KEY->value} = $extractData['value'];
         if (!$this->destSr->save()) {
             $this->addError(
                 "error",
-                "Error saving items_array_key."
+                "Error saving " . ApiListKey::LIST_KEY->value . '.'
             );
             return false;
         }

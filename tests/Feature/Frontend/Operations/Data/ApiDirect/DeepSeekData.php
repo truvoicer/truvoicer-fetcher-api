@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Frontend\Operations\Data\ApiDirect;
 
+use App\Enums\Api\ApiListKey;
 use App\Enums\Api\ApiResponseFormat;
 use App\Enums\Api\ApiType;
 use App\Enums\Property\PropertyType;
@@ -13,7 +14,7 @@ class DeepSeekData
     static public function labels(): array
     {
         return [
-            ['label' => 'DeepSeek: Without an items_array_key'],
+            ['label' => 'DeepSeek: Without an ' . ApiListKey::LIST_KEY->value],
             ['label' => 'DeepSeek: Valid configs'],
         ];
     }
@@ -24,7 +25,7 @@ class DeepSeekData
 
             ],
             [
-               'items_array_key' => 'root_array'
+               ApiListKey::LIST_KEY->value => 'root_array'
             ]
         ];
     }
@@ -200,7 +201,7 @@ class DeepSeekData
         return [
             [
                 'status' => 400,
-                'message' => 'items_array_key value is empty.',
+                'message' => ApiListKey::LIST_KEY->value .' value is empty.',
                 'exception' => ApiResponseException::class
             ],
             [

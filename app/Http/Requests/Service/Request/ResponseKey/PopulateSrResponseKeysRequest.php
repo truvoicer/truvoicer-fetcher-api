@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Service\Request\ResponseKey;
 
+use App\Enums\Ai\AiClient;
 use App\Enums\Property\PropertyType;
 use App\Models\Sr;
 use App\Services\ApiManager\Data\DataConstants;
@@ -64,6 +65,12 @@ class PopulateSrResponseKeysRequest extends FormRequest
             [
                 'query' => ['sometimes', 'array'],
                 'overwrite' => ['sometimes', 'boolean'],
+                'enable_ai' => ['sometimes', 'boolean'],
+                'ai_clients' => ['sometimes', 'array'],
+                'ai_clients.*' => [
+                    'required',
+                    Rule::enum(AiClient::class)
+                ],
                 'srs.*' => Rule::forEach(function ($value, string $attribute) {
                     return [
                         Rule::exists(Sr::class, 'id'),
