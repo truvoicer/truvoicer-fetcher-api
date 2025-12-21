@@ -2,6 +2,8 @@
 
 namespace App\Repositories\MongoDB;
 
+use App\Helpers\Tools\UtilHelpers;
+
 class MongoAggregationBuilder
 {
     private array $pipeline = [];
@@ -19,14 +21,15 @@ class MongoAggregationBuilder
         $priorityOrConditions = [];
         $switchBranches = [];
         $allMatchConditions = [];
-
+        $group = [];
         // 1. Build conditions for mandatory fields with operator support
         foreach ($mandatoryFields as $field) {
+
             if (empty($field['column']) || !isset($field['value'])) continue;
+            $operator = !empty($field['operator']) ? $field['operator'] : 'and';
+            $comparison = $field['comparison'] ?? '='; // Default to equals if not provided
 
-            $operator = $field['operator'] ?? '='; // Default to equals if not provided
-
-            switch ($operator) {
+            switch ($comparison) {
                 case '>':
                     $mongoExpr = ['$gt' => $field['value']];
                     break;
@@ -48,8 +51,94 @@ class MongoAggregationBuilder
                     $mongoExpr = $field['value'];
                     break;
             }
-            $allMatchConditions[] = [$field['column'] => $mongoExpr];
+
+            $group[] = [
+                'field' => $field,
+                'operator' => $operator,
+                'expr' => $mongoExpr
+            ];
         }
+
+        $matchIndex = UtilHelpers::findArrayKeyIndex($this->pipeline, '$match');
+        if ($matchIndex === false) {
+            $this->pipeline[] = ['$match' => []];
+            $matchIndex = 0;
+        }
+        if (
+            !array_key_exists(
+                '$' . $mandatoryLogic,
+                $this->pipeline[$matchIndex]['$match']
+            )
+        ) {
+            $this->pipeline[$matchIndex]['$match']['$' . $mandatoryLogic] = [];
+        }
+
+
+
+        $ors = [];
+        $ands = [];
+
+        foreach (
+            array_filter($group, function ($item) {
+                return $item['operator'] === 'and';
+            }, ARRAY_FILTER_USE_BOTH) as $item
+        ) {
+            $ands[$item['field']['column']] = $item['expr'];
+        }
+        foreach (
+            array_filter($group, function ($item) {
+                return $item['operator'] === 'or';
+            }, ARRAY_FILTER_USE_BOTH) as $item
+        ) {
+            $ors[$item['field']['column']] = $item['expr'];
+        }
+
+        if (count($ors)) {
+
+            $matchOrIndex = UtilHelpers::findArrayKeyIndex(
+                $this->pipeline[$matchIndex]['$match']['$' . $mandatoryLogic],
+                '$or'
+            );
+
+            if ($matchOrIndex === false) {
+                $this->pipeline[$matchIndex]['$match']['$' . $mandatoryLogic][] = [
+                    '$or' => []
+                ];
+                $matchOrIndex = UtilHelpers::findArrayKeyIndex(
+                    $this->pipeline[$matchIndex]['$match']['$' . $mandatoryLogic],
+                    '$or'
+                );
+            }
+
+            $this->pipeline[$matchIndex]['$match']['$' . $mandatoryLogic][$matchOrIndex]['$or'] = [
+                ...$this->pipeline[$matchIndex]['$match']['$' . $mandatoryLogic][$matchOrIndex]['$or'],
+                ...[$ors]
+            ];
+        }
+        if (count($ands)) {
+
+            $matchAndIndex = UtilHelpers::findArrayKeyIndex(
+                $this->pipeline[$matchIndex]['$match']['$' . $mandatoryLogic],
+                '$and'
+            );
+
+            if ($matchAndIndex === false) {
+                $this->pipeline[$matchIndex]['$match']['$' . $mandatoryLogic][] = [
+                    '$and' => []
+                ];
+
+                $matchAndIndex = UtilHelpers::findArrayKeyIndex(
+                    $this->pipeline[$matchIndex]['$match']['$' . $mandatoryLogic],
+                    '$and'
+                );
+            }
+            $this->pipeline[$matchIndex]['$match']['$' . $mandatoryLogic][$matchAndIndex]['$and'] = [
+                ...$this->pipeline[$matchIndex]['$match']['$' . $mandatoryLogic][$matchAndIndex]['$and'],
+                ...[$ands]
+            ];
+        }
+
+        // dd($priorityFields);
 
         // 2. Build conditions for prioritized fields
         foreach ($priorityFields as $index => $field) {
@@ -58,7 +147,18 @@ class MongoAggregationBuilder
             if (is_string($field['value'])) {
                 $priorityOrConditions[] = [$field['column'] => ['$regex' => $field['value'], '$options' => 'i']];
                 $switchBranches[] = [
-                    'case' => ['$regexMatch' => ['input' => ['$toString' => '$' . $field['column']], 'regex' => $field['value'], 'options' => 'i']],
+                    'case' => ['$regexMatch' => [
+                        'input' => [
+                            '$toString' => [
+                                '$ifNull' => [
+                                    '$' . $field['column'],
+                                    ''
+                                ]
+                            ],
+                        ],
+                        'regex' => $field['value'],
+                        'options' => 'i'
+                    ]],
                     'then' => $index + 1,
                 ];
             } elseif (is_numeric($field['value'])) {
@@ -72,25 +172,10 @@ class MongoAggregationBuilder
 
         // 3. Combine mandatory and priority conditions
         if (!empty($priorityOrConditions)) {
-            $allMatchConditions[] = ['$or' => $priorityOrConditions];
-        }
 
-        // 4. Add the stages to the main pipeline
-        if (!empty($allMatchConditions)) {
-            // CHANGED: Use the specified logic for mandatory fields
-            $matchQuery = [];
-
-            if (strtolower($mandatoryLogic) === 'or') {
-                // Use OR logic: match ANY of the mandatory conditions
-                $matchQuery = ['$or' => $allMatchConditions];
-            } else {
-                // Default AND logic: match ALL mandatory conditions
-                $matchQuery = count($allMatchConditions) === 1 ?
-                    $allMatchConditions[0] :
-                    ['$and' => $allMatchConditions];
-            }
-
-            $this->pipeline[] = ['$match' => $matchQuery];
+            $this->pipeline[$matchIndex]['$match']['$' . $mandatoryLogic][] = [
+                '$or' => $priorityOrConditions
+            ];
         }
 
         if (!empty($switchBranches)) {

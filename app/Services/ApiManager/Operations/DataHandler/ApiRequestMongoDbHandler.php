@@ -19,6 +19,7 @@ use Illuminate\Support\Collection;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Http\Resources\Json\ResourceCollection;
 use MongoDB\Model\BSONDocument;
+use stdClass;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 
 class ApiRequestMongoDbHandler extends ApiRequestDataHandler
@@ -60,7 +61,7 @@ class ApiRequestMongoDbHandler extends ApiRequestDataHandler
         return $this->apiRequestSearchService->runListSearch($query);
     }
 
-    public function runItemSearch(string $type, array $providers): BSONDocument|null
+    public function runItemSearch(string $type, array $providers): BSONDocument|stdClass|null
     {
         $this->prepareProviders($providers, $type);
         $this->searchInit($type);

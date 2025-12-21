@@ -250,10 +250,11 @@ class MongoDBRaw
         $query = $this->query;
         $aggregation = $this->aggregation;
         $pipeline = $this->mongoAggregationBuilder->getPipeline();
+
         $countPipeline = $pipeline;
 
-        // $count stage
         $countPipeline[] = ['$count' => 'total'];
+        $pipeline1[] = ['$count' => 'total'];
 
         $totalCursor = $this->table->raw(function ($collection) use ($query, $aggregation, $countPipeline) {
             if ($aggregation) {
@@ -290,14 +291,6 @@ class MongoDBRaw
 
         // 3. Inject Pinned Items (Page Aware)
         $finalResults = $this->applyPositioning($mainResults);
-
-        // 4. Trim to Page Size (Edge Case Handling)
-        // Because we might insert an item into a full page of 15 items, making it 16 items,
-        // we might want to pop the last item off to push it to the next page.
-        // However, in simple implementations, returning 16 items on a 15-per-page request
-        // is often acceptable to ensure the pinned item is seen.
-        // If strict strictness is required, you would need to slice $finalResults here.
-
         return $this->responseHandler($finalResults->toArray(), $finalTotalCount);
     }
 
@@ -638,6 +631,7 @@ class MongoDBRaw
         $options = $this->buildOptions();
         $this->reset(); // Reset state for the next query.
         $aggregation = $this->aggregation;
+        dd($query, $options, $aggregation);
         $cursor = $this->table->raw(function ($collection) use ($query, $options, $aggregation) {
             if ($aggregation) {
                 return $collection->aggregate(

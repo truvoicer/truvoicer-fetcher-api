@@ -274,6 +274,7 @@ class PopulateTypeBase
             );
             try {
                 $response = $apiClient->sendRequest($apiRequest);
+
                 $responseManager = app(ResponseManager::class)->setApiType($apiTypeEnum);
 
                 $parseResponse = $responseManager->getJsonBody($response);

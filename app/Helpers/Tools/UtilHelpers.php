@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Helpers\Tools;
 
 use Illuminate\Database\Eloquent\Collection;
@@ -6,6 +7,17 @@ use Illuminate\Support\Arr;
 
 class UtilHelpers
 {
+    public static function findArrayKeyIndex(array $array, string $key): bool|int
+    {
+        $matchOrIndex = false;
+        foreach ($array as $index => $stage) {
+            if (isset($stage[$key])) {
+                $matchOrIndex = $index;
+                break;
+            }
+        }
+        return $matchOrIndex;
+    }
     public static function labelToName(string $string, ?bool $toUpper = false, ?string $spaceReplace = '_'): string
     {
         $stringReplace = str_replace(" ", $spaceReplace, str_replace("-", $spaceReplace, trim($string)));
@@ -118,7 +130,8 @@ class UtilHelpers
         return array_map(fn($item) => self::arrayExceptKey($item, $keys), $array);
     }
 
-    public static function arrayKeyIs(array $array, string $key, $value): bool {
+    public static function arrayKeyIs(array $array, string $key, $value): bool
+    {
         return (
             Arr::exists($array, $key) &&
             $array[$key] === $value

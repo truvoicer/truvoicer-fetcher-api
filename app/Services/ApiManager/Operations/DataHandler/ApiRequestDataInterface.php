@@ -40,6 +40,10 @@ class ApiRequestDataInterface
         // if (!count($providers)) {
         //     return false;
         // }
+        $apiFetchOnRecordNotFound = (
+            !empty($this->requestData['api_fetch_on_record_not_found']))
+            ? $this->requestData['api_fetch_on_record_not_found']
+            : false;
         $filteredRequestData = array_filter($this->requestData, function ($value) {
             return !in_array($value, ApiRequestDataHandler::RESERVED_REQUEST_KEYS);
         }, ARRAY_FILTER_USE_KEY);
@@ -50,26 +54,6 @@ class ApiRequestDataInterface
         ->setRequestData($this->requestData);
 
         switch ($fetchType) {
-            case 'mixed':
-                $response = $this->apiRequestMongoDbHandler->searchOperation(
-                    $serviceType,
-                    $providers,
-                    $serviceName,
-                    $filteredRequestData
-                );
-                $compare = $this->apiRequestMongoDbHandler->compareResultsWithData(
-                    $response
-                );
-
-                if (!count($compare)) {
-                    break;
-                }
-                return $this->prioritySearchHandler(
-                    $compare,
-                    $response,
-
-                );
-                break;
             case 'database':
                 $response = $this->apiRequestMongoDbHandler->searchOperation(
                     $serviceType,
@@ -78,7 +62,14 @@ class ApiRequestDataInterface
                     $filteredRequestData
                 );
 
-                if (!$response?->resource) {
+                if (!$response?->resource && $apiFetchOnRecordNotFound) {
+                    dd(
+                        $this->apiRequestApiDirectHandler->searchOperation(
+                        $serviceType,
+                        $providers,
+                        $serviceName,
+                    )
+                        );
                     return $this->apiRequestApiDirectHandler->searchOperation(
                         $serviceType,
                         $providers,

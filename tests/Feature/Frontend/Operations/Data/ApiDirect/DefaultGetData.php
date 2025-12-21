@@ -399,6 +399,8 @@ class DefaultGetData
                     ->andReturn(
                         self::requestResponse($index)[$index]
                     );
+                $mockedResponse->shouldReceive('failed')
+                    ->andReturn(false);
 
                 $mock->shouldReceive('sendDefaultRequest')
 

@@ -84,6 +84,7 @@ class ApiRequestApiDirectHandler extends ApiRequestDataHandler
                         break;
                     case SrType::DETAIL:
                     case SrType::SINGLE:
+                        dd($requestData);
                         return new ApiSearchItemResource($requestData);
                 }
             }

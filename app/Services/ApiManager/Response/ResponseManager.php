@@ -84,8 +84,9 @@ class ResponseManager extends BaseService
             }
 
             if (!$content) {
+
                 throw new ApiResponseException(
-                    'Response content/json is empty, this is probably due to an incorrect config/properties configuration.'
+                    "Response content/json is empty, this is probably due to an incorrect config/properties configuration. requestType: {$this->requestType}"
                 );
             }
 

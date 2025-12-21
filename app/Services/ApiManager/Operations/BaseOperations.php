@@ -5,6 +5,7 @@ namespace App\Services\ApiManager\Operations;
 use App\Enums\Api\ApiType;
 use App\Enums\Property\PropertyType;
 use App\Exceptions\Api\Operation\ApiOperationException;
+use App\Exceptions\Api\Response\ApiResponseException;
 use App\Exceptions\OauthResponseException;
 use App\Models\Provider;
 use App\Models\ProviderRateLimit;
@@ -30,6 +31,7 @@ use App\Services\ApiServices\ServiceRequests\SrService;
 use App\Services\Provider\PrioritisedProviderProperty;
 use App\Traits\User\UserTrait;
 use Exception;
+use Illuminate\Http\Client\Response;
 use Illuminate\Support\Facades\RateLimiter;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 
@@ -72,11 +74,26 @@ class BaseOperations extends ApiBase
         );
     }
 
-    private function responseHandler(string $requestType, $response, ?bool $detailedResponse = false): ApiResponse|ApiDetailedResponse
+    private function responseHandler(string $requestType, Response $response, ?bool $detailedResponse = false): ApiResponse|ApiDetailedResponse
     {
+        if ($response->failed()) {
+            $responseData = $response->json();
+            $message = 'Request error.';
+            if (!empty($responseData['message'])) {
+                $message = $responseData['message'];
+            }
+            throw new ApiResponseException(
+                sprintf(
+                    '%s status: %d',
+                    $message,
+                    $response->status(),
+                )
+            );
+        }
         $this->responseManager->setApiType(
             $this->getApiType()
         );
+
         $this->responseManager->setUser($this->user);
         $this->responseManager->setServiceRequest($this->apiService);
         $this->responseManager->setProvider($this->provider);
@@ -164,6 +181,7 @@ class BaseOperations extends ApiBase
         if (!$config) {
             throw new BadRequestHttpException("Request config not found for operation.");
         }
+
         $parameters = $this->srParameterService->findParametersForOperationBySr($this->apiService);
         if (!$parameters) {
             throw new BadRequestHttpException("Request parameters not found for operation.");
@@ -307,6 +325,7 @@ class BaseOperations extends ApiBase
         }
 
         $endpoint = $this->dataProcessor->getConfigValue(PropertyType::ENDPOINT->value);
+
         $method = $this->dataProcessor->getConfigValue(PropertyType::METHOD->value);
 
         $headers = $this->dataProcessor->getConfigValue(PropertyType::HEADERS->value);
@@ -367,7 +386,7 @@ class BaseOperations extends ApiBase
         if (is_array($postBody)) {
             $this->apiRequest->setPostBody($postBody);
         }
-        if (is_string($baseUrl . $endpoint)) {
+        if (is_string($baseUrl) && is_string($endpoint)) {
             $this->apiRequest->setUrl($this->dataProcessor->filterParameterValue($baseUrl) . $this->dataProcessor->filterParameterValue($endpoint));
         } elseif ($baseUrl) {
             $this->apiRequest->setUrl(
@@ -395,6 +414,7 @@ class BaseOperations extends ApiBase
         $this->eventsService->apiSendRequestEvent($this->apiRequest);
 
         try {
+
             return $this->apiClientHandler->sendRequest($this->apiRequest);
         } catch (Exception $exception) {
             throw new ApiOperationException($exception->getMessage());

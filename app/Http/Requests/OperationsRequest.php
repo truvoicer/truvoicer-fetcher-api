@@ -35,6 +35,26 @@ class OperationsRequest extends FormRequest
             'provider' =>['sometimes', 'array', 'nullable'],
             'service' => ['sometimes', 'string', 'nullable'],
             'item_id' => ['sometimes', 'nullable'],
+            'api_fetch_on_record_not_found' => [
+                'sometimes',
+                'boolean',
+            ],
+            'query' => [
+                'sometimes',
+                'string',
+            ],
+            'search_fields' => [
+                'sometimes',
+                'array',
+            ],
+            'search_fields.*' => [
+                'required',
+                'string',
+            ],
+            'search_fields' => [
+                'sometimes',
+                'array',
+            ],
             'filters' => [
                 'sometimes',
                 'array',

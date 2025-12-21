@@ -59,7 +59,7 @@ class PopulateTypeJson extends PopulateTypeBase
         $resultsTrack = $scoreData[$itemsArrayData['value']];
 
         return [
-            'value' => $itemsArrayData['items_array_value'],
+            'value' => $itemsArrayData['list_key_value'],
             'data' => $this->findByKeyTree($resultsTrack['parent'], $this->response->getRequestData(), false)
         ];
     }
@@ -77,12 +77,12 @@ class PopulateTypeJson extends PopulateTypeBase
         $value = array_keys($scoreData)[0];
         if (is_integer($value)) {
             return [
-                'items_array_value' => 'root_array',
+                'list_key_value' => 'root_array',
                 'value' => $value
             ];
         } elseif (is_string($value)) {
             return [
-                'items_array_value' => $value,
+                'list_key_value' => $value,
                 'value' => $value
             ];
         }
@@ -152,14 +152,14 @@ class PopulateTypeJson extends PopulateTypeBase
         }
 
         if (
-            !empty($this->data['items_array']) &&
-            $this->data['items_array'] === 'root_items'
+            !empty($this->data['list_key']) &&
+            $this->data['list_key'] === 'root_item'
         ) {
-            return $this->srTypeHandler($sr, [$requestData]);
+            return $this->srTypeHandler($sr, $requestData);
         }
         if (
-            !empty($this->data['items_array']) &&
-            $this->data['items_array'] === 'root_array'
+            !empty($this->data['list_key']) &&
+            $this->data['list_key'] === 'root_array'
         ) {
             return $this->srTypeHandler(
                 $sr,

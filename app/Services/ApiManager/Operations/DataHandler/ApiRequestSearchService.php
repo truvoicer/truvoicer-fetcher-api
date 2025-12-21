@@ -4,6 +4,7 @@ namespace App\Services\ApiManager\Operations\DataHandler;
 
 use App\Models\S;
 use App\Models\Sr;
+use App\Repositories\MongoDB\MongoDBQuery;
 use App\Repositories\MongoDB\MongoDBRaw;
 use App\Repositories\MongoDB\MongoDBRepository;
 use App\Services\ApiManager\Data\DataConstants;
@@ -16,14 +17,14 @@ use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
 use MongoDB\Model\BSONDocument;
+use stdClass;
 
 class ApiRequestSearchService
 {
-    const RESERVED_SEARCH_RESPONSE_KEYS = [
-
-    ];
+    const RESERVED_SEARCH_RESPONSE_KEYS = [];
     private Collection $srResponseKeys;
     private MongoDBRaw $mongoDBRaw;
+    private MongoDBQuery $mongoDbQuery;
     private string $type;
     protected array $notFoundProviders;
     protected array $itemSearchData;
@@ -44,6 +45,8 @@ class ApiRequestSearchService
         );
         $this->mongoDBRaw = $this->mongoDBRepository->getMongoDBRaw();
         $this->mongoDBRaw->setCollection($collectionName);
+        $this->mongoDbQuery = $this->mongoDBRepository->getMongoDBQuery();
+        $this->mongoDbQuery->setCollection($collectionName);
     }
 
     private function prepareItemSearch(string $type, array $providers): void
@@ -54,32 +57,36 @@ class ApiRequestSearchService
         foreach ($providers as $provider) {
             $providerName = $provider['provider_name'];
             $itemIds = $provider['ids'];
+            $ids = [];
+            foreach ($itemIds as $key => $value) {
+                if (!is_numeric($value)) {
+                    continue;
+                }
+                $ids[] = intval($value);
+            }
 
-            $this->mongoDBRaw->addWhereGroup(
-                'and',
-                function ($query) use ($itemIds) {
-                    $query->addWhere('item_id', 'in', $itemIds, 'and');
-                    foreach ($itemIds as $key => $value) {
-                        if (!is_numeric($value)) {
-                            continue;
-                        }
-                        $query->addWhere('item_id', intval($value), 'or');
-                    }
-                }
-            );
-            $this->mongoDBRaw->addWhereGroup(
-                'and',
-                function ($query) use ($providerName) {
-                    $query->addWhere('provider', '=', $providerName, 'and');
-                }
-            );
+            $this->mongoDbQuery->addWhereGroup([
+                [
+                    'field' => 'item_id',
+                    'compare' => 'in',
+                    'value' => $ids,
+                    'op' => 'and',
+                ],
+                [
+                    'field' => 'provider',
+                    'compare' => '=',
+                    'value' => $providerName,
+                    'op' => 'and',
+                ],
+            ]);
         }
     }
 
-    public function runSingleItemSearch(string $type): BSONDocument|null
+    public function runSingleItemSearch(string $type): BSONDocument|stdClass|null
     {
         $this->prepareItemSearch($type, $this->itemSearchData);
-        return $this->mongoDBRaw->findOne();
+
+        return $this->mongoDbQuery->findOne();
     }
 
     private function getOrderByFromResponseKeys(Sr $sr): string|null
@@ -155,7 +162,7 @@ class ApiRequestSearchService
             unset($queryData['sort_order']);
         }
         $this->mongoDBRaw->setAggregation(true);
-        foreach ($this->providers as $provider) {
+        foreach ($this->providers as $index => $provider) {
             $srs = $this->srService->flattenSrCollection($this->type, $provider->sr);
             if ($srs->count() === 0) {
                 continue;
@@ -184,28 +191,44 @@ class ApiRequestSearchService
                 );
                 $srResponseKeyNames = $srResponseKeys->pluck('name')->toArray();
 
+                $priorityFields = [];
                 $searchQuery = null;
                 if (!empty($queryData['query'])) {
                     $searchQuery = $queryData['query'];
                 }
-
-                if (
-                    !empty($queryData['search_fields']) &&
-                    is_array($queryData['search_fields'])
-                ) {
-                    $priorityFields = array_map(
-                        fn($name) => ['column' => $name, 'value' => $searchQuery],
-                        $queryData['search_fields']
-                    );
-                } else {
-                    $priorityFields = array_map(
-                        fn($name) => ['column' => $name, 'value' => $searchQuery],
-                        $srResponseKeyNames
-                    );
+                // dd($queryData);
+                if (!empty($searchQuery) && $index === 0) {
+                    if (
+                        !empty($queryData['search_fields']) &&
+                        is_array($queryData['search_fields'])
+                    ) {
+                        $priorityFields = array_map(
+                            fn($name) => ['column' => $name, 'value' => $searchQuery],
+                            $queryData['search_fields']
+                        );
+                    } else {
+                        $priorityFields = array_map(
+                            fn($name) => ['column' => $name, 'value' => $searchQuery],
+                            $srResponseKeyNames
+                        );
+                    }
                 }
+                // dd($queryData);
 
                 $queryFields = [];
 
+                if ($index === 0) {
+                    foreach ($queryData as $key => $queryItem) {
+                        if ($this->getDatabaseFilter($queryData, $key)) {
+                            $queryFields[] = [
+                                'column' => $key,
+                                'value' => $queryItem,
+                                'comparison' => $queryData['database_filters'][$key]['operator'],
+                                'operator' => 'and'
+                            ];
+                        }
+                    }
+                }
                 foreach ($queryData as $key => $queryItem) {
                     if ($key === 'query' || $key == 'search_fields') {
                         continue;
@@ -216,26 +239,17 @@ class ApiRequestSearchService
                     if (!is_string($queryItem) && !is_numeric($queryItem)) {
                         continue;
                     }
-                    if ($this->getDatabaseFilter($queryData, $key)) {
-                        $queryFields[] = [
-                            'column' => $key,
-                            'value' => $queryItem,
-                            'operator' => $queryData['database_filters'][$key]['operator']
-                        ];
-                    } else {
-                        $queryFields[] = ['column' => $key, 'value' => $queryItem];
-                    }
+                    $queryFields[] = ['column' => $key, 'value' => $queryItem];
                 }
-
                 // Define the columns you want to search, in order of priority
                 $this->mongoDBRaw->getMongoAggregationBuilder()->addPrioritySearch(
                     $priorityFields,
                     [
-                        ['column' => 'provider', 'value' => $provider->name],
-                        ['column' => 'serviceRequest', 'value' => $sr->name],
+                        ['column' => 'provider', 'value' => $provider->name, 'operator' => 'or'],
+                        ['column' => 'serviceRequest', 'value' => $sr->name, 'operator' => 'or'],
                         ...$queryFields
                     ],
-                    'or'
+                    'and'
                 );
             }
         }

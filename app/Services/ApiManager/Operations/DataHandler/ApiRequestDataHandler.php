@@ -98,8 +98,8 @@ class ApiRequestDataHandler
         switch ($type) {
             case 'mixed':
             case 'list':
-            case SrType::DETAIL:
-            case SrType::SINGLE:
+            case SrType::DETAIL->value:
+            case SrType::SINGLE->value:
                 $this->buildSrsForList($providers, $type);
                 $this->notFoundProviders = $this->prepareNotFoundProviders($providers);
                 break;
@@ -181,7 +181,7 @@ class ApiRequestDataHandler
                 !count($providerData['service_request'])
             ) {
                 $this->providers->push($provider);
-                return;
+                continue;
             } else {
                 $data = $this->prepareSrRequestData($providerData['service_request']);
 
@@ -213,6 +213,7 @@ class ApiRequestDataHandler
             }
             $this->providers->push($provider);
         }
+
     }
 
     protected function prepareNotFoundProviders(array $providers)

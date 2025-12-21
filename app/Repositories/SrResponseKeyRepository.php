@@ -9,6 +9,7 @@ use App\Models\Sr;
 use App\Models\SrResponseKey;
 use App\Models\SResponseKey;
 use App\Models\User;
+use Exception;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -111,6 +112,16 @@ class SrResponseKeyRepository extends BaseRepository
         // Based on your original code, it seems to be 'srResponseKey'
         $relationshipToLoad = 'srResponseKey';
         $service = $serviceRequest->s()->first();
+        if (!$service) {
+            throw new Exception(
+                sprintf(
+                    'Sr does not have a service attached. sr: %d %s (%s)',
+                    $serviceRequest->id,
+                    $serviceRequest->label,
+                    $serviceRequest->name,
+                )
+            );
+        }
         $sResponseKey = $service->sResponseKey();
 
         // Use select() to avoid column name conflicts (e.g., 'id')

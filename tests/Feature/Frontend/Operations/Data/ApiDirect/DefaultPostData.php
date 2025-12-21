@@ -294,6 +294,8 @@ class DefaultPostData
                     ->andReturn(
                         self::requestResponse($index)[$index]
                     );
+                $mockedResponse->shouldReceive('failed')
+                    ->andReturn(false);
 
                 $mock->shouldReceive('sendDefaultRequest')
 
@@ -322,6 +324,8 @@ class DefaultPostData
                     ->andReturn(
                         self::requestResponse($index)[$index]
                     );
+                $mockedResponse->shouldReceive('failed')
+                    ->andReturn(false);
 
                 $mock->shouldReceive('sendDefaultRequest')
 
