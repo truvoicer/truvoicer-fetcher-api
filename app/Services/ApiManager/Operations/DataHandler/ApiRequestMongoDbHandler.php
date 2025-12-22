@@ -125,9 +125,6 @@ class ApiRequestMongoDbHandler extends ApiRequestDataHandler
 
     public function searchOperation(string $type, array $providers, string $serviceName, ?array $data = []): ResourceCollection|ApiSearchItemResource|null
     {
-        // if (!count($providers)) {
-        //     return false;
-        // }
         $getService = $this->findService($serviceName);
         if (!$getService instanceof S) {
             return null;

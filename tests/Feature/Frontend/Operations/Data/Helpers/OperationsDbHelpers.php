@@ -146,7 +146,7 @@ class OperationsDbHelpers
                         ->create($srResponseKeyData);
                 }
                 $entityData = [];
-                $entityData['service_request'] = $sr->name;
+                $entityData['serviceRequest'] = $sr->name;
                 $entityData['request_type'] = 'response_keys';
                 $entityData['response_format'] = 'json';
                 $entityData['content_type'] = 'json';

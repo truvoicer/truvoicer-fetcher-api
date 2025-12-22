@@ -4,6 +4,7 @@ namespace App\Services\Provider;
 
 use App\Models\Sr;
 use App\Models\SrSchedule;
+use App\Models\User;
 use App\Services\ApiServices\ServiceRequests\SrScheduleService;
 use App\Services\ApiServices\ServiceRequests\SrService;
 use App\Traits\User\UserTrait;
@@ -60,8 +61,9 @@ class ProviderScheduleService
 
     public function run(): void
     {
-            Log::log('info', 'No schedule user found');
+
         $scheduleUserEmail = config('services.scheduler.schedule_user_email');
+
         if (empty($scheduleUserEmail)) {
             Log::log('info', 'No schedule user email found');
             return;
@@ -69,6 +71,7 @@ class ProviderScheduleService
         $this->providerService->getUserRepository()->addWhere('email', $scheduleUserEmail);
         $findUser = $this->providerService->getUserRepository()->findOne();
         if (!$findUser) {
+            // dd(User::all()->toArray());
             Log::log('info', 'No schedule user found');
             return;
         }

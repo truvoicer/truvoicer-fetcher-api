@@ -21,7 +21,6 @@ use App\Services\ApiManager\Operations\DataHandler\ApiRequestMongoDbHandler;
 use Database\Seeders\PropertySeeder;
 use Database\Seeders\RoleSeeder;
 use Database\Seeders\UserSeeder;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Http;
@@ -41,7 +40,6 @@ use Tests\TestCase;
 
 class OperationsControllerTest extends TestCase
 {
-
     private User $superUser;
     private MongoDBRepository $mongoDbRepository;
     private OperationsDbHelpers $operationsDbHelpers;

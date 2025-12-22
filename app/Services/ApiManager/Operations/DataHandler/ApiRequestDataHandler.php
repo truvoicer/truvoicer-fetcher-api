@@ -153,7 +153,7 @@ class ApiRequestDataHandler
         ) {
             $findService = S::where('name', $this->requestData['service'])->first();
             if ($findService instanceof S) {
-                $providersQuery = $findService->providers();
+                $providersQuery = $findService->providers()->distinct();
             }
         }
 
@@ -172,7 +172,6 @@ class ApiRequestDataHandler
             })
             ->orderBy('name', 'asc')
             ->get();
-
         foreach ($getProviders as $provider) {
             $providerData = collect($providers)->firstWhere('name', $provider->name);
             if (

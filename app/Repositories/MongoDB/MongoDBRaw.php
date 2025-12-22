@@ -254,7 +254,6 @@ class MongoDBRaw
         $countPipeline = $pipeline;
 
         $countPipeline[] = ['$count' => 'total'];
-        $pipeline1[] = ['$count' => 'total'];
 
         $totalCursor = $this->table->raw(function ($collection) use ($query, $aggregation, $countPipeline) {
             if ($aggregation) {
@@ -466,7 +465,7 @@ class MongoDBRaw
         if (count($matchOrConditions)) {
             $matchConditions[] = ['$or' => $matchOrConditions];
         }
-        // dd($matchConditions);
+
         $pipeline = [
             // Stage 1: Match documents where the query exists in ANY of the specified columns
             [
@@ -495,7 +494,7 @@ class MongoDBRaw
                 ]
             ];
         }
-        // dd($pipeline);
+
         $this->appendCondition($pipeline, $condition);
 
         return $this;
@@ -622,25 +621,57 @@ class MongoDBRaw
      *
      * @return object|null A single document object or null if not found.
      */
-    public function findOne(): ?object
+    /**
+     * Find a single document
+     */
+    public function findOne(): ?array
     {
+        // Get pinned IDs if needed for exclusion
+        $this->applyPinnedExclusion();
 
         $query = $this->query;
-        $this->addLimit(1);
-
-        $options = $this->buildOptions();
-        $this->reset(); // Reset state for the next query.
         $aggregation = $this->aggregation;
-        dd($query, $options, $aggregation);
-        $cursor = $this->table->raw(function ($collection) use ($query, $options, $aggregation) {
+        $pipeline = $this->mongoAggregationBuilder->getPipeline();
+
+        // For findOne, we only need the first result
+        $options = $this->buildOptions();
+
+        // Ensure we're only getting one result
+        if (!isset($options['limit'])) {
+            $options['limit'] = 1;
+        }
+
+        $this->reset();
+
+        $cursor = $this->table->raw(function ($collection) use ($query, $options, $aggregation, $pipeline) {
             if ($aggregation) {
-                return $collection->aggregate(
-                    $this->addPaginationToPipeline($query)
-                );
+                // For aggregation, use $limit stage and get first result
+                $findOnePipeline = $pipeline;
+                $findOnePipeline[] = ['$limit' => 1];
+
+                $result = $collection->aggregate($findOnePipeline);
+
+                // Get the first document or null
+                foreach ($result as $document) {
+                    return $document;
+                }
+                return null;
             }
-            return $collection->find($query, $options);
+
+            // For regular find, use findOne or limit to 1
+            return $collection->findOne($query, $options);
         });
-        return new Collection($cursor->toArray())->first();
+
+        if (!$cursor) {
+            return null;
+        }
+
+        // Convert MongoDB\Model\BSONDocument to array if needed
+        if (is_object($cursor) && method_exists($cursor, 'toArray')) {
+            return $cursor->toArray();
+        }
+
+        return (array) $cursor;
     }
 
 

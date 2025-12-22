@@ -91,6 +91,8 @@ class MongoAggregationBuilder
             }, ARRAY_FILTER_USE_BOTH) as $item
         ) {
             $ors[$item['field']['column']] = $item['expr'];
+
+            // $ors[] = [$item['field']['column'] => $item['expr']];
         }
 
         if (count($ors)) {
@@ -137,8 +139,6 @@ class MongoAggregationBuilder
                 ...[$ands]
             ];
         }
-
-        // dd($priorityFields);
 
         // 2. Build conditions for prioritized fields
         foreach ($priorityFields as $index => $field) {

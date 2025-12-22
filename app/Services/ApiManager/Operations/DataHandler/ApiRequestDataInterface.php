@@ -17,6 +17,7 @@ use App\Services\EntityService;
 use App\Services\Provider\ProviderService;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
+use stdClass;
 
 class ApiRequestDataInterface
 {
@@ -63,13 +64,7 @@ class ApiRequestDataInterface
                 );
 
                 if (!$response?->resource && $apiFetchOnRecordNotFound) {
-                    dd(
-                        $this->apiRequestApiDirectHandler->searchOperation(
-                        $serviceType,
-                        $providers,
-                        $serviceName,
-                    )
-                        );
+
                     return $this->apiRequestApiDirectHandler->searchOperation(
                         $serviceType,
                         $providers,
@@ -127,7 +122,7 @@ class ApiRequestDataInterface
         return $collection;
     }
 
-    private function getProviderSomethingByItemId(array $srs, string|int $id): array|null
+    private function getProviderSomethingByItemId(array $srs, string|int $id): array|null|\MongoDB\Model\BSONDocument|stdClass
     {
         foreach ($srs as $sr) {
             switch ($sr->type) {
@@ -164,7 +159,6 @@ class ApiRequestDataInterface
 
     private function apiSearchBySr(Sr $sr, string|int $id): Collection|array|null
     {
-        dd(1);
         $response = $this->apiRequestApiDirectHandler->searchOperationBySr(
             $sr,
             ['item_id' => $id]

@@ -67,6 +67,7 @@ class ProviderScheduleTest extends TestCase
 
     public function test_sr_operation_schedules_run_correctly()
     {
+
         list(
             $provider,
             $category,
@@ -155,6 +156,7 @@ class ProviderScheduleTest extends TestCase
         app(ProviderScheduleService::class)
             ->setSchedule($schedule)
             ->run();
+
         // Get all scheduled events and filter for your job
         $events = collect($schedule->events())->filter(function ($event) {
 

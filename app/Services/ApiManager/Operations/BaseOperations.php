@@ -555,6 +555,7 @@ class BaseOperations extends ApiBase
      */
     public function setProviderByName($providerName): void
     {
+        dd(2);
         $provider = $this->providerService->getUserProviderByName($this->getUser(), $providerName);
 
         if (!$provider instanceof Provider) {

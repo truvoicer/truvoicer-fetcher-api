@@ -33,7 +33,7 @@ class RunSrOperationListener implements ShouldQueue
      */
     public function handle(RunSrOperationEvent $event): void
     {
-        Log::log('info', 'RunSsdsdsdsdrOperationListener');
+        Log::log('info', 'RunOperationListener');
         SrOperation::dispatch(
             $event->userId,
             $event->srId,

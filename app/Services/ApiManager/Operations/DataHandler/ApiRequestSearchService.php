@@ -162,6 +162,7 @@ class ApiRequestSearchService
             unset($queryData['sort_order']);
         }
         $this->mongoDBRaw->setAggregation(true);
+
         foreach ($this->providers as $index => $provider) {
             $srs = $this->srService->flattenSrCollection($this->type, $provider->sr);
             if ($srs->count() === 0) {
@@ -196,7 +197,7 @@ class ApiRequestSearchService
                 if (!empty($queryData['query'])) {
                     $searchQuery = $queryData['query'];
                 }
-                // dd($queryData);
+
                 if (!empty($searchQuery) && $index === 0) {
                     if (
                         !empty($queryData['search_fields']) &&
@@ -213,7 +214,6 @@ class ApiRequestSearchService
                         );
                     }
                 }
-                // dd($queryData);
 
                 $queryFields = [];
 
