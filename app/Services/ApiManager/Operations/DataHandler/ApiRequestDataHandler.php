@@ -148,6 +148,18 @@ class ApiRequestDataHandler
 
         $providersQuery = false;
         if (
+            !count($providerNames) ||
+            in_array('internal', $providerNames)
+        ) {
+            $this->providers->push(
+                (new Provider())->fill([
+                    'label' => 'Internal',
+                    'name' => 'internal'
+                ])
+            );
+        }
+
+        if (
             !count($providerNames) &&
             !empty($this->requestData['service'])
         ) {
@@ -212,7 +224,6 @@ class ApiRequestDataHandler
             }
             $this->providers->push($provider);
         }
-
     }
 
     protected function prepareNotFoundProviders(array $providers)

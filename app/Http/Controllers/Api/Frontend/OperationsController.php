@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers\Api\Frontend;
 
-use App\Helpers\Operation\Request\OperationRequestBuilder;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\OperationsRequest;
 use App\Services\ApiManager\Operations\DataHandler\ApiRequestDataInterface;
@@ -14,26 +13,16 @@ use App\Services\ApiManager\Operations\DataHandler\ApiRequestDataInterface;
 class OperationsController extends Controller
 {
 
-    public function __construct(
-        protected OperationRequestBuilder $operationRequestBuilder,
-    ) {
-        parent::__construct();
-    }
-
     public function searchOperation(string $type, ApiRequestDataInterface $apiRequestDataHandler, OperationsRequest $request)
     {
         $validatedData = $request->validated();
-
-        $formRequestData =  $this->operationRequestBuilder
-            ->setData($validatedData)
-            ->build();
 
         ini_set('max_execution_time', 60);
 
         $provider = $validatedData['provider'] ?? [];
         $service = $validatedData['service'] ?? null;
         $apiRequestDataHandler->setUser($request->user())
-            ->setRequestData($formRequestData);
+            ->setRequestData($validatedData);
 
         $results = $apiRequestDataHandler->searchOperation(
             $validatedData['api_fetch_type'],

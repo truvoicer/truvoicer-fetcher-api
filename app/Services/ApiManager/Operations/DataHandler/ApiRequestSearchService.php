@@ -2,6 +2,7 @@
 
 namespace App\Services\ApiManager\Operations\DataHandler;
 
+use App\Helpers\Operation\Request\OperationRequestBuilder;
 use App\Models\S;
 use App\Models\Sr;
 use App\Repositories\MongoDB\MongoDBQuery;
@@ -35,6 +36,7 @@ class ApiRequestSearchService
         private SrResponseKeyService $srResponseKeyService,
         private SrService            $srService,
         private S                    $service,
+        protected OperationRequestBuilder $operationRequestBuilder,
     ) {}
 
     public function searchInit(): void
@@ -57,19 +59,12 @@ class ApiRequestSearchService
         foreach ($providers as $provider) {
             $providerName = $provider['provider_name'];
             $itemIds = $provider['ids'];
-            $ids = [];
-            foreach ($itemIds as $key => $value) {
-                if (!is_numeric($value)) {
-                    continue;
-                }
-                $ids[] = intval($value);
-            }
 
             $this->mongoDbQuery->addWhereGroup([
                 [
                     'field' => 'item_id',
                     'compare' => 'in',
-                    'value' => $ids,
+                    'value' => $itemIds,
                     'op' => 'and',
                 ],
                 [
@@ -143,6 +138,71 @@ class ApiRequestSearchService
         return $queryData['database_filters'][$key]['operator'];
     }
 
+    private function prepareQueryDataFilters(array $queryData)
+    {
+        $this->operationRequestBuilder
+            ->setData($queryData)
+            ->build();
+
+        return $this->operationRequestBuilder->getProcessedFilters();
+    }
+    private function preparePriorityFields(string $searchQuery, array $queryData, array $srResponseKeyNames)
+    {
+        $priorityFields = [];
+
+        if (
+            !empty($queryData['search_fields']) &&
+            is_array($queryData['search_fields'])
+        ) {
+            $priorityFields = $queryData['search_fields'];
+        } else {
+            $priorityFields = $srResponseKeyNames;
+        }
+
+        $priorityFieldData = array_map(
+            fn($name) => ['column' => $name, 'value' => $searchQuery],
+            $priorityFields
+        );
+
+        $filters = $this->prepareQueryDataFilters($queryData);
+        foreach ($filters as $key => $queryItem) {
+            if ($key === 'query' || $key == 'search_fields') {
+                continue;
+            }
+            if (in_array($key, $srResponseKeyNames)) {
+                continue;
+            }
+            $priorityFieldData = [
+                ...$priorityFieldData,
+                ...array_map(
+                    fn($name) => ['column' => $name, 'value' => $queryItem],
+                    $priorityFields
+                )
+            ];
+        }
+
+        return $priorityFieldData;
+    }
+    private function prepareDbQueryFilters(array $queryData, array $srResponseKeyNames)
+    {
+        $filters = $this->prepareQueryDataFilters($queryData);
+        $queryFields = [];
+        foreach ($filters as $key => $queryItem) {
+            if ($key === 'query' || $key == 'search_fields') {
+                continue;
+            }
+
+            if (!in_array($key, $srResponseKeyNames)) {
+                continue;
+            }
+            if (!is_string($queryItem) && !is_numeric($queryItem)) {
+                continue;
+            }
+            $queryFields[] = ['column' => $key, 'value' => $queryItem];
+        }
+        return $queryFields;
+    }
+
     private function prepareSearchForSavedProviders(array $queryData)
     {
         $reservedKeys = array_column(
@@ -163,6 +223,7 @@ class ApiRequestSearchService
         }
         $this->mongoDBRaw->setAggregation(true);
 
+        $srResponseKeyNames = [];
         foreach ($this->providers as $index => $provider) {
             $srs = $this->srService->flattenSrCollection($this->type, $provider->sr);
             if ($srs->count() === 0) {
@@ -170,10 +231,6 @@ class ApiRequestSearchService
             }
 
             foreach ($srs as $sr) {
-                list($orderBy, $sortOrder) = $this->getOrderBy($sr, $orderByData);
-                if (!empty($orderBy) && in_array($sortOrder, $this->mongoDBRepository->getMongoDBQuery()::AVAILABLE_ORDER_DIRECTIONS)) {
-                    $sort[] = [$orderBy, $sortOrder];
-                }
 
                 $excludeKeys = [
                     'sort_by',
@@ -190,60 +247,79 @@ class ApiRequestSearchService
                     $excludeKeys,
                     ['searchable' => true]
                 );
-                $srResponseKeyNames = $srResponseKeys->pluck('name')->toArray();
+                $srResponseKeyNames = array_merge(
+                    $srResponseKeyNames,
+                    $srResponseKeys->pluck('name')->toArray()
+                );
+            }
+        }
 
-                $priorityFields = [];
-                $searchQuery = null;
-                if (!empty($queryData['query'])) {
-                    $searchQuery = $queryData['query'];
-                }
 
-                if (!empty($searchQuery) && $index === 0) {
-                    if (
-                        !empty($queryData['search_fields']) &&
-                        is_array($queryData['search_fields'])
-                    ) {
-                        $priorityFields = array_map(
-                            fn($name) => ['column' => $name, 'value' => $searchQuery],
-                            $queryData['search_fields']
-                        );
-                    } else {
-                        $priorityFields = array_map(
-                            fn($name) => ['column' => $name, 'value' => $searchQuery],
-                            $srResponseKeyNames
-                        );
-                    }
-                }
+        $searchQuery = null;
+        if (!empty($queryData['query'])) {
+            $searchQuery = $queryData['query'];
+        } elseif (
+            !empty($queryData['filters']) &&
+            is_array($queryData['filters'])
+        ) {
+            $queryFilter = collect($queryData['filters'])->firstWhere('field', 'query');
+            $searchQuery = isset($queryFilter['value']) ? $queryFilter['value'] : null;
+        }
 
+        if (!empty($searchQuery)) {
+            $this->mongoDBRaw->getMongoAggregationBuilder()->setPriorityFields(
+                $this->preparePriorityFields(
+                    $searchQuery,
+                    $queryData,
+                    $srResponseKeyNames
+                )
+            );
+        }
+
+        $queryFields = [];
+
+        foreach ($queryData as $key => $queryItem) {
+            if ($this->getDatabaseFilter($queryData, $key)) {
+                $queryFields[] = [
+                    'column' => $key,
+                    'value' => $queryItem,
+                    'comparison' => $queryData['database_filters'][$key]['operator'],
+                    'operator' => 'and'
+                ];
+            }
+        }
+
+        $queryFields = $this->prepareDbQueryFilters(
+            $queryData,
+            $srResponseKeyNames
+        );
+
+        $first = true;
+        foreach ($this->providers as $provider) {
+            if (!$first) {
                 $queryFields = [];
+            }
+            $srs = $this->srService->flattenSrCollection($this->type, $provider->sr);
+            if ($srs->count() === 0) {
+                $this->mongoDBRaw->getMongoAggregationBuilder()->addPrioritySearch(
+                    [
+                        ['column' => 'provider', 'value' => $provider->name, 'operator' => 'or'],
+                        ...$queryFields
+                    ],
+                    'and'
+                );
+                $first = false;
+                continue;
+            }
 
-                if ($index === 0) {
-                    foreach ($queryData as $key => $queryItem) {
-                        if ($this->getDatabaseFilter($queryData, $key)) {
-                            $queryFields[] = [
-                                'column' => $key,
-                                'value' => $queryItem,
-                                'comparison' => $queryData['database_filters'][$key]['operator'],
-                                'operator' => 'and'
-                            ];
-                        }
-                    }
+            foreach ($srs as $sr) {
+                list($orderBy, $sortOrder) = $this->getOrderBy($sr, $orderByData);
+                if (!empty($orderBy) && in_array($sortOrder, $this->mongoDBRepository->getMongoDBQuery()::AVAILABLE_ORDER_DIRECTIONS)) {
+                    $sort[] = [$orderBy, $sortOrder];
                 }
-                foreach ($queryData as $key => $queryItem) {
-                    if ($key === 'query' || $key == 'search_fields') {
-                        continue;
-                    }
-                    if (!in_array($key, $srResponseKeyNames)) {
-                        continue;
-                    }
-                    if (!is_string($queryItem) && !is_numeric($queryItem)) {
-                        continue;
-                    }
-                    $queryFields[] = ['column' => $key, 'value' => $queryItem];
-                }
+
                 // Define the columns you want to search, in order of priority
                 $this->mongoDBRaw->getMongoAggregationBuilder()->addPrioritySearch(
-                    $priorityFields,
                     [
                         ['column' => 'provider', 'value' => $provider->name, 'operator' => 'or'],
                         ['column' => 'serviceRequest', 'value' => $sr->name, 'operator' => 'or'],
@@ -251,6 +327,7 @@ class ApiRequestSearchService
                     ],
                     'and'
                 );
+                $first = false;
             }
         }
         if (!empty($queryData['positions']) && is_array($queryData['positions'])) {

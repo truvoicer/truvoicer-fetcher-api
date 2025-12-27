@@ -10,6 +10,8 @@ use App\Enums\DatabaseFilterType;
 class OperationRequestBuilder
 {
 
+    protected array $preProcessedFilters = [];
+    protected array $processedFilters = [];
     protected array $data = [];
     protected Request $request;
     protected FormRequest $formRequest;
@@ -45,6 +47,14 @@ class OperationRequestBuilder
     {
         $this->data = $data;
         return $this;
+    }
+
+    public function getProcessedFilters(): array {
+        return $this->processedFilters;
+    }
+
+    public function getPreProcessedFilters(): array {
+        return $this->preProcessedFilters;
     }
 
     public function fromRequest(): self
@@ -93,9 +103,9 @@ class OperationRequestBuilder
         }
 
 
-        $requestFilters = $this->data['filters'] ?? [];
+        $this->preProcessedFilters = $this->data['filters'] ?? [];
         unset($this->data['filters']);
-        foreach ($requestFilters as $key => $value) {
+        foreach ($this->preProcessedFilters as $key => $value) {
             if (empty($value['type'])) {
                 continue;
             }
@@ -111,10 +121,13 @@ class OperationRequestBuilder
                     $this->addLessThanFilter($value['field']);
                     break;
             }
-            $this->data[$value['field']] = $value['value'];
+            $this->processedFilters[$value['field']] = $value['value'];
         }
 
-
+        $this->data = array_merge(
+            $this->data,
+            $this->processedFilters
+        );
 
         return $this->data;
     }

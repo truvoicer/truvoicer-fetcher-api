@@ -7,16 +7,17 @@ use App\Helpers\Tools\UtilHelpers;
 class MongoAggregationBuilder
 {
     private array $pipeline = [];
+    private array $priorityFields = [];
+    private array $switchBranches = [];
 
     /**
      * Adds filtering, priority scoring, and sorting stages.
      *
-     * @param array $priorityFields Fields for prioritized searching.
      * @param array $mandatoryFields Fields that must match, now with operator support.
      * @param string $mandatoryLogic How to combine mandatory fields ('and' or 'or')
      * @return $this
      */
-    public function addPrioritySearch(array $priorityFields, array $mandatoryFields = [], string $mandatoryLogic = 'and'): self
+    public function addPrioritySearch(array $mandatoryFields = [], string $mandatoryLogic = 'and'): self
     {
         $priorityOrConditions = [];
         $switchBranches = [];
@@ -73,8 +74,6 @@ class MongoAggregationBuilder
             $this->pipeline[$matchIndex]['$match']['$' . $mandatoryLogic] = [];
         }
 
-
-
         $ors = [];
         $ands = [];
 
@@ -91,8 +90,6 @@ class MongoAggregationBuilder
             }, ARRAY_FILTER_USE_BOTH) as $item
         ) {
             $ors[$item['field']['column']] = $item['expr'];
-
-            // $ors[] = [$item['field']['column'] => $item['expr']];
         }
 
         if (count($ors)) {
@@ -118,7 +115,7 @@ class MongoAggregationBuilder
             ];
         }
         if (count($ands)) {
-
+            // dd($ands);
             $matchAndIndex = UtilHelpers::findArrayKeyIndex(
                 $this->pipeline[$matchIndex]['$match']['$' . $mandatoryLogic],
                 '$and'
@@ -140,13 +137,31 @@ class MongoAggregationBuilder
             ];
         }
 
+
+        return $this;
+    }
+
+    public function buildSwitchBranches(): self
+    {
+        if (!empty($this->switchBranches)) {
+            $this->pipeline[] = ['$addFields' => [
+                'priority' => ['$switch' => ['branches' => $this->switchBranches, 'default' => 99]]
+            ]];
+            $this->pipeline[] = ['$sort' => ['priority' => 1]];
+        }
+        return $this;
+    }
+
+    public function buildPriorityFIelds(string $mandatoryLogic = 'and'): self
+    {
+
         // 2. Build conditions for prioritized fields
-        foreach ($priorityFields as $index => $field) {
+        foreach ($this->priorityFields as $index => $field) {
             if (empty($field['column']) || !isset($field['value'])) continue;
 
             if (is_string($field['value'])) {
                 $priorityOrConditions[] = [$field['column'] => ['$regex' => $field['value'], '$options' => 'i']];
-                $switchBranches[] = [
+                $this->switchBranches[] = [
                     'case' => ['$regexMatch' => [
                         'input' => [
                             '$toString' => [
@@ -163,28 +178,23 @@ class MongoAggregationBuilder
                 ];
             } elseif (is_numeric($field['value'])) {
                 $priorityOrConditions[] = [$field['column'] => $field['value']];
-                $switchBranches[] = [
+                $this->switchBranches[] = [
                     'case' => ['$eq' => ['$' . $field['column'], $field['value']]],
                     'then' => $index + 1,
                 ];
             }
         }
 
+        $matchIndex = UtilHelpers::findArrayKeyIndex($this->pipeline, '$match');
+        if ($matchIndex === false) {
+            return $this;
+        }
         // 3. Combine mandatory and priority conditions
         if (!empty($priorityOrConditions)) {
-
             $this->pipeline[$matchIndex]['$match']['$' . $mandatoryLogic][] = [
                 '$or' => $priorityOrConditions
             ];
         }
-
-        if (!empty($switchBranches)) {
-            $this->pipeline[] = ['$addFields' => [
-                'priority' => ['$switch' => ['branches' => $switchBranches, 'default' => 99]]
-            ]];
-            $this->pipeline[] = ['$sort' => ['priority' => 1]];
-        }
-
         return $this;
     }
 
@@ -202,6 +212,34 @@ class MongoAggregationBuilder
 
     public function getPipeline(): array
     {
+        if (count($this->priorityFields)) {
+            $this->buildPriorityFIelds();
+        }
+        if (count($this->switchBranches)) {
+            $this->buildSwitchBranches();
+        }
         return $this->pipeline;
+    }
+
+    public function getPriorityFields(): array
+    {
+        return $this->priorityFields;
+    }
+
+    public function setPriorityFields(array $priorityFields): self
+    {
+        $this->priorityFields = $priorityFields;
+        return $this;
+    }
+
+    public function getSwitchBranches(): array
+    {
+        return $this->switchBranches;
+    }
+
+    public function setSwitchBranches(array $switchBranches): self
+    {
+        $this->switchBranches = $switchBranches;
+        return $this;
     }
 }
