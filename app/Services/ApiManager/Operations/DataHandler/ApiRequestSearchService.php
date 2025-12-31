@@ -353,11 +353,11 @@ class ApiRequestSearchService
 
     public function runListSearch(array $queryData): Collection|LengthAwarePaginator
     {
-
         if (!empty($this->itemSearchData) && count($this->itemSearchData)) {
             $this->prepareItemSearch($this->type, $this->itemSearchData);
             $this->preparePagination($queryData);
-            return $this->mongoDBRaw->findMany();
+            $this->mongoDbQuery->setPagination(true);
+            return $this->mongoDbQuery->findMany();
         }
         $this->searchInit();
 

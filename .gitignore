@@ -18,3 +18,5 @@ yarn-error.log
 /.fleet
 /.idea
 /.vscode
+/packages/
+switch-tru-fetcher-get.sh
