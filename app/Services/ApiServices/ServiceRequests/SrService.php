@@ -2,16 +2,16 @@
 
 namespace App\Services\ApiServices\ServiceRequests;
 
-use App\Models\S;
-use App\Models\Provider;
-use App\Models\Sr;
+use Truvoicer\TruFetcherGet\Models\S;
+use Truvoicer\TruFetcherGet\Models\Provider;
+use Truvoicer\TruFetcherGet\Models\Sr;
 use App\Models\User;
-use App\Repositories\SrChildSrRepository;
-use App\Repositories\SrRepository;
-use App\Repositories\SrResponseKeyRepository;
-use App\Repositories\SResponseKeyRepository;
+use Truvoicer\TruFetcherGet\Repositories\SrChildSrRepository;
+use Truvoicer\TruFetcherGet\Repositories\SrRepository;
+use Truvoicer\TruFetcherGet\Repositories\SrResponseKeyRepository;
+use Truvoicer\TruFetcherGet\Repositories\SResponseKeyRepository;
 use App\Services\BaseService;
-use App\Helpers\Tools\UtilHelpers;
+use Truvoicer\TruFetcherGet\Helpers\Tools\UtilHelpers;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\App;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;

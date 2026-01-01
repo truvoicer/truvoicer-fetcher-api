@@ -2,11 +2,11 @@
 
 namespace App\Services\Provider;
 
-use App\Events\RunProviderSrOperationEvent;
-use App\Events\RunSrOperationEvent;
-use App\Models\Provider;
-use App\Models\Sr;
-use App\Models\SrSchedule;
+use Truvoicer\TruFetcherGet\Events\RunProviderSrOperationEvent;
+use Truvoicer\TruFetcherGet\Events\RunSrOperationEvent;
+use Truvoicer\TruFetcherGet\Models\Provider;
+use Truvoicer\TruFetcherGet\Models\Sr;
+use Truvoicer\TruFetcherGet\Models\SrSchedule;
 use App\Models\User;
 use App\Services\ApiServices\ServiceRequests\SrOperationsService;
 use Illuminate\Support\Facades\App;

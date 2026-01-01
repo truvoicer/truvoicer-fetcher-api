@@ -6,7 +6,7 @@ use App\Enums\Import\ImportAction;
 use App\Enums\Import\ImportConfig;
 use App\Enums\Import\ImportMappingType;
 use App\Enums\Import\ImportType;
-use App\Repositories\SrRepository;
+use Truvoicer\TruFetcherGet\Repositories\SrRepository;
 use App\Services\BaseService;
 use App\Services\Permission\AccessControlService;
 use App\Services\Tools\Importer\Entities\ImporterBase;

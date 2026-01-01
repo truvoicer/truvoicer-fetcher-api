@@ -2,7 +2,7 @@
 
 namespace App\Http\Requests\Service\Request\Schedule;
 
-use App\Models\SrSchedule;
+use Truvoicer\TruFetcherGet\Models\SrSchedule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 

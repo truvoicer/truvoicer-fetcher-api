@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Api\Backend\Tools;
 
 use App\Enums\SelectDataEnum;
-use App\Helpers\Tools\ClassHelpers;
+use Truvoicer\TruFetcherGet\Helpers\Tools\ClassHelpers;
 use App\Http\Controllers\Controller;
 use App\Traits\Enum\EnumUtillityTrait;
 

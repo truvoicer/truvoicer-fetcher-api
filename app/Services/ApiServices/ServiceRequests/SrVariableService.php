@@ -2,8 +2,8 @@
 
 namespace App\Services\ApiServices\ServiceRequests;
 
-use App\Models\Provider;
-use App\Models\Sr;
+use Truvoicer\TruFetcherGet\Models\Provider;
+use Truvoicer\TruFetcherGet\Models\Sr;
 use App\Services\Variable\VariableService;
 
 class SrVariableService extends VariableService

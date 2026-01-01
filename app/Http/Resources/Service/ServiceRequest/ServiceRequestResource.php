@@ -2,8 +2,8 @@
 
 namespace App\Http\Resources\Service\ServiceRequest;
 
-use App\Enums\Api\ApiListKey;
-use App\Enums\FormatOptions;
+use Truvoicer\TruFetcherGet\Enums\Api\ApiListKey;
+use Truvoicer\TruFetcherGet\Enums\FormatOptions;
 use App\Http\Resources\CategoryResource;
 use App\Http\Resources\ProviderMinimalResource;
 use App\Http\Resources\ProviderResource;

@@ -2,10 +2,10 @@
 
 namespace App\Jobs;
 
-use App\Models\Provider;
-use App\Models\Sr;
+use Truvoicer\TruFetcherGet\Models\Provider;
+use Truvoicer\TruFetcherGet\Models\Sr;
 use App\Models\User;
-use App\Repositories\SrResponseKeySrRepository;
+use Truvoicer\TruFetcherGet\Repositories\SrResponseKeySrRepository;
 use App\Services\ApiManager\Response\Entity\ApiResponse;
 use App\Services\ApiServices\ServiceRequests\SrOperationsService;
 use App\Services\ApiServices\ServiceRequests\SrService;

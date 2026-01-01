@@ -6,11 +6,11 @@ use App\Enums\Import\ImportAction;
 use App\Enums\Import\ImportConfig;
 use App\Enums\Import\ImportMappingType;
 use App\Enums\Import\ImportType;
-use App\Helpers\Tools\UtilHelpers;
-use App\Models\Provider;
-use App\Models\S;
-use App\Models\Sr;
-use App\Models\SResponseKey;
+use Truvoicer\TruFetcherGet\Helpers\Tools\UtilHelpers;
+use Truvoicer\TruFetcherGet\Models\Provider;
+use Truvoicer\TruFetcherGet\Models\S;
+use Truvoicer\TruFetcherGet\Models\Sr;
+use Truvoicer\TruFetcherGet\Models\SResponseKey;
 use App\Services\ApiServices\ApiService;
 use App\Services\ApiServices\ServiceRequests\SrService;
 use App\Services\Permission\AccessControlService;
@@ -275,7 +275,7 @@ class SrImporterService extends ImporterBase
             if (!$serviceData['success']) {
                 return $serviceData;
             }
-            
+
             $service = $this->srService
                 ->getServiceRequestRepository()
                 ->findUserModelBy(new S(), $this->getUser(), [
@@ -284,8 +284,8 @@ class SrImporterService extends ImporterBase
 
             if (!$service) {
                 $service = $this->sImporterService->create(
-                    $serviceData['service'], 
-                    $withChildren, 
+                    $serviceData['service'],
+                    $withChildren,
                     $map
                 );
                 if (!$service['success']) {

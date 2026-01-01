@@ -2,13 +2,13 @@
 
 namespace Tests\Feature\Frontend\Operations\Data\ApiDirect;
 
-use App\Enums\Api\ApiListKey;
-use App\Enums\Api\ApiMethod;
-use App\Enums\Api\ApiResponseFormat;
+use Truvoicer\TruFetcherGet\Enums\Api\ApiListKey;
+use Truvoicer\TruFetcherGet\Enums\Api\ApiMethod;
+use Truvoicer\TruFetcherGet\Enums\Api\ApiResponseFormat;
 use App\Enums\Api\ApiType;
-use App\Enums\Property\PropertyType;
-use App\Exceptions\Api\Operation\ApiOperationException;
-use App\Exceptions\Api\Response\ApiResponseException;
+use Truvoicer\TruFetcherGet\Enums\Property\PropertyType;
+use Truvoicer\TruFetcherGet\Exceptions\Api\Operation\ApiOperationException;
+use Truvoicer\TruFetcherGet\Exceptions\Api\Response\ApiResponseException;
 use App\Services\ApiManager\Client\ApiClientHandler;
 use App\Services\ApiManager\Client\Entity\ApiRequest;
 use Illuminate\Testing\TestResponse;

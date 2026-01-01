@@ -2,10 +2,10 @@
 
 namespace App\Services\ApiServices\ServiceRequests\ResponseKeys\Populate;
 
-use App\Enums\Property\PropertyType;
-use App\Models\Provider;
-use App\Models\Sr;
-use App\Repositories\SrRepository;
+use Truvoicer\TruFetcherGet\Enums\Property\PropertyType;
+use Truvoicer\TruFetcherGet\Models\Provider;
+use Truvoicer\TruFetcherGet\Models\Sr;
+use Truvoicer\TruFetcherGet\Repositories\SrRepository;
 use App\Services\ApiManager\Data\DataConstants;
 use App\Services\ApiManager\Response\ResponseManager;
 use App\Services\ApiServices\ServiceRequests\ResponseKeys\Populate\Types\PopulateTypeJson;

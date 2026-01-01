@@ -2,15 +2,15 @@
 
 namespace App\Services\ApiManager\Operations\DataHandler;
 
-use App\Enums\Entity\EntityType;
-use App\Enums\Property\PropertyType;
-use App\Enums\Sr\SrType;
-use App\Http\Resources\ApiMongoDbSearchListCollection;
-use App\Http\Resources\ApiDirectSearchListCollection;
-use App\Models\Provider;
-use App\Models\Sr;
+use Truvoicer\TruFetcherGet\Enums\Entity\EntityType;
+use Truvoicer\TruFetcherGet\Enums\Property\PropertyType;
+use Truvoicer\TruFetcherGet\Enums\Sr\SrType;
+use Truvoicer\TruFetcherGet\Http\Resources\ApiMongoDbSearchListCollection;
+use Truvoicer\TruFetcherGet\Http\Resources\ApiDirectSearchListCollection;
+use Truvoicer\TruFetcherGet\Models\Provider;
+use Truvoicer\TruFetcherGet\Models\Sr;
 use App\Models\User;
-use App\Repositories\SrRepository;
+use Truvoicer\TruFetcherGet\Repositories\SrRepository;
 use App\Services\ApiManager\Data\DataConstants;
 use App\Services\ApiServices\ServiceRequests\SrService;
 use App\Services\EntityService;

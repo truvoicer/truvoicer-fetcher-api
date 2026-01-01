@@ -2,13 +2,15 @@
 
 namespace App\Models;
 
-use App\Repositories\UserRepository;
+use Truvoicer\TruFetcherGet\Repositories\UserRepository;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
+use Truvoicer\TruFetcherGet\Models\Role;
+use Truvoicer\TruFetcherGet\Models\RoleUser;
 
 class User extends Authenticatable
 {

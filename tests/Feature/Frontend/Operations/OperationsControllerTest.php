@@ -2,21 +2,21 @@
 
 namespace Tests\Feature\Frontend\Operations;
 
-use App\Enums\Api\ApiListKey;
-use App\Enums\Api\ApiMethod;
-use App\Enums\Api\ApiResponseFormat;
+use Truvoicer\TruFetcherGet\Enums\Api\ApiListKey;
+use Truvoicer\TruFetcherGet\Enums\Api\ApiMethod;
+use Truvoicer\TruFetcherGet\Enums\Api\ApiResponseFormat;
 use App\Enums\Api\ApiType;
-use App\Enums\Property\PropertyType;
-use App\Enums\Sr\SrType;
-use App\Events\ProcessSrOperationDataEvent;
+use Truvoicer\TruFetcherGet\Enums\Property\PropertyType;
+use Truvoicer\TruFetcherGet\Enums\Sr\SrType;
+use Truvoicer\TruFetcherGet\Events\ProcessSrOperationDataEvent;
 use App\Jobs\ProcessSrOperationData;
-use App\Models\Category;
-use App\Models\Property;
-use App\Models\Provider;
-use App\Models\S;
-use App\Models\Sr;
+use Truvoicer\TruFetcherGet\Models\Category;
+use Truvoicer\TruFetcherGet\Models\Property;
+use Truvoicer\TruFetcherGet\Models\Provider;
+use Truvoicer\TruFetcherGet\Models\S;
+use Truvoicer\TruFetcherGet\Models\Sr;
 use App\Models\User;
-use App\Repositories\MongoDB\MongoDBRepository;
+use Truvoicer\TruFetcherGet\Repositories\MongoDB\MongoDBRepository;
 use App\Services\ApiManager\Operations\DataHandler\ApiRequestMongoDbHandler;
 use Database\Seeders\PropertySeeder;
 use Database\Seeders\RoleSeeder;

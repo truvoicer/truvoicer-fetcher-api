@@ -9,7 +9,7 @@ use App\Http\Requests\Service\UpdateSRequest;
 use App\Http\Resources\ProviderCollection;
 use App\Http\Resources\Service\ServiceCollection;
 use App\Http\Resources\Service\ServiceResource;
-use App\Models\S;
+use Truvoicer\TruFetcherGet\Models\S;
 use App\Services\ApiServices\ApiService;
 use App\Services\Permission\AccessControlService;
 use App\Services\Permission\PermissionService;

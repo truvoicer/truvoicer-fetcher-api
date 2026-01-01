@@ -3,12 +3,12 @@
 namespace App\Services\ApiServices\ServiceRequests\ResponseKeys\Populate\Types;
 
 use App\Enums\Ai\AiClient;
-use App\Models\S;
-use App\Models\Sr;
-use App\Models\SResponseKey;
-use App\Repositories\SResponseKeyRepository;
-use App\Repositories\SrRepository;
-use App\Repositories\SrResponseKeyRepository;
+use Truvoicer\TruFetcherGet\Models\S;
+use Truvoicer\TruFetcherGet\Models\Sr;
+use Truvoicer\TruFetcherGet\Models\SResponseKey;
+use Truvoicer\TruFetcherGet\Repositories\SResponseKeyRepository;
+use Truvoicer\TruFetcherGet\Repositories\SrRepository;
+use Truvoicer\TruFetcherGet\Repositories\SrResponseKeyRepository;
 use App\Services\ApiManager\Client\ApiClientHandler;
 use App\Services\ApiManager\Client\Entity\ApiRequest;
 use App\Services\ApiManager\Operations\ApiRequestService;

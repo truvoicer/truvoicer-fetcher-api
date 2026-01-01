@@ -2,19 +2,19 @@
 
 namespace App\Services\ApiManager\Response\Handlers;
 
-use App\Enums\Api\ApiListKey;
-use App\Enums\FormatOptions;
-use App\Enums\Property\PropertyType;
-use App\Enums\Sr\SrType;
-use App\Helpers\Array\DotNotationArrayAccess;
-use App\Helpers\Tools\DateHelpers;
-use App\Models\Provider;
-use App\Models\S;
-use App\Models\Sr;
-use App\Models\SResponseKey;
-use App\Models\SrResponseKey;
-use App\Models\SrResponseKeySr;
-use App\Repositories\SrResponseKeySrRepository;
+use Truvoicer\TruFetcherGet\Enums\Api\ApiListKey;
+use Truvoicer\TruFetcherGet\Enums\FormatOptions;
+use Truvoicer\TruFetcherGet\Enums\Property\PropertyType;
+use Truvoicer\TruFetcherGet\Enums\Sr\SrType;
+use Truvoicer\TruFetcherGet\Helpers\Array\DotNotationArrayAccess;
+use Truvoicer\TruFetcherGet\Helpers\Tools\DateHelpers;
+use Truvoicer\TruFetcherGet\Models\Provider;
+use Truvoicer\TruFetcherGet\Models\S;
+use Truvoicer\TruFetcherGet\Models\Sr;
+use Truvoicer\TruFetcherGet\Models\SResponseKey;
+use Truvoicer\TruFetcherGet\Models\SrResponseKey;
+use Truvoicer\TruFetcherGet\Models\SrResponseKeySr;
+use Truvoicer\TruFetcherGet\Repositories\SrResponseKeySrRepository;
 use App\Services\ApiManager\ApiBase;
 use App\Services\ApiManager\Data\DataConstants;
 use App\Services\ApiManager\Operations\ApiRequestService;

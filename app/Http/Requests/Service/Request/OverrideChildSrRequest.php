@@ -2,7 +2,7 @@
 
 namespace App\Http\Requests\Service\Request;
 
-use App\Models\SrChildSr;
+use Truvoicer\TruFetcherGet\Models\SrChildSr;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 

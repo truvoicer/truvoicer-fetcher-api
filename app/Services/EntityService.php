@@ -2,19 +2,19 @@
 
 namespace App\Services;
 
-use App\Enums\Entity\EntityType;
-use App\Enums\Import\EntityLockStatus;
-use App\Http\Resources\ProviderMinimalCollection;
-use App\Http\Resources\Service\ServiceRequest\SrTreeViewCollection;
-use App\Models\EntityLock;
-use App\Models\Provider;
-use App\Models\ProviderProperty;
-use App\Models\ProviderPropertyEntity;
-use App\Models\SrConfig;
-use App\Models\SrConfigEntity;
+use Truvoicer\TruFetcherGet\Enums\Entity\EntityType;
+use Truvoicer\TruFetcherGet\Enums\Import\EntityLockStatus;
+use Truvoicer\TruFetcherGet\Http\Resources\ProviderMinimalCollection;
+use Truvoicer\TruFetcherGet\Http\Resources\Service\ServiceRequest\SrTreeViewCollection;
+use Truvoicer\TruFetcherGet\Models\EntityLock;
+use Truvoicer\TruFetcherGet\Models\Provider;
+use Truvoicer\TruFetcherGet\Models\ProviderProperty;
+use Truvoicer\TruFetcherGet\Models\ProviderPropertyEntity;
+use Truvoicer\TruFetcherGet\Models\SrConfig;
+use Truvoicer\TruFetcherGet\Models\SrConfigEntity;
 use App\Models\User;
-use App\Repositories\ProviderRepository;
-use App\Repositories\SrRepository;
+use Truvoicer\TruFetcherGet\Repositories\ProviderRepository;
+use Truvoicer\TruFetcherGet\Repositories\SrRepository;
 
 class EntityService extends BaseService
 {

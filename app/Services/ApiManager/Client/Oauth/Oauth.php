@@ -2,10 +2,10 @@
 
 namespace App\Services\ApiManager\Client\Oauth;
 
-use App\Exceptions\OauthResponseException;
-use App\Models\Provider;
-use App\Models\Sr;
-use App\Repositories\OauthAccessTokenRepository;
+use Truvoicer\TruFetcherGet\Exceptions\OauthResponseException;
+use Truvoicer\TruFetcherGet\Models\Provider;
+use Truvoicer\TruFetcherGet\Models\Sr;
+use Truvoicer\TruFetcherGet\Repositories\OauthAccessTokenRepository;
 use App\Services\ApiManager\Client\ApiClientHandler;
 use App\Services\ApiManager\Client\Entity\ApiRequest;
 use App\Services\ApiManager\Data\DataConstants;

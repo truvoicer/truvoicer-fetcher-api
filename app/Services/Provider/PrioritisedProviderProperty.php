@@ -2,10 +2,9 @@
 
 namespace App\Services\Provider;
 
-use App\Models\Property;
-use App\Repositories\ProviderPropertyRepository;
+use Truvoicer\TruFetcherGet\Models\Property;
+use Truvoicer\TruFetcherGet\Repositories\ProviderPropertyRepository;
 use App\Services\ApiManager\Data\DefaultData;
-use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Support\Facades\DB;
 
 class PrioritisedProviderProperty

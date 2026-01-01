@@ -2,10 +2,10 @@
 
 namespace App\Repositories;
 
-use App\Models\Property;
-use App\Models\PropertySrConfig;
-use App\Models\Provider;
-use App\Models\ProviderProperty;
+use Truvoicer\TruFetcherGet\Models\Property;
+use Truvoicer\TruFetcherGet\Models\PropertySrConfig;
+use Truvoicer\TruFetcherGet\Models\Provider;
+use Truvoicer\TruFetcherGet\Models\ProviderProperty;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;

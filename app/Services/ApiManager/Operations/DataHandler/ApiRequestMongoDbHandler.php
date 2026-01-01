@@ -2,11 +2,11 @@
 
 namespace App\Services\ApiManager\Operations\DataHandler;
 
-use App\Enums\Sr\SrType;
-use App\Http\Resources\ApiMongoDbSearchListCollection;
-use App\Http\Resources\ApiSearchItemResource;
-use App\Models\S;
-use App\Repositories\SrRepository;
+use Truvoicer\TruFetcherGet\Enums\Sr\SrType;
+use Truvoicer\TruFetcherGet\Http\Resources\ApiMongoDbSearchListCollection;
+use Truvoicer\TruFetcherGet\Http\Resources\ApiSearchItemResource;
+use Truvoicer\TruFetcherGet\Models\S;
+use Truvoicer\TruFetcherGet\Repositories\SrRepository;
 use App\Services\ApiManager\Data\DataConstants;
 use App\Services\ApiManager\Operations\ApiRequestService;
 use App\Services\ApiManager\Response\Entity\ApiResponse;

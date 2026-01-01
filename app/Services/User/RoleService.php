@@ -2,9 +2,9 @@
 
 namespace App\Services\User;
 
-use App\Models\Role;
+use Truvoicer\TruFetcherGet\Models\Role;
 use App\Models\User;
-use App\Repositories\RoleRepository;
+use Truvoicer\TruFetcherGet\Repositories\RoleRepository;
 use App\Services\BaseService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;

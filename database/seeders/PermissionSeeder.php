@@ -2,8 +2,8 @@
 
 namespace Database\Seeders;
 
-use App\Models\Permission;
-use App\Models\Role;
+use Truvoicer\TruFetcherGet\Models\Permission;
+use Truvoicer\TruFetcherGet\Models\Role;
 use App\Services\Permission\PermissionService;
 use Illuminate\Database\Seeder;
 

@@ -2,12 +2,12 @@
 
 namespace App\Services\User;
 
-use App\Helpers\Db\DbHelpers;
-use App\Models\Role;
+use Truvoicer\TruFetcherGet\Helpers\Db\DbHelpers;
+use Truvoicer\TruFetcherGet\Models\Role;
 use App\Models\User;
-use App\Repositories\PersonalAccessTokenRepository;
-use App\Repositories\RoleRepository;
-use App\Repositories\UserRepository;
+use Truvoicer\TruFetcherGet\Repositories\PersonalAccessTokenRepository;
+use Truvoicer\TruFetcherGet\Repositories\RoleRepository;
+use Truvoicer\TruFetcherGet\Repositories\UserRepository;
 use App\Services\Auth\AuthService;
 use App\Services\BaseService;
 use Laravel\Sanctum\PersonalAccessToken;

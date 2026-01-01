@@ -2,8 +2,8 @@
 
 namespace App\Services\Provider;
 
-use App\Models\Provider;
-use App\Models\Sr;
+use Truvoicer\TruFetcherGet\Models\Provider;
+use Truvoicer\TruFetcherGet\Models\Sr;
 use App\Services\Variable\VariableService;
 
 class ProviderVariableService extends VariableService

@@ -2,7 +2,7 @@
 
 namespace Database\Seeders;
 
-use App\Models\Role;
+use Truvoicer\TruFetcherGet\Models\Role;
 use App\Models\User;
 use App\Services\ApiManager\Data\DefaultData;
 use App\Services\Auth\AuthService;

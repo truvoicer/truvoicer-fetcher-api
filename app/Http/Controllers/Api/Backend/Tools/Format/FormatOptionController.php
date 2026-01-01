@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\Api\Backend\Tools\Format;
 
-use App\Enums\FormatOptions;
+use Truvoicer\TruFetcherGet\Enums\FormatOptions;
 use App\Http\Controllers\Controller;
 class FormatOptionController extends Controller
 {

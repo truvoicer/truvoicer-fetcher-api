@@ -2,18 +2,18 @@
 
 namespace App\Services\Category;
 
-use App\Models\Category;
-use App\Models\CategoryUser;
+use Truvoicer\TruFetcherGet\Models\Category;
+use Truvoicer\TruFetcherGet\Models\CategoryUser;
 use App\Models\User;
-use App\Repositories\CategoryRepository;
-use App\Repositories\PermissionRepository;
-use App\Repositories\ProviderRepository;
-use App\Repositories\CategoryUserRepository;
+use Truvoicer\TruFetcherGet\Repositories\CategoryRepository;
+use Truvoicer\TruFetcherGet\Repositories\PermissionRepository;
+use Truvoicer\TruFetcherGet\Repositories\ProviderRepository;
+use Truvoicer\TruFetcherGet\Repositories\CategoryUserRepository;
 use App\Services\Auth\AuthService;
 use App\Services\BaseService;
 use App\Services\Permission\AccessControlService;
 use App\Services\Permission\PermissionService;
-use App\Helpers\Tools\UtilHelpers;
+use Truvoicer\TruFetcherGet\Helpers\Tools\UtilHelpers;
 use App\Services\User\UserAdminService;
 use Illuminate\Support\Facades\Request;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;

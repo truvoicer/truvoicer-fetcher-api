@@ -2,7 +2,7 @@
 
 namespace Database\Seeders;
 
-use App\Models\Property;
+use Truvoicer\TruFetcherGet\Models\Property;
 use App\Services\ApiManager\Data\DefaultData;
 use App\Services\Property\PropertyService;
 use Illuminate\Database\Seeder;

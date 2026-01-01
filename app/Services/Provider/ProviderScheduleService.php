@@ -2,8 +2,8 @@
 
 namespace App\Services\Provider;
 
-use App\Models\Sr;
-use App\Models\SrSchedule;
+use Truvoicer\TruFetcherGet\Models\Sr;
+use Truvoicer\TruFetcherGet\Models\SrSchedule;
 use App\Models\User;
 use App\Services\ApiServices\ServiceRequests\SrScheduleService;
 use App\Services\ApiServices\ServiceRequests\SrService;

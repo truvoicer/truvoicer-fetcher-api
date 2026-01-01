@@ -2,12 +2,12 @@
 
 namespace App\Services\ApiServices;
 
-use App\Models\Provider;
-use App\Models\ProviderRateLimit;
-use App\Models\Sr;
-use App\Models\SrRateLimit;
-use App\Repositories\ProviderRateLimitRepository;
-use App\Repositories\SrRateLimitRepository;
+use Truvoicer\TruFetcherGet\Models\Provider;
+use Truvoicer\TruFetcherGet\Models\ProviderRateLimit;
+use Truvoicer\TruFetcherGet\Models\Sr;
+use Truvoicer\TruFetcherGet\Models\SrRateLimit;
+use Truvoicer\TruFetcherGet\Repositories\ProviderRateLimitRepository;
+use Truvoicer\TruFetcherGet\Repositories\SrRateLimitRepository;
 use App\Services\ApiServices\ServiceRequests\SrService;
 use App\Services\BaseService;
 use Illuminate\Database\Schema\Blueprint;

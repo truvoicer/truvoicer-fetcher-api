@@ -2,12 +2,12 @@
 
 namespace App\Services\ApiManager\Operations\DataHandler;
 
-use App\Helpers\Operation\Request\OperationRequestBuilder;
-use App\Models\S;
-use App\Models\Sr;
-use App\Repositories\MongoDB\MongoDBQuery;
-use App\Repositories\MongoDB\MongoDBRaw;
-use App\Repositories\MongoDB\MongoDBRepository;
+use Truvoicer\TruFetcherGet\Helpers\Operation\Request\OperationRequestBuilder;
+use Truvoicer\TruFetcherGet\Models\S;
+use Truvoicer\TruFetcherGet\Models\Sr;
+use Truvoicer\TruFetcherGet\Repositories\MongoDB\MongoDBQuery;
+use Truvoicer\TruFetcherGet\Repositories\MongoDB\MongoDBRaw;
+use Truvoicer\TruFetcherGet\Repositories\MongoDB\MongoDBRepository;
 use App\Services\ApiManager\Data\DataConstants;
 use App\Services\ApiManager\Data\DefaultData;
 use App\Services\ApiServices\ServiceRequests\ResponseKeys\SrResponseKeyService;

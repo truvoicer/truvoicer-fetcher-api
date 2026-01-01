@@ -2,8 +2,8 @@
 
 namespace App\Http\Requests\Service;
 
-use App\Models\Provider;
-use App\Models\S;
+use Truvoicer\TruFetcherGet\Models\Provider;
+use Truvoicer\TruFetcherGet\Models\S;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 

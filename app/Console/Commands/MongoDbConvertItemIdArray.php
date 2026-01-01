@@ -2,8 +2,8 @@
 
 namespace App\Console\Commands;
 
-use App\Repositories\MongoDB\MongoDBRepository;
-use App\Repositories\SrRepository;
+use Truvoicer\TruFetcherGet\Repositories\MongoDB\MongoDBRepository;
+use Truvoicer\TruFetcherGet\Repositories\SrRepository;
 use Illuminate\Console\Command;
 use Illuminate\Database\Eloquent\Collection;
 use Symfony\Component\Console\Command\Command as CommandAlias;

@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\Api\Backend\Services;
 
-use App\Enums\Sr\SrType;
+use Truvoicer\TruFetcherGet\Enums\Sr\SrType;
 use App\Enums\Variable\VariableType;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Service\Request\CreateChildSrRequest;
@@ -15,11 +15,11 @@ use App\Http\Requests\Service\Request\UpdateSrDefaultsRequest;
 use App\Http\Requests\Service\Request\UpdateSrRequest;
 use App\Http\Resources\Service\ServiceRequest\ServiceRequestCollection;
 use App\Http\Resources\Service\ServiceRequest\ServiceRequestResource;
-use App\Http\Resources\Service\ServiceRequest\SrTreeViewCollection;
-use App\Models\Provider;
-use App\Models\S;
-use App\Models\Sr;
-use App\Repositories\SrResponseKeySrRepository;
+use Truvoicer\TruFetcherGet\Http\Resources\Service\ServiceRequest\SrTreeViewCollection;
+use Truvoicer\TruFetcherGet\Models\Provider;
+use Truvoicer\TruFetcherGet\Models\S;
+use Truvoicer\TruFetcherGet\Models\Sr;
+use Truvoicer\TruFetcherGet\Repositories\SrResponseKeySrRepository;
 use App\Services\ApiManager\Operations\ApiRequestService;
 use App\Services\ApiServices\ApiService;
 use App\Services\ApiServices\ServiceRequests\ResponseKeys\Populate\PopulateFactory;

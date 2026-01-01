@@ -5,7 +5,7 @@ namespace App\Http\Requests;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 use App\Enums\ApiFetchType;
-use App\Enums\DatabaseFilterType;
+use Truvoicer\TruFetcherGet\Enums\DatabaseFilterType;
 use Illuminate\Validation\Validator;
 
 class OperationsRequest extends FormRequest

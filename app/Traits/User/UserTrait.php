@@ -3,7 +3,7 @@
 namespace App\Traits\User;
 
 use App\Models\User;
-use App\Repositories\UserRepository;
+use Truvoicer\TruFetcherGet\Repositories\UserRepository;
 
 trait UserTrait
 {

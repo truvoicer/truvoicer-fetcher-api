@@ -2,17 +2,17 @@
 
 namespace App\Services\ApiServices\ServiceRequests;
 
-use App\Enums\Sr\SrType;
-use App\Models\Provider;
-use App\Models\S;
-use App\Models\Sr;
-use App\Models\SrResponseKeySr;
-use App\Models\SrSchedule;
+use Truvoicer\TruFetcherGet\Enums\Sr\SrType;
+use Truvoicer\TruFetcherGet\Models\Provider;
+use Truvoicer\TruFetcherGet\Models\S;
+use Truvoicer\TruFetcherGet\Models\Sr;
+use Truvoicer\TruFetcherGet\Models\SrResponseKeySr;
+use Truvoicer\TruFetcherGet\Models\SrSchedule;
 use App\Models\User;
-use App\Repositories\MongoDB\MongoDBQuery;
-use App\Repositories\MongoDB\MongoDBRepository;
-use App\Repositories\SrResponseKeyRepository;
-use App\Repositories\SrResponseKeySrRepository;
+use Truvoicer\TruFetcherGet\Repositories\MongoDB\MongoDBQuery;
+use Truvoicer\TruFetcherGet\Repositories\MongoDB\MongoDBRepository;
+use Truvoicer\TruFetcherGet\Repositories\SrResponseKeyRepository;
+use Truvoicer\TruFetcherGet\Repositories\SrResponseKeySrRepository;
 use App\Services\ApiManager\Data\DataConstants;
 use App\Services\ApiManager\Operations\ApiRequestService;
 use App\Services\ApiManager\Response\Entity\ApiResponse;

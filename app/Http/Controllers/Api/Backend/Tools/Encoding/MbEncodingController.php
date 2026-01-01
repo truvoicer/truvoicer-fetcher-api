@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\Api\Backend\Tools\Encoding;
 
-use App\Enums\MbEncoding;
+use Truvoicer\TruFetcherGet\Enums\MbEncoding;
 use App\Http\Controllers\Controller;
 class MbEncodingController extends Controller
 {

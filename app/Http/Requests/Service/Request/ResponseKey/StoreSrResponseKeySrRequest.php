@@ -2,9 +2,9 @@
 
 namespace App\Http\Requests\Service\Request\ResponseKey;
 
-use App\Models\Provider;
-use App\Models\SrResponseKey;
-use App\Models\SrResponseKeySr;
+use Truvoicer\TruFetcherGet\Models\Provider;
+use Truvoicer\TruFetcherGet\Models\SrResponseKey;
+use Truvoicer\TruFetcherGet\Models\SrResponseKeySr;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 

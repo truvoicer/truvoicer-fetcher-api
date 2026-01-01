@@ -2,7 +2,7 @@
 
 namespace App\Providers;
 
-use App\Models\Provider;
+use Truvoicer\TruFetcherGet\Models\Provider;
 use App\Models\User;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Foundation\Support\Providers\RouteServiceProvider as ServiceProvider;

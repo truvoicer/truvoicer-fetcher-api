@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Api\Frontend;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\OperationsRequest;
-use App\Services\ApiManager\Operations\DataHandler\ApiRequestDataInterface;
+use Truvoicer\TruFetcherGet\Services\ApiManager\Operations\DataHandler\ApiRequestDataInterface;
 
 /**
  * Require ROLE_ADMIN for *every* controller method in this class.

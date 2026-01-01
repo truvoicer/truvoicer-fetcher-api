@@ -2,13 +2,12 @@
 
 namespace App\Services\ApiManager\Operations\DataHandler;
 
-use App\Enums\Sr\SrType;
-use App\Events\ProcessSrOperationDataEvent;
-use App\Http\Resources\ApiDirectSearchListCollection;
-use App\Http\Resources\ApiSearchItemResource;
-use App\Models\Sr;
-use App\Paginators\CollectionPaginator;
-use App\Repositories\SrRepository;
+use Truvoicer\TruFetcherGet\Enums\Sr\SrType;
+use Truvoicer\TruFetcherGet\Events\ProcessSrOperationDataEvent;
+use Truvoicer\TruFetcherGet\Http\Resources\ApiDirectSearchListCollection;
+use Truvoicer\TruFetcherGet\Http\Resources\ApiSearchItemResource;
+use Truvoicer\TruFetcherGet\Models\Sr;
+use Truvoicer\TruFetcherGet\Paginators\CollectionPaginator;
 use App\Services\ApiManager\Data\DataConstants;
 use App\Services\ApiManager\Operations\ApiRequestService;
 use App\Services\ApiManager\Response\Entity\ApiResponse;

@@ -2,7 +2,7 @@
 
 namespace Database\Factories;
 
-use App\Models\Property;
+use Truvoicer\TruFetcherGet\Models\Property;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**

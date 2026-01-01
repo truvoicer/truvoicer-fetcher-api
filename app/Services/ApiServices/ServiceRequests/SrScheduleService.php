@@ -2,11 +2,11 @@
 
 namespace App\Services\ApiServices\ServiceRequests;
 
-use App\Models\Sr;
-use App\Models\SrSchedule;
+use Truvoicer\TruFetcherGet\Models\Sr;
+use Truvoicer\TruFetcherGet\Models\SrSchedule;
 use App\Models\User;
-use App\Repositories\SrResponseKeySrRepository;
-use App\Repositories\SrScheduleRepository;
+use Truvoicer\TruFetcherGet\Repositories\SrResponseKeySrRepository;
+use Truvoicer\TruFetcherGet\Repositories\SrScheduleRepository;
 use App\Services\BaseService;
 use App\Services\Provider\ProviderEventService;
 use Illuminate\Support\Arr;

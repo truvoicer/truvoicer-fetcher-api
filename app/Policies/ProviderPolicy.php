@@ -2,7 +2,7 @@
 
 namespace App\Policies;
 
-use App\Models\Provider;
+use Truvoicer\TruFetcherGet\Models\Provider;
 use App\Models\User;
 use App\Services\Auth\AuthService;
 use App\Services\Permission\PermissionService;

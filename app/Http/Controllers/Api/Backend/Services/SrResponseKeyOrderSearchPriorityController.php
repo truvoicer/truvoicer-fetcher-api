@@ -4,9 +4,9 @@ namespace App\Http\Controllers\Api\Backend\Services;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Service\Request\ResponseKey\UpdateSrResponseKeySearchPriorityOrderRequest;
-use App\Models\Provider;
-use App\Models\Sr;
-use App\Models\SrResponseKey;
+use Truvoicer\TruFetcherGet\Models\Provider;
+use Truvoicer\TruFetcherGet\Models\Sr;
+use Truvoicer\TruFetcherGet\Models\SrResponseKey;
 use App\Services\ApiServices\ServiceRequests\ResponseKeys\SrResponseKeyService;
 use App\Services\Permission\PermissionService;
 use Illuminate\Http\Request;

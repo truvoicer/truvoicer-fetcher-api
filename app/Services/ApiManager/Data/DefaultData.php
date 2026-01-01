@@ -2,7 +2,7 @@
 
 namespace App\Services\ApiManager\Data;
 
-use App\Enums\Property\PropertyType;
+use Truvoicer\TruFetcherGet\Enums\Property\PropertyType;
 
 class DefaultData
 {

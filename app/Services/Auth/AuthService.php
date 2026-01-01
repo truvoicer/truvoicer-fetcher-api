@@ -2,8 +2,8 @@
 
 namespace App\Services\Auth;
 
-use App\Helpers\Db\DbHelpers;
-use App\Repositories\RoleRepository;
+use Truvoicer\TruFetcherGet\Helpers\Db\DbHelpers;
+use Truvoicer\TruFetcherGet\Repositories\RoleRepository;
 use Illuminate\Database\Eloquent\Collection;
 
 class AuthService

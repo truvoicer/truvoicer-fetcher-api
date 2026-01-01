@@ -2,7 +2,7 @@
 
 namespace App\Http\Requests\Service\Request\RateLimit;
 
-use App\Models\SrRateLimit;
+use Truvoicer\TruFetcherGet\Models\SrRateLimit;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 

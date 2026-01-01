@@ -2,9 +2,9 @@
 
 namespace App\Providers;
 
-use App\Events\ProcessSrOperationDataEvent;
-use App\Events\RunProviderSrOperationEvent;
-use App\Events\RunSrOperationEvent;
+use Truvoicer\TruFetcherGet\Events\ProcessSrOperationDataEvent;
+use Truvoicer\TruFetcherGet\Events\RunProviderSrOperationEvent;
+use Truvoicer\TruFetcherGet\Events\RunSrOperationEvent;
 use App\Listeners\ProcessSrOperationDataListener;
 use App\Listeners\RunProviderSrOperationListener;
 use App\Listeners\RunSrOperationListener;

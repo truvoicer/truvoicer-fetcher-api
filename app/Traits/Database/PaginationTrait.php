@@ -2,9 +2,9 @@
 
 namespace App\Traits\Database;
 
-use App\Helpers\Tools\ClassHelpers;
+use Truvoicer\TruFetcherGet\Helpers\Tools\ClassHelpers;
 use App\Models\User;
-use App\Repositories\PermissionRepository;
+use Truvoicer\TruFetcherGet\Repositories\PermissionRepository;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;

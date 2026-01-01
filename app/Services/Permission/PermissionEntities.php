@@ -1,13 +1,10 @@
 <?php
 namespace App\Services\Permission;
 
-use App\Helpers\Db\DbHelpers;
-use App\Helpers\Tools\ClassHelpers;
+use Truvoicer\TruFetcherGet\Helpers\Db\DbHelpers;
+use Truvoicer\TruFetcherGet\Helpers\Tools\ClassHelpers;
 use App\Models\User;
-use App\Repositories\BaseRepository;
-use App\Services\Category\CategoryService;
-use App\Services\Provider\ProviderService;
-use App\Services\ServiceFactory;
+use Truvoicer\TruFetcherGet\Repositories\BaseRepository;
 use App\Traits\Error\ErrorTrait;
 use Illuminate\Database\Eloquent\Model;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;

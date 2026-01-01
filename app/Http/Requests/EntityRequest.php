@@ -2,7 +2,7 @@
 
 namespace App\Http\Requests;
 
-use App\Enums\Entity\EntityType;
+use Truvoicer\TruFetcherGet\Enums\Entity\EntityType;
 use App\Services\EntityService;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;

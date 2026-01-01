@@ -8,8 +8,8 @@ use App\Http\Requests\Property\DeleteBatchPropertyRequest;
 use App\Http\Requests\Property\UpdatePropertyRequest;
 use App\Http\Resources\PropertyCollection;
 use App\Http\Resources\PropertyResource;
-use App\Models\Property;
-use App\Repositories\PropertyRepository;
+use Truvoicer\TruFetcherGet\Models\Property;
+use Truvoicer\TruFetcherGet\Repositories\PropertyRepository;
 use App\Services\Property\PropertyService;
 use Illuminate\Http\Request;
 

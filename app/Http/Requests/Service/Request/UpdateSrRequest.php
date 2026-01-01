@@ -2,11 +2,11 @@
 
 namespace App\Http\Requests\Service\Request;
 
-use App\Enums\Api\ApiListKey;
-use App\Enums\FormatOptions;
-use App\Enums\Sr\SrType;
-use App\Models\Sr;
-use App\Repositories\SrRepository;
+use Truvoicer\TruFetcherGet\Enums\Api\ApiListKey;
+use Truvoicer\TruFetcherGet\Enums\FormatOptions;
+use Truvoicer\TruFetcherGet\Enums\Sr\SrType;
+use Truvoicer\TruFetcherGet\Models\Sr;
+use Truvoicer\TruFetcherGet\Repositories\SrRepository;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 

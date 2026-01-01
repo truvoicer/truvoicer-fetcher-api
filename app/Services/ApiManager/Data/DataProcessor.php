@@ -2,12 +2,12 @@
 
 namespace App\Services\ApiManager\Data;
 
-use App\Enums\MbEncoding;
-use App\Enums\Property\PropertyType;
-use App\Models\Property;
-use App\Models\Provider;
-use App\Models\ProviderProperty;
-use App\Models\SrConfig;
+use Truvoicer\TruFetcherGet\Enums\MbEncoding;
+use Truvoicer\TruFetcherGet\Enums\Property\PropertyType;
+use Truvoicer\TruFetcherGet\Models\Property;
+use Truvoicer\TruFetcherGet\Models\Provider;
+use Truvoicer\TruFetcherGet\Models\ProviderProperty;
+use Truvoicer\TruFetcherGet\Models\SrConfig;
 use App\Services\ApiManager\ApiBase;
 use App\Services\Provider\ProviderService;
 use Illuminate\Database\Eloquent\Collection;

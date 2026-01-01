@@ -2,7 +2,7 @@
 
 namespace App\Services\ApiManager\Response\Handlers\Xml;
 
-use App\Enums\Api\ApiListKey;
+use Truvoicer\TruFetcherGet\Enums\Api\ApiListKey;
 use App\Services\ApiManager\Response\Handlers\ResponseHandler;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 

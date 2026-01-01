@@ -2,10 +2,10 @@
 
 namespace Database\Factories;
 
-use App\Enums\Api\ApiListKey;
-use App\Enums\FormatOptions;
+use Truvoicer\TruFetcherGet\Enums\Api\ApiListKey;
+use Truvoicer\TruFetcherGet\Enums\FormatOptions;
 use App\Enums\Sr\PaginationType;
-use App\Enums\Sr\SrType;
+use Truvoicer\TruFetcherGet\Enums\Sr\SrType;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Str;
 

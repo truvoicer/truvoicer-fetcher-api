@@ -3,11 +3,11 @@
 namespace App\Services\ApiManager\Response;
 
 use App\Enums\Api\ApiType;
-use App\Enums\Property\PropertyType;
-use App\Enums\Sr\SrType;
-use App\Exceptions\Api\Response\ApiResponseException;
-use App\Models\Provider;
-use App\Models\Sr;
+use Truvoicer\TruFetcherGet\Enums\Property\PropertyType;
+use Truvoicer\TruFetcherGet\Enums\Sr\SrType;
+use Truvoicer\TruFetcherGet\Exceptions\Api\Response\ApiResponseException;
+use Truvoicer\TruFetcherGet\Models\Provider;
+use Truvoicer\TruFetcherGet\Models\Sr;
 use App\Models\User;
 use App\Services\Ai\DeepSeek\DeepSeekClient;
 use App\Services\Ai\Gemini\GeminiClient;

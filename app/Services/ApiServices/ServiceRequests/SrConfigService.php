@@ -1,13 +1,13 @@
 <?php
 namespace App\Services\ApiServices\ServiceRequests;
 
-use App\Enums\Property\PropertyType;
-use App\Models\Property;
-use App\Models\Sr;
-use App\Models\SrConfig;
+use Truvoicer\TruFetcherGet\Enums\Property\PropertyType;
+use Truvoicer\TruFetcherGet\Models\Property;
+use Truvoicer\TruFetcherGet\Models\Sr;
+use Truvoicer\TruFetcherGet\Models\SrConfig;
 use App\Models\User;
-use App\Repositories\PropertyRepository;
-use App\Repositories\SrConfigRepository;
+use Truvoicer\TruFetcherGet\Repositories\PropertyRepository;
+use Truvoicer\TruFetcherGet\Repositories\SrConfigRepository;
 use App\Services\ApiManager\ApiBase;
 use App\Services\ApiManager\Data\DataConstants;
 use App\Services\ApiManager\Data\DefaultData;

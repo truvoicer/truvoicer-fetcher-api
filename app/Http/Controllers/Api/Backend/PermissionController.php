@@ -7,7 +7,7 @@ use App\Http\Resources\CategoryCollection;
 use App\Http\Resources\PermissionCollection;
 use App\Http\Resources\PermissionResource;
 use App\Http\Resources\ProviderCollection;
-use App\Models\Permission;
+use Truvoicer\TruFetcherGet\Models\Permission;
 use App\Models\User;
 use App\Services\Category\CategoryService;
 use App\Services\Permission\AccessControlService;

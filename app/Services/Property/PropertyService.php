@@ -1,11 +1,11 @@
 <?php
 namespace App\Services\Property;
 
-use App\Models\Property;
-use App\Models\Provider;
-use App\Models\ProviderProperty;
-use App\Models\SrConfig;
-use App\Repositories\PropertyRepository;
+use Truvoicer\TruFetcherGet\Models\Property;
+use Truvoicer\TruFetcherGet\Models\Provider;
+use Truvoicer\TruFetcherGet\Models\ProviderProperty;
+use Truvoicer\TruFetcherGet\Models\SrConfig;
+use Truvoicer\TruFetcherGet\Repositories\PropertyRepository;
 use App\Services\BaseService;
 use App\Services\Permission\AccessControlService;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;

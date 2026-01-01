@@ -2,9 +2,9 @@
 
 namespace App\Services\ApiServices\ServiceRequests\ResponseKeys\Populate\Types;
 
-use App\Enums\Api\ApiListKey;
-use App\Enums\Sr\SrType;
-use App\Models\Sr;
+use Truvoicer\TruFetcherGet\Enums\Api\ApiListKey;
+use Truvoicer\TruFetcherGet\Enums\Sr\SrType;
+use Truvoicer\TruFetcherGet\Models\Sr;
 use App\Services\ApiManager\Data\DataConstants;
 use App\Services\ApiManager\Data\DataProcessor;
 use App\Services\ApiManager\Operations\ApiRequestService;

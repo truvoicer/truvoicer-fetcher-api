@@ -2,11 +2,11 @@
 
 namespace App\Services\ApiManager\Operations\DataHandler;
 
-use App\Enums\Sr\SrType;
-use App\Models\Provider;
-use App\Models\S;
+use Truvoicer\TruFetcherGet\Enums\Sr\SrType;
+use Truvoicer\TruFetcherGet\Models\Provider;
+use Truvoicer\TruFetcherGet\Models\S;
 use App\Models\User;
-use App\Repositories\SrRepository;
+use Truvoicer\TruFetcherGet\Repositories\SrRepository;
 use App\Services\ApiManager\Operations\ApiRequestService;
 use App\Services\ApiManager\Response\Entity\ApiResponse;
 use App\Services\ApiServices\ApiService;

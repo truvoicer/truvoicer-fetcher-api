@@ -2,7 +2,7 @@
 
 namespace App\Services\Property;
 
-use App\Enums\Property\PropertyType;
+use Truvoicer\TruFetcherGet\Enums\Property\PropertyType;
 use App\Services\ApiManager\Data\DataConstants;
 
 class PropertyProfilesService {

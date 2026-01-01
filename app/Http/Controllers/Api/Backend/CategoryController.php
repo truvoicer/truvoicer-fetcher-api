@@ -8,7 +8,7 @@ use App\Http\Requests\Category\DeleteBatchCategoryRequest;
 use App\Http\Requests\Category\UpdateCategoryRequest;
 use App\Http\Resources\CategoryCollection;
 use App\Http\Resources\CategoryResource;
-use App\Models\Category;
+use Truvoicer\TruFetcherGet\Models\Category;
 use App\Services\Auth\AuthService;
 use App\Services\Category\CategoryService;
 use App\Services\Permission\AccessControlService;

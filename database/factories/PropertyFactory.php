@@ -2,7 +2,7 @@
 
 namespace Database\Factories;
 
-use App\Enums\Entity\EntityType;
+use Truvoicer\TruFetcherGet\Enums\Entity\EntityType;
 use App\Services\ApiManager\Data\DataConstants;
 use App\Services\EntityService;
 use Illuminate\Database\Eloquent\Factories\Factory;

@@ -3,8 +3,8 @@
 namespace App\Http\Requests\Service\Request\ResponseKey;
 
 use App\Enums\Ai\AiClient;
-use App\Enums\Property\PropertyType;
-use App\Models\Sr;
+use Truvoicer\TruFetcherGet\Enums\Property\PropertyType;
+use Truvoicer\TruFetcherGet\Models\Sr;
 use App\Services\ApiManager\Data\DataConstants;
 use App\Services\ApiServices\ServiceRequests\SrConfigService;
 use Illuminate\Foundation\Http\FormRequest;

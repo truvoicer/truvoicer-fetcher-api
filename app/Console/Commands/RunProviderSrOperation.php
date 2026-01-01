@@ -2,7 +2,7 @@
 
 namespace App\Console\Commands;
 
-use App\Models\Provider;
+use Truvoicer\TruFetcherGet\Models\Provider;
 use App\Models\User;
 use App\Services\ApiServices\ServiceRequests\SrOperationsService;
 use App\Services\Provider\ProviderEventService;

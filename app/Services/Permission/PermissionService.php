@@ -1,10 +1,9 @@
 <?php
 namespace App\Services\Permission;
 
-use App\Models\Permission;
-use App\Repositories\PermissionRepository;
+use Truvoicer\TruFetcherGet\Models\Permission;
+use Truvoicer\TruFetcherGet\Repositories\PermissionRepository;
 use App\Services\BaseService;
-use App\Services\Tools\HttpRequestService;
 use Illuminate\Database\Eloquent\Model;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 

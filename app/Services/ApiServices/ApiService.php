@@ -2,13 +2,13 @@
 
 namespace App\Services\ApiServices;
 
-use App\Models\S;
+use Truvoicer\TruFetcherGet\Models\S;
 use App\Models\User;
-use App\Repositories\SRepository;
-use App\Repositories\SrParameterRepository;
-use App\Repositories\SrRepository;
+use Truvoicer\TruFetcherGet\Repositories\SRepository;
+use Truvoicer\TruFetcherGet\Repositories\SrParameterRepository;
+use Truvoicer\TruFetcherGet\Repositories\SrRepository;
 use App\Services\BaseService;
-use App\Helpers\Tools\UtilHelpers;
+use Truvoicer\TruFetcherGet\Helpers\Tools\UtilHelpers;
 use App\Services\Permission\AccessControlService;
 use App\Services\Permission\PermissionService;
 use Illuminate\Database\Eloquent\Collection;

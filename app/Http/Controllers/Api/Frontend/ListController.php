@@ -3,9 +3,9 @@
 namespace App\Http\Controllers\Api\Frontend;
 
 use App\Http\Controllers\Controller;
-use App\Http\Resources\ProviderMinimalCollection;
-use App\Models\Category;
-use App\Models\S;
+use Truvoicer\TruFetcherGet\Http\Resources\ProviderMinimalCollection;
+use Truvoicer\TruFetcherGet\Models\Category;
+use Truvoicer\TruFetcherGet\Models\S;
 use App\Services\ApiServices\ApiService;
 use App\Services\ApiServices\SResponseKeysService;
 use App\Services\ApiServices\ServiceRequests\SrConfigService;

@@ -2,8 +2,8 @@
 
 namespace App\Listeners;
 
-use App\Events\RunProviderSrOperationEvent;
-use App\Models\Provider;
+use Truvoicer\TruFetcherGet\Events\RunProviderSrOperationEvent;
+use Truvoicer\TruFetcherGet\Models\Provider;
 use App\Models\User;
 use App\Services\ApiServices\ServiceRequests\SrOperationsService;
 use App\Services\Provider\ProviderService;

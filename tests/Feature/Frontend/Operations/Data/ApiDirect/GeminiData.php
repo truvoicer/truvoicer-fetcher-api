@@ -2,11 +2,11 @@
 
 namespace Tests\Feature\Frontend\Operations\Data\ApiDirect;
 
-use App\Enums\Api\ApiListKey;
-use App\Enums\Api\ApiResponseFormat;
+use Truvoicer\TruFetcherGet\Enums\Api\ApiListKey;
+use Truvoicer\TruFetcherGet\Enums\Api\ApiResponseFormat;
 use App\Enums\Api\ApiType;
-use App\Enums\Property\PropertyType;
-use App\Exceptions\Api\Response\ApiResponseException;
+use Truvoicer\TruFetcherGet\Enums\Property\PropertyType;
+use Truvoicer\TruFetcherGet\Exceptions\Api\Response\ApiResponseException;
 
 class GeminiData
 {

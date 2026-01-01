@@ -2,8 +2,8 @@
 
 namespace App\Http\Requests\Provider\RateLimit;
 
-use App\Models\ProviderRateLimit;
-use App\Models\SrRateLimit;
+use Truvoicer\TruFetcherGet\Models\ProviderRateLimit;
+use Truvoicer\TruFetcherGet\Models\SrRateLimit;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 

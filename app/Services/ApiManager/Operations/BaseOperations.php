@@ -3,15 +3,15 @@
 namespace App\Services\ApiManager\Operations;
 
 use App\Enums\Api\ApiType;
-use App\Enums\Property\PropertyType;
-use App\Exceptions\Api\Operation\ApiOperationException;
-use App\Exceptions\Api\Response\ApiResponseException;
-use App\Exceptions\OauthResponseException;
-use App\Models\Provider;
-use App\Models\ProviderRateLimit;
-use App\Models\Sr;
-use App\Models\SrConfig;
-use App\Models\SrRateLimit;
+use Truvoicer\TruFetcherGet\Enums\Property\PropertyType;
+use Truvoicer\TruFetcherGet\Exceptions\Api\Operation\ApiOperationException;
+use Truvoicer\TruFetcherGet\Exceptions\Api\Response\ApiResponseException;
+use Truvoicer\TruFetcherGet\Exceptions\OauthResponseException;
+use Truvoicer\TruFetcherGet\Models\Provider;
+use Truvoicer\TruFetcherGet\Models\ProviderRateLimit;
+use Truvoicer\TruFetcherGet\Models\Sr;
+use Truvoicer\TruFetcherGet\Models\SrConfig;
+use Truvoicer\TruFetcherGet\Models\SrRateLimit;
 use App\Services\ApiManager\ApiBase;
 use App\Services\ApiManager\Client\ApiClientHandler;
 use App\Services\ApiManager\Client\Entity\ApiRequest;
@@ -555,7 +555,6 @@ class BaseOperations extends ApiBase
      */
     public function setProviderByName($providerName): void
     {
-        dd(2);
         $provider = $this->providerService->getUserProviderByName($this->getUser(), $providerName);
 
         if (!$provider instanceof Provider) {

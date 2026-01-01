@@ -2,9 +2,9 @@
 
 namespace App\Services\ApiServices\ServiceRequests;
 
-use App\Models\Sr;
-use App\Models\SrParameter;
-use App\Repositories\SrParameterRepository;
+use Truvoicer\TruFetcherGet\Models\Sr;
+use Truvoicer\TruFetcherGet\Models\SrParameter;
+use Truvoicer\TruFetcherGet\Repositories\SrParameterRepository;
 use App\Services\BaseService;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 

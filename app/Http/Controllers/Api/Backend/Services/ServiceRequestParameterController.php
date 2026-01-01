@@ -9,9 +9,9 @@ use App\Http\Requests\Service\Request\Parameter\UpdateServiceRequestParameterReq
 use App\Http\Resources\Service\ServiceRequest\ServiceRequestParameterCollection;
 use App\Http\Resources\Service\ServiceRequest\ServiceRequestParameterResource;
 use App\Http\Resources\Service\ServiceRequest\ServiceRequestResource;
-use App\Models\Provider;
-use App\Models\Sr;
-use App\Models\SrParameter;
+use Truvoicer\TruFetcherGet\Models\Provider;
+use Truvoicer\TruFetcherGet\Models\Sr;
+use Truvoicer\TruFetcherGet\Models\SrParameter;
 use App\Services\ApiServices\ServiceRequests\SrParametersService;
 use App\Services\Permission\AccessControlService;
 use App\Services\Permission\PermissionService;

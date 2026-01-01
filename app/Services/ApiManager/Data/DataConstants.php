@@ -2,8 +2,8 @@
 
 namespace App\Services\ApiManager\Data;
 
-use App\Enums\Api\ApiListKey;
-use App\Enums\Property\PropertyType;
+use Truvoicer\TruFetcherGet\Enums\Api\ApiListKey;
+use Truvoicer\TruFetcherGet\Enums\Property\PropertyType;
 
 class DataConstants
 {

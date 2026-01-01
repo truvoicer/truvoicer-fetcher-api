@@ -2,13 +2,13 @@
 
 namespace App\Console\Commands;
 
-use App\Helpers\Tools\DateHelpers;
+use Truvoicer\TruFetcherGet\Helpers\Tools\DateHelpers;
 use App\Http\Requests\Admin\User\CreateUserRequest;
-use App\Models\Role;
-use App\Helpers\Tools\UtilHelpers;
-use App\Models\Sr;
-use App\Repositories\MongoDB\MongoDBRepository;
-use App\Repositories\SrRepository;
+use Truvoicer\TruFetcherGet\Models\Role;
+use Truvoicer\TruFetcherGet\Helpers\Tools\UtilHelpers;
+use Truvoicer\TruFetcherGet\Models\Sr;
+use Truvoicer\TruFetcherGet\Repositories\MongoDB\MongoDBRepository;
+use Truvoicer\TruFetcherGet\Repositories\SrRepository;
 use App\Services\ApiServices\ServiceRequests\ResponseKeys\SrResponseKeyService;
 use App\Services\User\RoleService;
 use App\Services\User\UserAdminService;

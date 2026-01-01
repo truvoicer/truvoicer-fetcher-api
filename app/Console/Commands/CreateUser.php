@@ -3,8 +3,8 @@
 namespace App\Console\Commands;
 
 use App\Http\Requests\Admin\User\CreateUserRequest;
-use App\Models\Role;
-use App\Helpers\Tools\UtilHelpers;
+use Truvoicer\TruFetcherGet\Models\Role;
+use Truvoicer\TruFetcherGet\Helpers\Tools\UtilHelpers;
 use App\Services\User\RoleService;
 use App\Services\User\UserAdminService;
 use Illuminate\Console\Command;
