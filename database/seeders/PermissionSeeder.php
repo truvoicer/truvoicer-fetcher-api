@@ -4,7 +4,7 @@ namespace Database\Seeders;
 
 use Truvoicer\TruFetcherGet\Models\Permission;
 use Truvoicer\TruFetcherGet\Models\Role;
-use App\Services\Permission\PermissionService;
+use Truvoicer\TruFetcherGet\Services\Permission\PermissionService;
 use Illuminate\Database\Seeder;
 
 class PermissionSeeder extends Seeder

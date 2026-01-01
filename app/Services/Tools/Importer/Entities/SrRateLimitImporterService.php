@@ -9,9 +9,9 @@ use App\Enums\Import\ImportType;
 use Truvoicer\TruFetcherGet\Helpers\Tools\UtilHelpers;
 use Truvoicer\TruFetcherGet\Models\Sr;
 use Truvoicer\TruFetcherGet\Models\SrRateLimit;
-use App\Services\ApiServices\RateLimitService;
-use App\Services\ApiServices\ServiceRequests\SrService;
-use App\Services\Permission\AccessControlService;
+use Truvoicer\TruFetcherGet\Services\ApiServices\RateLimitService;
+use Truvoicer\TruFetcherGet\Services\ApiServices\ServiceRequests\SrService;
+use Truvoicer\TruFetcherGet\Services\Permission\AccessControlService;
 use Exception;
 
 class SrRateLimitImporterService extends ImporterBase

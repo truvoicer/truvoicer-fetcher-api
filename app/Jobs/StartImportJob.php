@@ -6,7 +6,7 @@ use App\Models\User;
 use App\Notifications\ImportCompletedNotification;
 use App\Notifications\ImportStartedNotification;
 use App\Services\Tools\IExport\ImportService;
-use App\Services\User\UserAdminService;
+use Truvoicer\TruFetcherGet\Services\User\UserAdminService;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
 use Illuminate\Support\Facades\App;

@@ -3,11 +3,12 @@
 namespace App\Services;
 
 use App\Models\User;
-use App\Services\ApiServices\ServiceRequests\ResponseKeys\SrResponseKeyService;
-use App\Services\ApiServices\ServiceRequests\SrConfigService;
-use App\Services\ApiServices\SResponseKeysService;
-use App\Services\Provider\ProviderService;
-use App\Traits\Error\ErrorTrait;
+use Truvoicer\TruFetcherGet\Services\ApiServices\ServiceRequests\ResponseKeys\SrResponseKeyService;
+use Truvoicer\TruFetcherGet\Services\ApiServices\ServiceRequests\SrConfigService;
+use Truvoicer\TruFetcherGet\Services\ApiServices\SResponseKeysService;
+use Truvoicer\TruFetcherGet\Services\Provider\ProviderService;
+use Truvoicer\TruFetcherGet\Traits\Error\ErrorTrait;
+use Truvoicer\TruFetcherGet\Services\BaseService;
 
 class ValidatorService extends BaseService
 {

@@ -16,7 +16,7 @@ use Truvoicer\TruFetcherGet\Models\Sr;
 use Truvoicer\TruFetcherGet\Models\SrSchedule;
 use App\Models\User;
 use Truvoicer\TruFetcherGet\Repositories\MongoDB\MongoDBRepository;
-use App\Services\ApiManager\Operations\DataHandler\ApiRequestMongoDbHandler;
+use Truvoicer\TruFetcherGet\Services\ApiManager\Operations\DataHandler\ApiRequestMongoDbHandler;
 use App\Services\Provider\ProviderScheduleService;
 use Database\Seeders\PropertySeeder;
 use Database\Seeders\RoleSeeder;

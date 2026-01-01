@@ -2,7 +2,7 @@
 
 namespace Database\Factories;
 
-use App\Services\Auth\AuthService;
+use Truvoicer\TruFetcherGet\Services\Auth\AuthService;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**

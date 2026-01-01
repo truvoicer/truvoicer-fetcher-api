@@ -9,9 +9,9 @@ use App\Enums\Import\ImportType;
 use Truvoicer\TruFetcherGet\Helpers\Tools\UtilHelpers;
 use Truvoicer\TruFetcherGet\Models\Sr;
 use Truvoicer\TruFetcherGet\Models\SrSchedule;
-use App\Services\ApiServices\ServiceRequests\SrScheduleService;
-use App\Services\ApiServices\ServiceRequests\SrService;
-use App\Services\Permission\AccessControlService;
+use Truvoicer\TruFetcherGet\Services\ApiServices\ServiceRequests\SrScheduleService;
+use Truvoicer\TruFetcherGet\Services\ApiServices\ServiceRequests\SrService;
+use Truvoicer\TruFetcherGet\Services\Permission\AccessControlService;
 
 class SrScheduleImporterService extends ImporterBase
 {

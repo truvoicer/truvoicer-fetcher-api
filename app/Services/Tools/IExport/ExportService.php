@@ -3,15 +3,15 @@
 namespace App\Services\Tools\IExport;
 
 use App\Models\User;
-use App\Services\ApiServices\ApiService;
-use App\Services\Category\CategoryService;
-use App\Services\Permission\AccessControlService;
-use App\Services\Property\PropertyService;
-use App\Services\Provider\ProviderService;
+use Truvoicer\TruFetcherGet\Services\ApiServices\ApiService;
+use Truvoicer\TruFetcherGet\Services\Category\CategoryService;
+use Truvoicer\TruFetcherGet\Services\Permission\AccessControlService;
+use Truvoicer\TruFetcherGet\Services\Property\PropertyService;
+use Truvoicer\TruFetcherGet\Services\Provider\ProviderService;
 use App\Services\ServiceFactory;
 use App\Services\Tools\FileSystem\Downloads\DownloadsFileSystemService;
 use App\Services\Tools\SerializerService;
-use App\Traits\User\UserTrait;
+use Truvoicer\TruFetcherGet\Traits\User\UserTrait;
 use Illuminate\Support\Facades\App;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 

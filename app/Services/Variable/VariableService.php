@@ -1,7 +1,7 @@
 <?php
 namespace App\Services\Variable;
 
-use App\Services\ApiManager\Data\DataConstants;
+use Truvoicer\TruFetcherGet\Services\ApiManager\Data\DataConstants;
 
 class VariableService {
 

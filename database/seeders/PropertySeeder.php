@@ -3,8 +3,8 @@
 namespace Database\Seeders;
 
 use Truvoicer\TruFetcherGet\Models\Property;
-use App\Services\ApiManager\Data\DefaultData;
-use App\Services\Property\PropertyService;
+use Truvoicer\TruFetcherGet\Services\ApiManager\Data\DefaultData;
+use Truvoicer\TruFetcherGet\Services\Property\PropertyService;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 

@@ -10,7 +10,7 @@ use App\Http\Resources\PropertyCollection;
 use App\Http\Resources\PropertyResource;
 use Truvoicer\TruFetcherGet\Models\Property;
 use Truvoicer\TruFetcherGet\Repositories\PropertyRepository;
-use App\Services\Property\PropertyService;
+use Truvoicer\TruFetcherGet\Services\Property\PropertyService;
 use Illuminate\Http\Request;
 
 /**

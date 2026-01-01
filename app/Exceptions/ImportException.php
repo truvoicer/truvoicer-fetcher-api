@@ -2,7 +2,7 @@
 
 namespace App\Exceptions;
 
-use App\Services\ApiManager\Client\Entity\ApiRequest;
+use Truvoicer\TruFetcherGet\Services\ApiManager\Client\Entity\ApiRequest;
 use Exception;
 
 class ImportException extends Exception

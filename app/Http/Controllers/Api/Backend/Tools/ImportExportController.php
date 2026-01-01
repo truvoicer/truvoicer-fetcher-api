@@ -7,10 +7,10 @@ use App\Http\Requests\Admin\Tools\Export\ExportRequest;
 use App\Http\Requests\Admin\Tools\Import\ImportMappingsRequest;
 use App\Http\Requests\Admin\Tools\Import\ParseImportRequest;
 use App\Jobs\StartImportJob;
-use App\Services\Permission\AccessControlService;
+use Truvoicer\TruFetcherGet\Services\Permission\AccessControlService;
 use App\Services\Tools\IExport\ExportService;
 use App\Services\Tools\IExport\ImportService;
-use App\Services\User\UserAdminService;
+use Truvoicer\TruFetcherGet\Services\User\UserAdminService;
 use Illuminate\Http\Request;
 
 /**

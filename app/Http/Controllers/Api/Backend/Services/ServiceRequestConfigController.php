@@ -10,8 +10,8 @@ use App\Http\Resources\Service\ServiceRequest\ServiceRequestConfigResource;
 use Truvoicer\TruFetcherGet\Models\Property;
 use Truvoicer\TruFetcherGet\Models\Provider;
 use Truvoicer\TruFetcherGet\Models\Sr;
-use App\Services\ApiServices\ServiceRequests\SrConfigService;
-use App\Services\Permission\PermissionService;
+use Truvoicer\TruFetcherGet\Services\ApiServices\ServiceRequests\SrConfigService;
+use Truvoicer\TruFetcherGet\Services\Permission\PermissionService;
 use Illuminate\Http\Request;
 
 /**

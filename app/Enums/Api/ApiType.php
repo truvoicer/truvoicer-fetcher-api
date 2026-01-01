@@ -1,7 +1,7 @@
 <?php
 namespace App\Enums\Api;
 
-use App\Traits\Enum\EnumUtillityTrait;
+use Truvoicer\TruFetcherGet\Traits\Enum\EnumUtillityTrait;
 
 enum ApiType: string {
 

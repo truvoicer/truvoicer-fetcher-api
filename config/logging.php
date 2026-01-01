@@ -1,7 +1,7 @@
 <?php
 
-use App\Services\ApiServices\ServiceRequests\SrOperationsService;
-use App\Services\Provider\ProviderEventService;
+use Truvoicer\TruFetcherGet\Services\ApiServices\ServiceRequests\SrOperationsService;
+use Truvoicer\TruFetcherGet\Services\Provider\ProviderEventService;
 use App\Services\Tools\IExport\IExportTypeService;
 use Monolog\Handler\NullHandler;
 use Monolog\Handler\StreamHandler;

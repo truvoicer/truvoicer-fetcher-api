@@ -2,7 +2,7 @@
 
 namespace App\Http\Requests\Admin\Tools\Export;
 
-use App\Services\EntityService;
+use Truvoicer\TruFetcherGet\Services\EntityService;
 use App\Services\Tools\IExport\ExportService;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;

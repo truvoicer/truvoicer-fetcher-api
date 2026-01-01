@@ -4,12 +4,12 @@ namespace App\Http\Controllers\Api\Backend\Tools;
 
 use App\Http\Controllers\Controller;
 use App\Models\File;
-use App\Services\Permission\AccessControlService;
+use Truvoicer\TruFetcherGet\Services\Permission\AccessControlService;
 use App\Services\Tools\FileSystem\Downloads\DownloadsFileSystemService;
 use App\Services\Tools\HttpRequestService;
 use App\Services\Tools\SerializerService;
 use App\Services\Tools\FileSystem\FileSystemService;
-use App\Services\User\UserAdminService;
+use Truvoicer\TruFetcherGet\Services\User\UserAdminService;
 use Illuminate\Http\Request;
 
 /**

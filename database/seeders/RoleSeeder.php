@@ -3,8 +3,8 @@
 namespace Database\Seeders;
 
 use Truvoicer\TruFetcherGet\Models\Role;
-use App\Services\Auth\AuthService;
-use App\Services\User\RoleService;
+use Truvoicer\TruFetcherGet\Services\Auth\AuthService;
+use Truvoicer\TruFetcherGet\Services\User\RoleService;
 use Illuminate\Database\Seeder;
 
 class RoleSeeder extends Seeder

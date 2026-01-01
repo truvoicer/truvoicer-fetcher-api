@@ -10,9 +10,9 @@ use Truvoicer\TruFetcherGet\Helpers\Tools\UtilHelpers;
 use Truvoicer\TruFetcherGet\Models\Sr;
 use Truvoicer\TruFetcherGet\Models\SResponseKey;
 use Truvoicer\TruFetcherGet\Models\SrResponseKey;
-use App\Services\ApiServices\ServiceRequests\ResponseKeys\SrResponseKeyService;
-use App\Services\ApiServices\ServiceRequests\SrService;
-use App\Services\Permission\AccessControlService;
+use Truvoicer\TruFetcherGet\Services\ApiServices\ServiceRequests\ResponseKeys\SrResponseKeyService;
+use Truvoicer\TruFetcherGet\Services\ApiServices\ServiceRequests\SrService;
+use Truvoicer\TruFetcherGet\Services\Permission\AccessControlService;
 
 class SrResponseKeysImporterService extends ImporterBase
 {

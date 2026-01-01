@@ -5,9 +5,9 @@ namespace App\Listeners;
 use Truvoicer\TruFetcherGet\Events\RunProviderSrOperationEvent;
 use Truvoicer\TruFetcherGet\Models\Provider;
 use App\Models\User;
-use App\Services\ApiServices\ServiceRequests\SrOperationsService;
-use App\Services\Provider\ProviderService;
-use App\Services\Task\ScheduleService;
+use Truvoicer\TruFetcherGet\Services\ApiServices\ServiceRequests\SrOperationsService;
+use Truvoicer\TruFetcherGet\Services\Provider\ProviderService;
+use Truvoicer\TruFetcherGet\Services\Task\ScheduleService;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Support\Facades\Log;
 

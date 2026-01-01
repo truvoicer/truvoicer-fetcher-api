@@ -5,12 +5,12 @@ namespace App\Services\ApiServices\ServiceRequests\ResponseKeys\Populate\Types;
 use Truvoicer\TruFetcherGet\Enums\Api\ApiListKey;
 use Truvoicer\TruFetcherGet\Enums\Sr\SrType;
 use Truvoicer\TruFetcherGet\Models\Sr;
-use App\Services\ApiManager\Data\DataConstants;
-use App\Services\ApiManager\Operations\ApiRequestService;
-use App\Services\ApiManager\Response\Entity\ApiDetailedResponse;
-use App\Services\ApiManager\Response\Handlers\ResponseHandler;
-use App\Services\ApiManager\Response\ResponseManager;
-use App\Services\ApiServices\ServiceRequests\SrConfigService;
+use Truvoicer\TruFetcherGet\Services\ApiManager\Data\DataConstants;
+use Truvoicer\TruFetcherGet\Services\ApiManager\Operations\ApiRequestService;
+use Truvoicer\TruFetcherGet\Services\ApiManager\Response\Entity\ApiDetailedResponse;
+use Truvoicer\TruFetcherGet\Services\ApiManager\Response\Handlers\ResponseHandler;
+use Truvoicer\TruFetcherGet\Services\ApiManager\Response\ResponseManager;
+use Truvoicer\TruFetcherGet\Services\ApiServices\ServiceRequests\SrConfigService;
 use Illuminate\Support\Arr;
 
 class PopulateTypeJson extends PopulateTypeBase

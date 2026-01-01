@@ -4,8 +4,8 @@ namespace App\Policies;
 
 use Truvoicer\TruFetcherGet\Models\Sr;
 use App\Models\User;
-use App\Services\Auth\AuthService;
-use App\Services\Permission\PermissionService;
+use Truvoicer\TruFetcherGet\Services\Auth\AuthService;
+use Truvoicer\TruFetcherGet\Services\Permission\PermissionService;
 use Illuminate\Auth\Access\Response;
 
 class SrPolicy

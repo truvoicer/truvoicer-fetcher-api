@@ -5,8 +5,8 @@ namespace App\Console\Commands;
 use Truvoicer\TruFetcherGet\Models\Provider;
 use App\Models\User;
 use Truvoicer\TruFetcherGet\Repositories\SrResponseKeySrRepository;
-use App\Services\ApiServices\ServiceRequests\SrOperationsService;
-use App\Services\Provider\ProviderEventService;
+use Truvoicer\TruFetcherGet\Services\ApiServices\ServiceRequests\SrOperationsService;
+use Truvoicer\TruFetcherGet\Services\Provider\ProviderEventService;
 use Illuminate\Console\Command;
 use Symfony\Component\Console\Command\Command as CommandAlias;
 

@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Api\Backend;
 
 use App\Http\Controllers\Controller;
-use App\Services\Permission\AccessControlService;
+use Truvoicer\TruFetcherGet\Services\Permission\AccessControlService;
 use App\Services\ValidatorService;
 use App\Services\Tools\HttpRequestService;
 use App\Services\Tools\SerializerService;

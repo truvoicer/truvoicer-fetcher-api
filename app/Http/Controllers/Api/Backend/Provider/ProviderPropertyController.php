@@ -12,12 +12,12 @@ use App\Http\Resources\PropertyWithProviderPropertyResource;
 use Truvoicer\TruFetcherGet\Models\Property;
 use Truvoicer\TruFetcherGet\Models\Provider;
 use Truvoicer\TruFetcherGet\Repositories\ProviderRepository;
-use App\Services\Auth\AuthService;
-use App\Services\Permission\AccessControlService;
-use App\Services\Permission\PermissionService;
-use App\Services\Property\PropertyService;
+use Truvoicer\TruFetcherGet\Services\Auth\AuthService;
+use Truvoicer\TruFetcherGet\Services\Permission\AccessControlService;
+use Truvoicer\TruFetcherGet\Services\Permission\PermissionService;
+use Truvoicer\TruFetcherGet\Services\Property\PropertyService;
 use App\Services\Tools\HttpRequestService;
-use App\Services\Provider\ProviderService;
+use Truvoicer\TruFetcherGet\Services\Provider\ProviderService;
 use App\Services\Tools\SerializerService;
 use Illuminate\Http\Request;
 

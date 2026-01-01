@@ -2,7 +2,7 @@
 
 namespace App\Enums\Sr;
 
-use App\Traits\Enum\EnumUtillityTrait;
+use Truvoicer\TruFetcherGet\Traits\Enum\EnumUtillityTrait;
 
 enum PaginationType: string
 {

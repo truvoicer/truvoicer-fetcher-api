@@ -4,17 +4,17 @@ namespace App\Http\Controllers\Api\Backend\Tools;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\EntityRequest;
-use App\Services\ApiManager\ApiBase;
-use App\Services\ApiManager\Data\DataConstants;
-use App\Services\EntityService;
-use App\Services\Permission\AccessControlService;
-use App\Services\Permission\PermissionService;
+use Truvoicer\TruFetcherGet\Services\ApiManager\ApiBase;
+use Truvoicer\TruFetcherGet\Services\ApiManager\Data\DataConstants;
+use Truvoicer\TruFetcherGet\Services\EntityService;
+use Truvoicer\TruFetcherGet\Services\Permission\AccessControlService;
+use Truvoicer\TruFetcherGet\Services\Permission\PermissionService;
 use App\Services\Tools\FileSystem\Downloads\DownloadsFileSystemService;
 use App\Services\Tools\HttpRequestService;
 use App\Services\Tools\SerializerService;
 use App\Services\Tools\FileSystem\FileSystemService;
 use App\Services\Tools\VariablesService;
-use App\Services\User\UserAdminService;
+use Truvoicer\TruFetcherGet\Services\User\UserAdminService;
 use Illuminate\Http\Request;
 
 /**

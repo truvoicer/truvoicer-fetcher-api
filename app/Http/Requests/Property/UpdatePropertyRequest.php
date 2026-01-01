@@ -2,7 +2,7 @@
 
 namespace App\Http\Requests\Property;
 
-use App\Services\ApiManager\Data\DataConstants;
+use Truvoicer\TruFetcherGet\Services\ApiManager\Data\DataConstants;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 

@@ -3,8 +3,8 @@
 namespace Database\Factories;
 
 use Truvoicer\TruFetcherGet\Enums\Entity\EntityType;
-use App\Services\ApiManager\Data\DataConstants;
-use App\Services\EntityService;
+use Truvoicer\TruFetcherGet\Services\ApiManager\Data\DataConstants;
+use Truvoicer\TruFetcherGet\Services\EntityService;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Str;
 

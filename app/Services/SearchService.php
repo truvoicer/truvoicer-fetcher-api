@@ -2,10 +2,11 @@
 
 namespace App\Services;
 
-use App\Services\ApiServices\ApiService;
-use App\Services\ApiServices\ServiceRequests\SrService;
-use App\Services\Category\CategoryService;
-use App\Services\Provider\ProviderService;
+use Truvoicer\TruFetcherGet\Services\ApiServices\ApiService;
+use Truvoicer\TruFetcherGet\Services\ApiServices\ServiceRequests\SrService;
+use Truvoicer\TruFetcherGet\Services\BaseService;
+use Truvoicer\TruFetcherGet\Services\Category\CategoryService;
+use Truvoicer\TruFetcherGet\Services\Provider\ProviderService;
 
 class SearchService extends BaseService
 {

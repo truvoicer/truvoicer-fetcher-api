@@ -17,7 +17,7 @@ use Truvoicer\TruFetcherGet\Models\S;
 use Truvoicer\TruFetcherGet\Models\Sr;
 use App\Models\User;
 use Truvoicer\TruFetcherGet\Repositories\MongoDB\MongoDBRepository;
-use App\Services\ApiManager\Operations\DataHandler\ApiRequestMongoDbHandler;
+use Truvoicer\TruFetcherGet\Services\ApiManager\Operations\DataHandler\ApiRequestMongoDbHandler;
 use Database\Seeders\PropertySeeder;
 use Database\Seeders\RoleSeeder;
 use Database\Seeders\UserSeeder;

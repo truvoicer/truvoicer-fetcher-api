@@ -4,10 +4,10 @@ namespace Database\Seeders;
 
 use Truvoicer\TruFetcherGet\Models\Role;
 use App\Models\User;
-use App\Services\ApiManager\Data\DefaultData;
-use App\Services\Auth\AuthService;
-use App\Services\User\RoleService;
-use App\Services\User\UserAdminService;
+use Truvoicer\TruFetcherGet\Services\ApiManager\Data\DefaultData;
+use Truvoicer\TruFetcherGet\Services\Auth\AuthService;
+use Truvoicer\TruFetcherGet\Services\User\RoleService;
+use Truvoicer\TruFetcherGet\Services\User\UserAdminService;
 use Illuminate\Database\Seeder;
 
 class UserSeeder extends Seeder

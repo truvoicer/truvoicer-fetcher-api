@@ -4,7 +4,7 @@ namespace App\Services\User;
 
 use App\Models\UserSetting;
 use App\Repositories\UserSettingRepository;
-use App\Services\BaseService;
+use Truvoicer\TruFetcherGet\Services\BaseService;
 
 class UserSettingService extends BaseService
 {

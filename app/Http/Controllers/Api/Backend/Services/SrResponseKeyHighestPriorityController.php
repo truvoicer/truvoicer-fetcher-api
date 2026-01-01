@@ -6,8 +6,8 @@ use App\Http\Controllers\Controller;
 use Truvoicer\TruFetcherGet\Models\Provider;
 use Truvoicer\TruFetcherGet\Models\Sr;
 use Truvoicer\TruFetcherGet\Models\SrResponseKey;
-use App\Services\ApiServices\ServiceRequests\ResponseKeys\SrResponseKeyService;
-use App\Services\Permission\PermissionService;
+use Truvoicer\TruFetcherGet\Services\ApiServices\ServiceRequests\ResponseKeys\SrResponseKeyService;
+use Truvoicer\TruFetcherGet\Services\Permission\PermissionService;
 use Illuminate\Http\Request;
 
 /**

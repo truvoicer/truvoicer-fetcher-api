@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Files;
 
 use App\Http\Controllers\Controller;
 use App\Models\FileDownload;
-use App\Services\Permission\AccessControlService;
+use Truvoicer\TruFetcherGet\Services\Permission\AccessControlService;
 use App\Services\Tools\FileSystem\Downloads\DownloadsFileSystemService;
 use App\Services\Tools\FileSystem\FileSystemService;
 use App\Services\Tools\FileSystem\Uploads\UploadsFileSystemService;

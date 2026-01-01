@@ -3,7 +3,7 @@
 namespace App\Http\Requests;
 
 use Truvoicer\TruFetcherGet\Enums\Entity\EntityType;
-use App\Services\EntityService;
+use Truvoicer\TruFetcherGet\Services\EntityService;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 

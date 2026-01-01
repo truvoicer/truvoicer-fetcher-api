@@ -7,7 +7,7 @@ use App\Services\ApiServices\ServiceRequests\ResponseKeys\Populate\Ai\DeepSeek\D
 use App\Services\ApiServices\ServiceRequests\ResponseKeys\Populate\Ai\Gemini\GeminiPopulatePrompt;
 use App\Services\ApiServices\ServiceRequests\ResponseKeys\Populate\Ai\Grok\GrokPopulatePrompt;
 use App\Services\ApiServices\ServiceRequests\ResponseKeys\Populate\Ai\OpenAi\OpenAiPopulatePrompt;
-use App\Traits\Enum\EnumUtillityTrait;
+use Truvoicer\TruFetcherGet\Traits\Enum\EnumUtillityTrait;
 
 enum AiClient: string
 {
