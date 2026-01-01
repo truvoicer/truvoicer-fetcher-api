@@ -4,11 +4,11 @@ namespace App\Http\Controllers\Api\Backend\Services;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Service\Request\ResponseKey\UpdateSrResponseKeySearchPriorityOrderRequest;
-use Truvoicer\TruFetcherGet\Models\Provider;
-use Truvoicer\TruFetcherGet\Models\Sr;
-use Truvoicer\TruFetcherGet\Models\SrResponseKey;
-use Truvoicer\TruFetcherGet\Services\ApiServices\ServiceRequests\ResponseKeys\SrResponseKeyService;
-use Truvoicer\TruFetcherGet\Services\Permission\PermissionService;
+use Truvoicer\TfDbReadCore\Models\Provider;
+use Truvoicer\TfDbReadCore\Models\Sr;
+use Truvoicer\TfDbReadCore\Models\SrResponseKey;
+use Truvoicer\TfDbReadCore\Services\ApiServices\ServiceRequests\ResponseKeys\SrResponseKeyService;
+use Truvoicer\TfDbReadCore\Services\Permission\PermissionService;
 use Illuminate\Http\Request;
 
 /**

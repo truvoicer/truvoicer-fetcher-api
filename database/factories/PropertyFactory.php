@@ -2,9 +2,9 @@
 
 namespace Database\Factories;
 
-use Truvoicer\TruFetcherGet\Enums\Entity\EntityType;
-use Truvoicer\TruFetcherGet\Services\ApiManager\Data\DataConstants;
-use Truvoicer\TruFetcherGet\Services\EntityService;
+use Truvoicer\TfDbReadCore\Enums\Entity\EntityType;
+use Truvoicer\TfDbReadCore\Services\ApiManager\Data\DataConstants;
+use Truvoicer\TfDbReadCore\Services\EntityService;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Str;
 

@@ -3,7 +3,7 @@ namespace App\Services\Tools\FileSystem;
 
 use App\Models\File;
 use App\Models\FileDownload;
-use Truvoicer\TruFetcherGet\Services\BaseService;
+use Truvoicer\TfDbReadCore\Services\BaseService;
 use Illuminate\Contracts\Filesystem\Filesystem;
 use Illuminate\Support\Facades\Storage;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;

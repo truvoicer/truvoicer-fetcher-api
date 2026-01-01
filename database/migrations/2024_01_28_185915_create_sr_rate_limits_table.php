@@ -1,6 +1,6 @@
 <?php
 
-use Truvoicer\TruFetcherGet\Services\ApiServices\RateLimitService;
+use Truvoicer\TfDbReadCore\Services\ApiServices\RateLimitService;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;

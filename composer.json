@@ -8,9 +8,9 @@
         {
             "name": "truvoicer",
             "type": "path",
-            "url": "packages/truvoicer/tru-fetcher-get"
+            "url": "packages/truvoicer/tf-db-read-core"
         }
-        ],
+    ],
     "require": {
         "php": "^8.1",
         "guzzlehttp/guzzle": "^7.2",
@@ -19,7 +19,7 @@
         "laravel/sanctum": "^4.0",
         "laravel/tinker": "^2.8",
         "mongodb/laravel-mongodb": "^5.5",
-        "truvoicer/tru-fetcher-get": "dev-develop"
+        "truvoicer/tf-db-read-core": "@dev"
     },
     "require-dev": {
         "fakerphp/faker": "^1.9.1",

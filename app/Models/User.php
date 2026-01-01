@@ -2,15 +2,26 @@
 
 namespace App\Models;
 
-use Truvoicer\TruFetcherGet\Repositories\UserRepository;
+use Truvoicer\TfDbReadCore\Repositories\UserRepository;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
-use Truvoicer\TruFetcherGet\Models\Role;
-use Truvoicer\TruFetcherGet\Models\RoleUser;
+use Truvoicer\TfDbReadCore\Models\Category;
+use Truvoicer\TfDbReadCore\Models\CategoryUser;
+use Truvoicer\TfDbReadCore\Models\CategoryUserPermission;
+use Truvoicer\TfDbReadCore\Models\Provider;
+use Truvoicer\TfDbReadCore\Models\ProviderPropertyEntity;
+use Truvoicer\TfDbReadCore\Models\ProviderUser;
+use Truvoicer\TfDbReadCore\Models\ProviderUserPermission;
+use Truvoicer\TfDbReadCore\Models\Role;
+use Truvoicer\TfDbReadCore\Models\RoleUser;
+use Truvoicer\TfDbReadCore\Models\S;
+use Truvoicer\TfDbReadCore\Models\SrConfigEntity;
+use Truvoicer\TfDbReadCore\Models\SUser;
+use Truvoicer\TfDbReadCore\Models\SUserPermission;
 
 class User extends Authenticatable
 {

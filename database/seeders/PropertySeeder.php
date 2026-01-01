@@ -2,9 +2,9 @@
 
 namespace Database\Seeders;
 
-use Truvoicer\TruFetcherGet\Models\Property;
-use Truvoicer\TruFetcherGet\Services\ApiManager\Data\DefaultData;
-use Truvoicer\TruFetcherGet\Services\Property\PropertyService;
+use Truvoicer\TfDbReadCore\Models\Property;
+use Truvoicer\TfDbReadCore\Services\ApiManager\Data\DefaultData;
+use Truvoicer\TfDbReadCore\Services\Property\PropertyService;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 

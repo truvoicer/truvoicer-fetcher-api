@@ -3,6 +3,7 @@
 namespace App\Repositories;
 
 use App\Models\File;
+use Truvoicer\TfDbReadCore\Repositories\BaseRepository;
 
 class FileRepository extends BaseRepository
 {

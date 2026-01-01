@@ -2,7 +2,7 @@
 
 namespace App\Http\Resources\Service\ServiceRequest;
 
-use Truvoicer\TruFetcherGet\Http\Resources\BaseCollection;
+use Truvoicer\TfDbReadCore\Http\Resources\BaseCollection;
 use Illuminate\Http\Request;
 
 class SrResponseKeyCollection extends BaseCollection

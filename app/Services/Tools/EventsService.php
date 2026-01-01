@@ -1,7 +1,7 @@
 <?php
 namespace App\Services\Tools;
 
-use Truvoicer\TruFetcherGet\Services\ApiManager\Client\Entity\ApiRequest;
+use Truvoicer\TfDbReadCore\Services\ApiManager\Client\Entity\ApiRequest;
 
 class EventsService {
 

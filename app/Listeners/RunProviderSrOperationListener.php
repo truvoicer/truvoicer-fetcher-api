@@ -2,12 +2,12 @@
 
 namespace App\Listeners;
 
-use Truvoicer\TruFetcherGet\Events\RunProviderSrOperationEvent;
-use Truvoicer\TruFetcherGet\Models\Provider;
+use Truvoicer\TfDbReadCore\Events\RunProviderSrOperationEvent;
+use Truvoicer\TfDbReadCore\Models\Provider;
 use App\Models\User;
-use Truvoicer\TruFetcherGet\Services\ApiServices\ServiceRequests\SrOperationsService;
-use Truvoicer\TruFetcherGet\Services\Provider\ProviderService;
-use Truvoicer\TruFetcherGet\Services\Task\ScheduleService;
+use Truvoicer\TfDbReadCore\Services\ApiServices\ServiceRequests\SrOperationsService;
+use Truvoicer\TfDbReadCore\Services\Provider\ProviderService;
+use Truvoicer\TfDbReadCore\Services\Task\ScheduleService;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Support\Facades\Log;
 

@@ -2,14 +2,14 @@
 
 namespace Tests\Feature\Frontend\Operations\Data\Helpers;
 
-use Truvoicer\TruFetcherGet\Models\Category;
+use Truvoicer\TfDbReadCore\Models\Category;
 use App\Models\Mongo\Entity;
 use App\Models\Mongo\EntityList;
-use Truvoicer\TruFetcherGet\Models\Property;
-use Truvoicer\TruFetcherGet\Models\Provider;
-use Truvoicer\TruFetcherGet\Models\S;
-use Truvoicer\TruFetcherGet\Models\Sr;
-use Truvoicer\TruFetcherGet\Repositories\MongoDB\MongoDBRepository;
+use Truvoicer\TfDbReadCore\Models\Property;
+use Truvoicer\TfDbReadCore\Models\Provider;
+use Truvoicer\TfDbReadCore\Models\S;
+use Truvoicer\TfDbReadCore\Models\Sr;
+use Truvoicer\TfDbReadCore\Repositories\MongoDB\MongoDBRepository;
 use Illuminate\Database\Eloquent\Factories\Sequence;
 use Illuminate\Support\Facades\DB;
 

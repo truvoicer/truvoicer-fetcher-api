@@ -2,9 +2,9 @@
 
 namespace App\Console\Commands;
 
-use Truvoicer\TruFetcherGet\Models\Sr;
-use Truvoicer\TruFetcherGet\Repositories\MongoDB\MongoDBRepository;
-use Truvoicer\TruFetcherGet\Repositories\SrRepository;
+use Truvoicer\TfDbReadCore\Models\Sr;
+use Truvoicer\TfDbReadCore\Repositories\MongoDB\MongoDBRepository;
+use Truvoicer\TfDbReadCore\Repositories\SrRepository;
 use Illuminate\Console\Command;
 use Illuminate\Database\Eloquent\Collection;
 use Symfony\Component\Console\Command\Command as CommandAlias;

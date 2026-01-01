@@ -2,7 +2,7 @@
 
 namespace App\Services\Tools\IExport;
 
-use Truvoicer\TruFetcherGet\Traits\Error\ErrorTrait;
+use Truvoicer\TfDbReadCore\Traits\Error\ErrorTrait;
 use Illuminate\Support\Arr;
 
 class ImporterValidator

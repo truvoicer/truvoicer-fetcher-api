@@ -3,9 +3,9 @@
 namespace App\Http\Controllers\Api\Backend\Tools;
 
 use App\Enums\SelectDataEnum;
-use Truvoicer\TruFetcherGet\Helpers\Tools\ClassHelpers;
+use Truvoicer\TfDbReadCore\Helpers\Tools\ClassHelpers;
 use App\Http\Controllers\Controller;
-use Truvoicer\TruFetcherGet\Traits\Enum\EnumUtillityTrait;
+use Truvoicer\TfDbReadCore\Traits\Enum\EnumUtillityTrait;
 
 class EnumController extends Controller
 {

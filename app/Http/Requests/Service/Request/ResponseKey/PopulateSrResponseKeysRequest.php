@@ -3,10 +3,10 @@
 namespace App\Http\Requests\Service\Request\ResponseKey;
 
 use App\Enums\Ai\AiClient;
-use Truvoicer\TruFetcherGet\Enums\Property\PropertyType;
-use Truvoicer\TruFetcherGet\Models\Sr;
-use Truvoicer\TruFetcherGet\Services\ApiManager\Data\DataConstants;
-use Truvoicer\TruFetcherGet\Services\ApiServices\ServiceRequests\SrConfigService;
+use Truvoicer\TfDbReadCore\Enums\Property\PropertyType;
+use Truvoicer\TfDbReadCore\Models\Sr;
+use Truvoicer\TfDbReadCore\Services\ApiManager\Data\DataConstants;
+use Truvoicer\TfDbReadCore\Services\ApiServices\ServiceRequests\SrConfigService;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;

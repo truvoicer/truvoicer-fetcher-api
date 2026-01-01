@@ -2,9 +2,9 @@
 
 namespace Database\Seeders;
 
-use Truvoicer\TruFetcherGet\Models\Role;
-use Truvoicer\TruFetcherGet\Services\Auth\AuthService;
-use Truvoicer\TruFetcherGet\Services\User\RoleService;
+use Truvoicer\TfDbReadCore\Models\Role;
+use Truvoicer\TfDbReadCore\Services\Auth\AuthService;
+use Truvoicer\TfDbReadCore\Services\User\RoleService;
 use Illuminate\Database\Seeder;
 
 class RoleSeeder extends Seeder

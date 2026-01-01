@@ -6,12 +6,12 @@ use App\Enums\Import\ImportAction;
 use App\Enums\Import\ImportConfig;
 use App\Enums\Import\ImportMappingType;
 use App\Enums\Import\ImportType;
-use Truvoicer\TruFetcherGet\Helpers\Tools\UtilHelpers;
-use Truvoicer\TruFetcherGet\Models\Sr;
-use Truvoicer\TruFetcherGet\Models\SrSchedule;
-use Truvoicer\TruFetcherGet\Services\ApiServices\ServiceRequests\SrScheduleService;
-use Truvoicer\TruFetcherGet\Services\ApiServices\ServiceRequests\SrService;
-use Truvoicer\TruFetcherGet\Services\Permission\AccessControlService;
+use Truvoicer\TfDbReadCore\Helpers\Tools\UtilHelpers;
+use Truvoicer\TfDbReadCore\Models\Sr;
+use Truvoicer\TfDbReadCore\Models\SrSchedule;
+use Truvoicer\TfDbReadCore\Services\ApiServices\ServiceRequests\SrScheduleService;
+use Truvoicer\TfDbReadCore\Services\ApiServices\ServiceRequests\SrService;
+use Truvoicer\TfDbReadCore\Services\Permission\AccessControlService;
 
 class SrScheduleImporterService extends ImporterBase
 {

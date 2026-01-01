@@ -3,8 +3,8 @@
 namespace Database\Seeders;
 
 use App\Models\User;
-use Truvoicer\TruFetcherGet\Services\ApiManager\Data\DefaultData;
-use Truvoicer\TruFetcherGet\Services\User\UserAdminService;
+use Truvoicer\TfDbReadCore\Services\ApiManager\Data\DefaultData;
+use Truvoicer\TfDbReadCore\Services\User\UserAdminService;
 use Illuminate\Database\Seeder;
 
 class DatabaseSeeder extends Seeder

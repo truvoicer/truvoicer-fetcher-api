@@ -3,6 +3,7 @@
 namespace App\Repositories;
 
 use App\Models\UserSetting;
+use Truvoicer\TfDbReadCore\Repositories\BaseRepository;
 
 class UserSettingRepository extends BaseRepository
 {

@@ -2,7 +2,7 @@
 
 namespace App\Http\Resources\Service;
 
-use Truvoicer\TruFetcherGet\Http\Resources\BaseCollection;
+use Truvoicer\TfDbReadCore\Http\Resources\BaseCollection;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\ResourceCollection;
 

@@ -2,8 +2,8 @@
 
 namespace App\Http\Requests\Service;
 
-use Truvoicer\TruFetcherGet\Models\Provider;
-use Truvoicer\TruFetcherGet\Models\S;
+use Truvoicer\TfDbReadCore\Models\Provider;
+use Truvoicer\TfDbReadCore\Models\S;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 

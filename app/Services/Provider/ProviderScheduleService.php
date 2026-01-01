@@ -2,16 +2,18 @@
 
 namespace App\Services\Provider;
 
-use Truvoicer\TruFetcherGet\Models\Sr;
-use Truvoicer\TruFetcherGet\Models\SrSchedule;
+use Truvoicer\TfDbReadCore\Models\Sr;
+use Truvoicer\TfDbReadCore\Models\SrSchedule;
 use App\Models\User;
-use Truvoicer\TruFetcherGet\Services\ApiServices\ServiceRequests\SrScheduleService;
-use Truvoicer\TruFetcherGet\Services\ApiServices\ServiceRequests\SrService;
-use Truvoicer\TruFetcherGet\Traits\User\UserTrait;
+use Truvoicer\TfDbReadCore\Services\ApiServices\ServiceRequests\SrScheduleService;
+use Truvoicer\TfDbReadCore\Services\ApiServices\ServiceRequests\SrService;
+use Truvoicer\TfDbReadCore\Traits\User\UserTrait;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Log;
+use Truvoicer\TfDbReadCore\Services\Provider\ProviderEventService;
+use Truvoicer\TfDbReadCore\Services\Provider\ProviderService;
 
 class ProviderScheduleService
 {

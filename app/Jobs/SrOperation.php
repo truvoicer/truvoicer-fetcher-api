@@ -2,12 +2,12 @@
 
 namespace App\Jobs;
 
-use Truvoicer\TruFetcherGet\Models\Provider;
-use Truvoicer\TruFetcherGet\Models\Sr;
+use Truvoicer\TfDbReadCore\Models\Provider;
+use Truvoicer\TfDbReadCore\Models\Sr;
 use App\Models\User;
-use Truvoicer\TruFetcherGet\Repositories\SrResponseKeySrRepository;
-use Truvoicer\TruFetcherGet\Services\ApiServices\ServiceRequests\SrOperationsService;
-use Truvoicer\TruFetcherGet\Services\ApiServices\ServiceRequests\SrService;
+use Truvoicer\TfDbReadCore\Repositories\SrResponseKeySrRepository;
+use Truvoicer\TfDbReadCore\Services\ApiServices\ServiceRequests\SrOperationsService;
+use Truvoicer\TfDbReadCore\Services\ApiServices\ServiceRequests\SrService;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
 use Illuminate\Support\Facades\Log;

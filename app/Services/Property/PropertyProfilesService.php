@@ -2,8 +2,8 @@
 
 namespace App\Services\Property;
 
-use Truvoicer\TruFetcherGet\Enums\Property\PropertyType;
-use Truvoicer\TruFetcherGet\Services\ApiManager\Data\DataConstants;
+use Truvoicer\TfDbReadCore\Enums\Property\PropertyType;
+use Truvoicer\TfDbReadCore\Services\ApiManager\Data\DataConstants;
 
 class PropertyProfilesService {
     public const PROFILES = [

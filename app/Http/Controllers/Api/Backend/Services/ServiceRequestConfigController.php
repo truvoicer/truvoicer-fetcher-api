@@ -7,11 +7,11 @@ use App\Http\Requests\Service\Request\Config\CreateServiceRequestConfigRequest;
 use App\Http\Requests\Service\Request\Config\DeleteBatchSrConfigRequest;
 use App\Http\Resources\Service\ServiceRequest\ServiceRequestConfigCollection;
 use App\Http\Resources\Service\ServiceRequest\ServiceRequestConfigResource;
-use Truvoicer\TruFetcherGet\Models\Property;
-use Truvoicer\TruFetcherGet\Models\Provider;
-use Truvoicer\TruFetcherGet\Models\Sr;
-use Truvoicer\TruFetcherGet\Services\ApiServices\ServiceRequests\SrConfigService;
-use Truvoicer\TruFetcherGet\Services\Permission\PermissionService;
+use Truvoicer\TfDbReadCore\Models\Property;
+use Truvoicer\TfDbReadCore\Models\Provider;
+use Truvoicer\TfDbReadCore\Models\Sr;
+use Truvoicer\TfDbReadCore\Services\ApiServices\ServiceRequests\SrConfigService;
+use Truvoicer\TfDbReadCore\Services\Permission\PermissionService;
 use Illuminate\Http\Request;
 
 /**

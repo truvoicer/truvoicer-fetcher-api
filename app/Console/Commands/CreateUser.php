@@ -3,10 +3,10 @@
 namespace App\Console\Commands;
 
 use App\Http\Requests\Admin\User\CreateUserRequest;
-use Truvoicer\TruFetcherGet\Models\Role;
-use Truvoicer\TruFetcherGet\Helpers\Tools\UtilHelpers;
-use Truvoicer\TruFetcherGet\Services\User\RoleService;
-use Truvoicer\TruFetcherGet\Services\User\UserAdminService;
+use Truvoicer\TfDbReadCore\Models\Role;
+use Truvoicer\TfDbReadCore\Helpers\Tools\UtilHelpers;
+use Truvoicer\TfDbReadCore\Services\User\RoleService;
+use Truvoicer\TfDbReadCore\Services\User\UserAdminService;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Validator;
 use Symfony\Component\Console\Command\Command as CommandAlias;

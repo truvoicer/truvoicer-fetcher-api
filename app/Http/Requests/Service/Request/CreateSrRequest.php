@@ -2,10 +2,10 @@
 
 namespace App\Http\Requests\Service\Request;
 
-use Truvoicer\TruFetcherGet\Enums\Api\ApiListKey;
-use Truvoicer\TruFetcherGet\Enums\FormatOptions;
-use Truvoicer\TruFetcherGet\Enums\Sr\SrType;
-use Truvoicer\TruFetcherGet\Models\Sr;
+use Truvoicer\TfDbReadCore\Enums\Api\ApiListKey;
+use Truvoicer\TfDbReadCore\Enums\FormatOptions;
+use Truvoicer\TfDbReadCore\Enums\Sr\SrType;
+use Truvoicer\TfDbReadCore\Models\Sr;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 

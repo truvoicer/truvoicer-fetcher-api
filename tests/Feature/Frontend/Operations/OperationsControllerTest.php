@@ -2,22 +2,22 @@
 
 namespace Tests\Feature\Frontend\Operations;
 
-use Truvoicer\TruFetcherGet\Enums\Api\ApiListKey;
-use Truvoicer\TruFetcherGet\Enums\Api\ApiMethod;
-use Truvoicer\TruFetcherGet\Enums\Api\ApiResponseFormat;
+use Truvoicer\TfDbReadCore\Enums\Api\ApiListKey;
+use Truvoicer\TfDbReadCore\Enums\Api\ApiMethod;
+use Truvoicer\TfDbReadCore\Enums\Api\ApiResponseFormat;
 use App\Enums\Api\ApiType;
-use Truvoicer\TruFetcherGet\Enums\Property\PropertyType;
-use Truvoicer\TruFetcherGet\Enums\Sr\SrType;
-use Truvoicer\TruFetcherGet\Events\ProcessSrOperationDataEvent;
+use Truvoicer\TfDbReadCore\Enums\Property\PropertyType;
+use Truvoicer\TfDbReadCore\Enums\Sr\SrType;
+use Truvoicer\TfDbReadCore\Events\ProcessSrOperationDataEvent;
 use App\Jobs\ProcessSrOperationData;
-use Truvoicer\TruFetcherGet\Models\Category;
-use Truvoicer\TruFetcherGet\Models\Property;
-use Truvoicer\TruFetcherGet\Models\Provider;
-use Truvoicer\TruFetcherGet\Models\S;
-use Truvoicer\TruFetcherGet\Models\Sr;
+use Truvoicer\TfDbReadCore\Models\Category;
+use Truvoicer\TfDbReadCore\Models\Property;
+use Truvoicer\TfDbReadCore\Models\Provider;
+use Truvoicer\TfDbReadCore\Models\S;
+use Truvoicer\TfDbReadCore\Models\Sr;
 use App\Models\User;
-use Truvoicer\TruFetcherGet\Repositories\MongoDB\MongoDBRepository;
-use Truvoicer\TruFetcherGet\Services\ApiManager\Operations\DataHandler\ApiRequestMongoDbHandler;
+use Truvoicer\TfDbReadCore\Repositories\MongoDB\MongoDBRepository;
+use Truvoicer\TfDbReadCore\Services\ApiManager\Operations\DataHandler\ApiRequestMongoDbHandler;
 use Database\Seeders\PropertySeeder;
 use Database\Seeders\RoleSeeder;
 use Database\Seeders\UserSeeder;

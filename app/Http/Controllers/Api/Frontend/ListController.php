@@ -3,15 +3,15 @@
 namespace App\Http\Controllers\Api\Frontend;
 
 use App\Http\Controllers\Controller;
-use Truvoicer\TruFetcherGet\Http\Resources\ProviderMinimalCollection;
-use Truvoicer\TruFetcherGet\Models\Category;
-use Truvoicer\TruFetcherGet\Models\S;
-use Truvoicer\TruFetcherGet\Services\ApiServices\ApiService;
-use Truvoicer\TruFetcherGet\Services\ApiServices\SResponseKeysService;
-use Truvoicer\TruFetcherGet\Services\ApiServices\ServiceRequests\SrConfigService;
-use Truvoicer\TruFetcherGet\Services\Category\CategoryService;
-use Truvoicer\TruFetcherGet\Services\Permission\AccessControlService;
-use Truvoicer\TruFetcherGet\Services\Provider\ProviderService;
+use Truvoicer\TfDbReadCore\Http\Resources\ProviderMinimalCollection;
+use Truvoicer\TfDbReadCore\Models\Category;
+use Truvoicer\TfDbReadCore\Models\S;
+use Truvoicer\TfDbReadCore\Services\ApiServices\ApiService;
+use Truvoicer\TfDbReadCore\Services\ApiServices\SResponseKeysService;
+use Truvoicer\TfDbReadCore\Services\ApiServices\ServiceRequests\SrConfigService;
+use Truvoicer\TfDbReadCore\Services\Category\CategoryService;
+use Truvoicer\TfDbReadCore\Services\Permission\AccessControlService;
+use Truvoicer\TfDbReadCore\Services\Provider\ProviderService;
 use App\Services\Tools\HttpRequestService;
 use App\Services\Tools\SerializerService;
 use Illuminate\Http\Request;

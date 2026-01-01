@@ -2,7 +2,7 @@
 
 namespace App\Listeners;
 
-use Truvoicer\TruFetcherGet\Events\RunSrOperationEvent;
+use Truvoicer\TfDbReadCore\Events\RunSrOperationEvent;
 use App\Jobs\SrOperation;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Queue\InteractsWithQueue;

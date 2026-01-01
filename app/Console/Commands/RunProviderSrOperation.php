@@ -2,10 +2,10 @@
 
 namespace App\Console\Commands;
 
-use Truvoicer\TruFetcherGet\Models\Provider;
+use Truvoicer\TfDbReadCore\Models\Provider;
 use App\Models\User;
-use Truvoicer\TruFetcherGet\Services\ApiServices\ServiceRequests\SrOperationsService;
-use Truvoicer\TruFetcherGet\Services\Provider\ProviderEventService;
+use Truvoicer\TfDbReadCore\Services\ApiServices\ServiceRequests\SrOperationsService;
+use Truvoicer\TfDbReadCore\Services\Provider\ProviderEventService;
 use Illuminate\Console\Command;
 use Symfony\Component\Console\Command\Command as CommandAlias;
 

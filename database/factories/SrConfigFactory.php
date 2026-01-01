@@ -2,7 +2,7 @@
 
 namespace Database\Factories;
 
-use Truvoicer\TruFetcherGet\Models\Property;
+use Truvoicer\TfDbReadCore\Models\Property;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**

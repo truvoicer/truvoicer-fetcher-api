@@ -2,8 +2,8 @@
 
 namespace App\Services\ApiServices\ServiceRequests;
 
-use Truvoicer\TruFetcherGet\Models\Provider;
-use Truvoicer\TruFetcherGet\Models\Sr;
+use Truvoicer\TfDbReadCore\Models\Provider;
+use Truvoicer\TfDbReadCore\Models\Sr;
 use App\Services\Variable\VariableService;
 
 class SrVariableService extends VariableService

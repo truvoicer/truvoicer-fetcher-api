@@ -2,7 +2,7 @@
 
 namespace Database\Factories;
 
-use Truvoicer\TruFetcherGet\Services\Permission\PermissionService;
+use Truvoicer\TfDbReadCore\Services\Permission\PermissionService;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**

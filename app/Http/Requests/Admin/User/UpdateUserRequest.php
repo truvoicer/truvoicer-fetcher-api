@@ -2,7 +2,7 @@
 
 namespace App\Http\Requests\Admin\User;
 
-use Truvoicer\TruFetcherGet\Models\Role;
+use Truvoicer\TfDbReadCore\Models\Role;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;

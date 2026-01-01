@@ -2,7 +2,7 @@
 
 namespace App\Providers;
 
-use Truvoicer\TruFetcherGet\Models\Provider;
+use Truvoicer\TfDbReadCore\Models\Provider;
 use App\Models\User;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Foundation\Support\Providers\RouteServiceProvider as ServiceProvider;

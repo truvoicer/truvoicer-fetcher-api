@@ -2,7 +2,7 @@
 
 namespace App\Http\Requests\Service\Request\Parameter;
 
-use Truvoicer\TruFetcherGet\Enums\MbEncoding;
+use Truvoicer\TfDbReadCore\Enums\MbEncoding;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 

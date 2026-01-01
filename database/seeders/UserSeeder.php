@@ -2,12 +2,12 @@
 
 namespace Database\Seeders;
 
-use Truvoicer\TruFetcherGet\Models\Role;
+use Truvoicer\TfDbReadCore\Models\Role;
 use App\Models\User;
-use Truvoicer\TruFetcherGet\Services\ApiManager\Data\DefaultData;
-use Truvoicer\TruFetcherGet\Services\Auth\AuthService;
-use Truvoicer\TruFetcherGet\Services\User\RoleService;
-use Truvoicer\TruFetcherGet\Services\User\UserAdminService;
+use Truvoicer\TfDbReadCore\Services\ApiManager\Data\DefaultData;
+use Truvoicer\TfDbReadCore\Services\Auth\AuthService;
+use Truvoicer\TfDbReadCore\Services\User\RoleService;
+use Truvoicer\TfDbReadCore\Services\User\UserAdminService;
 use Illuminate\Database\Seeder;
 
 class UserSeeder extends Seeder

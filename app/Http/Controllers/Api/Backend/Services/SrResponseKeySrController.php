@@ -8,12 +8,12 @@ use App\Http\Requests\Service\Request\ResponseKey\UpdateSrResponseKeySrRequest;
 use App\Http\Resources\Service\ServiceRequest\SrResponseKeySrsCollection;
 use App\Http\Resources\Service\ServiceRequest\SrResponseKeySrsResource;
 use App\Http\Resources\Service\ServiceRequest\SrResponseKeyWithServiceCollection;
-use Truvoicer\TruFetcherGet\Models\Provider;
-use Truvoicer\TruFetcherGet\Models\Sr;
-use Truvoicer\TruFetcherGet\Models\SrResponseKeySr;
-use Truvoicer\TruFetcherGet\Repositories\SrResponseKeySrRepository;
-use Truvoicer\TruFetcherGet\Services\ApiServices\ServiceRequests\ResponseKeys\SrResponseKeyService;
-use Truvoicer\TruFetcherGet\Services\Permission\PermissionService;
+use Truvoicer\TfDbReadCore\Models\Provider;
+use Truvoicer\TfDbReadCore\Models\Sr;
+use Truvoicer\TfDbReadCore\Models\SrResponseKeySr;
+use Truvoicer\TfDbReadCore\Repositories\SrResponseKeySrRepository;
+use Truvoicer\TfDbReadCore\Services\ApiServices\ServiceRequests\ResponseKeys\SrResponseKeyService;
+use Truvoicer\TfDbReadCore\Services\Permission\PermissionService;
 use Illuminate\Http\Request;
 
 /**

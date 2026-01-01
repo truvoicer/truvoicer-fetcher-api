@@ -2,11 +2,11 @@
 
 namespace App\Services;
 
-use Truvoicer\TruFetcherGet\Services\ApiServices\ApiService;
-use Truvoicer\TruFetcherGet\Services\ApiServices\ServiceRequests\SrService;
-use Truvoicer\TruFetcherGet\Services\BaseService;
-use Truvoicer\TruFetcherGet\Services\Category\CategoryService;
-use Truvoicer\TruFetcherGet\Services\Provider\ProviderService;
+use Truvoicer\TfDbReadCore\Services\ApiServices\ApiService;
+use Truvoicer\TfDbReadCore\Services\ApiServices\ServiceRequests\SrService;
+use Truvoicer\TfDbReadCore\Services\BaseService;
+use Truvoicer\TfDbReadCore\Services\Category\CategoryService;
+use Truvoicer\TfDbReadCore\Services\Provider\ProviderService;
 
 class SearchService extends BaseService
 {

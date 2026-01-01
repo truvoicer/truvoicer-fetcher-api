@@ -2,9 +2,9 @@
 
 namespace App\Providers;
 
-use Truvoicer\TruFetcherGet\Events\ProcessSrOperationDataEvent;
-use Truvoicer\TruFetcherGet\Events\RunProviderSrOperationEvent;
-use Truvoicer\TruFetcherGet\Events\RunSrOperationEvent;
+use Truvoicer\TfDbReadCore\Events\ProcessSrOperationDataEvent;
+use Truvoicer\TfDbReadCore\Events\RunProviderSrOperationEvent;
+use Truvoicer\TfDbReadCore\Events\RunSrOperationEvent;
 use App\Listeners\ProcessSrOperationDataListener;
 use App\Listeners\RunProviderSrOperationListener;
 use App\Listeners\RunSrOperationListener;

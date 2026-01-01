@@ -2,8 +2,8 @@
 
 namespace App\Http\Requests\Provider\RateLimit;
 
-use Truvoicer\TruFetcherGet\Models\ProviderRateLimit;
-use Truvoicer\TruFetcherGet\Models\SrRateLimit;
+use Truvoicer\TfDbReadCore\Models\ProviderRateLimit;
+use Truvoicer\TfDbReadCore\Models\SrRateLimit;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 

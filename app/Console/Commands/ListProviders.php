@@ -2,7 +2,7 @@
 
 namespace App\Console\Commands;
 
-use Truvoicer\TruFetcherGet\Repositories\ProviderRepository;
+use Truvoicer\TfDbReadCore\Repositories\ProviderRepository;
 use Illuminate\Console\Command;
 use Symfony\Component\Console\Command\Command as CommandAlias;
 

@@ -2,8 +2,8 @@
 
 namespace App\Http\Requests\Service\Request\ResponseKey;
 
-use Truvoicer\TruFetcherGet\Models\Sr;
-use Truvoicer\TruFetcherGet\Repositories\SrResponseKeySrRepository;
+use Truvoicer\TfDbReadCore\Models\Sr;
+use Truvoicer\TfDbReadCore\Repositories\SrResponseKeySrRepository;
 use App\Rules\StringOrInteger;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;

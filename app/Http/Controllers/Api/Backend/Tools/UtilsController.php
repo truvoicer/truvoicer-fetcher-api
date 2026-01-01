@@ -3,16 +3,16 @@
 namespace App\Http\Controllers\Api\Backend\Tools;
 
 use App\Http\Controllers\Controller;
-use Truvoicer\TruFetcherGet\Services\ApiManager\ApiBase;
-use Truvoicer\TruFetcherGet\Services\ApiManager\Data\DataConstants;
-use Truvoicer\TruFetcherGet\Services\Permission\AccessControlService;
-use Truvoicer\TruFetcherGet\Services\Permission\PermissionService;
+use Truvoicer\TfDbReadCore\Services\ApiManager\ApiBase;
+use Truvoicer\TfDbReadCore\Services\ApiManager\Data\DataConstants;
+use Truvoicer\TfDbReadCore\Services\Permission\AccessControlService;
+use Truvoicer\TfDbReadCore\Services\Permission\PermissionService;
 use App\Services\Tools\FileSystem\Downloads\DownloadsFileSystemService;
 use App\Services\Tools\HttpRequestService;
 use App\Services\Tools\SerializerService;
 use App\Services\Tools\FileSystem\FileSystemService;
 use App\Services\Tools\VariablesService;
-use Truvoicer\TruFetcherGet\Services\User\UserAdminService;
+use Truvoicer\TfDbReadCore\Services\User\UserAdminService;
 use Illuminate\Http\Request;
 
 /**

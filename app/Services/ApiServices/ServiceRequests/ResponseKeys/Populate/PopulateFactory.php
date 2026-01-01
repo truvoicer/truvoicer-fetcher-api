@@ -2,18 +2,18 @@
 
 namespace App\Services\ApiServices\ServiceRequests\ResponseKeys\Populate;
 
-use Truvoicer\TruFetcherGet\Enums\Property\PropertyType;
-use Truvoicer\TruFetcherGet\Models\Provider;
-use Truvoicer\TruFetcherGet\Models\Sr;
-use Truvoicer\TruFetcherGet\Repositories\SrRepository;
-use Truvoicer\TruFetcherGet\Services\ApiManager\Data\DataConstants;
-use Truvoicer\TruFetcherGet\Services\ApiManager\Response\ResponseManager;
+use Truvoicer\TfDbReadCore\Enums\Property\PropertyType;
+use Truvoicer\TfDbReadCore\Models\Provider;
+use Truvoicer\TfDbReadCore\Models\Sr;
+use Truvoicer\TfDbReadCore\Repositories\SrRepository;
+use Truvoicer\TfDbReadCore\Services\ApiManager\Data\DataConstants;
+use Truvoicer\TfDbReadCore\Services\ApiManager\Response\ResponseManager;
 use App\Services\ApiServices\ServiceRequests\ResponseKeys\Populate\Types\PopulateTypeJson;
 use App\Services\ApiServices\ServiceRequests\ResponseKeys\Populate\Types\PopulateTypeXml;
-use Truvoicer\TruFetcherGet\Services\ApiServices\ServiceRequests\SrConfigService;
-use Truvoicer\TruFetcherGet\Services\Provider\ProviderService;
-use Truvoicer\TruFetcherGet\Traits\Error\ErrorTrait;
-use Truvoicer\TruFetcherGet\Traits\User\UserTrait;
+use Truvoicer\TfDbReadCore\Services\ApiServices\ServiceRequests\SrConfigService;
+use Truvoicer\TfDbReadCore\Services\Provider\ProviderService;
+use Truvoicer\TfDbReadCore\Traits\Error\ErrorTrait;
+use Truvoicer\TfDbReadCore\Traits\User\UserTrait;
 use Exception;
 use Illuminate\Support\Arr;
 

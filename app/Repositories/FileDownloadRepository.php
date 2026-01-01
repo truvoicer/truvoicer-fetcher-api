@@ -4,6 +4,7 @@ namespace App\Repositories;
 
 use App\Models\File;
 use App\Models\FileDownload;
+use Truvoicer\TfDbReadCore\Repositories\BaseRepository;
 
 class FileDownloadRepository extends BaseRepository
 {

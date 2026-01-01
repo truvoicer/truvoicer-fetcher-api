@@ -1,6 +1,6 @@
 <?php
 
-use Truvoicer\TruFetcherGet\Enums\Api\ApiListKey;
+use Truvoicer\TfDbReadCore\Enums\Api\ApiListKey;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;

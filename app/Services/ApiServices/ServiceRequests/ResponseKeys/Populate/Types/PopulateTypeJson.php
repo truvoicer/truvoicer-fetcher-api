@@ -2,15 +2,15 @@
 
 namespace App\Services\ApiServices\ServiceRequests\ResponseKeys\Populate\Types;
 
-use Truvoicer\TruFetcherGet\Enums\Api\ApiListKey;
-use Truvoicer\TruFetcherGet\Enums\Sr\SrType;
-use Truvoicer\TruFetcherGet\Models\Sr;
-use Truvoicer\TruFetcherGet\Services\ApiManager\Data\DataConstants;
-use Truvoicer\TruFetcherGet\Services\ApiManager\Operations\ApiRequestService;
-use Truvoicer\TruFetcherGet\Services\ApiManager\Response\Entity\ApiDetailedResponse;
-use Truvoicer\TruFetcherGet\Services\ApiManager\Response\Handlers\ResponseHandler;
-use Truvoicer\TruFetcherGet\Services\ApiManager\Response\ResponseManager;
-use Truvoicer\TruFetcherGet\Services\ApiServices\ServiceRequests\SrConfigService;
+use Truvoicer\TfDbReadCore\Enums\Api\ApiListKey;
+use Truvoicer\TfDbReadCore\Enums\Sr\SrType;
+use Truvoicer\TfDbReadCore\Models\Sr;
+use Truvoicer\TfDbReadCore\Services\ApiManager\Data\DataConstants;
+use Truvoicer\TfDbReadCore\Services\ApiManager\Operations\ApiRequestService;
+use Truvoicer\TfDbReadCore\Services\ApiManager\Response\Entity\ApiDetailedResponse;
+use Truvoicer\TfDbReadCore\Services\ApiManager\Response\Handlers\ResponseHandler;
+use Truvoicer\TfDbReadCore\Services\ApiManager\Response\ResponseManager;
+use Truvoicer\TfDbReadCore\Services\ApiServices\ServiceRequests\SrConfigService;
 use Illuminate\Support\Arr;
 
 class PopulateTypeJson extends PopulateTypeBase

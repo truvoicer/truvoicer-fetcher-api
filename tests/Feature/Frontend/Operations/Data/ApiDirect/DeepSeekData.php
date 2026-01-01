@@ -2,11 +2,11 @@
 
 namespace Tests\Feature\Frontend\Operations\Data\ApiDirect;
 
-use Truvoicer\TruFetcherGet\Enums\Api\ApiListKey;
-use Truvoicer\TruFetcherGet\Enums\Api\ApiResponseFormat;
+use Truvoicer\TfDbReadCore\Enums\Api\ApiListKey;
+use Truvoicer\TfDbReadCore\Enums\Api\ApiResponseFormat;
 use App\Enums\Api\ApiType;
-use Truvoicer\TruFetcherGet\Enums\Property\PropertyType;
-use Truvoicer\TruFetcherGet\Exceptions\Api\Response\ApiResponseException;
+use Truvoicer\TfDbReadCore\Enums\Property\PropertyType;
+use Truvoicer\TfDbReadCore\Exceptions\Api\Response\ApiResponseException;
 use Illuminate\Testing\TestResponse;
 
 class DeepSeekData

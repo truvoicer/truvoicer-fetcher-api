@@ -2,7 +2,7 @@
 
 namespace App\Listeners;
 
-use Truvoicer\TruFetcherGet\Events\ProcessSrOperationDataEvent;
+use Truvoicer\TfDbReadCore\Events\ProcessSrOperationDataEvent;
 use App\Jobs\ProcessSrOperationData;
 
 class ProcessSrOperationDataListener

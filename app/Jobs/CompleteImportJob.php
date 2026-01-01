@@ -4,7 +4,7 @@ namespace App\Jobs;
 
 use App\Models\User;
 use App\Notifications\ImportCompletedNotification;
-use Truvoicer\TruFetcherGet\Services\User\UserAdminService;
+use Truvoicer\TfDbReadCore\Services\User\UserAdminService;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
 use Illuminate\Support\Facades\App;

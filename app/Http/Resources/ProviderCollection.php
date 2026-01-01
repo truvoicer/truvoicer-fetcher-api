@@ -3,7 +3,7 @@
 namespace App\Http\Resources;
 
 use Illuminate\Http\Request;
-use Truvoicer\TruFetcherGet\Http\Resources\BaseCollection;
+use Truvoicer\TfDbReadCore\Http\Resources\BaseCollection;
 
 class ProviderCollection extends BaseCollection
 {

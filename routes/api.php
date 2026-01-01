@@ -34,8 +34,8 @@ use App\Http\Controllers\Api\Backend\User\UserController;
 use App\Http\Controllers\Api\Backend\User\UserSettingController;
 use App\Http\Controllers\Api\Frontend\ListController;
 use App\Http\Controllers\Api\Frontend\OperationsController;
-use Truvoicer\TruFetcherGet\Models\Provider;
-use Truvoicer\TruFetcherGet\Models\Sr;
+use Truvoicer\TfDbReadCore\Models\Provider;
+use Truvoicer\TfDbReadCore\Models\Sr;
 use Illuminate\Support\Facades\Route;
 
 /*

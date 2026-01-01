@@ -2,15 +2,15 @@
 
 namespace Tests\Feature\Frontend\Operations\Data\ApiDirect;
 
-use Truvoicer\TruFetcherGet\Enums\Api\ApiListKey;
-use Truvoicer\TruFetcherGet\Enums\Api\ApiMethod;
-use Truvoicer\TruFetcherGet\Enums\Api\ApiResponseFormat;
+use Truvoicer\TfDbReadCore\Enums\Api\ApiListKey;
+use Truvoicer\TfDbReadCore\Enums\Api\ApiMethod;
+use Truvoicer\TfDbReadCore\Enums\Api\ApiResponseFormat;
 use App\Enums\Api\ApiType;
-use Truvoicer\TruFetcherGet\Enums\Property\PropertyType;
-use Truvoicer\TruFetcherGet\Exceptions\Api\Operation\ApiOperationException;
-use Truvoicer\TruFetcherGet\Exceptions\Api\Response\ApiResponseException;
-use Truvoicer\TruFetcherGet\Services\ApiManager\Client\ApiClientHandler;
-use Truvoicer\TruFetcherGet\Services\ApiManager\Client\Entity\ApiRequest;
+use Truvoicer\TfDbReadCore\Enums\Property\PropertyType;
+use Truvoicer\TfDbReadCore\Exceptions\Api\Operation\ApiOperationException;
+use Truvoicer\TfDbReadCore\Exceptions\Api\Response\ApiResponseException;
+use Truvoicer\TfDbReadCore\Services\ApiManager\Client\ApiClientHandler;
+use Truvoicer\TfDbReadCore\Services\ApiManager\Client\Entity\ApiRequest;
 use Illuminate\Testing\TestResponse;
 use Mockery;
 use Mockery\MockInterface;

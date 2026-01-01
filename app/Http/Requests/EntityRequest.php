@@ -2,8 +2,8 @@
 
 namespace App\Http\Requests;
 
-use Truvoicer\TruFetcherGet\Enums\Entity\EntityType;
-use Truvoicer\TruFetcherGet\Services\EntityService;
+use Truvoicer\TfDbReadCore\Enums\Entity\EntityType;
+use Truvoicer\TfDbReadCore\Services\EntityService;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
