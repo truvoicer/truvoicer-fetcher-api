@@ -2,7 +2,7 @@
 
 namespace App\Jobs;
 
-use App\Models\User;
+use Truvoicer\TfDbReadCore\Models\User;
 use App\Notifications\ImportCompletedNotification;
 use Truvoicer\TfDbReadCore\Services\User\UserAdminService;
 use Illuminate\Contracts\Queue\ShouldQueue;

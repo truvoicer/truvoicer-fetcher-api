@@ -19,6 +19,7 @@
         "laravel/sanctum": "^4.0",
         "laravel/tinker": "^2.8",
         "mongodb/laravel-mongodb": "^5.5",
+
         "truvoicer/tf-db-read-core": "@dev"
     },
     "require-dev": {

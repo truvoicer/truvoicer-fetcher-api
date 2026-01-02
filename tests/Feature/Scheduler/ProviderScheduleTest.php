@@ -14,7 +14,7 @@ use Truvoicer\TfDbReadCore\Models\Provider;
 use Truvoicer\TfDbReadCore\Models\S;
 use Truvoicer\TfDbReadCore\Models\Sr;
 use Truvoicer\TfDbReadCore\Models\SrSchedule;
-use App\Models\User;
+use Truvoicer\TfDbReadCore\Models\User;
 use Truvoicer\TfDbReadCore\Repositories\MongoDB\MongoDBRepository;
 use Truvoicer\TfDbReadCore\Services\ApiManager\Operations\DataHandler\ApiRequestMongoDbHandler;
 use App\Services\Provider\ProviderScheduleService;

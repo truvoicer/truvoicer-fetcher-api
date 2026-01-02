@@ -4,7 +4,7 @@ namespace App\Services\Provider;
 
 use Truvoicer\TfDbReadCore\Models\Sr;
 use Truvoicer\TfDbReadCore\Models\SrSchedule;
-use App\Models\User;
+use Truvoicer\TfDbReadCore\Models\User;
 use Truvoicer\TfDbReadCore\Services\ApiServices\ServiceRequests\SrScheduleService;
 use Truvoicer\TfDbReadCore\Services\ApiServices\ServiceRequests\SrService;
 use Truvoicer\TfDbReadCore\Traits\User\UserTrait;

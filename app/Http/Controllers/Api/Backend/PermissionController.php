@@ -8,7 +8,7 @@ use App\Http\Resources\PermissionCollection;
 use App\Http\Resources\PermissionResource;
 use App\Http\Resources\ProviderCollection;
 use Truvoicer\TfDbReadCore\Models\Permission;
-use App\Models\User;
+use Truvoicer\TfDbReadCore\Models\User;
 use Truvoicer\TfDbReadCore\Services\Category\CategoryService;
 use Truvoicer\TfDbReadCore\Services\Permission\AccessControlService;
 use Truvoicer\TfDbReadCore\Services\Permission\PermissionEntities;

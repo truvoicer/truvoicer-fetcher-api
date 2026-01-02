@@ -3,12 +3,14 @@
 namespace Database\Seeders;
 
 use Truvoicer\TfDbReadCore\Models\Role;
-use App\Models\User;
+use Truvoicer\TfDbReadCore\Models\User;
 use Truvoicer\TfDbReadCore\Services\ApiManager\Data\DefaultData;
 use Truvoicer\TfDbReadCore\Services\Auth\AuthService;
 use Truvoicer\TfDbReadCore\Services\User\RoleService;
 use Truvoicer\TfDbReadCore\Services\User\UserAdminService;
 use Illuminate\Database\Seeder;
+use Laravel\Sanctum\Sanctum;
+use Truvoicer\TfDbReadCore\Models\SanctumUser;
 
 class UserSeeder extends Seeder
 {
@@ -26,10 +28,8 @@ class UserSeeder extends Seeder
             throw new \Exception("Error finding role");
         }
 
-        $user = $userAdminService->getUserRepository()->findOneBy(
-            [['email', '=', $testUserData['email']]]
-        );
-        if ($user instanceof User) {
+        $user = SanctumUser::where('email', $testUserData['email'])->first();
+        if ($user instanceof SanctumUser) {
             return;
         }
 
@@ -44,10 +44,8 @@ class UserSeeder extends Seeder
 
 
         $testUserData = DefaultData::TEST_USER_DATA;
-        $user = $userAdminService->getUserRepository()->findOneBy(
-            [['email', '=', $testUserData['email']]]
-        );
-        if (!$user instanceof User) {
+        $user = SanctumUser::where('email', $testUserData['email'])->first();
+        if (!$user instanceof SanctumUser) {
             throw new \Exception("Error finding user");
         }
         $token = $userAdminService->createUserToken($user);

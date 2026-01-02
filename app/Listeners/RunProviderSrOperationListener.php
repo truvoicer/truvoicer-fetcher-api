@@ -4,7 +4,7 @@ namespace App\Listeners;
 
 use Truvoicer\TfDbReadCore\Events\RunProviderSrOperationEvent;
 use Truvoicer\TfDbReadCore\Models\Provider;
-use App\Models\User;
+use Truvoicer\TfDbReadCore\Models\User;
 use Truvoicer\TfDbReadCore\Services\ApiServices\ServiceRequests\SrOperationsService;
 use Truvoicer\TfDbReadCore\Services\Provider\ProviderService;
 use Truvoicer\TfDbReadCore\Services\Task\ScheduleService;

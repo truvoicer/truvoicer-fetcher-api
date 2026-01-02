@@ -62,7 +62,7 @@ return [
     'providers' => [
         'users' => [
             'driver' => 'eloquent',
-            'model' => App\Models\User::class,
+            'model' => Truvoicer\TfDbReadCore\Models\User::class,
         ],
 
         // 'users' => [

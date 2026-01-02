@@ -8,7 +8,7 @@ use App\Http\Resources\AccessTokenResource;
 use App\Http\Resources\PersonalAccessTokenResource;
 use App\Http\Resources\RoleResource;
 use App\Http\Resources\UserResource;
-use App\Models\User;
+use Truvoicer\TfDbReadCore\Models\User;
 use Truvoicer\TfDbReadCore\Services\Auth\AuthService;
 use Truvoicer\TfDbReadCore\Services\Permission\AccessControlService;
 use App\Services\Tools\HttpRequestService;

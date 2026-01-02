@@ -2,7 +2,7 @@
 
 namespace App\Jobs;
 
-use App\Models\User;
+use Truvoicer\TfDbReadCore\Models\User;
 use App\Notifications\ImportCompletedNotification;
 use App\Notifications\ImportStartedNotification;
 use App\Services\Tools\IExport\ImportService;

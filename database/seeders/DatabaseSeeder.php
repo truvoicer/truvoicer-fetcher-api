@@ -2,7 +2,7 @@
 
 namespace Database\Seeders;
 
-use App\Models\User;
+use Truvoicer\TfDbReadCore\Models\User;
 use Truvoicer\TfDbReadCore\Services\ApiManager\Data\DefaultData;
 use Truvoicer\TfDbReadCore\Services\User\UserAdminService;
 use Illuminate\Database\Seeder;

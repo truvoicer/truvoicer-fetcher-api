@@ -3,7 +3,7 @@
 namespace App\Console\Commands;
 
 use Truvoicer\TfDbReadCore\Models\Provider;
-use App\Models\User;
+use Truvoicer\TfDbReadCore\Models\User;
 use Truvoicer\TfDbReadCore\Repositories\SrResponseKeySrRepository;
 use Truvoicer\TfDbReadCore\Services\ApiServices\ServiceRequests\SrOperationsService;
 use Truvoicer\TfDbReadCore\Services\Provider\ProviderEventService;

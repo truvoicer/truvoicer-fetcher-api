@@ -2,7 +2,7 @@
 
 namespace App\Services\User;
 
-use App\Models\UserSetting;
+use Truvoicer\TfDbReadCore\Models\UserSetting;
 use App\Repositories\UserSettingRepository;
 use Truvoicer\TfDbReadCore\Services\BaseService;
 

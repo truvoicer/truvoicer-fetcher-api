@@ -2,7 +2,7 @@
 
 namespace App\Services\Tools\IExport;
 
-use App\Models\User;
+use Truvoicer\TfDbReadCore\Models\User;
 use Truvoicer\TfDbReadCore\Services\ApiServices\ApiService;
 use Truvoicer\TfDbReadCore\Services\Category\CategoryService;
 use Truvoicer\TfDbReadCore\Services\Permission\AccessControlService;

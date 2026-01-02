@@ -2,7 +2,7 @@
 
 namespace App\Services;
 
-use App\Models\User;
+use Truvoicer\TfDbReadCore\Models\User;
 use Truvoicer\TfDbReadCore\Services\ApiServices\ServiceRequests\ResponseKeys\SrResponseKeyService;
 use Truvoicer\TfDbReadCore\Services\ApiServices\ServiceRequests\SrConfigService;
 use Truvoicer\TfDbReadCore\Services\ApiServices\SResponseKeysService;

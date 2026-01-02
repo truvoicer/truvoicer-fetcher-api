@@ -4,7 +4,7 @@ namespace App\Jobs;
 
 use Truvoicer\TfDbReadCore\Models\Provider;
 use Truvoicer\TfDbReadCore\Models\Sr;
-use App\Models\User;
+use Truvoicer\TfDbReadCore\Models\User;
 use Truvoicer\TfDbReadCore\Repositories\SrResponseKeySrRepository;
 use Truvoicer\TfDbReadCore\Services\ApiManager\Response\Entity\ApiResponse;
 use Truvoicer\TfDbReadCore\Services\ApiServices\ServiceRequests\SrOperationsService;
