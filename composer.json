@@ -6,7 +6,7 @@
     "license": "MIT",
     "repositories": [
         {
-            "name": "truvoicer",
+            "name": "tf-db-read-core",
             "type": "path",
             "url": "packages/truvoicer/tf-db-read-core"
         }
