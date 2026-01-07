@@ -3,11 +3,13 @@
 namespace App\Providers;
 
 use Truvoicer\TfDbReadCore\Events\ProcessSrOperationDataEvent;
-use Truvoicer\TfDbReadCore\Events\RunProviderSrOperationEvent;
-use Truvoicer\TfDbReadCore\Events\RunSrOperationEvent;
-use App\Listeners\ProcessSrOperationDataListener;
+use Truvoicer\TfDbReadCore\Listeners\ProcessSrOperationDataListener;
+
+use App\Events\RunProviderSrOperationEvent;
+use App\Events\RunSrOperationEvent;
 use App\Listeners\RunProviderSrOperationListener;
 use App\Listeners\RunSrOperationListener;
+
 use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
 
 class EventServiceProvider extends ServiceProvider

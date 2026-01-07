@@ -63,7 +63,7 @@ class PopulateSrResponseKeysRequest extends FormRequest
                 )
             ),
             [
-                'query' => ['sometimes', 'array'],
+                'query' => ['sometimes', 'array', 'nullable'],
                 'overwrite' => ['sometimes', 'boolean'],
                 'enable_ai' => ['sometimes', 'boolean'],
                 'ai_clients' => ['sometimes', 'array'],

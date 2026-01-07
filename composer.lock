@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "f696a2f44134ef6387613acb05762d3d",
+    "content-hash": "0a5ef788cd64b3bed317f18c2cb3bef7",
     "packages": [
         {
             "name": "brick/math",
@@ -7158,7 +7158,7 @@
             "dist": {
                 "type": "path",
                 "url": "packages/truvoicer/tf-db-read-core",
-                "reference": "b4b8ec44b209b237bb232cd424eabead31a6aab1"
+                "reference": "7b89acec53c3164dafc61828ff0b18200ce68738"
             },
             "require": {
                 "illuminate/contracts": "^11.0||^12.0",

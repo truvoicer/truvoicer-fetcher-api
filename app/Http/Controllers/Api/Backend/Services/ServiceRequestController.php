@@ -23,7 +23,7 @@ use Truvoicer\TfDbReadCore\Repositories\SrResponseKeySrRepository;
 use Truvoicer\TfDbReadCore\Services\ApiManager\Operations\ApiRequestService;
 use Truvoicer\TfDbReadCore\Services\ApiServices\ApiService;
 use App\Services\ApiServices\ServiceRequests\ResponseKeys\Populate\PopulateFactory;
-use Truvoicer\TfDbReadCore\Services\ApiServices\ServiceRequests\SrOperationsService;
+use App\Services\ApiServices\ServiceRequests\SrOperationsService;
 use Truvoicer\TfDbReadCore\Services\ApiServices\ServiceRequests\SrService;
 use Truvoicer\TfDbReadCore\Services\Permission\PermissionService;
 use Truvoicer\TfDbReadCore\Services\Provider\ProviderService;

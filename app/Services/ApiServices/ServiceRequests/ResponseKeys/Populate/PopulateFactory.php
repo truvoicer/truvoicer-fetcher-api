@@ -36,7 +36,7 @@ class PopulateFactory
     {
         $this->srRepository->addWhere('id', $sourceSrs, 'in');
         $fetchSourceSrs = $this->srRepository->findMany();
-        if (Arr::isList($query)) {
+        if (is_array($query) && Arr::isList($query)) {
             $query = Arr::mapWithKeys($query, function (array $item, int $key) {
                 if (
                     array_key_exists('name', $item) &&

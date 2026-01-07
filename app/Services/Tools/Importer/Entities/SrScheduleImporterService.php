@@ -7,10 +7,8 @@ use App\Enums\Import\ImportConfig;
 use App\Enums\Import\ImportMappingType;
 use App\Enums\Import\ImportType;
 use Truvoicer\TfDbReadCore\Helpers\Tools\UtilHelpers;
-use Truvoicer\TfDbReadCore\Models\Sr;
 use Truvoicer\TfDbReadCore\Models\SrSchedule;
-use Truvoicer\TfDbReadCore\Services\ApiServices\ServiceRequests\SrScheduleService;
-use Truvoicer\TfDbReadCore\Services\ApiServices\ServiceRequests\SrService;
+use App\Services\ApiServices\ServiceRequests\SrScheduleService;
 use Truvoicer\TfDbReadCore\Services\Permission\AccessControlService;
 
 class SrScheduleImporterService extends ImporterBase

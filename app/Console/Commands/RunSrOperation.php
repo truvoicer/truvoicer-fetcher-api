@@ -5,8 +5,8 @@ namespace App\Console\Commands;
 use Truvoicer\TfDbReadCore\Models\Provider;
 use Truvoicer\TfDbReadCore\Models\User;
 use Truvoicer\TfDbReadCore\Repositories\SrResponseKeySrRepository;
-use Truvoicer\TfDbReadCore\Services\ApiServices\ServiceRequests\SrOperationsService;
-use Truvoicer\TfDbReadCore\Services\Provider\ProviderEventService;
+use App\Services\ApiServices\ServiceRequests\SrOperationsService;
+use App\Services\Provider\ProviderEventService;
 use Illuminate\Console\Command;
 use Symfony\Component\Console\Command\Command as CommandAlias;
 

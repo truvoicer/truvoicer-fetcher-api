@@ -9,7 +9,7 @@ use App\Enums\Api\ApiType;
 use Truvoicer\TfDbReadCore\Enums\Property\PropertyType;
 use Truvoicer\TfDbReadCore\Enums\Sr\SrType;
 use Truvoicer\TfDbReadCore\Events\ProcessSrOperationDataEvent;
-use App\Jobs\ProcessSrOperationData;
+use Truvoicer\TfDbReadCore\Jobs\ProcessSrOperationData;
 use Truvoicer\TfDbReadCore\Models\Category;
 use Truvoicer\TfDbReadCore\Models\Property;
 use Truvoicer\TfDbReadCore\Models\Provider;

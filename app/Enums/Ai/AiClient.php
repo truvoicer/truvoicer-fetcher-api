@@ -2,11 +2,11 @@
 
 namespace App\Enums\Ai;
 
-use App\Enums\Api\ApiType;
 use App\Services\ApiServices\ServiceRequests\ResponseKeys\Populate\Ai\DeepSeek\DeepSeekPopulatePrompt;
 use App\Services\ApiServices\ServiceRequests\ResponseKeys\Populate\Ai\Gemini\GeminiPopulatePrompt;
 use App\Services\ApiServices\ServiceRequests\ResponseKeys\Populate\Ai\Grok\GrokPopulatePrompt;
 use App\Services\ApiServices\ServiceRequests\ResponseKeys\Populate\Ai\OpenAi\OpenAiPopulatePrompt;
+use Truvoicer\TfDbReadCore\Enums\Api\ApiType;
 use Truvoicer\TfDbReadCore\Traits\Enum\EnumUtillityTrait;
 
 enum AiClient: string
@@ -29,7 +29,7 @@ enum AiClient: string
         };
     }
 
-    public function apiType()
+    public function apiType(): ApiType
     {
         return match ($this) {
             self::GEMINI => ApiType::AI_GEMINI,

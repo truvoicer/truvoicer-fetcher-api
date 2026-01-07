@@ -1,7 +1,7 @@
 <?php
 
-use Truvoicer\TfDbReadCore\Services\ApiServices\ServiceRequests\SrOperationsService;
-use Truvoicer\TfDbReadCore\Services\Provider\ProviderEventService;
+use App\Services\ApiServices\ServiceRequests\SrOperationsService;
+use App\Services\Provider\ProviderEventService;
 use App\Services\Tools\IExport\IExportTypeService;
 use Monolog\Handler\NullHandler;
 use Monolog\Handler\StreamHandler;

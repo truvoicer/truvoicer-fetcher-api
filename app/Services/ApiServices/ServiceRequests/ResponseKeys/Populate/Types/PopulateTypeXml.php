@@ -45,7 +45,7 @@ class PopulateTypeXml extends PopulateTypeBase
         $this->requestOperation->setApiRequestName($sr->name);
         $this->requestOperation->setUser($this->getUser());
 
-        return $this->requestOperation->getOperationRequestContent('raw', $query, true);
+        return $this->requestOperation->getOperationRequestContent('raw', $query ?? [], true);
     }
 
     public function handleResponse(Sr $sr, ApiDetailedResponse $response): bool

@@ -9,12 +9,8 @@ use App\Http\Resources\Service\ServiceRequest\ServiceRequestConfigResource;
 use App\Http\Resources\SrScheduleResource;
 use Truvoicer\TfDbReadCore\Models\Provider;
 use Truvoicer\TfDbReadCore\Models\Sr;
-use Truvoicer\TfDbReadCore\Models\SrSchedule;
-use Truvoicer\TfDbReadCore\Services\ApiServices\ServiceRequests\SrScheduleService;
-use Truvoicer\TfDbReadCore\Services\Permission\AccessControlService;
+use App\Services\ApiServices\ServiceRequests\SrScheduleService;
 use Truvoicer\TfDbReadCore\Services\Permission\PermissionService;
-use App\Services\Tools\HttpRequestService;
-use App\Services\Tools\SerializerService;
 use Illuminate\Http\Request;
 
 /**

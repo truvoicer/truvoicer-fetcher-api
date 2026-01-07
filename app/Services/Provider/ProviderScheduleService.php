@@ -4,15 +4,14 @@ namespace App\Services\Provider;
 
 use Truvoicer\TfDbReadCore\Models\Sr;
 use Truvoicer\TfDbReadCore\Models\SrSchedule;
-use Truvoicer\TfDbReadCore\Models\User;
-use Truvoicer\TfDbReadCore\Services\ApiServices\ServiceRequests\SrScheduleService;
+use App\Services\ApiServices\ServiceRequests\SrScheduleService;
 use Truvoicer\TfDbReadCore\Services\ApiServices\ServiceRequests\SrService;
 use Truvoicer\TfDbReadCore\Traits\User\UserTrait;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Log;
-use Truvoicer\TfDbReadCore\Services\Provider\ProviderEventService;
+use App\Services\Provider\ProviderEventService;
 use Truvoicer\TfDbReadCore\Services\Provider\ProviderService;
 
 class ProviderScheduleService
