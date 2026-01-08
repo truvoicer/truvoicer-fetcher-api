@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "0a5ef788cd64b3bed317f18c2cb3bef7",
+    "content-hash": "e001d670aa0c1bdb6a27e72f45161d39",
     "packages": [
         {
             "name": "brick/math",
@@ -7154,16 +7154,17 @@
         },
         {
             "name": "truvoicer/tf-db-read-core",
-            "version": "v1.1.0",
+            "version": "v1.1.4",
             "source": {
                 "type": "git",
                 "url": "git@github.com:truvoicer/tf-db-read-core.git",
-                "reference": "7b89acec53c3164dafc61828ff0b18200ce68738"
+                "reference": "ff94fbac94807833116b4402d7b9275aae573a72"
             },
             "dist": {
-                "type": "path",
-                "url": "packages/truvoicer/tf-db-read-core",
-                "reference": "7b89acec53c3164dafc61828ff0b18200ce68738"
+                "type": "zip",
+                "url": "https://api.github.com/repos/truvoicer/tf-db-read-core/zipball/ff94fbac94807833116b4402d7b9275aae573a72",
+                "reference": "ff94fbac94807833116b4402d7b9275aae573a72",
+                "shasum": ""
             },
             "require": {
                 "illuminate/contracts": "^11.0||^12.0",
@@ -7242,7 +7243,7 @@
                 "truvoicer"
             ],
             "support": {
-                "source": "https://github.com/truvoicer/tf-db-read-core/tree/v1.1.0",
+                "source": "https://github.com/truvoicer/tf-db-read-core/tree/v1.1.4",
                 "issues": "https://github.com/truvoicer/tf-db-read-core/issues"
             },
             "funding": [
@@ -7251,7 +7252,7 @@
                     "url": "https://github.com/truvoicer"
                 }
             ],
-            "time": "2026-01-03T20:43:28+00:00"
+            "time": "2026-01-08T14:18:25+00:00"
         },
         {
             "name": "vlucas/phpdotenv",
