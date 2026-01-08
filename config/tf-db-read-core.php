@@ -8,9 +8,7 @@ return [
     ],
     'database' => [
         'connection' => 'fetcher_mysql',
-
         'connections' => [
-
             'tf_mysql' => [
                 'driver' => 'mysql',
                 'host' => env('TF_DB_HOST', '127.0.0.1'),
