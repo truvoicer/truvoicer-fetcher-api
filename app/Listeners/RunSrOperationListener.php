@@ -2,16 +2,14 @@
 
 namespace App\Listeners;
 
-use Truvoicer\TfDbReadCore\Events\RunSrOperationEvent;
+use App\Events\RunSrOperationEvent;
 use App\Jobs\SrOperation;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Support\Facades\Log;
 
-class RunSrOperationListener implements ShouldQueue
+class RunSrOperationListener
 {
-
-    use InteractsWithQueue;
 
     /**
      * The number of seconds the job can run before timing out.
@@ -38,6 +36,6 @@ class RunSrOperationListener implements ShouldQueue
             $event->userId,
             $event->srId,
             $event->queryData
-        );
+        )->onConnection('database-tf');
     }
 }

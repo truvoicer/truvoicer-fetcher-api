@@ -8,7 +8,7 @@ use Truvoicer\TfDbReadCore\Enums\Api\ApiResponseFormat;
 use App\Enums\Api\ApiType;
 use Truvoicer\TfDbReadCore\Enums\Property\PropertyType;
 use Truvoicer\TfDbReadCore\Enums\Sr\SrType;
-use Truvoicer\TfDbReadCore\Events\RunSrOperationEvent;
+use App\Events\RunSrOperationEvent;
 use Truvoicer\TfDbReadCore\Models\Category;
 use Truvoicer\TfDbReadCore\Models\Provider;
 use Truvoicer\TfDbReadCore\Models\S;

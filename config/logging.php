@@ -1,7 +1,7 @@
 <?php
 
-use Truvoicer\TfDbReadCore\Services\ApiServices\ServiceRequests\SrOperationsService;
-use Truvoicer\TfDbReadCore\Services\Provider\ProviderEventService;
+use App\Services\ApiServices\ServiceRequests\SrOperationsService;
+use App\Services\Provider\ProviderEventService;
 use App\Services\Tools\IExport\IExportTypeService;
 use Monolog\Handler\NullHandler;
 use Monolog\Handler\StreamHandler;
@@ -78,13 +78,6 @@ return [
         IExportTypeService::LOGGING_NAME => [
             'driver' => 'daily',
             'path' => storage_path(IExportTypeService::LOGGING_PATH),
-            'level' => env('LOG_LEVEL', 'debug'),
-            'days' => 14,
-            'replace_placeholders' => true,
-        ],
-        SrOperationsService::LOGGING_NAME => [
-            'driver' => 'daily',
-            'path' => storage_path(SrOperationsService::LOGGING_PATH),
             'level' => env('LOG_LEVEL', 'debug'),
             'days' => 14,
             'replace_placeholders' => true,

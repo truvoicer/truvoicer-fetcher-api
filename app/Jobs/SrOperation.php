@@ -6,7 +6,7 @@ use Truvoicer\TfDbReadCore\Models\Provider;
 use Truvoicer\TfDbReadCore\Models\Sr;
 use Truvoicer\TfDbReadCore\Models\User;
 use Truvoicer\TfDbReadCore\Repositories\SrResponseKeySrRepository;
-use Truvoicer\TfDbReadCore\Services\ApiServices\ServiceRequests\SrOperationsService;
+use App\Services\ApiServices\ServiceRequests\SrOperationsService;
 use Truvoicer\TfDbReadCore\Services\ApiServices\ServiceRequests\SrService;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
@@ -15,9 +15,6 @@ use Illuminate\Support\Facades\Log;
 class SrOperation implements ShouldQueue
 {
     use Queueable;
-
-    private SrOperationsService $srOperationsService;
-    private SrService $srService;
 
     /**
      * The number of seconds the job can run before timing out.
@@ -41,8 +38,6 @@ class SrOperation implements ShouldQueue
         public int     $srId,
         public array $queryData
     ) {
-        $this->srOperationsService = app(SrOperationsService::class);
-        $this->srService = app(SrService::class);
     }
 
     /**
@@ -51,6 +46,10 @@ class SrOperation implements ShouldQueue
     public function handle(): void
     {
         Log::log('info', 'RunSsdsdsdsdrOperationJob');
+
+        $srOperationsService = app(SrOperationsService::class);
+        $srService = app(SrService::class);
+
         $srId = $this->srId;
         $userId = $this->userId;
         $queryData = $this->queryData;
@@ -62,12 +61,12 @@ class SrOperation implements ShouldQueue
             Log::log('error', 'RunSrOperationJob: $srId is not int');
             return;
         }
-        $user = $this->srService->getUserRepository()->findById($userId);
+        $user = $srService->getUserRepository()->findById($userId);
         if (!$user instanceof User) {
             Log::log('error', 'RunSrOperationJob: $user is not instance of User');
             return;
         }
-        $sr = $this->srService->getServiceRequestRepository()->findById($srId);
+        $sr = $srService->getServiceRequestRepository()->findById($srId);
         if (!$sr instanceof Sr) {
             Log::log('error', 'RunSrOperationJob: $sr is not instance of Sr');
             return;
@@ -81,9 +80,9 @@ class SrOperation implements ShouldQueue
             Log::log('error', 'RunSrOperationJob: $queryData is not array');
             return;
         }
-        $this->srOperationsService->setUser($user);
-        $this->srOperationsService->getRequestOperation()->setProvider($provider);
-        $this->srOperationsService->runOperationForSr(
+        $srOperationsService->setUser($user);
+        $srOperationsService->getRequestOperation()->setProvider($provider);
+        $srOperationsService->runOperationForSr(
             $sr,
             SrResponseKeySrRepository::ACTION_STORE,
             $queryData

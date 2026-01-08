@@ -22,7 +22,7 @@ set -e
 PACKAGE_NAME="truvoicer/tf-db-read-core"
 PACKAGE_DIR="packages/truvoicer/tf-db-read-core"
 GITHUB_REPO="https://github.com/truvoicer/tf-db-read-core.git"
-REPO_KEY="truvoicer"
+REPO_KEY="tf-db-read-core"
 
 usage() {
     echo "Usage:"
@@ -106,12 +106,12 @@ if [ "$MODE" == "production" ]; then
 
     cd "$PACKAGE_DIR"
 
-    echo "📦 Committing local package changes..."
-    git add .
-    git diff-index --quiet HEAD || git commit -m "Auto: prepare package for production" || echo "⚠️ No changes to commit."
-
-    echo "⬆️  Pushing current branch to remote..."
-    git push origin main
+    # Check for uncommitted changes (staged or unstaged)
+    if ! git diff-index --quiet HEAD --; then
+        echo "❌ Uncommitted changes detected in $PACKAGE_DIR"
+        echo "Please commit or stash your changes before continuing."
+        exit 1
+    fi
 
     # --- Handle optional tagging ---
     if [ "$CREATE_TAG" = true ]; then
@@ -126,7 +126,7 @@ if [ "$MODE" == "production" ]; then
             echo "🔖 Using provided tag: $TAG_NAME"
         fi
 
-        git tag "$TAG_NAME"
+        git tag "$TAG_NAME" main
         git push origin "$TAG_NAME"
         echo "✅ Tag $TAG_NAME created and pushed."
 
