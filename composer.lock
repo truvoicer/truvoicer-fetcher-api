@@ -7161,16 +7161,10 @@
                 "reference": "a571cb5df8961fe1865d74c9a8753c05796d5c10"
             },
             "dist": {
-<<<<<<< HEAD
                 "type": "zip",
                 "url": "https://api.github.com/repos/truvoicer/tf-db-read-core/zipball/a571cb5df8961fe1865d74c9a8753c05796d5c10",
                 "reference": "a571cb5df8961fe1865d74c9a8753c05796d5c10",
                 "shasum": ""
-=======
-                "type": "path",
-                "url": "packages/truvoicer/tf-db-read-core",
-                "reference": "a571cb5df8961fe1865d74c9a8753c05796d5c10"
->>>>>>> develop
             },
             "require": {
                 "illuminate/contracts": "^11.0||^12.0",
