@@ -47,7 +47,7 @@ class PopulateSrResponseKeysRequest extends FormRequest
                 );
             }
         );
-        $responseFormat = $prioritisedProviderProperty->getQuery()->first();
+        $responseFormat = $prioritisedProviderProperty->getQuery()?->first();
 
         if (!$responseFormat) {
             throw new BadRequestHttpException("Provider properties not found for operation.");
