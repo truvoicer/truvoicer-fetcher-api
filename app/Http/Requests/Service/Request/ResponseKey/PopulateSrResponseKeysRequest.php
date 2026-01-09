@@ -10,6 +10,8 @@ use Truvoicer\TfDbReadCore\Services\ApiServices\ServiceRequests\SrConfigService;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
+use Truvoicer\TfDbReadCore\Services\Property\PropertyService;
+use Truvoicer\TfDbReadCore\Services\Provider\PrioritisedProviderProperty;
 
 class PopulateSrResponseKeysRequest extends FormRequest
 {
@@ -28,21 +30,44 @@ class PopulateSrResponseKeysRequest extends FormRequest
      */
     public function rules(SrConfigService $srConfigService): array
     {
+        $prioritisedProviderProperty = app(PrioritisedProviderProperty::class);
         $responseFormat = $srConfigService->getConfigValue(
             $this->serviceRequest,
             PropertyType::RESPONSE_FORMAT->value
         );
+
+        $prioritisedProviderProperty->buildQuery(
+            $prioritisedProviderProperty->preparePrioritisedProviderArray(
+                $this->serviceRequest
+            ),
+            function ($query) {
+                return $query->where(
+                    'properties.name',
+                    PropertyType::RESPONSE_FORMAT->value
+                );
+            }
+        );
+        $responseFormat = $prioritisedProviderProperty->getQuery()->first();
+
+        if (!$responseFormat) {
+            throw new BadRequestHttpException("Provider properties not found for operation.");
+        }
+        $responseFormatValue = PropertyService::getPropertyValue(
+            $responseFormat->value_type,
+            $responseFormat->providerProperty
+        );
+
         $responseFormatErrorMsg = sprintf(
             'Response format property/config is not set or in valid. %s: %s',
             PropertyType::RESPONSE_FORMAT->value,
-            $responseFormat
+            $responseFormatValue
         );
         return array_merge(
             array_map(
                 fn($data) => ['sometimes', 'string'],
                 array_combine(
                     array_column(
-                        match ($responseFormat) {
+                        match ($responseFormatValue) {
                             'json' => DataConstants::REQ_SR_FIELDS_FOR_JSON_POPULATE,
                             'xml' => DataConstants::REQ_SR_FIELDS_FOR_XML_POPULATE,
                             default => throw new BadRequestHttpException(
@@ -52,7 +77,7 @@ class PopulateSrResponseKeysRequest extends FormRequest
                         'name'
                     ),
                     array_values(
-                        match ($responseFormat) {
+                        match ($responseFormatValue) {
                             'json' => DataConstants::REQ_SR_FIELDS_FOR_JSON_POPULATE,
                             'xml' => DataConstants::REQ_SR_FIELDS_FOR_XML_POPULATE,
                             default => throw new BadRequestHttpException(

@@ -10,7 +10,7 @@
             "type": "path",
             "url": "packages/truvoicer/tf-db-read-core"
         }
-    ],
+        ],
     "require": {
         "php": "^8.1",
         "guzzlehttp/guzzle": "^7.2",
