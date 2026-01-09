@@ -124,7 +124,7 @@ class SrRateLimitController extends Controller
         }
         $update = $this->srRateLimitService->saveSrRateLimit(
             $srRateLimit,
-            $request->all()
+            $request->validated()
         );
 
         if (!$update) {
