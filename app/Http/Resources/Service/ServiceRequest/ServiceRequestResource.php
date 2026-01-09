@@ -36,6 +36,7 @@ class ServiceRequestResource extends JsonResource
             'provider' => new ProviderMinimalResource($this->provider),
             'hasChildren' => $this->childSrs->count() > 0,
             'srChildSr' => $this->whenLoaded('srChildSr'),
+            'sr_rate_limit' => $this->whenLoaded('srRateLimit'),
             'name' => $this->name,
             'label' => $this->label,
             'pagination_type' => $this->pagination_type,
