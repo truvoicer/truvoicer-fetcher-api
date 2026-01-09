@@ -54,7 +54,7 @@ class PopulateFactory
             $provider = $sr->provider;
 
 
-            /** @var \App\Models\Provider|null $provider */
+            /** @var \Truvoicer\TfDbReadCore\Models\Provider|null $provider */
             $entityProvider = $this->providerService->getProviderEntityFromProviderProperties(
                 $provider
             );

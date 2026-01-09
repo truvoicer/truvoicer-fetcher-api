@@ -182,11 +182,16 @@ class PopulateTypeJson extends PopulateTypeBase
 
         $this->prepareItemsArrayScoreData($requestData);
         $extractData = $this->extractDataFromScoreData($this->score);
-        $this->destSr->{ApiListKey::LIST_KEY->value} = $extractData['value'];
+        $this->destSr->{ApiListKey::LIST_KEY->value} = $this->data['list_key'];
         if (!$this->destSr->save()) {
             $this->addError(
                 "error",
-                "Error saving " . ApiListKey::LIST_KEY->value . '.'
+                sprintf(
+                    'Error saving %s. | %s value: %s',
+                    ApiListKey::LIST_KEY->value,
+                    ApiListKey::LIST_KEY->value,
+                    $this->data['list_key']
+                )
             );
             return false;
         }
