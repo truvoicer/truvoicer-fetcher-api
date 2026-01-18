@@ -7158,7 +7158,7 @@
             "dist": {
                 "type": "path",
                 "url": "packages/truvoicer/tf-db-read-core",
-                "reference": "7f08f8d7b46d065dc9db21b7c11c62d3de1a0654"
+                "reference": "c297d3409ac516524b95627b0ad332b9bbd710e0"
             },
             "require": {
                 "illuminate/contracts": "^11.0||^12.0",
