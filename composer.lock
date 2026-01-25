@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "0a5ef788cd64b3bed317f18c2cb3bef7",
+    "content-hash": "4b55b91f11948e75fbbfe0b5d4516339",
     "packages": [
         {
             "name": "brick/math",
@@ -7154,11 +7154,17 @@
         },
         {
             "name": "truvoicer/tf-db-read-core",
-            "version": "dev-develop",
+            "version": "v1.1.10",
+            "source": {
+                "type": "git",
+                "url": "git@github.com:truvoicer/tf-db-read-core.git",
+                "reference": "d4f7e68173ab9a592e15d982e9041ada2345426e"
+            },
             "dist": {
-                "type": "path",
-                "url": "packages/truvoicer/tf-db-read-core",
-                "reference": "c297d3409ac516524b95627b0ad332b9bbd710e0"
+                "type": "zip",
+                "url": "https://api.github.com/repos/truvoicer/tf-db-read-core/zipball/d4f7e68173ab9a592e15d982e9041ada2345426e",
+                "reference": "d4f7e68173ab9a592e15d982e9041ada2345426e",
+                "shasum": ""
             },
             "require": {
                 "illuminate/contracts": "^11.0||^12.0",
@@ -7168,10 +7174,10 @@
             "require-dev": {
                 "laravel/pint": "^1.14",
                 "nunomaduro/collision": "^8.8",
-                "orchestra/testbench": "^10.0.0||^9.0.0",
-                "pestphp/pest": "^4.0",
-                "pestphp/pest-plugin-arch": "^4.0",
-                "pestphp/pest-plugin-laravel": "^4.0"
+                "orchestra/testbench": "^10.0",
+                "pestphp/pest": "^3.0",
+                "pestphp/pest-plugin-arch": "^3.0",
+                "pestphp/pest-plugin-laravel": "^3.0"
             },
             "type": "library",
             "extra": {
@@ -7200,12 +7206,6 @@
                 }
             },
             "scripts": {
-                "post-autoload-dump": [
-                    "@composer run prepare"
-                ],
-                "prepare": [
-                    "@php vendor/bin/testbench package:discover --ansi"
-                ],
                 "analyse": [
                     "vendor/bin/phpstan analyse"
                 ],
@@ -7236,9 +7236,17 @@
                 "tf-db-read-core",
                 "truvoicer"
             ],
-            "transport-options": {
-                "relative": true
-            }
+            "support": {
+                "source": "https://github.com/truvoicer/tf-db-read-core/tree/v1.1.10",
+                "issues": "https://github.com/truvoicer/tf-db-read-core/issues"
+            },
+            "funding": [
+                {
+                    "type": "github",
+                    "url": "https://github.com/truvoicer"
+                }
+            ],
+            "time": "2026-01-25T16:55:01+00:00"
         },
         {
             "name": "vlucas/phpdotenv",
@@ -10067,9 +10075,7 @@
     ],
     "aliases": [],
     "minimum-stability": "stable",
-    "stability-flags": {
-        "truvoicer/tf-db-read-core": 20
-    },
+    "stability-flags": {},
     "prefer-stable": true,
     "prefer-lowest": false,
     "platform": {
