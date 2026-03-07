@@ -7,12 +7,12 @@ use App\Services\ApiServices\ServiceRequests\ResponseKeys\Populate\Ai\Gemini\Gem
 use App\Services\ApiServices\ServiceRequests\ResponseKeys\Populate\Ai\Grok\GrokPopulatePrompt;
 use App\Services\ApiServices\ServiceRequests\ResponseKeys\Populate\Ai\OpenAi\OpenAiPopulatePrompt;
 use Truvoicer\TfDbReadCore\Enums\Api\ApiType;
-use Truvoicer\TfDbReadCore\Traits\Enum\EnumUtillityTrait;
+use Truvoicer\TfDbReadCore\Traits\Enum\EnumUtilityTrait;
 
 enum AiClient: string
 {
 
-    use EnumUtillityTrait;
+    use EnumUtilityTrait;
 
     case GEMINI = 'gemini';
     case DEEP_SEEK = 'deep_seek';

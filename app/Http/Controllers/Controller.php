@@ -4,8 +4,6 @@ namespace App\Http\Controllers;
 
 use Truvoicer\TfDbReadCore\Models\User;
 use Truvoicer\TfDbReadCore\Services\Permission\AccessControlService;
-use App\Services\Tools\HttpRequestService;
-use App\Services\Tools\SerializerService;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Foundation\Validation\ValidatesRequests;
 use Illuminate\Routing\Controller as BaseController;

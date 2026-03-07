@@ -1,11 +1,11 @@
 <?php
 namespace App\Enums\Api;
 
-use Truvoicer\TfDbReadCore\Traits\Enum\EnumUtillityTrait;
+use Truvoicer\TfDbReadCore\Traits\Enum\EnumUtilityTrait;
 
 enum ApiType: string {
 
-    use EnumUtillityTrait;
+    use EnumUtilityTrait;
 
     case DEFAULT = 'default';
     case AI_GEMINI = 'ai_gemini';

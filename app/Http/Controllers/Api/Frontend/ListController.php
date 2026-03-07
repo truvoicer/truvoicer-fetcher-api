@@ -4,18 +4,11 @@ namespace App\Http\Controllers\Api\Frontend;
 
 use App\Http\Controllers\Controller;
 use Truvoicer\TfDbReadCore\Http\Resources\ProviderMinimalCollection;
-use Truvoicer\TfDbReadCore\Models\Category;
 use Truvoicer\TfDbReadCore\Models\S;
 use Truvoicer\TfDbReadCore\Services\ApiServices\ApiService;
 use Truvoicer\TfDbReadCore\Services\ApiServices\SResponseKeysService;
-use Truvoicer\TfDbReadCore\Services\ApiServices\ServiceRequests\SrConfigService;
-use Truvoicer\TfDbReadCore\Services\Category\CategoryService;
-use Truvoicer\TfDbReadCore\Services\Permission\AccessControlService;
 use Truvoicer\TfDbReadCore\Services\Provider\ProviderService;
-use App\Services\Tools\HttpRequestService;
-use App\Services\Tools\SerializerService;
 use Illuminate\Http\Request;
-use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 
 /**
  * Require ROLE_ADMIN for *every* controller method in this class.
@@ -67,7 +60,7 @@ class ListController extends Controller
         }
         return $this->sendSuccessResponse(
             "success",
-            $this->serializerService->entityArrayToArray($responseKeys, ["list"])
+            $responseKeys
         );
     }
 
@@ -80,7 +73,7 @@ class ListController extends Controller
     {
         return $this->sendSuccessResponse(
             "success",
-            $this->serializerService->entityArrayToArray($apiService->findByParams(), ["list"])
+            $apiService->findByParams()
         );
     }
 }

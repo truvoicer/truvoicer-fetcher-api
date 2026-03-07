@@ -2,11 +2,11 @@
 
 namespace App\Enums\Sr;
 
-use Truvoicer\TfDbReadCore\Traits\Enum\EnumUtillityTrait;
+use Truvoicer\TfDbReadCore\Traits\Enum\EnumUtilityTrait;
 
 enum PaginationType: string
 {
-    use EnumUtillityTrait;
+    use EnumUtilityTrait;
 
     case PAGE = 'page';
     case OFFSET = 'offset';

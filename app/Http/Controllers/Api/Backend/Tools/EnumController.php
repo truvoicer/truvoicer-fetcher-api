@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Api\Backend\Tools;
 use App\Enums\SelectDataEnum;
 use Truvoicer\TfDbReadCore\Helpers\Tools\ClassHelpers;
 use App\Http\Controllers\Controller;
-use Truvoicer\TfDbReadCore\Traits\Enum\EnumUtillityTrait;
+use Truvoicer\TfDbReadCore\Traits\Enum\EnumUtilityTrait;
 
 class EnumController extends Controller
 {
@@ -17,7 +17,7 @@ class EnumController extends Controller
             return response()->json(['error' => 'Invalid enum type'], 400);
         }
         $enumClass = $findEnum->getEnumClass();
-        if (!ClassHelpers::usesTrait($enumClass, EnumUtillityTrait::class, true)) {
+        if (!ClassHelpers::usesTrait($enumClass, EnumUtilityTrait::class, true)) {
             return response()->json(['error' => 'Enum does not implement SelectDataTrait'], 400);
         }
         if (! method_exists($enumClass, 'labelAndValueArray')) {
