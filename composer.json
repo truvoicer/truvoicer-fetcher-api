@@ -12,7 +12,7 @@
         "laravel/sanctum": "^4.0",
         "laravel/tinker": "^2.8",
         "mongodb/laravel-mongodb": "^5.5",
-        "truvoicer/tf-db-read-core": "v1.1.12"
+        "truvoicer/tf-db-read-core": "dev-develop"
     },
     "require-dev": {
         "fakerphp/faker": "^1.9.1",
@@ -68,7 +68,7 @@
     "prefer-stable": true,
     "repositories": [{
         "name": "tf-db-read-core",
-        "type": "vcs",
-        "url": "https://github.com/truvoicer/tf-db-read-core.git"
+        "type": "path",
+        "url": "packages/truvoicer/tf-db-read-core"
     }]
 }

@@ -24,6 +24,7 @@ use App\Http\Controllers\Api\Backend\Services\ServiceResponseKeyController;
 use App\Http\Controllers\Api\Backend\Services\SrResponseKeyHighestPriorityController;
 use App\Http\Controllers\Api\Backend\Services\SrResponseKeyOrderSearchPriorityController;
 use App\Http\Controllers\Api\Backend\Services\SrResponseKeySrController;
+use App\Http\Controllers\Api\Backend\Tools\Ai\AiAssistantController;
 use App\Http\Controllers\Api\Backend\Tools\Encoding\MbEncodingController;
 use App\Http\Controllers\Api\Backend\Tools\EnumController;
 use App\Http\Controllers\Api\Backend\Tools\FileSystemController;
@@ -352,6 +353,16 @@ Route::middleware(['auth:sanctum', 'ability:api:superuser,'])->group(function ()
 
 Route::middleware(['auth:sanctum', 'ability:api:admin,api:superuser,api:super_admin'])->group(function () {
     Route::prefix('backend')->name('backend.')->group(function () {
+        Route::prefix('tools')->name('tools.')->group(function () {
+            Route::prefix('ai')->name('ai.')->group(function () {
+                Route::prefix('assistant')->name('assistant.')->group(function () {
+                    Route::post('/', [AiAssistantController::class, 'store'])->name('store');
+                    Route::prefix('{aiImportConfig}')->group(function () {
+                        Route::post('/import', [AiAssistantController::class, 'import'])->name('import');
+                    });
+                });
+            });
+        });
         Route::prefix('admin')->name('admin.')->group(function () {
             Route::prefix('user')->name('user.')->group(function () {
                 Route::get('/list', [AdminController::class, 'getUsersList'])->name('list');
