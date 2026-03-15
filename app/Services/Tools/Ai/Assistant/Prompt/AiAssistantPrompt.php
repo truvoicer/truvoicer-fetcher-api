@@ -37,6 +37,178 @@ class AiAssistantPrompt
         $this->init();
     }
 
+    // [
+    //     "label" => "Eventbrite Events API"
+    //     "description" => "Fetches event data from Eventbrite. Uses API Key authentication."
+    //     "service" => array:2 [
+    //         "name" => "eventbrite_events"
+    //         "label" => "Eventbrite Events"
+    //     ]
+    //     "category" => array:2 [
+    //         "name" => "business_events"
+    //         "label" => "Business Events"
+    //     ]
+    //     "provider" => array:4 [
+    //         "name" => "eventbrite"
+    //         "label" => "Eventbrite"
+    //         "global" => false
+    //         "categories" => array:1 [
+    //         0 => array:2 [
+    //             "name" => "business_events"
+    //             "label" => "Business Events"
+    //         ]
+    //         ]
+    //     ]
+    //     "providerProperties" => array:3 [
+    //         0 => array:2 [
+    //         "property" => "base_url"
+    //         "value" => "https://www.eventbriteapi.com/v3"
+    //         ]
+    //         1 => array:2 [
+    //         "property" => "api_auth_type"
+    //         "value" => "auth_bearer"
+    //         ]
+    //         2 => array:2 [
+    //         "property" => "bearer_token"
+    //         "value" => "{api_key}"
+    //         ]
+    //     ]
+    //     "serviceRequest" => array:2 [
+    //         0 => array:6 [
+    //         "default_sr" => true
+    //         "name" => "search_events"
+    //         "label" => "Search Events"
+    //         "service" => array:2 [
+    //             "name" => "eventbrite_events"
+    //             "label" => "Eventbrite Events"
+    //         ]
+    //         "category" => array:1 [
+    //             0 => array:2 [
+    //             "name" => "business_events"
+    //             "label" => "Business Events"
+    //             ]
+    //         ]
+    //         "query_parameters" => array:7 [
+    //             0 => "q"
+    //             1 => "location.address"
+    //             2 => "location.within"
+    //             3 => "start_date.range_start"
+    //             4 => "start_date.range_end"
+    //             5 => "sort_by"
+    //             6 => "page"
+    //         ]
+    //         ]
+    //         1 => array:6 [
+    //         "default_sr" => false
+    //         "name" => "get_event"
+    //         "label" => "Get Event Details"
+    //         "service" => array:2 [
+    //             "name" => "eventbrite_events"
+    //             "label" => "Eventbrite Events"
+    //         ]
+    //         "category" => array:1 [
+    //             0 => array:2 [
+    //             "name" => "business_events"
+    //             "label" => "Business Events"
+    //             ]
+    //         ]
+    //         "query_parameters" => []
+    //         ]
+    //     ]
+    //     "serviceRequestConfigProperties" => array:2 [
+    //         0 => array:2 [
+    //         "service_request_name" => "search_events"
+    //         "properties" => array:3 [
+    //             0 => array:2 [
+    //             "property_name" => "endpoint"
+    //             "value" => "/events/search/"
+    //             ]
+    //             1 => array:2 [
+    //             "property_name" => "method"
+    //             "value" => "get"
+    //             ]
+    //             2 => array:2 [
+    //             "property_name" => "headers"
+    //             "array_value" => array:1 [
+    //                 "Accept" => "application/json"
+    //             ]
+    //             ]
+    //         ]
+    //         ]
+    //         1 => array:2 [
+    //         "service_request_name" => "get_event"
+    //         "properties" => array:3 [
+    //             0 => array:2 [
+    //             "property_name" => "endpoint"
+    //             "value" => "/events/{event_id}/"
+    //             ]
+    //             1 => array:2 [
+    //             "property_name" => "method"
+    //             "value" => "get"
+    //             ]
+    //             2 => array:2 [
+    //             "property_name" => "headers"
+    //             "array_value" => array:1 [
+    //                 "Accept" => "application/json"
+    //             ]
+    //             ]
+    //         ]
+    //         ]
+    //     ]
+    //     "serviceRequestParameters" => array:10 [
+    //         0 => array:3 [
+    //         "name" => "q"
+    //         "value" => "{query}"
+    //         "service_request_name" => "search_events"
+    //         ]
+    //         1 => array:3 [
+    //         "name" => "location.address"
+    //         "value" => "{location}"
+    //         "service_request_name" => "search_events"
+    //         ]
+    //         2 => array:3 [
+    //         "name" => "location.within"
+    //         "value" => "{distance}mi"
+    //         "service_request_name" => "search_events"
+    //         ]
+    //         3 => array:3 [
+    //         "name" => "start_date.range_start"
+    //         "value" => "{start_date}"
+    //         "service_request_name" => "search_events"
+    //         ]
+    //         4 => array:3 [
+    //         "name" => "start_date.range_end"
+    //         "value" => "{end_date}"
+    //         "service_request_name" => "search_events"
+    //         ]
+    //         5 => array:3 [
+    //         "name" => "sort_by"
+    //         "value" => "date"
+    //         "service_request_name" => "search_events"
+    //         ]
+    //         6 => array:3 [
+    //         "name" => "page"
+    //         "value" => "{page}"
+    //         "service_request_name" => "search_events"
+    //         ]
+    //         7 => array:3 [
+    //         "name" => "event_id"
+    //         "value" => "{event_id}"
+    //         "service_request_name" => "get_event"
+    //         ]
+    //         8 => array:3 [
+    //         "name" => "api_key"
+    //         "value" => "{api_key}"
+    //         "service_request_name" => "search_events"
+    //         ]
+    //         9 => array:3 [
+    //         "name" => "api_key"
+    //         "value" => "{api_key}"
+    //         "service_request_name" => "get_event"
+    //         ]
+    //     ]
+    //   ]
+
     public function init()
     {
 
@@ -202,15 +374,25 @@ class AiAssistantPrompt
     public function prompt(string $prompt): string
     {
         $propertiesJson = $this->toJson($this->properties);
+        $requiredPropertiesJson =  $this->toJson(
+            array_map(function (PropertyType $propertyType) {
+                return $propertyType->config();
+            }, [
+                PropertyType::API_AUTH_TYPE,
+                PropertyType::METHOD,
+                PropertyType::API_TYPE,
+                PropertyType::RESPONSE_FORMAT,
+            ])
+        );
 
         return <<<PROMPT
 Prompt: ($prompt).
 
 
-You are an intelligent data finder and fetching tool. Your task is to find api/rss services and configurations relating to the prompt above. The configurations/services you find cannot be example or test ones, they must be live and free (no payment required).
+You are an intelligent data finder and fetching tool. Your task is to find api's, api services, rss feed configurations relating to the prompt above. The configurations you find cannot be example or test ones, they must be live and free (no payment required).
 
 BRIEF:
-The system you are fetching data is an external api provider management system, it performs api requests. It provides api response data management for external provider api's and consolidates api responses/data to one format for better data processing with all providers by using the api response keys manager.
+The system you are fetching data for is an external api provider management system, it performs api requests to external api's or rss feeds. It provides api response data management for external provider api's and consolidates api responses/data to one format for better data processing with all providers by using the api response keys manager.
 
 It is structured with the following entities:
 
@@ -285,6 +467,7 @@ GOOD PRACTICES:
 - Error Checking**: Note common error responses in the configuration
 - Versioning**: Specify API version in the endpoint path or headers
 - Have a base url property as a provider property and endpoint property as a service config property
+- For rss feeds, the provider property base url should be the domain and the service config property endpoint should be the part of the url more specific to the rss feed. For example (this is only an example to explain good standards when deciding what to use as the base url and endpoint), if the found rss feed url was https://feeds.skynews.com/feeds/rss/home.xml, the provider property base url should be https://feeds.skynews.com/feeds/rss and the service config property endpoint should be /home.xml. Apply this kind of logic.
 
 BAD PRACTICES TO AVOID:
 - Mixing Paid APIs**: NEVER include APIs that require payment, even if they have a free tier with limitations
@@ -297,13 +480,16 @@ BAD PRACTICES TO AVOID:
 - Forgetting Placeholders**: Never hardcode values that should be dynamic parameters
 
 AVAILABLE PROPERTIES:
-The following json shows the available properties and the data type of that property, you can only pick from these properties for providerProperties and serviceRequestConfigProperties. You don't have to use all, just pick the ones you need.
+The following json shows the available properties and the data type of that property and available choices if needed, you can only pick from these properties for providerProperties and serviceRequestConfigProperties. You don't have to use all, just pick the ones you need.
 {
      "available_properties": $propertiesJson,
 }
 
+The following properties are required and must be in the config for providerProperties:
+$requiredPropertiesJson
+
 IMPORTANT:
-You can only pick from the available_properties above for providerProperties and serviceRequestConfigProperties. You don't have to use all, just pick the ones you need
+You can only pick from the available_properties above for providerProperties and serviceRequestConfigProperties. You don't have to use all, just pick the ones you need. In the description provide links to the api's website, company, documentation etc. and be descriptive. The description can be in html format for better presentation.
 
 Your task:
 1. Return a JSON object in this format (the values must adhere to these rules):

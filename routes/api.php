@@ -25,6 +25,7 @@ use App\Http\Controllers\Api\Backend\Services\SrResponseKeyHighestPriorityContro
 use App\Http\Controllers\Api\Backend\Services\SrResponseKeyOrderSearchPriorityController;
 use App\Http\Controllers\Api\Backend\Services\SrResponseKeySrController;
 use App\Http\Controllers\Api\Backend\Tools\Ai\AiAssistantController;
+use App\Http\Controllers\Api\Backend\Tools\Ai\AiImportPromptController;
 use App\Http\Controllers\Api\Backend\Tools\Encoding\MbEncodingController;
 use App\Http\Controllers\Api\Backend\Tools\EnumController;
 use App\Http\Controllers\Api\Backend\Tools\FileSystemController;
@@ -355,10 +356,26 @@ Route::middleware(['auth:sanctum', 'ability:api:admin,api:superuser,api:super_ad
     Route::prefix('backend')->name('backend.')->group(function () {
         Route::prefix('tools')->name('tools.')->group(function () {
             Route::prefix('ai')->name('ai.')->group(function () {
+                Route::prefix('import')->name('import.')->group(function () {
+                    Route::prefix('prompt')->name('prompt.')->group(function () {
+                        Route::get('/', [AiImportPromptController::class, 'index'])->name('index');
+                        Route::post('/', [AiImportPromptController::class, 'store'])->name('store');
+                        Route::post('/bulk/destroy', [AiImportPromptController::class, 'bulkDestroy'])->name('bulk.destroy');
+                        Route::prefix('{aiImportPrompt}')->group(function () {
+                            Route::patch('/', [AiImportPromptController::class, 'update'])->name('update');
+                            Route::delete('/', [AiImportPromptController::class, 'destroy'])->name('destroy');
+                        });
+                    });
+                });
                 Route::prefix('assistant')->name('assistant.')->group(function () {
+                    Route::get('/', [AiAssistantController::class, 'index'])->name('index');
                     Route::post('/', [AiAssistantController::class, 'store'])->name('store');
+                    Route::post('/bulk/destroy', [AiAssistantController::class, 'bulkDestroy'])->name('bulk.destroy');
+                    Route::post('/bulk/import', [AiAssistantController::class, 'bulkImport'])->name('bulk.import');
                     Route::prefix('{aiImportConfig}')->group(function () {
+                        Route::patch('/', [AiAssistantController::class, 'update'])->name('update');
                         Route::post('/import', [AiAssistantController::class, 'import'])->name('import');
+                        Route::delete('/', [AiAssistantController::class, 'destroy'])->name('destroy');
                     });
                 });
             });

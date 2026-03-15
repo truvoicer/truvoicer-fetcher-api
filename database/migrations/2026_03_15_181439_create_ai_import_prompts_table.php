@@ -11,12 +11,10 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('ai_import_configs', function (Blueprint $table) {
+        Schema::create('ai_import_prompts', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->nullable()->constrained('users')->nullOnDelete();
-            $table->string('label');
-            $table->text('description');
-            $table->json('config');
+            $table->text('prompt');
             $table->timestamps();
         });
     }
@@ -26,6 +24,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('ai_import_configs');
+        Schema::dropIfExists('ai_import_prompts');
     }
 };

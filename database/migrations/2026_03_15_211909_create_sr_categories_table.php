@@ -11,12 +11,10 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('ai_import_configs', function (Blueprint $table) {
+        Schema::create('sr_categories', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->nullable()->constrained('users')->nullOnDelete();
-            $table->string('label');
-            $table->text('description');
-            $table->json('config');
+            $table->foreignId('sr_id')->constrained('srs')->onDelete('cascade');
+            $table->foreignId('category_id')->constrained('categories')->onDelete('cascade');
             $table->timestamps();
         });
     }
@@ -26,6 +24,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('ai_import_configs');
+        Schema::dropIfExists('sr_categories');
     }
 };
