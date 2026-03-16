@@ -12,8 +12,8 @@ class AiImportPromptCollection extends BaseCollection
      *
      * @return array<int|string, mixed>
      */
-
     public static $wrap = 'ai_import_prompts';
+
     public function toArray(Request $request): array
     {
         return parent::toArray($request);

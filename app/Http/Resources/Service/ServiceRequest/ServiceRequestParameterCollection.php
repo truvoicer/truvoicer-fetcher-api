@@ -2,9 +2,8 @@
 
 namespace App\Http\Resources\Service\ServiceRequest;
 
-use Truvoicer\TfDbReadCore\Http\Resources\BaseCollection;
 use Illuminate\Http\Request;
-use Illuminate\Http\Resources\Json\ResourceCollection;
+use Truvoicer\TfDbReadCore\Http\Resources\BaseCollection;
 
 class ServiceRequestParameterCollection extends BaseCollection
 {
@@ -13,8 +12,8 @@ class ServiceRequestParameterCollection extends BaseCollection
      *
      * @return array<int|string, mixed>
      */
-
     public static $wrap = 'service_request_parameters';
+
     public function toArray(Request $request): array
     {
         return parent::toArray($request);

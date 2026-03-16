@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Str;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Category>
+ * @extends \Illuminate\Database\Eloquent\Factories\Factory<\Truvoicer\TfDbReadCore\Models\Category>
  */
 class CategoryFactory extends Factory
 {
@@ -18,6 +18,7 @@ class CategoryFactory extends Factory
     public function definition(): array
     {
         $label = $this->faker->word;
+
         return [
             'name' => Str::slug($label),
             'label' => $label,

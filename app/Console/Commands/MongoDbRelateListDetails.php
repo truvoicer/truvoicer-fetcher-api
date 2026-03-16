@@ -2,16 +2,18 @@
 
 namespace App\Console\Commands;
 
-use Truvoicer\TfDbReadCore\Repositories\MongoDB\MongoDBRepository;
-use Truvoicer\TfDbReadCore\Repositories\SrRepository;
 use Illuminate\Console\Command;
 use Illuminate\Database\Eloquent\Collection;
 use Symfony\Component\Console\Command\Command as CommandAlias;
+use Truvoicer\TfDbReadCore\Repositories\MongoDB\MongoDBRepository;
+use Truvoicer\TfDbReadCore\Repositories\SrRepository;
 
 class MongoDbRelateListDetails extends Command
 {
     private SrRepository $srRepository;
+
     private MongoDBRepository $mongoDBRepository;
+
     /**
      * The name and signature of the console command.
      *
@@ -53,6 +55,7 @@ class MongoDbRelateListDetails extends Command
         $this->collectionIterator(
             $srs,
         );
+
         return CommandAlias::SUCCESS;
     }
 
@@ -61,8 +64,9 @@ class MongoDbRelateListDetails extends Command
 
         foreach ($srs as $sr) {
             $collectionName = $this->mongoDBRepository->getCollectionName($sr);
-            if (!$collectionName) {
+            if (! $collectionName) {
                 $this->error('Invalid collection name');
+
                 return CommandAlias::FAILURE;
             }
             $this->mongoDBRepository->setCollection($collectionName);
@@ -71,7 +75,7 @@ class MongoDbRelateListDetails extends Command
             $offset = 0;
             $finished = false;
             $results = [];
-            while (!$finished) {
+            while (! $finished) {
                 $results = $this->mongoDBRepository->setLimit($limit)->setOffset($offset)->findMany();
                 if (count($results) < $limit) {
                     $finished = true;
@@ -82,20 +86,20 @@ class MongoDbRelateListDetails extends Command
                     if (empty($document['item_id'])) {
                         continue;
                     }
-                    if (!is_array($document['item_id'])) {
+                    if (! is_array($document['item_id'])) {
                         continue;
                     }
                     if (empty($document['item_id'][0]['data'])) {
                         continue;
                     }
                     $updateData = [
-                        'item_id' => $document['item_id'][0]['data']
+                        'item_id' => $document['item_id'][0]['data'],
                     ];
 
-                    if (count($updateData) && !$this->mongoDBRepository->update($document['_id'], $updateData)) {
+                    if (count($updateData) && ! $this->mongoDBRepository->update($document['_id'], $updateData)) {
                         $this->error(
                             sprintf(
-                                "Error updating document collection: %s | id: %s | data: %s",
+                                'Error updating document collection: %s | id: %s | data: %s',
                                 $collectionName,
                                 $document['_id'],
                                 json_encode($updateData, JSON_PRETTY_PRINT)

@@ -2,10 +2,10 @@
 
 namespace App\Http\Requests\Service\Request\ResponseKey;
 
-use Truvoicer\TfDbReadCore\Models\SResponseKey;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
+use Truvoicer\TfDbReadCore\Models\SResponseKey;
 
 class DeleteBatchSrResponseKeyRequest extends FormRequest
 {
@@ -29,7 +29,7 @@ class DeleteBatchSrResponseKeyRequest extends FormRequest
                 return [
                     Rule::exists(SResponseKey::class, 'id'),
                 ];
-            })
+            }),
         ];
     }
 }

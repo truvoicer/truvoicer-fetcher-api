@@ -7,17 +7,14 @@ use App\Http\Requests\Admin\Tools\Export\ExportRequest;
 use App\Http\Requests\Admin\Tools\Import\ImportMappingsRequest;
 use App\Http\Requests\Admin\Tools\Import\ParseImportRequest;
 use App\Jobs\StartImportJob;
-use Truvoicer\TfDbReadCore\Services\Permission\AccessControlService;
 use App\Services\Tools\IExport\ExportService;
 use App\Services\Tools\IExport\ImportService;
-use Truvoicer\TfDbReadCore\Services\User\UserAdminService;
 use Illuminate\Http\Request;
 
 /**
  * Contains api endpoint functions for exporting tasks
  *
  * Require ROLE_ADMIN for *every* controller method in this class.
- *
  */
 class ImportExportController extends Controller
 {
@@ -36,8 +33,9 @@ class ImportExportController extends Controller
         } else {
             $data = $this->exportService->getExportEntityFields($request->user());
         }
+
         return $this->sendSuccessResponse(
-            "Export Response.",
+            'Export Response.',
             $data
         );
     }
@@ -47,37 +45,36 @@ class ImportExportController extends Controller
         $this->exportService->setUser($request->user());
         $xmlDataArray = $this->exportService->getExportDataArray($request->validated());
 
-        if (!count($xmlDataArray)) {
+        if (! count($xmlDataArray)) {
             return $this->sendErrorResponse(
-                "Export Store error: No data to export."
+                'Export Store error: No data to export.'
             );
         }
 
-        $fileName = sprintf("export-%s.json", (new \DateTime())->format("YmdHis"));
-        $fileDirectory = sprintf("exports/%s", $fileName);
+        $fileName = sprintf('export-%s.json', (new \DateTime)->format('YmdHis'));
+        $fileDirectory = sprintf('exports/%s', $fileName);
 
         $store = $this->exportService->storeXmlDataFromArray($xmlDataArray, $fileDirectory, $fileName);
-        if (!$store) {
+        if (! $store) {
             return $this->sendErrorResponse(
-                "Export Store error: Unable to store data."
+                'Export Store error: Unable to store data.'
             );
         }
-
 
         $getSavedData = $this->exportService->getDownloadsFileSystem()->saveDownloadsFileToDatabase(
             $fileDirectory,
             $fileName,
-            "export",
-            "json"
+            'export',
+            'json'
         );
-        if (!$getSavedData) {
+        if (! $getSavedData) {
             return $this->sendErrorResponse(
-                "Export save item error: Unable to save item to database."
+                'Export save item error: Unable to save item to database.'
             );
         }
 
         if (
-            !$this->exportService->getDownloadsFileSystem()->fileSystemService->createFileDownload(
+            ! $this->exportService->getDownloadsFileSystem()->fileSystemService->createFileDownload(
                 $getSavedData, $request->getClientIp(), $request->userAgent()
             )
         ) {
@@ -85,12 +82,13 @@ class ImportExportController extends Controller
                 'Error creating file download'
             );
         }
+
         return $this->sendSuccessResponse(
-            "Export file saved: Type (json)",
+            'Export file saved: Type (json)',
             [
-                "file_url" => $this->exportService->getDownloadsFileSystem()->buildDownloadUrl(
+                'file_url' => $this->exportService->getDownloadsFileSystem()->buildDownloadUrl(
                     $this->exportService->getDownloadsFileSystem()->fileSystemService->getFileDownloadRepository()->getModel()
-                )
+                ),
             ]
         );
     }
@@ -98,10 +96,11 @@ class ImportExportController extends Controller
     public function parseImport(ParseImportRequest $request, ImportService $importService)
     {
         $importService->setUser($request->user());
+
         return $this->sendSuccessResponse(
-            "success",
+            'success',
             $importService->parseImport(
-                $request->files->get("upload_file")
+                $request->files->get('upload_file')
             ),
             $importService->getErrors()
         );
@@ -120,14 +119,14 @@ class ImportExportController extends Controller
         //     $request->validated('file_id'),
         //     $request->validated('mappings')
         // );
-       (new StartImportJob(
-           $request->user()->id,
-           $request->validated('file_id'),
-           $request->validated('mappings')
-       ))->handle();
+        (new StartImportJob(
+            $request->user()->id,
+            $request->validated('file_id'),
+            $request->validated('mappings')
+        ))->handle();
+
         return $this->sendSuccessResponse(
-            "Import mappings event dispatched."
+            'Import mappings event dispatched.'
         );
     }
-
 }

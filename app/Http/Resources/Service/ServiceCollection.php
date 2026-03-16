@@ -2,9 +2,8 @@
 
 namespace App\Http\Resources\Service;
 
-use Truvoicer\TfDbReadCore\Http\Resources\BaseCollection;
 use Illuminate\Http\Request;
-use Illuminate\Http\Resources\Json\ResourceCollection;
+use Truvoicer\TfDbReadCore\Http\Resources\BaseCollection;
 
 class ServiceCollection extends BaseCollection
 {
@@ -14,6 +13,7 @@ class ServiceCollection extends BaseCollection
      * @return array<int|string, mixed>
      */
     public static $wrap = 'services';
+
     public function toArray(Request $request): array
     {
         return parent::toArray($request);

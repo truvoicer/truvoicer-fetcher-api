@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Carbon;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\SrSchedule>
+ * @extends \Illuminate\Database\Eloquent\Factories\Factory<\Truvoicer\TfDbReadCore\Models\SrSchedule>
  */
 class SrScheduleFactory extends Factory
 {
@@ -29,6 +29,7 @@ class SrScheduleFactory extends Factory
         } elseif ($has_end_date) {
             $end_date = Carbon::make($this->faker->dateTime());
         }
+
         return [
             'execute_immediately' => $this->faker->boolean,
             'forever' => $this->faker->boolean,

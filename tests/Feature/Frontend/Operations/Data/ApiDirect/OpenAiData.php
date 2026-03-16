@@ -2,112 +2,113 @@
 
 namespace Tests\Feature\Frontend\Operations\Data\ApiDirect;
 
+use App\Enums\Api\ApiType;
 use Truvoicer\TfDbReadCore\Enums\Api\ApiListKey;
 use Truvoicer\TfDbReadCore\Enums\Api\ApiResponseFormat;
-use App\Enums\Api\ApiType;
 use Truvoicer\TfDbReadCore\Enums\Property\PropertyType;
 use Truvoicer\TfDbReadCore\Exceptions\Api\Response\ApiResponseException;
 
 class OpenAiData
 {
-    static public function labels(): array
+    public static function labels(): array
     {
         return [
-            ['label' => 'OpenAi: Without an ' . ApiListKey::LIST_KEY->value],
+            ['label' => 'OpenAi: Without an '.ApiListKey::LIST_KEY->value],
             ['label' => 'OpenAi: Valid configs'],
         ];
     }
 
-    static public function providerProperties(): array
+    public static function providerProperties(): array
     {
         return [
             [
                 [
                     'name' => PropertyType::ACCESS_TOKEN->value,
-                    'value' => '12345'
+                    'value' => '12345',
                 ],
                 [
                     'name' => PropertyType::API_TYPE->value,
-                    'value' => ApiType::AI_OPEN_AI->value
+                    'value' => ApiType::AI_OPEN_AI->value,
                 ],
                 [
                     'name' => PropertyType::BASE_URL->value,
-                    'value' => 'http://aurl.com/v1'
+                    'value' => 'http://aurl.com/v1',
                 ],
                 [
                     'name' => PropertyType::RESPONSE_FORMAT->value,
-                    'value' => ApiResponseFormat::JSON->value
+                    'value' => ApiResponseFormat::JSON->value,
                 ],
             ],
             [
                 [
                     'name' => PropertyType::ACCESS_TOKEN->value,
-                    'value' => '12345'
+                    'value' => '12345',
                 ],
                 [
                     'name' => PropertyType::API_TYPE->value,
-                    'value' => ApiType::AI_OPEN_AI->value
+                    'value' => ApiType::AI_OPEN_AI->value,
                 ],
                 [
                     'name' => PropertyType::BASE_URL->value,
-                    'value' => 'http://aurl.com/v1'
+                    'value' => 'http://aurl.com/v1',
                 ],
                 [
                     'name' => PropertyType::RESPONSE_FORMAT->value,
-                    'value' => ApiResponseFormat::JSON->value
+                    'value' => ApiResponseFormat::JSON->value,
                 ],
-            ]
+            ],
         ];
     }
-    static public function srConfigs(): array
+
+    public static function srConfigs(): array
     {
         return [
             [
                 [
                     'name' => PropertyType::AI_PROMPT->value,
-                    'big_text_value' => '12345'
+                    'big_text_value' => '12345',
                 ],
             ],
             [
                 [
                     'name' => PropertyType::AI_PROMPT->value,
-                    'big_text_value' => '12345'
+                    'big_text_value' => '12345',
                 ],
-            ]
+            ],
         ];
     }
 
-    static public function srData(): array
+    public static function srData(): array
     {
         return [
             [
 
             ],
             [
-               ApiListKey::LIST_KEY->value => 'root_array'
-            ]
+                ApiListKey::LIST_KEY->value => 'root_array',
+            ],
         ];
     }
 
-    static public function srResponseKeys(): array
+    public static function srResponseKeys(): array
     {
         return [
             [
                 [
                     'name' => 'id',
-                    'value' => 'id'
+                    'value' => 'id',
                 ],
                 [
                     'name' => 'name',
-                    'value' => 'name'
+                    'value' => 'name',
                 ],
                 [
                     'name' => 'title',
-                    'value' => 'title'
+                    'value' => 'title',
                 ],
                 [
                     'name' => 'description',
-                    'value' => 'description'
+                    'value' => 'description',
                 ],
             ],
             [
@@ -115,55 +116,57 @@ class OpenAiData
                     'name' => 'id',
                     'value' => 'id',
                     'show_in_response' => true,
-                    'list_item' => true
+                    'list_item' => true,
                 ],
                 [
                     'name' => 'name',
                     'value' => 'name',
                     'show_in_response' => true,
-                    'list_item' => true
+                    'list_item' => true,
                 ],
                 [
                     'name' => 'title',
                     'value' => 'title',
                     'show_in_response' => true,
-                    'list_item' => true
+                    'list_item' => true,
                 ],
                 [
                     'name' => 'description',
                     'value' => 'description',
                     'show_in_response' => true,
-                    'list_item' => true
+                    'list_item' => true,
                 ],
-            ]
+            ],
         ];
     }
-    static public function requestResponse(?int $index = null): array
+
+    public static function requestResponse(?int $index = null): array
     {
         return [
             [
                 'choices' => [
                     [
                         'message' => [
-                            'content' => json_encode(self::responseData()[$index])
-                        ]
-                    ]
-                ]
+                            'content' => json_encode(self::responseData()[$index]),
+                        ],
+                    ],
+                ],
 
             ],
             [
                 'choices' => [
                     [
                         'message' => [
-                            'content' => json_encode(self::responseData()[$index])
-                        ]
-                    ]
-                ]
+                            'content' => json_encode(self::responseData()[$index]),
+                        ],
+                    ],
+                ],
 
             ],
         ];
     }
-    static public function responseData(): array
+
+    public static function responseData(): array
     {
         return [
             [],
@@ -172,31 +175,31 @@ class OpenAiData
                     'id' => 1,
                     'name' => 'test-name',
                     'title' => 'Test Title',
-                    'description' => 'This is a test description for test title'
+                    'description' => 'This is a test description for test title',
                 ],
                 [
                     'id' => 2,
                     'name' => 'test-name-2',
                     'title' => 'Test Title 2',
-                    'description' => 'This is a test description for test title 2'
+                    'description' => 'This is a test description for test title 2',
                 ],
                 [
                     'id' => 3,
                     'name' => 'test-name-3',
                     'title' => 'Test Title 3',
-                    'description' => 'This is a test description for test title 3'
+                    'description' => 'This is a test description for test title 3',
                 ],
             ],
         ];
     }
 
-    static public function afterResponse()
+    public static function afterResponse()
     {
         return [
             [
                 'status' => 400,
-                'message' => ApiListKey::LIST_KEY->value . ' value is empty.',
-                'exception' => ApiResponseException::class
+                'message' => ApiListKey::LIST_KEY->value.' value is empty.',
+                'exception' => ApiResponseException::class,
             ],
             [
                 'status' => 200,
@@ -205,13 +208,12 @@ class OpenAiData
         ];
     }
 
-
-    static public function data(?array $indexes = []): array
+    public static function data(?array $indexes = []): array
     {
         $data = [];
 
         foreach (self::providerProperties() as $index => $providerProperty) {
-            if (count($indexes) && !in_array($index, $indexes)) {
+            if (count($indexes) && ! in_array($index, $indexes)) {
                 continue;
             }
 
@@ -228,7 +230,7 @@ class OpenAiData
                 'srResponseKeys' => $srResponseKeys,
                 'requestResponse' => $requestResponse,
                 'responseData' => $responseData,
-                'afterResponseData' => $afterResponseData
+                'afterResponseData' => $afterResponseData,
             ];
         }
 

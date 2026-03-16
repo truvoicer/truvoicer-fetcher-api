@@ -7,20 +7,11 @@ use InvalidArgumentException;
 
 class DeepSeekPopulatePrompt extends AiPopulatePrompt
 {
-
     public function prompt(array $apiResponse, array $serviceResponseKeys): string
     {
         // Validate input
         if (empty($apiResponse)) {
             throw new InvalidArgumentException('api_response cannot be empty');
-        }
-
-        if (!is_array($apiResponse)) {
-            throw new InvalidArgumentException('api_response must be an array');
-        }
-
-        if (!is_array($serviceResponseKeys)) {
-            throw new InvalidArgumentException('service_response_keys must be an array');
         }
 
         // Convert to JSON with error handling

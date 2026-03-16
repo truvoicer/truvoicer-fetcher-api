@@ -6,41 +6,35 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Service\Request\RateLimit\CreateSrRateLimitRequest;
 use App\Http\Requests\Service\Request\RateLimit\UpdateSrRateLimitRequest;
 use App\Http\Resources\SrRateLimitResource;
+use Illuminate\Http\Request;
 use Truvoicer\TfDbReadCore\Models\Provider;
 use Truvoicer\TfDbReadCore\Models\Sr;
 use Truvoicer\TfDbReadCore\Models\SrRateLimit;
 use Truvoicer\TfDbReadCore\Services\ApiServices\RateLimitService;
-use Truvoicer\TfDbReadCore\Services\Permission\AccessControlService;
 use Truvoicer\TfDbReadCore\Services\Permission\PermissionService;
-use App\Services\Tools\HttpRequestService;
-use App\Services\Tools\SerializerService;
-use Illuminate\Http\Request;
 
 /**
  * Contains Api endpoint functions for service request config related operations
  *
  * Require ROLE_ADMIN for *every* controller method in this class.
- *
  */
 class SrRateLimitController extends Controller
 {
-
     public function __construct(
-        private RateLimitService     $srRateLimitService,
+        private RateLimitService $srRateLimitService,
     ) {
         parent::__construct();
     }
 
     public function getServiceRateLimit(
         Provider $provider,
-        Sr       $serviceRequest,
+        Sr $serviceRequest,
         SrRateLimit $srRateLimit,
-        Request  $request
-    ): \Illuminate\Http\JsonResponse
-    {
+        Request $request
+    ): \Illuminate\Http\JsonResponse {
         $this->setAccessControlUser($request->user());
         if (
-            !$this->accessControlService->checkPermissionsForEntity(
+            ! $this->accessControlService->checkPermissionsForEntity(
                 $provider,
                 [
                     PermissionService::PERMISSION_ADMIN,
@@ -48,10 +42,11 @@ class SrRateLimitController extends Controller
                 ]
             )
         ) {
-            return $this->sendErrorResponse("Access denied");
+            return $this->sendErrorResponse('Access denied');
         }
+
         return $this->sendSuccessResponse(
-            "success",
+            'success',
             new SrRateLimitResource($srRateLimit)
         );
     }
@@ -60,17 +55,15 @@ class SrRateLimitController extends Controller
      * Create an service request config based on request POST data
      * Returns json success message and service request config data on successful creation
      * Returns error response and message on fail
-     *
      */
     public function createRequestRateLimit(
-        Provider                          $provider,
-        Sr                                $serviceRequest,
+        Provider $provider,
+        Sr $serviceRequest,
         CreateSrRateLimitRequest $request
-    ): \Illuminate\Http\JsonResponse
-    {
+    ): \Illuminate\Http\JsonResponse {
         $this->setAccessControlUser($request->user());
         if (
-            !$this->accessControlService->checkPermissionsForEntity(
+            ! $this->accessControlService->checkPermissionsForEntity(
                 $provider,
                 [
                     PermissionService::PERMISSION_ADMIN,
@@ -79,18 +72,19 @@ class SrRateLimitController extends Controller
                 ]
             )
         ) {
-            return $this->sendErrorResponse("Access denied");
+            return $this->sendErrorResponse('Access denied');
         }
         $create = $this->srRateLimitService->createSrRateLimit(
             $serviceRequest,
             $request->all()
         );
 
-        if (!$create) {
-            return $this->sendErrorResponse("Error creating schedule");
+        if (! $create) {
+            return $this->sendErrorResponse('Error creating schedule');
         }
+
         return $this->sendSuccessResponse(
-            "RateLimit created",
+            'RateLimit created',
             new SrRateLimitResource(
                 $this->srRateLimitService->getSrRateLimitRepository()->getModel()
             )
@@ -104,15 +98,14 @@ class SrRateLimitController extends Controller
      * Returns error response and message on fail
      */
     public function updateRequestRateLimit(
-        Provider                          $provider,
-        Sr                                $serviceRequest,
-        SrRateLimit                    $srRateLimit,
+        Provider $provider,
+        Sr $serviceRequest,
+        SrRateLimit $srRateLimit,
         UpdateSrRateLimitRequest $request
-    ): \Illuminate\Http\JsonResponse
-    {
+    ): \Illuminate\Http\JsonResponse {
         $this->setAccessControlUser($request->user());
         if (
-            !$this->accessControlService->checkPermissionsForEntity(
+            ! $this->accessControlService->checkPermissionsForEntity(
                 $provider,
                 [
                     PermissionService::PERMISSION_ADMIN,
@@ -120,18 +113,19 @@ class SrRateLimitController extends Controller
                 ]
             )
         ) {
-            return $this->sendErrorResponse("Access denied");
+            return $this->sendErrorResponse('Access denied');
         }
         $update = $this->srRateLimitService->saveSrRateLimit(
             $srRateLimit,
             $request->validated()
         );
 
-        if (!$update) {
-            return $this->sendErrorResponse("Error updating schedule");
+        if (! $update) {
+            return $this->sendErrorResponse('Error updating schedule');
         }
+
         return $this->sendSuccessResponse(
-            "RateLimit updated",
+            'RateLimit updated',
             new SrRateLimitResource(
                 $this->srRateLimitService->getSrRateLimitRepository()->getModel()
             )
@@ -146,30 +140,30 @@ class SrRateLimitController extends Controller
      */
     public function deleteRequestRateLimit(
         Provider $provider,
-        Sr       $serviceRequest,
+        Sr $serviceRequest,
         SrRateLimit $srRateLimit,
-        Request  $request
-    ): \Illuminate\Http\JsonResponse
-    {
+        Request $request
+    ): \Illuminate\Http\JsonResponse {
         $this->setAccessControlUser($request->user());
         if (
-            !$this->accessControlService->checkPermissionsForEntity(
+            ! $this->accessControlService->checkPermissionsForEntity(
                 $provider,
                 [
                     PermissionService::PERMISSION_ADMIN,
-                    PermissionService::PERMISSION_DELETE
+                    PermissionService::PERMISSION_DELETE,
                 ]
             )
         ) {
-            return $this->sendErrorResponse("Access denied");
+            return $this->sendErrorResponse('Access denied');
         }
-        if (!$this->srRateLimitService->deleteSrRateLimit($srRateLimit)) {
+        if (! $this->srRateLimitService->deleteSrRateLimit($srRateLimit)) {
             return $this->sendErrorResponse(
-                "Error deleting schedule"
+                'Error deleting schedule'
             );
         }
+
         return $this->sendSuccessResponse(
-            "RateLimit deleted."
+            'RateLimit deleted.'
         );
     }
 }

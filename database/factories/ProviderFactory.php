@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Str;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Provider>
+ * @extends \Illuminate\Database\Eloquent\Factories\Factory<\Truvoicer\TfDbReadCore\Models\Provider>
  */
 class ProviderFactory extends Factory
 {
@@ -18,6 +18,7 @@ class ProviderFactory extends Factory
     public function definition(): array
     {
         $company = $this->faker->company;
+
         return [
             'name' => Str::slug($company),
             'label' => $company,

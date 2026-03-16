@@ -8,24 +8,19 @@ use App\Http\Requests\Category\DeleteBatchCategoryRequest;
 use App\Http\Requests\Category\UpdateCategoryRequest;
 use App\Http\Resources\CategoryCollection;
 use App\Http\Resources\CategoryResource;
+use Illuminate\Http\Request;
 use Truvoicer\TfDbReadCore\Models\Category;
 use Truvoicer\TfDbReadCore\Services\Auth\AuthService;
 use Truvoicer\TfDbReadCore\Services\Category\CategoryService;
-use Truvoicer\TfDbReadCore\Services\Permission\AccessControlService;
 use Truvoicer\TfDbReadCore\Services\Permission\PermissionService;
-use App\Services\Tools\HttpRequestService;
-use App\Services\Tools\SerializerService;
-use Illuminate\Http\Request;
 
 /**
  * Contains api endpoint functions for category related tasks
  *
  * Require ROLE_ADMIN for *every* controller method in this class.
- *
  */
 class CategoryController extends Controller
 {
-
     public function __construct(
         private CategoryService $categoryService,
     ) {
@@ -34,8 +29,6 @@ class CategoryController extends Controller
 
     /**
      * Gets a list of categories from database based on the request get query parameters
-     *
-     * @param Request $request
      */
     public function getCategories(Request $request)
     {
@@ -45,8 +38,8 @@ class CategoryController extends Controller
             $request->user()->tokenCan(AuthService::getApiAbility(AuthService::ABILITY_ADMIN))
         ) {
             $categories = $this->categoryService->findByParams(
-                $request->get('sort', "name"),
-                $request->get('order', "asc"),
+                $request->get('sort', 'name'),
+                $request->get('order', 'asc'),
                 $request->get('count', -1),
                 $pagination
             );
@@ -56,20 +49,20 @@ class CategoryController extends Controller
                 $pagination
             );
         }
-        return $this->sendSuccessResponse("success",
+
+        return $this->sendSuccessResponse('success',
             new CategoryCollection($categories)
         );
     }
 
     /**
      * Gets a single category from the database based on the get request query parameters
-     *
      */
     public function getSingleCategory(Category $category, Request $request)
     {
         $this->setAccessControlUser($request->user());
         if (
-            !$this->accessControlService->checkPermissionsForEntity(
+            ! $this->accessControlService->checkPermissionsForEntity(
                 $category,
                 [
                     PermissionService::PERMISSION_ADMIN,
@@ -77,9 +70,10 @@ class CategoryController extends Controller
                 ],
             )
         ) {
-            return $this->sendErrorResponse("Access control: operation not permitted");
+            return $this->sendErrorResponse('Access control: operation not permitted');
         }
-        return $this->sendSuccessResponse("success",
+
+        return $this->sendSuccessResponse('success',
             new CategoryResource($category)
         );
     }
@@ -87,10 +81,11 @@ class CategoryController extends Controller
     public function createCategory(CreateCategoryRequest $request)
     {
         $create = $this->categoryService->createCategory($request->user(), $request->all());
-        if (!$create) {
-            return $this->sendErrorResponse("Error creating category.");
+        if (! $create) {
+            return $this->sendErrorResponse('Error creating category.');
         }
-        return $this->sendSuccessResponse("Successfully created category.",
+
+        return $this->sendSuccessResponse('Successfully created category.',
             new CategoryResource($this->categoryService->getCategoryRepository()->getModel())
         );
     }
@@ -99,7 +94,7 @@ class CategoryController extends Controller
     {
         $this->setAccessControlUser($request->user());
         if (
-            !$this->accessControlService->checkPermissionsForEntity(
+            ! $this->accessControlService->checkPermissionsForEntity(
                 $category,
                 [
                     PermissionService::PERMISSION_ADMIN,
@@ -107,24 +102,24 @@ class CategoryController extends Controller
                 ],
             )
         ) {
-            return $this->sendErrorResponse("Access control: operation not permitted");
+            return $this->sendErrorResponse('Access control: operation not permitted');
         }
 
         $create = $this->categoryService->updateCategory($category, $request->all());
-        if (!$create) {
-            return $this->sendErrorResponse("Error updating category.");
+        if (! $create) {
+            return $this->sendErrorResponse('Error updating category.');
         }
-        return $this->sendSuccessResponse("Successfully updated category.",
-            $this->serializerService->entityToArray(
-                $this->categoryService->getCategoryRepository()->getModel()
-            ));
+
+        return $this->sendSuccessResponse('Successfully updated category.',
+            $this->categoryService->getCategoryRepository()->getModel()
+        );
     }
 
     public function deleteCategory(Category $category, Request $request)
     {
         $this->setAccessControlUser($request->user());
         if (
-            !$this->accessControlService->checkPermissionsForEntity(
+            ! $this->accessControlService->checkPermissionsForEntity(
                 $category,
                 [
                     PermissionService::PERMISSION_ADMIN,
@@ -132,26 +127,28 @@ class CategoryController extends Controller
                 ],
             )
         ) {
-            return $this->sendErrorResponse("Access control: operation not permitted");
+            return $this->sendErrorResponse('Access control: operation not permitted');
         }
-        if (!$this->categoryService->deleteCategory($category)) {
-            return $this->sendErrorResponse("Error deleting category");
+        if (! $this->categoryService->deleteCategory($category)) {
+            return $this->sendErrorResponse('Error deleting category');
         }
-        return $this->sendSuccessResponse("Category deleted.");
+
+        return $this->sendSuccessResponse('Category deleted.');
     }
+
     public function deleteBatch(
         DeleteBatchCategoryRequest $request
-    ): \Illuminate\Http\JsonResponse
-    {
+    ): \Illuminate\Http\JsonResponse {
         $this->setAccessControlUser($request->user());
 
-        if (!$this->categoryService->deleteBatch($request->get('ids'))) {
+        if (! $this->categoryService->deleteBatch($request->get('ids'))) {
             return $this->sendErrorResponse(
-                "Error deleting categories",
+                'Error deleting categories',
             );
         }
+
         return $this->sendSuccessResponse(
-            "Categories deleted.",
+            'Categories deleted.',
         );
     }
 }

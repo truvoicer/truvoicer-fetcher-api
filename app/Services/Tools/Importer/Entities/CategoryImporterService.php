@@ -6,24 +6,22 @@ use App\Enums\Import\ImportAction;
 use App\Enums\Import\ImportConfig;
 use App\Enums\Import\ImportMappingType;
 use App\Enums\Import\ImportType;
+use App\Services\Tools\IExport\IExportTypeService;
+use Exception;
+use Illuminate\Support\Facades\Log;
 use Truvoicer\TfDbReadCore\Helpers\Tools\UtilHelpers;
 use Truvoicer\TfDbReadCore\Models\Category;
 use Truvoicer\TfDbReadCore\Services\Category\CategoryService;
 use Truvoicer\TfDbReadCore\Services\Permission\AccessControlService;
 use Truvoicer\TfDbReadCore\Services\Permission\PermissionService;
-use App\Services\Tools\IExport\IExportTypeService;
-use Exception;
-use Illuminate\Support\Facades\Log;
 
 class CategoryImporterService extends ImporterBase
 {
-
     public function __construct(
-        private CategoryService        $categoryService,
+        private CategoryService $categoryService,
         protected AccessControlService $accessControlService
-    )
-    {
-        parent::__construct($accessControlService, new Category());
+    ) {
+        parent::__construct($accessControlService, new Category);
     }
 
     protected function setConfig(): void
@@ -58,47 +56,49 @@ class CategoryImporterService extends ImporterBase
 
     public function lock(ImportAction $action, array $map, array $data, ?array $dest = null): array
     {
-//        $category = $this->categoryService->getCategoryRepository()->findByName(
-//            $data['name']
-//        );
+        //        $category = $this->categoryService->getCategoryRepository()->findByName(
+        //            $data['name']
+        //        );
 
         $category = $this->categoryService->getUserCategoryRepository()
             ->findUserModelBy(
-                new Category(),
+                new Category,
                 $this->getUser(),
-                [['name', '=', $data['name']]
-        ], false);
+                [['name', '=', $data['name']],
+                ], false);
 
-        if (!$category instanceof Category) {
+        if (! $category instanceof Category) {
             return [
                 'success' => false,
-                'message' => "Category {$data['name']} not found."
+                'message' => "Category {$data['name']} not found.",
             ];
         }
 
-        if (!$this->entityService->lockEntity($this->getUser(), $category->id, Category::class)) {
+        if (! $this->entityService->lockEntity($this->getUser(), $category->id, Category::class)) {
             return [
                 'success' => false,
-                'message' => "Failed to lock category {$data['name']}."
+                'message' => "Failed to lock category {$data['name']}.",
             ];
         }
+
         return [
             'success' => true,
-            'message' => 'Category is locked.'
+            'message' => 'Category is locked.',
         ];
     }
 
     public function unlock(Category $category): array
     {
-        if (!$this->entityService->unlockEntity($this->getUser(), $category->id, Category::class)) {
+        if (! $this->entityService->unlockEntity($this->getUser(), $category->id, Category::class)) {
             return [
                 'success' => false,
-                'message' => "Failed to unlock category {$category->name}."
+                'message' => "Failed to unlock category {$category->name}.",
             ];
         }
+
         return [
             'success' => true,
-            'message' => 'Category is unlocked.'
+            'message' => 'Category is unlocked.',
         ];
     }
 
@@ -106,10 +106,10 @@ class CategoryImporterService extends ImporterBase
     {
         try {
             $checkCategory = $this->categoryService->getUserCategoryRepository()->findUserModelBy(
-                new Category(),
+                new Category,
                 $this->getUser(),
                 [
-                    ['name', '=', $data['name']]
+                    ['name', '=', $data['name']],
                 ],
                 false
             );
@@ -117,7 +117,7 @@ class CategoryImporterService extends ImporterBase
             if ($checkCategory instanceof Category) {
                 return [
                     'success' => false,
-                    'message' => "Category {$data['name']} already exists."
+                    'message' => "Category {$data['name']} already exists.",
                 ];
             }
             $this->categoryService->createCategory(
@@ -128,25 +128,26 @@ class CategoryImporterService extends ImporterBase
             $category = $this->categoryService->getCategoryRepository()->getModel();
 
             $unlockCategory = $this->unlock($category);
-            if (!$unlockCategory['success']) {
+            if (! $unlockCategory['success']) {
                 return $unlockCategory;
             }
 
             return [
                 'success' => true,
-                'message' => $category
+                'message' => $category,
             ];
         } catch (Exception $e) {
             Log::channel(IExportTypeService::LOGGING_NAME)->error(
                 $e->getMessage(),
                 [
-                    'data' => $data
+                    'data' => $data,
                 ]
             );
+
             return [
                 'success' => false,
                 'file' => $e->getFile(),
-                'message' => $e->getMessage()
+                'message' => $e->getMessage(),
             ];
         }
     }
@@ -155,50 +156,52 @@ class CategoryImporterService extends ImporterBase
     {
         try {
             $checkCategory = $this->categoryService->getUserCategoryRepository()->findUserModelBy(
-                new Category(),
+                new Category,
                 $this->getUser(),
                 [
-                    ['name', '=', $data['name']]
+                    ['name', '=', $data['name']],
                 ],
                 false
             );
 
-            if (!$checkCategory instanceof Category) {
+            if (! $checkCategory instanceof Category) {
                 return [
                     'success' => false,
-                    'message' => "Category {$data['name']} not found."
+                    'message' => "Category {$data['name']} not found.",
                 ];
             }
             if (
-                !$this->categoryService->updateCategory(
+                ! $this->categoryService->updateCategory(
                     $checkCategory,
                     $data
                 )
             ) {
                 return [
                     'success' => false,
-                    'message' => "Failed to update category {$data['name']}."
+                    'message' => "Failed to update category {$data['name']}.",
                 ];
             }
             $category = $this->categoryService->getCategoryRepository()->getModel();
             $unlockCategory = $this->unlock($category);
-            if (!$unlockCategory['success']) {
+            if (! $unlockCategory['success']) {
                 return $unlockCategory;
             }
+
             return [
                 'success' => true,
-                'message' => "Category {$data['name']} updated successfully."
+                'message' => "Category {$data['name']} updated successfully.",
             ];
         } catch (Exception $e) {
             Log::channel(IExportTypeService::LOGGING_NAME)->error(
                 $e->getMessage(),
                 [
-                    'data' => $data
+                    'data' => $data,
                 ]
             );
+
             return [
                 'success' => false,
-                'message' => $e->getMessage()
+                'message' => $e->getMessage(),
             ];
         }
     }
@@ -218,11 +221,12 @@ class CategoryImporterService extends ImporterBase
         $filter = array_filter($data, function ($category) {
             return $this->compareItemKeysWithModelFields($category);
         });
+
         return [
             'root' => true,
             'import_type' => $this->getConfigItem(ImportConfig::NAME),
             'label' => $this->getConfigItem(ImportConfig::LABEL),
-            'children' => $this->parseEntityBatch($filter)
+            'children' => $this->parseEntityBatch($filter),
         ];
     }
 
@@ -236,7 +240,7 @@ class CategoryImporterService extends ImporterBase
 
     public function getExportTypeData($item): array|bool
     {
-        $category = $this->categoryService->getCategoryById($item["id"]);
+        $category = $this->categoryService->getCategoryById($item['id']);
         if ($this->accessControlService->inAdminGroup()) {
             return $category->toArray();
         }
@@ -249,12 +253,14 @@ class CategoryImporterService extends ImporterBase
             ],
             false
         );
+
         return $isPermitted ? $category->toArray() : false;
     }
 
     public function parseEntity(array $entity): array
     {
         $entity['import_type'] = $this->getConfigItem(ImportConfig::NAME);
+
         return $entity;
     }
 
@@ -265,7 +271,8 @@ class CategoryImporterService extends ImporterBase
         }, $data);
     }
 
-    public function deepFind(ImportType $importType, array $data, array $conditions, ?string $operation = 'AND'): array|null {
+    public function deepFind(ImportType $importType, array $data, array $conditions, ?string $operation = 'AND'): ?array
+    {
         return UtilHelpers::deepFindInNestedEntity(
             data: $data,
             conditions: $conditions,
@@ -284,5 +291,4 @@ class CategoryImporterService extends ImporterBase
     {
         return $this->categoryService;
     }
-
 }

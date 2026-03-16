@@ -2,7 +2,4 @@
 
 namespace App\Helpers\Tools;
 
-class ValidationHelpers
-{
-
-}
+class ValidationHelpers {}

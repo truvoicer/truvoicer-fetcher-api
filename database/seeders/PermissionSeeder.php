@@ -2,14 +2,12 @@
 
 namespace Database\Seeders;
 
-use Truvoicer\TfDbReadCore\Models\Permission;
-use Truvoicer\TfDbReadCore\Models\Role;
-use Truvoicer\TfDbReadCore\Services\Permission\PermissionService;
 use Illuminate\Database\Seeder;
+use Truvoicer\TfDbReadCore\Models\Permission;
+use Truvoicer\TfDbReadCore\Services\Permission\PermissionService;
 
 class PermissionSeeder extends Seeder
 {
-
     /**
      * Run the database seeds.
      */
@@ -26,7 +24,7 @@ class PermissionSeeder extends Seeder
                 $permission['name'],
                 $permission['label'],
             );
-            if (!$createPermission) {
+            if (! $createPermission) {
                 throw new \Exception("Error creating permission | Name: {$permission['name']}");
             }
         }

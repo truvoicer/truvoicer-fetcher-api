@@ -8,17 +8,16 @@ use App\Http\Requests\Property\DeleteBatchPropertyRequest;
 use App\Http\Requests\Property\UpdatePropertyRequest;
 use App\Http\Resources\PropertyCollection;
 use App\Http\Resources\PropertyResource;
+use Illuminate\Http\Request;
 use Truvoicer\TfDbReadCore\Models\Property;
 use Truvoicer\TfDbReadCore\Repositories\PropertyRepository;
 use Truvoicer\TfDbReadCore\Services\Property\PropertyService;
-use Illuminate\Http\Request;
 
 /**
  * Contains api endpoint functions for properties related tasks
  */
 class PropertyController extends Controller
 {
-
     public function __construct(
         private PropertyRepository $propertyRepository,
         private PropertyService $propertyService,
@@ -29,15 +28,16 @@ class PropertyController extends Controller
     public function getPropertyList(Request $request)
     {
         $this->setAccessControlUser($request->user());
-        if (!$this->accessControlService->inAdminGroup()) {
-            return $this->sendErrorResponse("Access control: operation not permitted");
+        if (! $this->accessControlService->inAdminGroup()) {
+            return $this->sendErrorResponse('Access control: operation not permitted');
         }
 
-        $this->propertyRepository->setOrderDir($request->get('order', "asc"));
-        $this->propertyRepository->setSortField($request->get('sort', "name"));
+        $this->propertyRepository->setOrderDir($request->get('order', 'asc'));
+        $this->propertyRepository->setSortField($request->get('sort', 'name'));
         $this->propertyRepository->setLimit($request->get('count', -1));
+
         return $this->sendSuccessResponse(
-            "success",
+            'success',
             new PropertyCollection(
                 $this->propertyRepository->findMany()
             )
@@ -47,11 +47,12 @@ class PropertyController extends Controller
     public function getProperty(Property $property, Request $request)
     {
         $this->setAccessControlUser($request->user());
-        if (!$this->accessControlService->inAdminGroup()) {
-            return $this->sendErrorResponse("Access control: operation not permitted");
+        if (! $this->accessControlService->inAdminGroup()) {
+            return $this->sendErrorResponse('Access control: operation not permitted');
         }
+
         return $this->sendSuccessResponse(
-            "success",
+            'success',
             new PropertyResource($property)
         );
     }
@@ -59,16 +60,17 @@ class PropertyController extends Controller
     public function updateProperty(Property $property, UpdatePropertyRequest $request)
     {
         $this->setAccessControlUser($request->user());
-        if (!$this->accessControlService->inAdminGroup()) {
-            return $this->sendErrorResponse("Access control: operation not permitted");
+        if (! $this->accessControlService->inAdminGroup()) {
+            return $this->sendErrorResponse('Access control: operation not permitted');
         }
         $updateProperty = $this->propertyService->updateProperty($property, $request->validated());
 
-        if (!$updateProperty) {
-            return $this->sendErrorResponse("Error updating property");
+        if (! $updateProperty) {
+            return $this->sendErrorResponse('Error updating property');
         }
+
         return $this->sendSuccessResponse(
-            "Property updated",
+            'Property updated',
             new PropertyResource(
                 $this->propertyService->getPropertyRepository()->getModel()
             )
@@ -78,15 +80,16 @@ class PropertyController extends Controller
     public function createProperty(CreatePropertyRequest $request)
     {
         $this->setAccessControlUser($request->user());
-        if (!$this->accessControlService->inAdminGroup()) {
-            return $this->sendErrorResponse("Access control: operation not permitted");
+        if (! $this->accessControlService->inAdminGroup()) {
+            return $this->sendErrorResponse('Access control: operation not permitted');
         }
         $createProperty = $this->propertyService->createProperty($request->validated());
-        if (!$createProperty) {
-            return $this->sendErrorResponse("Error creating property");
+        if (! $createProperty) {
+            return $this->sendErrorResponse('Error creating property');
         }
+
         return $this->sendSuccessResponse(
-            "Property created",
+            'Property created',
             new PropertyResource(
                 $this->propertyService->getPropertyRepository()->getModel()
             )
@@ -96,32 +99,34 @@ class PropertyController extends Controller
     public function deleteProperty(Property $property, Request $request)
     {
         $this->setAccessControlUser($request->user());
-        if (!$this->accessControlService->inAdminGroup()) {
-            return $this->sendErrorResponse("Access control: operation not permitted");
+        if (! $this->accessControlService->inAdminGroup()) {
+            return $this->sendErrorResponse('Access control: operation not permitted');
         }
         $delete = $this->propertyService->deleteProperty($property);
-        if (!$delete) {
+        if (! $delete) {
             return $this->sendErrorResponse(
-                "Error deleting property"
+                'Error deleting property'
             );
         }
+
         return $this->sendSuccessResponse(
-            "Property deleted."
+            'Property deleted.'
         );
     }
+
     public function deleteBatch(
         DeleteBatchPropertyRequest $request
-    ): \Illuminate\Http\JsonResponse
-    {
+    ): \Illuminate\Http\JsonResponse {
         $this->setAccessControlUser($request->user());
 
-        if (!$this->propertyService->deleteBatch($request->get('ids'))) {
+        if (! $this->propertyService->deleteBatch($request->get('ids'))) {
             return $this->sendErrorResponse(
-                "Error deleting properties",
+                'Error deleting properties',
             );
         }
+
         return $this->sendSuccessResponse(
-            "Properties deleted.",
+            'Properties deleted.',
         );
     }
 }

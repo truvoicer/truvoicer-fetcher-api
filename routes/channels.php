@@ -1,7 +1,7 @@
 <?php
 
-use Truvoicer\TfDbReadCore\Models\User;
 use Illuminate\Support\Facades\Broadcast;
+use Truvoicer\TfDbReadCore\Models\User;
 
 /*
 |--------------------------------------------------------------------------

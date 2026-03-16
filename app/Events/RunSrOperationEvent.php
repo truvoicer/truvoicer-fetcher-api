@@ -11,18 +11,14 @@ class RunSrOperationEvent
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
-
     /**
      * Create a new event instance.
      */
     public function __construct(
         public int $userId,
-        public int     $srId,
+        public int $srId,
         public array $queryData
-    )
-    {
-
-    }
+    ) {}
 
     /**
      * Get the channels the event should broadcast on.

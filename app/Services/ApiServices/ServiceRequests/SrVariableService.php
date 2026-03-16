@@ -2,13 +2,12 @@
 
 namespace App\Services\ApiServices\ServiceRequests;
 
+use App\Services\Variable\VariableService;
 use Truvoicer\TfDbReadCore\Models\Provider;
 use Truvoicer\TfDbReadCore\Models\Sr;
-use App\Services\Variable\VariableService;
 
 class SrVariableService extends VariableService
 {
-
     public function getVariableList(Provider $provider, Sr $sr)
     {
 
@@ -16,12 +15,12 @@ class SrVariableService extends VariableService
             [
                 'name' => 'generic',
                 'label' => 'Generic',
-                'variables' => $this->getReservedParameterKeys()
+                'variables' => $this->getReservedParameterKeys(),
             ],
             [
                 'name' => 'sr_parameters',
                 'label' => 'Sr Parameters',
-                'variables' => $this->buildSrParameters($provider, $sr)
+                'variables' => $this->buildSrParameters($provider, $sr),
             ],
         ];
     }
@@ -30,7 +29,7 @@ class SrVariableService extends VariableService
     {
         return $sr->srParameter
             ->pluck('name', 'name') // Get name as key, value as value
-            ->map(fn($name) => "[$name]") // Wrap each value in brackets
+            ->map(fn ($name) => "[$name]") // Wrap each value in brackets
             ->toArray(); // Convert to array
     }
 }

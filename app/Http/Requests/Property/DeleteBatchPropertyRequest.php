@@ -2,9 +2,9 @@
 
 namespace App\Http\Requests\Property;
 
-use Truvoicer\TfDbReadCore\Models\Property;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
+use Truvoicer\TfDbReadCore\Models\Property;
 
 class DeleteBatchPropertyRequest extends FormRequest
 {
@@ -28,7 +28,7 @@ class DeleteBatchPropertyRequest extends FormRequest
                 return [
                     Rule::exists(Property::class, 'id'),
                 ];
-            })
+            }),
         ];
     }
 }

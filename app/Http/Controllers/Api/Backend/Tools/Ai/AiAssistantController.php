@@ -7,12 +7,12 @@ use App\Http\Requests\Admin\Tools\Ai\AiAssistantStoreRequest;
 use App\Http\Requests\Admin\Tools\Ai\AiAssistantUpdateRequest;
 use App\Http\Resources\AiImportConfigCollection;
 use App\Http\Resources\AiImportConfigResource;
-use App\Models\AiImportConfig;
 use App\Repositories\AiImportConfigRepository;
 use App\Services\Tools\Ai\Assistant\AiAssistantService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
+use Truvoicer\TfDbReadCore\Models\AiImportConfig;
 
 class AiAssistantController extends Controller
 {
@@ -20,7 +20,7 @@ class AiAssistantController extends Controller
         private AiAssistantService $aiAssistantService,
         private AiImportConfigRepository $aiImportConfigRepository
     ) {
-        return parent::__construct();
+        parent::__construct();
     }
 
     public function index(Request $request): AiImportConfigCollection
@@ -46,13 +46,15 @@ class AiAssistantController extends Controller
             ->build(
                 $request->validated('prompt')
             );
-        if (!$aiImportConfig) {
+        if (! $aiImportConfig) {
             return $this->sendErrorResponse(
-                "Error fetching and storing ai import config.",
+                'Error fetching and storing ai import config.',
             );
         }
+
         return AiImportConfigResource::make($aiImportConfig);
     }
+
     public function update(AiImportConfig $aiImportConfig, AiAssistantUpdateRequest $request): AiImportConfigResource|JsonResponse
     {
         $aiImportConfig = $this->aiAssistantService->setUser($request->user())
@@ -60,13 +62,14 @@ class AiAssistantController extends Controller
                 $aiImportConfig,
                 $request->validated()
             );
-        if (!$aiImportConfig) {
+        if (! $aiImportConfig) {
             return $this->sendErrorResponse(
-                "Error updating ai import config.",
+                'Error updating ai import config.',
             );
         }
+
         return $this->sendSuccessResponse(
-            "Successfully updated ai import config.",
+            'Successfully updated ai import config.',
         );
     }
 
@@ -74,13 +77,14 @@ class AiAssistantController extends Controller
     {
         $aiImportConfig = $this->aiAssistantService->setUser(request()->user())
             ->deleteAiImportConfig($aiImportConfig);
-        if (!$aiImportConfig) {
+        if (! $aiImportConfig) {
             return $this->sendErrorResponse(
-                "Error deleting ai import config.",
+                'Error deleting ai import config.',
             );
         }
+
         return $this->sendSuccessResponse(
-            "Successfully deleted ai import config.",
+            'Successfully deleted ai import config.',
         );
     }
 
@@ -94,17 +98,19 @@ class AiAssistantController extends Controller
 
         $aiImportConfig = $this->aiAssistantService->setUser(request()->user())
             ->deleteBulkAiImportConfigs(
-                (!empty($validated['ids']) && is_array($validated['ids'])) ? $validated['ids'] : []
+                (! empty($validated['ids']) && is_array($validated['ids'])) ? $validated['ids'] : []
             );
-        if (!$aiImportConfig) {
+        if (! $aiImportConfig) {
             return $this->sendErrorResponse(
-                "Error deleting ai import configs.",
+                'Error deleting ai import configs.',
             );
         }
+
         return $this->sendSuccessResponse(
-            "Successfully deleted ai import configs.",
+            'Successfully deleted ai import configs.',
         );
     }
+
     public function bulkImport(Request $request): AiImportConfigResource|JsonResponse
     {
         $user = request()->user();
@@ -117,7 +123,7 @@ class AiAssistantController extends Controller
         $validated = $validator->validate();
 
         foreach (
-            (!empty($validated['ids']) && is_array($validated['ids'])) ? $validated['ids'] : [] as $id
+            (! empty($validated['ids']) && is_array($validated['ids'])) ? $validated['ids'] : [] as $id
         ) {
 
             if ($this->accessControlService->inAdminGroup()) {
@@ -125,14 +131,15 @@ class AiAssistantController extends Controller
             } else {
                 $findAiImportConfig = $user->aiImportConfigs()->where('ai_import_configs.id', $id)->first();
             }
-            if (!$findAiImportConfig) {
+            if (! $findAiImportConfig) {
                 continue;
             }
             $this->aiAssistantService->setUser(request()->user())
                 ->makeImport($findAiImportConfig);
         }
+
         return $this->sendSuccessResponse(
-            "Successfully imported ai import configs.",
+            'Successfully imported ai import configs.',
         );
     }
 

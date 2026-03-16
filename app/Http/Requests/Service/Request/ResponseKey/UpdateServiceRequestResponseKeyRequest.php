@@ -2,11 +2,7 @@
 
 namespace App\Http\Requests\Service\Request\ResponseKey;
 
-use Truvoicer\TfDbReadCore\Models\Sr;
-use Truvoicer\TfDbReadCore\Repositories\SrResponseKeySrRepository;
-use App\Rules\StringOrInteger;
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Validation\Rule;
 
 class UpdateServiceRequestResponseKeyRequest extends FormRequest
 {
@@ -29,7 +25,7 @@ class UpdateServiceRequestResponseKeyRequest extends FormRequest
             'name' => 'nullable|string',
             'value' => [
                 'nullable',
-                'string'
+                'string',
             ],
             'show_in_response' => 'nullable|boolean',
             'searchable' => 'nullable|boolean',

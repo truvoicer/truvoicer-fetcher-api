@@ -12,9 +12,9 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('sr_response_key_srs', function (Blueprint $table) {
-            //change table column name to request_response_keys
+            // change table column name to request_response_keys
             $table->renameColumn('response_keys', 'request_response_keys');
-//            $table->json('response_response_keys')->nullable()->after('request_response_keys');
+            //            $table->json('response_response_keys')->nullable()->after('request_response_keys');
         });
     }
 
@@ -25,7 +25,7 @@ return new class extends Migration
     {
         Schema::table('sr_response_key_srs', function (Blueprint $table) {
             $table->renameColumn('request_response_keys', 'response_keys');
-//            $table->dropColumn('response_response_keys');
+            //            $table->dropColumn('response_response_keys');
         });
     }
 };

@@ -2,13 +2,14 @@
 
 namespace App\Console\Commands;
 
-use Truvoicer\TfDbReadCore\Repositories\ProviderRepository;
 use Illuminate\Console\Command;
 use Symfony\Component\Console\Command\Command as CommandAlias;
+use Truvoicer\TfDbReadCore\Repositories\ProviderRepository;
 
 class ListProviders extends Command
 {
     private ProviderRepository $providerRepository;
+
     /**
      * The name and signature of the console command.
      *
@@ -34,7 +35,7 @@ class ListProviders extends Command
 
         $this->providerRepository = $providerRepository;
         $providers = $this->providerRepository->findMany();
-        //Display providers in table format
+        // Display providers in table format
         $this->table(
             ['ID', 'Name', 'Label', 'Created At', 'Updated At'],
             $providers->map(function ($provider) {

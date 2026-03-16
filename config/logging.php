@@ -1,6 +1,5 @@
 <?php
 
-use App\Services\ApiServices\ServiceRequests\SrOperationsService;
 use App\Services\Provider\ProviderEventService;
 use App\Services\Tools\IExport\IExportTypeService;
 use Monolog\Handler\NullHandler;

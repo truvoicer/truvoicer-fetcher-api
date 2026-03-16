@@ -16,7 +16,7 @@ class UserSettingResource extends JsonResource
     {
         return [
             'theme' => $this->theme,
-            'open_mode' => $this->open_mode
+            'open_mode' => $this->open_mode,
         ];
     }
 }

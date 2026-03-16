@@ -14,15 +14,13 @@ class PropertyProfileController extends Controller
     public function index(Request $request)
     {
         $this->setAccessControlUser($request->user());
-        if (!$this->accessControlService->inAdminGroup()) {
-            return $this->sendErrorResponse("Access control: operation not permitted");
+        if (! $this->accessControlService->inAdminGroup()) {
+            return $this->sendErrorResponse('Access control: operation not permitted');
         }
 
-
         return $this->sendSuccessResponse(
-            "success",
+            'success',
             PropertyProfilesService::PROFILES
         );
     }
-
 }

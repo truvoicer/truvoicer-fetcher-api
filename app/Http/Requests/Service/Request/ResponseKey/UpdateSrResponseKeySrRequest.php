@@ -2,11 +2,9 @@
 
 namespace App\Http\Requests\Service\Request\ResponseKey;
 
-use Truvoicer\TfDbReadCore\Models\Provider;
-use Truvoicer\TfDbReadCore\Models\SrResponseKey;
-use Truvoicer\TfDbReadCore\Models\SrResponseKeySr;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
+use Truvoicer\TfDbReadCore\Models\SrResponseKey;
 
 class UpdateSrResponseKeySrRequest extends FormRequest
 {
@@ -33,29 +31,29 @@ class UpdateSrResponseKeySrRequest extends FormRequest
             ],
             'action' => [
                 'sometimes',
-                'string'
+                'string',
             ],
             'single_request' => [
                 'sometimes',
-                'boolean'
+                'boolean',
             ],
             'disable_request' => [
                 'sometimes',
-                'boolean'
+                'boolean',
             ],
             'response_response_keys' => [
                 'sometimes',
                 'nullable',
-                'array'
+                'array',
             ],
             'request_response_keys' => [
                 'sometimes',
                 'nullable',
-                'array'
+                'array',
             ],
             'sr_id' => [
                 'sometimes',
-                'integer'
+                'integer',
             ],
         ];
     }

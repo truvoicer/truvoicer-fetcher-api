@@ -2,11 +2,11 @@
 
 namespace Database\Factories;
 
-use Truvoicer\TfDbReadCore\Services\Auth\AuthService;
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Truvoicer\TfDbReadCore\Services\Auth\AuthService;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Role>
+ * @extends \Illuminate\Database\Eloquent\Factories\Factory<\Truvoicer\TfDbReadCore\Models\Role>
  */
 class RoleFactory extends Factory
 {
@@ -18,6 +18,7 @@ class RoleFactory extends Factory
     public function definition(): array
     {
         $role = $this->faker->randomElement(AuthService::DEFAULT_ROLES);
+
         return [
             'name' => $role['name'],
             'label' => $role['label'],

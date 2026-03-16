@@ -6,32 +6,29 @@ use App\Enums\Import\ImportAction;
 use App\Enums\Import\ImportConfig;
 use App\Enums\Import\ImportMappingType;
 use App\Enums\Import\ImportType;
-use Truvoicer\TfDbReadCore\Helpers\Tools\UtilHelpers;
-use Truvoicer\TfDbReadCore\Models\Category;
-use Truvoicer\TfDbReadCore\Models\Provider;
-use Truvoicer\TfDbReadCore\Repositories\SrRepository;
-use Truvoicer\TfDbReadCore\Services\Permission\PermissionService;
-use Truvoicer\TfDbReadCore\Services\Provider\ProviderService;
-use Truvoicer\TfDbReadCore\Services\Permission\AccessControlService;
 use App\Services\Tools\IExport\IExportTypeService;
 use Exception;
-use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Log;
+use Truvoicer\TfDbReadCore\Helpers\Tools\UtilHelpers;
+use Truvoicer\TfDbReadCore\Models\Provider;
+use Truvoicer\TfDbReadCore\Repositories\SrRepository;
+use Truvoicer\TfDbReadCore\Services\Permission\AccessControlService;
+use Truvoicer\TfDbReadCore\Services\Permission\PermissionService;
+use Truvoicer\TfDbReadCore\Services\Provider\ProviderService;
 
 class ProviderImporterService extends ImporterBase
 {
     private SrRepository $srRepository;
 
     public function __construct(
-        private SrImporterService                 $srImporterService,
+        private SrImporterService $srImporterService,
         private ProviderPropertiesImporterService $providerPropertiesImporterService,
-        private ProviderRateLimitImporterService  $providerRateLimitImporterService,
-        private CategoryImporterService           $categoryImporterService,
-        protected AccessControlService            $accessControlService
-    )
-    {
-        parent::__construct($accessControlService, new Provider());
-        $this->srRepository = new SrRepository();
+        private ProviderRateLimitImporterService $providerRateLimitImporterService,
+        private CategoryImporterService $categoryImporterService,
+        protected AccessControlService $accessControlService
+    ) {
+        parent::__construct($accessControlService, new Provider);
+        $this->srRepository = new SrRepository;
     }
 
     protected function setConfig(): void
@@ -80,34 +77,37 @@ class ProviderImporterService extends ImporterBase
         $provider = $this->providerService->getProviderRepository()->findByName(
             $data['name']
         );
-        if (!$provider instanceof Provider) {
+        if (! $provider instanceof Provider) {
             return [
                 'success' => false,
-                'message' => "Provider {$data['name']} not found."
+                'message' => "Provider {$data['name']} not found.",
             ];
         }
-        if (!$this->entityService->lockEntity($this->getUser(), $provider->id, Provider::class)) {
+        if (! $this->entityService->lockEntity($this->getUser(), $provider->id, Provider::class)) {
             return [
                 'success' => false,
-                'message' => "Failed to lock provider {$data['name']}."
+                'message' => "Failed to lock provider {$data['name']}.",
             ];
         }
+
         return [
             'success' => true,
-            'message' => 'Provider import is locked.'
+            'message' => 'Provider import is locked.',
         ];
     }
+
     public function unlock(Provider $provider): array
     {
-        if (!$this->entityService->lockEntity($this->getUser(), $provider->id, Provider::class)) {
+        if (! $this->entityService->lockEntity($this->getUser(), $provider->id, Provider::class)) {
             return [
                 'success' => false,
-                'message' => "Failed to unlock provider {$provider->name}."
+                'message' => "Failed to unlock provider {$provider->name}.",
             ];
         }
+
         return [
             'success' => true,
-            'message' => 'Provider import is unlocked.'
+            'message' => 'Provider import is unlocked.',
         ];
     }
 
@@ -115,7 +115,7 @@ class ProviderImporterService extends ImporterBase
     {
         $response = [];
         if (
-            !empty($data['properties']) &&
+            ! empty($data['properties']) &&
             is_array($data['properties'])
         ) {
             $response = array_merge(
@@ -124,6 +124,7 @@ class ProviderImporterService extends ImporterBase
                     $action,
                     array_map(function ($property) use ($provider) {
                         $property['provider'] = $provider;
+
                         return $property;
                     }, $data['properties']),
                     true,
@@ -132,7 +133,7 @@ class ProviderImporterService extends ImporterBase
             );
         }
         if (
-            !empty($data['provider_rate_limit']) &&
+            ! empty($data['provider_rate_limit']) &&
             is_array($data['provider_rate_limit'])
         ) {
             $data['provider_rate_limit']['provider'] = $provider;
@@ -145,24 +146,25 @@ class ProviderImporterService extends ImporterBase
         }
 
         if (
-            !empty($data['categories']) &&
+            ! empty($data['categories']) &&
             is_array($data['categories'])
         ) {
             $response = array_merge(
                 $response,
                 $this->categoryImporterService->batchImport(
                     $action,
-                        array_map(function ($category) use ($provider) {
-                            $category['provider'] = $provider;
-                            return $category;
-                        }, $data['categories']),
+                    array_map(function ($category) use ($provider) {
+                        $category['provider'] = $provider;
+
+                        return $category;
+                    }, $data['categories']),
                     true,
                     $map
                 )
             );
         }
         if (
-            !empty($data['srs']) &&
+            ! empty($data['srs']) &&
             is_array($data['srs'])
         ) {
             $response = array_merge(
@@ -171,6 +173,7 @@ class ProviderImporterService extends ImporterBase
                     $action,
                     array_map(function ($sr) use ($provider) {
                         $sr['provider'] = $provider;
+
                         return $sr;
                     }, $data['srs']),
                     true,
@@ -178,6 +181,7 @@ class ProviderImporterService extends ImporterBase
                 )
             );
         }
+
         return $response;
     }
 
@@ -185,7 +189,7 @@ class ProviderImporterService extends ImporterBase
     {
         try {
             $checkProvider = $this->providerService->getProviderRepository()->findUserModelQuery(
-                new Provider(),
+                new Provider,
                 $this->getUser(),
                 [['name', '=', $data['name']]],
                 false
@@ -199,15 +203,15 @@ class ProviderImporterService extends ImporterBase
             }
 
             if (
-                !empty($data['categories']) &&
+                ! empty($data['categories']) &&
                 is_array($data['categories'])
             ) {
                 $data['categories'] = UtilHelpers::arrayExceptKey($data['categories'], ['id'], true);
             }
-            if (!$this->providerService->createProvider($this->getUser(), $data)) {
+            if (! $this->providerService->createProvider($this->getUser(), $data)) {
                 return [
                     'success' => false,
-                    'message' => "Failed to create provider {$data['name']}."
+                    'message' => "Failed to create provider {$data['name']}.",
                 ];
             }
 
@@ -223,17 +227,18 @@ class ProviderImporterService extends ImporterBase
             } else {
                 $response = [
                     'success' => true,
-                    'message' => "Provider {$data['name']} imported successfully. No children imported."
+                    'message' => "Provider {$data['name']} imported successfully. No children imported.",
                 ];
             }
             $unlockProvider = $this->unlock($provider);
-            if (!$unlockProvider['success']) {
+            if (! $unlockProvider['success']) {
                 return $unlockProvider;
             }
+
             return [
                 'success' => true,
                 'message' => sprintf(
-                    "Provider imported successfully | name: %s | label: %s with_children: %s",
+                    'Provider imported successfully | name: %s | label: %s with_children: %s',
                     $provider->name,
                     $provider->label,
                     ($withChildren) ? 'true' : 'false'
@@ -244,9 +249,10 @@ class ProviderImporterService extends ImporterBase
             Log::channel(IExportTypeService::LOGGING_NAME)->error(
                 $e->getMessage(),
                 [
-                    'data' => $data
+                    'data' => $data,
                 ]
             );
+
             return [
                 'success' => false,
                 'code' => $e->getCode(),
@@ -260,21 +266,21 @@ class ProviderImporterService extends ImporterBase
     {
         try {
             $checkProvider = $this->providerService->getProviderRepository()->findUserModelQuery(
-                new Provider(),
+                new Provider,
                 $this->getUser(),
                 [['name', '=', $data['name']]],
                 false
             );
-            if (!$checkProvider->first() instanceof Provider) {
+            if (! $checkProvider->first() instanceof Provider) {
                 return [
                     'success' => false,
-                    'message' => "Provider {$data['name']} not found."
+                    'message' => "Provider {$data['name']} not found.",
                 ];
             }
-            if (!$this->providerService->updateProvider($this->getUser(), $checkProvider, $data)) {
+            if (! $this->providerService->updateProvider($this->getUser(), $checkProvider, $data)) {
                 return [
                     'success' => false,
-                    'message' => "Failed to update provider {$data['name']}."
+                    'message' => "Failed to update provider {$data['name']}.",
                 ];
             }
             $provider = $this->providerService->getProviderRepository()->getModel();
@@ -289,21 +295,22 @@ class ProviderImporterService extends ImporterBase
                 $response = [
                     'success' => true,
                     'message' => sprintf(
-                        "Provider imported successfully | name: %s | label: %s with_children: false",
+                        'Provider imported successfully | name: %s | label: %s with_children: false',
                         $provider->name,
                         $provider->label,
                     ),
                 ];
             }
             $unlockProvider = $this->unlock($provider);
-            if (!$unlockProvider['success']) {
+            if (! $unlockProvider['success']) {
                 return $unlockProvider;
             }
+
             return [
                 'success' => true,
                 'data' => $response,
                 'message' => sprintf(
-                    "Provider imported successfully | name: %s | label: %s with_children: %s",
+                    'Provider imported successfully | name: %s | label: %s with_children: %s',
                     $provider->name,
                     $provider->label,
                     ($withChildren) ? 'true' : 'false'
@@ -313,9 +320,10 @@ class ProviderImporterService extends ImporterBase
             Log::channel(IExportTypeService::LOGGING_NAME)->error(
                 $e->getMessage(),
                 [
-                    'data' => $data
+                    'data' => $data,
                 ]
             );
+
             return [
                 'success' => false,
                 'code' => $e->getCode(),
@@ -331,17 +339,17 @@ class ProviderImporterService extends ImporterBase
             if (empty($provider['name'])) {
                 $this->addError(
                     'import_type_validation',
-                    "Provider name is required."
+                    'Provider name is required.'
                 );
             }
             if (empty($provider['label'])) {
                 $this->addError(
                     'import_type_validation',
-                    "Provider label is required."
+                    'Provider label is required.'
                 );
             }
             if (
-                !empty($data['srs']) &&
+                ! empty($data['srs']) &&
                 is_array($data['srs'])
             ) {
                 $this->srImporterService->validateImportData($data['srs']);
@@ -352,19 +360,19 @@ class ProviderImporterService extends ImporterBase
     public function filterData(array $data): array
     {
         $filterProviders = array_filter($data, function ($provider) {
-            return (
-                !empty($provider['name']) &&
-                !empty($provider['label'])
-            );
+            return
+                ! empty($provider['name']) &&
+                ! empty($provider['label']);
         }, ARRAY_FILTER_USE_BOTH);
 
         return array_map(function ($provider) {
             if (
-                !empty($provider['srs']) &&
+                ! empty($provider['srs']) &&
                 is_array($provider['srs'])
             ) {
                 $provider['srs'] = $this->srImporterService->filterData($provider['srs']);
             }
+
             return $provider;
         }, $filterProviders);
     }
@@ -377,7 +385,7 @@ class ProviderImporterService extends ImporterBase
             'label' => $this->getConfigItem(ImportConfig::LABEL),
             'children' => $this->parseEntityBatch(
                 $this->filterData($data)
-            )
+            ),
         ];
     }
 
@@ -402,7 +410,7 @@ class ProviderImporterService extends ImporterBase
                 $query->with([
                     'sResponseKeys' => function ($query) {
                         $query->with(['srResponseKey']);
-                    }
+                    },
                 ]);
             },
         ];
@@ -410,13 +418,14 @@ class ProviderImporterService extends ImporterBase
 
     public function getExportTypeData($item): array|bool
     {
-        $srs = (!empty($item["srs"]) && is_array($item["srs"])) ?
-            $item["srs"] : [];
+        $srs = (! empty($item['srs']) && is_array($item['srs'])) ?
+            $item['srs'] : [];
         $this->providerService->getProviderRepository()
             ->setWith([
                 'srs' => function ($query) use ($srs) {
                     if (empty($srs)) {
                         $query->with($this->getSrWith());
+
                         return;
                     }
                     $query->whereIn('id', array_column($srs, 'id'));
@@ -434,12 +443,12 @@ class ProviderImporterService extends ImporterBase
                 },
                 'categories',
                 'properties',
-                'providerRateLimit'
+                'providerRateLimit',
             ]);
         $provider = $this->providerService->getProviderRepository()->findById(
-            $item["id"],
+            $item['id'],
         );
-        if (!$provider) {
+        if (! $provider) {
             return false;
         }
 
@@ -455,6 +464,7 @@ class ProviderImporterService extends ImporterBase
             ],
             false
         );
+
         return $isPermitted ? $provider->toArray() : false;
 
     }
@@ -463,30 +473,31 @@ class ProviderImporterService extends ImporterBase
     {
         $entity['children'] = [];
         if (
-            !empty($entity['srs']) &&
+            ! empty($entity['srs']) &&
             is_array($entity['srs'])
         ) {
             $entity['children'][] = $this->srImporterService->filterImportData($entity['srs']);
         }
         if (
-            !empty($entity['properties']) &&
+            ! empty($entity['properties']) &&
             is_array($entity['properties'])
         ) {
             $entity['children'][] = $this->providerPropertiesImporterService->filterImportData($entity['properties']);
         }
         if (
-            !empty($entity['provider_rate_limit']) &&
+            ! empty($entity['provider_rate_limit']) &&
             is_array($entity['provider_rate_limit'])
         ) {
             $entity['children'][] = $this->providerRateLimitImporterService->filterImportData($entity['provider_rate_limit']);
         }
         if (
-            !empty($entity['categories']) &&
+            ! empty($entity['categories']) &&
             is_array($entity['categories'])
         ) {
             $entity['children'][] = $this->categoryImporterService->filterImportData($entity['categories']);
         }
         $entity['import_type'] = $this->getConfigItem(ImportConfig::NAME);
+
         return $entity;
     }
 
@@ -497,7 +508,7 @@ class ProviderImporterService extends ImporterBase
         }, $data);
     }
 
-    public function deepFind(ImportType $importType, array $data, array $conditions, ?string $operation = 'AND'): array|null
+    public function deepFind(ImportType $importType, array $data, array $conditions, ?string $operation = 'AND'): ?array
     {
         return UtilHelpers::deepFindInNestedEntity(
             data: $data,

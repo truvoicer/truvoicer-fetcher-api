@@ -6,6 +6,27 @@ use Database\Factories\Mongo\EntityListFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use MongoDB\Laravel\Eloquent\Model;
 
+/**
+ * @property string $provider
+ * @property array $service
+ * @property string $item_id
+ * @property string|null $slug
+ * @property string $title
+ * @property string $description
+ * @property bool $is_active
+ * @property int|null $company_id
+ * @property string|null $excerpt
+ * @property array|null $keywords
+ * @property string|null $location
+ * @property string|null $location_name
+ * @property \Carbon\Carbon|null $date_expires
+ * @property \Carbon\Carbon|null $date_added
+ * @property string|null $external_url
+ * @property string|null $website
+ * @property string|null $contact_email
+ * @property string|null $contact_phone
+ * @property bool $is_featured
+ */
 class EntityList extends Model
 {
     use HasFactory;
@@ -52,7 +73,7 @@ class EntityList extends Model
 
     public $timestamps = true;
 
-    static public function newFactory()
+    public static function newFactory()
     {
         return EntityListFactory::new();
     }
@@ -61,27 +82,35 @@ class EntityList extends Model
     {
         return $this->provider;
     }
+
     public function setProvider(string $provider): self
     {
         $this->provider = $provider;
+
         return $this;
     }
+
     public function getService(): array
     {
         return $this->service;
     }
+
     public function setService(string $service): self
     {
         $this->service = $service;
+
         return $this;
     }
+
     public function getItemId(): string
     {
         return $this->item_id;
     }
+
     public function setItemId(string $itemId): self
     {
         $this->item_id = $itemId;
+
         return $this;
     }
 

@@ -2,79 +2,79 @@
 
 namespace Tests\Feature\Frontend\Operations\Data\ApiDirect;
 
-use Truvoicer\TfDbReadCore\Enums\Api\ApiListKey;
-use Truvoicer\TfDbReadCore\Enums\Api\ApiMethod;
-use Truvoicer\TfDbReadCore\Enums\Api\ApiResponseFormat;
 use App\Enums\Api\ApiType;
-use Truvoicer\TfDbReadCore\Enums\Property\PropertyType;
-use Truvoicer\TfDbReadCore\Exceptions\Api\Operation\ApiOperationException;
-use Truvoicer\TfDbReadCore\Exceptions\Api\Response\ApiResponseException;
-use Truvoicer\TfDbReadCore\Services\ApiManager\Client\ApiClientHandler;
-use Truvoicer\TfDbReadCore\Services\ApiManager\Client\Entity\ApiRequest;
 use Illuminate\Testing\TestResponse;
 use Mockery;
 use Mockery\MockInterface;
-use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Tests\TestCase;
+use Truvoicer\TfDbReadCore\Enums\Api\ApiListKey;
+use Truvoicer\TfDbReadCore\Enums\Api\ApiMethod;
+use Truvoicer\TfDbReadCore\Enums\Api\ApiResponseFormat;
+use Truvoicer\TfDbReadCore\Enums\Property\PropertyType;
+use Truvoicer\TfDbReadCore\Exceptions\Api\Response\ApiResponseException;
+use Truvoicer\TfDbReadCore\Services\ApiManager\Client\ApiClientHandler;
+use Truvoicer\TfDbReadCore\Services\ApiManager\Client\Entity\ApiRequest;
 
 class DefaultPostData
 {
-
-    static public function labels(): array
+    public static function labels(): array
     {
         return [
-            ['label' => 'Without an ' . ApiListKey::LIST_KEY->value],
+            ['label' => 'Without an '.ApiListKey::LIST_KEY->value],
             ['label' => 'With post body srConfig, testing in ApiClientHandler'],
             ['label' => 'With body srConfig, testing in ApiClientHandler'],
         ];
     }
-    static public function sharedProviderProperties(
+
+    public static function sharedProviderProperties(
         ?ApiMethod $apiMethod = ApiMethod::POST
     ) {
         return [
             [
                 'name' => PropertyType::ACCESS_TOKEN->value,
-                'value' => '12345'
+                'value' => '12345',
             ],
             [
                 'name' => PropertyType::API_TYPE->value,
-                'value' => ApiType::DEFAULT->value
+                'value' => ApiType::DEFAULT->value,
             ],
             [
                 'name' => PropertyType::BASE_URL->value,
-                'value' => 'http://aurl.com/v1'
+                'value' => 'http://aurl.com/v1',
             ],
             [
                 'name' => PropertyType::RESPONSE_FORMAT->value,
-                'value' => ApiResponseFormat::JSON->value
+                'value' => ApiResponseFormat::JSON->value,
             ],
             [
                 'name' => PropertyType::METHOD->value,
-                'value' => $apiMethod
+                'value' => $apiMethod,
             ],
         ];
     }
-    static public function providerProperties(): array
+
+    public static function providerProperties(): array
     {
         return [
             [
-               ...self::sharedProviderProperties()
+                ...self::sharedProviderProperties(),
             ],
             [
-               ...self::sharedProviderProperties()
+                ...self::sharedProviderProperties(),
             ],
             [
-               ...self::sharedProviderProperties()
+                ...self::sharedProviderProperties(),
             ],
         ];
     }
-    static public function srConfigs(): array
+
+    public static function srConfigs(): array
     {
         return [
             [
                 [
                     'name' => PropertyType::ENDPOINT->value,
-                    'value' => '/test-endpoint-1'
+                    'value' => '/test-endpoint-1',
                 ],
                 [
                     'name' => PropertyType::POST_BODY->value,
@@ -87,7 +87,7 @@ class DefaultPostData
             [
                 [
                     'name' => PropertyType::ENDPOINT->value,
-                    'value' => '/test-endpoint-2'
+                    'value' => '/test-endpoint-2',
                 ],
                 [
                     'name' => PropertyType::POST_BODY->value,
@@ -100,50 +100,50 @@ class DefaultPostData
             [
                 [
                     'name' => PropertyType::ENDPOINT->value,
-                    'value' => '/test-endpoint-2'
+                    'value' => '/test-endpoint-2',
                 ],
                 [
                     'name' => PropertyType::BODY->value,
-                    'value' => "select * from random where (id = ?);",
+                    'value' => 'select * from random where (id = ?);',
                 ],
             ],
         ];
     }
 
-    static public function srData(): array
+    public static function srData(): array
     {
         return [
             [
 
             ],
             [
-               ApiListKey::LIST_KEY->value => 'results'
+                ApiListKey::LIST_KEY->value => 'results',
             ],
             [
-               ApiListKey::LIST_KEY->value => 'results'
-            ]
+                ApiListKey::LIST_KEY->value => 'results',
+            ],
         ];
     }
 
-    static public function srResponseKeys(): array
+    public static function srResponseKeys(): array
     {
         return [
             [
                 [
                     'name' => 'id',
-                    'value' => 'id'
+                    'value' => 'id',
                 ],
                 [
                     'name' => 'name',
-                    'value' => 'name'
+                    'value' => 'name',
                 ],
                 [
                     'name' => 'title',
-                    'value' => 'title'
+                    'value' => 'title',
                 ],
                 [
                     'name' => 'description',
-                    'value' => 'description'
+                    'value' => 'description',
                 ],
             ],
             [
@@ -151,25 +151,25 @@ class DefaultPostData
                     'name' => 'id',
                     'value' => 'id',
                     'show_in_response' => true,
-                    'list_item' => true
+                    'list_item' => true,
                 ],
                 [
                     'name' => 'name',
                     'value' => 'name',
                     'show_in_response' => true,
-                    'list_item' => true
+                    'list_item' => true,
                 ],
                 [
                     'name' => 'title',
                     'value' => 'title',
                     'show_in_response' => true,
-                    'list_item' => true
+                    'list_item' => true,
                 ],
                 [
                     'name' => 'description',
                     'value' => 'description',
                     'show_in_response' => true,
-                    'list_item' => true
+                    'list_item' => true,
                 ],
             ],
             [
@@ -177,44 +177,46 @@ class DefaultPostData
                     'name' => 'id',
                     'value' => 'id',
                     'show_in_response' => true,
-                    'list_item' => true
+                    'list_item' => true,
                 ],
                 [
                     'name' => 'name',
                     'value' => 'name',
                     'show_in_response' => true,
-                    'list_item' => true
+                    'list_item' => true,
                 ],
                 [
                     'name' => 'title',
                     'value' => 'title',
                     'show_in_response' => true,
-                    'list_item' => true
+                    'list_item' => true,
                 ],
                 [
                     'name' => 'description',
                     'value' => 'description',
                     'show_in_response' => true,
-                    'list_item' => true
+                    'list_item' => true,
                 ],
             ],
         ];
     }
-    static public function requestResponse(?int $index = null): array
+
+    public static function requestResponse(?int $index = null): array
     {
         return [
             [
-                'results' => self::responseData()[1]
+                'results' => self::responseData()[1],
             ],
             [
-                'results' => self::responseData()[$index]
+                'results' => self::responseData()[$index],
             ],
             [
-                'results' => self::responseData()[$index]
+                'results' => self::responseData()[$index],
             ],
         ];
     }
-    static public function responseData(): array
+
+    public static function responseData(): array
     {
         return [
             [],
@@ -223,19 +225,19 @@ class DefaultPostData
                     'id' => 1,
                     'name' => 'test-name',
                     'title' => 'Test Title',
-                    'description' => 'This is a test description for test title'
+                    'description' => 'This is a test description for test title',
                 ],
                 [
                     'id' => 2,
                     'name' => 'test-name-2',
                     'title' => 'Test Title 2',
-                    'description' => 'This is a test description for test title 2'
+                    'description' => 'This is a test description for test title 2',
                 ],
                 [
                     'id' => 3,
                     'name' => 'test-name-3',
                     'title' => 'Test Title 3',
-                    'description' => 'This is a test description for test title 3'
+                    'description' => 'This is a test description for test title 3',
                 ],
             ],
             [
@@ -243,31 +245,31 @@ class DefaultPostData
                     'id' => 1,
                     'name' => 'test-name',
                     'title' => 'Test Title',
-                    'description' => 'This is a test description for test title'
+                    'description' => 'This is a test description for test title',
                 ],
                 [
                     'id' => 2,
                     'name' => 'test-name-2',
                     'title' => 'Test Title 2',
-                    'description' => 'This is a test description for test title 2'
+                    'description' => 'This is a test description for test title 2',
                 ],
                 [
                     'id' => 3,
                     'name' => 'test-name-3',
                     'title' => 'Test Title 3',
-                    'description' => 'This is a test description for test title 3'
+                    'description' => 'This is a test description for test title 3',
                 ],
             ],
         ];
     }
 
-    static public function afterResponse()
+    public static function afterResponse()
     {
         return [
             [
                 'status' => 400,
-                'message' => ApiListKey::LIST_KEY->value . ' value is empty.',
-                'exception' => ApiResponseException::class
+                'message' => ApiListKey::LIST_KEY->value.' value is empty.',
+                'exception' => ApiResponseException::class,
             ],
             [
                 'status' => 200,
@@ -278,7 +280,7 @@ class DefaultPostData
         ];
     }
 
-    static public function partialMocks(?int $index = null)
+    public static function partialMocks(?int $index = null)
     {
         return [
             null,
@@ -306,8 +308,10 @@ class DefaultPostData
                         );
                         if ($queryIndex !== false) {
                             $query = $srConfigs[$queryIndex];
+
                             return $query['array_value'] === $request->getPostBody();
                         }
+
                         return true;
                     })
                     ->andReturn($mockedResponse);
@@ -336,8 +340,10 @@ class DefaultPostData
                         );
                         if ($queryIndex !== false) {
                             $query = $srConfigs[$queryIndex];
+
                             return $query['value'] === $request->getBody();
                         }
+
                         return true;
                     })
                     ->andReturn($mockedResponse);
@@ -345,13 +351,12 @@ class DefaultPostData
         ];
     }
 
-
-    static public function data(?array $indexes = []): array
+    public static function data(?array $indexes = []): array
     {
         $data = [];
 
         foreach (self::providerProperties() as $index => $providerProperty) {
-            if (count($indexes) && !in_array($index, $indexes)) {
+            if (count($indexes) && ! in_array($index, $indexes)) {
                 continue;
             }
 
@@ -378,8 +383,8 @@ class DefaultPostData
                             if (self::partialMocks($index)[$index]) {
                                 self::partialMocks($index)[$index]($mock);
                             }
-                        }
-                    ]
+                        },
+                    ],
                 ],
 
                 'callback' => function (
@@ -388,7 +393,7 @@ class DefaultPostData
                 ) {
                     // $context->par
                     // dd($response);
-                }
+                },
             ];
         }
 

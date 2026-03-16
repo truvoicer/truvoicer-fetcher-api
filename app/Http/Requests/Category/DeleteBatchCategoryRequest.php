@@ -2,9 +2,9 @@
 
 namespace App\Http\Requests\Category;
 
-use Truvoicer\TfDbReadCore\Models\Category;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
+use Truvoicer\TfDbReadCore\Models\Category;
 
 class DeleteBatchCategoryRequest extends FormRequest
 {
@@ -28,7 +28,7 @@ class DeleteBatchCategoryRequest extends FormRequest
                 return [
                     Rule::exists(Category::class, 'id'),
                 ];
-            })
+            }),
         ];
     }
 }

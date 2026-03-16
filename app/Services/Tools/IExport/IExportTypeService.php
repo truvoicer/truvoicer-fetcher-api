@@ -3,19 +3,14 @@
 namespace App\Services\Tools\IExport;
 
 use App\Enums\Import\ImportAction;
-use App\Enums\Import\ImportConfig;
-use App\Enums\Import\ImportMappingType;
 use App\Enums\Import\ImportType;
-use Truvoicer\TfDbReadCore\Repositories\SrRepository;
-use Truvoicer\TfDbReadCore\Services\BaseService;
-use Truvoicer\TfDbReadCore\Services\Permission\AccessControlService;
+use App\Services\Tools\Importer\Entities\CategoryImporterService;
 use App\Services\Tools\Importer\Entities\ImporterBase;
+use App\Services\Tools\Importer\Entities\PropertyImporterService;
+use App\Services\Tools\Importer\Entities\ProviderImporterService;
 use App\Services\Tools\Importer\Entities\ProviderPropertiesImporterService;
 use App\Services\Tools\Importer\Entities\ProviderRateLimitImporterService;
 use App\Services\Tools\Importer\Entities\SImporterService;
-use App\Services\Tools\Importer\Entities\CategoryImporterService;
-use App\Services\Tools\Importer\Entities\PropertyImporterService;
-use App\Services\Tools\Importer\Entities\ProviderImporterService;
 use App\Services\Tools\Importer\Entities\SrConfigImporterService;
 use App\Services\Tools\Importer\Entities\SResponseKeysImporterService;
 use App\Services\Tools\Importer\Entities\SrImporterService;
@@ -23,35 +18,40 @@ use App\Services\Tools\Importer\Entities\SrParameterImporterService;
 use App\Services\Tools\Importer\Entities\SrRateLimitImporterService;
 use App\Services\Tools\Importer\Entities\SrResponseKeysImporterService;
 use App\Services\Tools\Importer\Entities\SrScheduleImporterService;
-use App\Services\Tools\SerializerService;
 use Illuminate\Support\Facades\App;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
+use Truvoicer\TfDbReadCore\Repositories\SrRepository;
+use Truvoicer\TfDbReadCore\Services\BaseService;
+use Truvoicer\TfDbReadCore\Services\Permission\AccessControlService;
 
 class IExportTypeService extends BaseService
 {
     const LOGGING_NAME = 'ImportExport';
+
     const LOGGING_PATH = 'logs/import_export/log.log';
 
     const REQUEST_KEYS = [
-        "EXPORT_TYPE" => "export_type",
-        "EXPORT_DATA" => "export_data",
+        'EXPORT_TYPE' => 'export_type',
+        'EXPORT_DATA' => 'export_data',
     ];
+
     const IMPORT_TYPES = [
-        "CATEGORIES" => "categories",
-        "PROVIDERS" => "providers",
-        "SERVICES" => "services",
-        "PROPERTIES" => "properties",
-//        'SR_RATE_LIMIT' => 'sr_rate_limit',
-//        'SR_SCHEDULE' => 'sr_schedule',
-//        'SR_RESPONSE_KEYS' => 'sr_response_keys',
-//        'SR_PARAMETER' => 'sr_parameter',
-//        'SR_CONFIG' => 'sr_config',
+        'CATEGORIES' => 'categories',
+        'PROVIDERS' => 'providers',
+        'SERVICES' => 'services',
+        'PROPERTIES' => 'properties',
+        //        'SR_RATE_LIMIT' => 'sr_rate_limit',
+        //        'SR_SCHEDULE' => 'sr_schedule',
+        //        'SR_RESPONSE_KEYS' => 'sr_response_keys',
+        //        'SR_PARAMETER' => 'sr_parameter',
+        //        'SR_CONFIG' => 'sr_config',
     ];
+
     public const IMPORTERS = [
-        "CATEGORIES" => CategoryImporterService::class,
-        "PROVIDERS" => ProviderImporterService::class,
-        "SERVICES" => SImporterService::class,
-        "PROPERTIES" => PropertyImporterService::class,
+        'CATEGORIES' => CategoryImporterService::class,
+        'PROVIDERS' => ProviderImporterService::class,
+        'SERVICES' => SImporterService::class,
+        'PROPERTIES' => PropertyImporterService::class,
         'SRS' => SrImporterService::class,
         'SR_RATE_LIMIT' => SrRateLimitImporterService::class,
         'SR_SCHEDULE' => SrScheduleImporterService::class,
@@ -61,31 +61,33 @@ class IExportTypeService extends BaseService
         'PROVIDER_RATE_LIMIT' => ProviderRateLimitImporterService::class,
         'PROVIDER_PROPERTIES' => ProviderPropertiesImporterService::class,
     ];
+
     protected CategoryImporterService $categoryImporterService;
+
     protected ProviderImporterService $providerImporterService;
+
     protected SImporterService $apiServiceImporterService;
+
     protected PropertyImporterService $propertyImporterService;
-    protected SerializerService $serializerService;
+
     protected AccessControlService $accessControlService;
+
     protected SrRepository $srRepository;
 
     public function __construct(
         CategoryImporterService $categoryMappingsService,
         ProviderImporterService $providerMappingsService,
-        SImporterService        $apiServiceMappingsService,
-        SerializerService       $serializerService,
+        SImporterService $apiServiceMappingsService,
         PropertyImporterService $propertyImporterService,
-        AccessControlService    $accessControlService
-    )
-    {
+        AccessControlService $accessControlService
+    ) {
         parent::__construct();
         $this->categoryImporterService = $categoryMappingsService;
         $this->providerImporterService = $providerMappingsService;
         $this->apiServiceImporterService = $apiServiceMappingsService;
         $this->propertyImporterService = $propertyImporterService;
-        $this->serializerService = $serializerService;
         $this->accessControlService = $accessControlService;
-        $this->srRepository = new SrRepository();
+        $this->srRepository = new SrRepository;
     }
 
     private function getInstance(ImportType $importType): ImporterBase
@@ -132,10 +134,11 @@ class IExportTypeService extends BaseService
                 break;
             default:
                 throw new BadRequestHttpException(
-                    sprintf("Import type error. %s", $importType->value)
+                    sprintf('Import type error. %s', $importType->value)
                 );
         }
         $instance->setUser($this->getUser());
+
         return $instance;
     }
 
@@ -145,6 +148,7 @@ class IExportTypeService extends BaseService
             if (empty($mapping['mapping']['source'])) {
                 return false;
             }
+
             return $mapping['mapping']['source'] === $type;
         });
     }
@@ -159,19 +163,19 @@ class IExportTypeService extends BaseService
             case ImportType::SR_PARAMETER:
             case ImportType::SR_SCHEDULE:
                 $filteredContent = array_values(
-                    array_filter($contents, function ($content) use ($importType) {
+                    array_filter($contents, function ($content) {
                         return $content['type'] === ImportType::PROVIDER->value;
                     })
                 );
                 $data = [];
                 foreach ($filteredContent as $content) {
-                    if (empty($content['data']) || !is_array($content['data'])) {
+                    if (empty($content['data']) || ! is_array($content['data'])) {
                         continue;
                     }
                     foreach ($content['data'] as $item) {
-                        if (!empty($item['srs']) && is_array($item['srs'])) {
+                        if (! empty($item['srs']) && is_array($item['srs'])) {
                             $data = array_merge($data, $item['srs']);
-                        } elseif (!empty($item['child_srs']) && is_array($item['child_srs'])) {
+                        } elseif (! empty($item['child_srs']) && is_array($item['child_srs'])) {
                             $data = array_merge($data, $item['child_srs']);
                         }
                     }
@@ -179,8 +183,8 @@ class IExportTypeService extends BaseService
                 $contents = [
                     [
                         'type' => $importType->value,
-                        'data' => $data
-                    ]
+                        'data' => $data,
+                    ],
                 ];
                 break;
             default:
@@ -190,12 +194,13 @@ class IExportTypeService extends BaseService
                     })
                 );
         }
+
         return $contents;
     }
 
     private function buildDeepFindConditions(array $map): array
     {
-        if (!empty($map['root']) && !empty($map['children']) && is_array($map['children']) && count($map['children'])) {
+        if (! empty($map['root']) && ! empty($map['children']) && is_array($map['children']) && count($map['children'])) {
             $conditions = array_map(function ($child) {
                 return ['id' => $child['id']];
             }, $map['children']);
@@ -204,6 +209,7 @@ class IExportTypeService extends BaseService
             $conditions = [['id' => $map['id']]];
             $operation = 'AND';
         }
+
         return [$conditions, $operation];
     }
 
@@ -215,11 +221,12 @@ class IExportTypeService extends BaseService
                 'error' => 'No source or destination found.',
             ];
         }
-        if ((!empty($map['mapping']['dest']) && $map['mapping']['dest'] === 'root')) {
+        if ((! empty($map['mapping']['dest']) && $map['mapping']['dest'] === 'root')) {
             $importType = $map['mapping']['source'];
         } else {
             $importType = $map['mapping']['source'];
         }
+
         return [
             'success' => true,
             'importType' => $importType,
@@ -231,8 +238,7 @@ class IExportTypeService extends BaseService
         array $contents,
         array $mappings,
         \Closure $callback
-    )
-    {
+    ) {
         $response = [];
         foreach ($importTypes as $importType) {
             $instance = null;
@@ -241,7 +247,7 @@ class IExportTypeService extends BaseService
             $filterContent = $this->findContentByType($importType, $contents);
             foreach ($filterContent as $content) {
                 $import = array_map(function (array $map) use ($instance, $importType, $content, $callback) {
-                    list ($conditions, $operation) = $this->buildDeepFindConditions($map);
+                    [$conditions, $operation] = $this->buildDeepFindConditions($map);
                     $data = $instance->deepFind($importType, $content['data'], $conditions, $operation);
                     if (empty($data)) {
                         return [
@@ -251,12 +257,13 @@ class IExportTypeService extends BaseService
                     }
 
                     $importType = $this->getImportType($map);
-                    if (!$importType['success']) {
+                    if (! $importType['success']) {
                         return $importType;
                     }
 
                     $importType = $importType['importType'];
-                    $dest = (!empty($map['dest'])) ? $map['dest'] : null;
+                    $dest = (! empty($map['dest'])) ? $map['dest'] : null;
+
                     return $callback($importType, $map, $data, $dest);
                 }, array_values($filterMappings));
                 foreach ($import as $importItem) {
@@ -264,6 +271,7 @@ class IExportTypeService extends BaseService
                 }
             }
         }
+
         return $response;
     }
 
@@ -287,7 +295,7 @@ class IExportTypeService extends BaseService
 
     public function runImportForType(array $contents, array $mappings)
     {
-       return $this->importTypeIterator(
+        return $this->importTypeIterator(
             ImportType::cases(),
             $contents,
             $mappings,
@@ -299,12 +307,13 @@ class IExportTypeService extends BaseService
                     ];
                 }
                 $action = ImportAction::tryFrom($map['action']);
-                if (!$action) {
+                if (! $action) {
                     return [
                         'success' => false,
                         'error' => 'Invalid action found.',
                     ];
                 }
+
                 return $this->getInstance(ImportType::from($importType))
                     ->importMapFactory($map, $data, $dest);
             }
@@ -326,18 +335,18 @@ class IExportTypeService extends BaseService
     public function validateTypeBatch(array $data): void
     {
         foreach ($data as $item) {
-            $this->validateType(ImportType::from($item["type"]), $item['data']);
+            $this->validateType(ImportType::from($item['type']), $item['data']);
         }
     }
 
     public function filterImportData(array $data): array
     {
         return array_map(function ($item) {
-            $instance = $this->getInstance(ImportType::from($item["type"]));
+            $instance = $this->getInstance(ImportType::from($item['type']));
+
             return $instance->filterImportData($item['data']);
         }, $data);
     }
-
 
     public function getExportTypeData($exportType, $data): array
     {
@@ -345,8 +354,9 @@ class IExportTypeService extends BaseService
             $instance = $this->getInstance(ImportType::from($exportType));
             $instance->setUser($this->getUser());
             $instance->getAccessControlService()->setUser($this->getUser());
+
             return $instance->getExportTypeData($item);
-        }, $data[self::REQUEST_KEYS["EXPORT_DATA"]]);
+        }, $data[self::REQUEST_KEYS['EXPORT_DATA']]);
     }
 
     private static function filterMatch(?array $filter, array $config): bool
@@ -359,6 +369,7 @@ class IExportTypeService extends BaseService
                 return false;
             }
         }
+
         return true;
     }
 
@@ -368,11 +379,12 @@ class IExportTypeService extends BaseService
         foreach ($importerClassnames as $importerClassname) {
             $instance = App::make($importerClassname);
             $config = $instance->getConfig();
-            if (!self::filterMatch($filter, $config)) {
+            if (! self::filterMatch($filter, $config)) {
                 continue;
             }
             $configs[] = $config;
         }
+
         return $configs;
     }
 
@@ -384,12 +396,13 @@ class IExportTypeService extends BaseService
             $instance->setUser($this->getUser());
             $instance->getAccessControlService()->setUser($this->getUser());
             $config = $instance->getConfig();
-            if (!self::filterMatch($filter, $config)) {
+            if (! self::filterMatch($filter, $config)) {
                 continue;
             }
             $config['data'] = $instance->getExportData();
             $configs[] = $config;
         }
+
         return $configs;
     }
 
@@ -397,6 +410,6 @@ class IExportTypeService extends BaseService
     {
         return array_map(function ($config) {
             return $config['name'];
-        }, self::getImporterConfigs(self::IMPORTERS, ["show" => true]));
+        }, self::getImporterConfigs(self::IMPORTERS, ['show' => true]));
     }
 }

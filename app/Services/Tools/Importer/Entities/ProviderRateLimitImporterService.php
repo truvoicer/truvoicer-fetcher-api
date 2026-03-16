@@ -6,25 +6,21 @@ use App\Enums\Import\ImportAction;
 use App\Enums\Import\ImportConfig;
 use App\Enums\Import\ImportMappingType;
 use App\Enums\Import\ImportType;
-use Truvoicer\TfDbReadCore\Helpers\Tools\UtilHelpers;
-use Truvoicer\TfDbReadCore\Models\Provider;
-use Truvoicer\TfDbReadCore\Models\ProviderRateLimit;
-use Truvoicer\TfDbReadCore\Services\ApiServices\RateLimitService;
-use Truvoicer\TfDbReadCore\Services\Permission\AccessControlService;
-use Truvoicer\TfDbReadCore\Services\Provider\ProviderService;
 use App\Services\Tools\IExport\IExportTypeService;
 use Exception;
 use Illuminate\Support\Facades\Log;
+use Truvoicer\TfDbReadCore\Helpers\Tools\UtilHelpers;
+use Truvoicer\TfDbReadCore\Models\ProviderRateLimit;
+use Truvoicer\TfDbReadCore\Services\ApiServices\RateLimitService;
+use Truvoicer\TfDbReadCore\Services\Permission\AccessControlService;
 
 class ProviderRateLimitImporterService extends ImporterBase
 {
-
     public function __construct(
-        private RateLimitService       $rateLimitService,
+        private RateLimitService $rateLimitService,
         protected AccessControlService $accessControlService
-    )
-    {
-        parent::__construct($accessControlService, new ProviderRateLimit());
+    ) {
+        parent::__construct($accessControlService, new ProviderRateLimit);
     }
 
     protected function setConfig(): void
@@ -65,41 +61,43 @@ class ProviderRateLimitImporterService extends ImporterBase
     public function lock(ImportAction $action, array $map, array $data, ?array $dest = null): array
     {
         $provider = $this->findProvider(ImportType::PROVIDER, $data, $map, $dest);
-        if (!$provider['success']) {
+        if (! $provider['success']) {
             return $provider;
         }
         $provider = $provider['provider'];
 
         $rateLimit = $provider->providerRateLimit()->first();
-        if (!$rateLimit) {
+        if (! $rateLimit) {
             return [
                 'success' => false,
-                'message' => "Failed to find provider rate limit for provider {$provider->name}."
+                'message' => "Failed to find provider rate limit for provider {$provider->name}.",
             ];
         }
-        if (!$this->entityService->lockEntity($this->getUser(), $rateLimit->id, ProviderRateLimit::class)) {
+        if (! $this->entityService->lockEntity($this->getUser(), $rateLimit->id, ProviderRateLimit::class)) {
             return [
                 'success' => false,
-                'message' => "Failed to lock provider provider {$data['name']}."
+                'message' => "Failed to lock provider provider {$data['name']}.",
             ];
         }
+
         return [
             'success' => true,
-            'message' => 'Provider property import is locked.'
+            'message' => 'Provider property import is locked.',
         ];
     }
 
     public function unlock(ProviderRateLimit $providerRateLimit): array
     {
-        if (!$this->entityService->unlockEntity($this->getUser(), $providerRateLimit->id, ProviderRateLimit::class)) {
+        if (! $this->entityService->unlockEntity($this->getUser(), $providerRateLimit->id, ProviderRateLimit::class)) {
             return [
                 'success' => false,
-                'message' => "Failed to lock provider rate limit {$providerRateLimit->name}."
+                'message' => "Failed to lock provider rate limit. id: {$providerRateLimit->id}.",
             ];
         }
+
         return [
             'success' => true,
-            'message' => 'Provider rate limit import is locked.'
+            'message' => 'Provider rate limit import is locked.',
         ];
     }
 
@@ -117,7 +115,7 @@ class ProviderRateLimitImporterService extends ImporterBase
     {
         try {
             $provider = $this->findProvider(ImportType::PROVIDER, $data, $map, $dest);
-            if (!$provider['success']) {
+            if (! $provider['success']) {
                 return $provider;
             }
 
@@ -125,39 +123,41 @@ class ProviderRateLimitImporterService extends ImporterBase
 
             $rateLimit = $provider->providerRateLimit()->first();
             if (
-                !$rateLimit &&
-                !$this->rateLimitService->createProviderRateLimit($provider, $data)
+                ! $rateLimit &&
+                ! $this->rateLimitService->createProviderRateLimit($provider, $data)
             ) {
                 return [
                     'success' => false,
-                    'message' => "Failed to create provider rate limit for provider {$provider->name}."
+                    'message' => "Failed to create provider rate limit for provider {$provider->name}.",
                 ];
             }
             $rateLimit = $this->rateLimitService->getProviderRateLimitRepository()->getModel();
-            if (!$this->rateLimitService->saveProviderRateLimit($rateLimit, $data)) {
+            if (! $this->rateLimitService->saveProviderRateLimit($rateLimit, $data)) {
                 return [
                     'success' => false,
-                    'message' => "Failed to update provider rate limit for provider {$provider->name}."
+                    'message' => "Failed to update provider rate limit for provider {$provider->name}.",
                 ];
             }
             $unlock = $this->unlock($rateLimit);
-            if (!$unlock['success']) {
+            if (! $unlock['success']) {
                 return $unlock;
             }
+
             return [
                 'success' => true,
-                'message' => "Sr rate limit for provider {$provider->name} imported successfully."
+                'message' => "Sr rate limit for provider {$provider->name} imported successfully.",
             ];
         } catch (Exception $e) {
             Log::channel(IExportTypeService::LOGGING_NAME)->error(
                 $e->getMessage(),
                 [
-                    'data' => $data
+                    'data' => $data,
                 ]
             );
+
             return [
                 'success' => false,
-                'message' => $e->getMessage()
+                'message' => $e->getMessage(),
             ];
         }
     }
@@ -167,10 +167,7 @@ class ProviderRateLimitImporterService extends ImporterBase
         return [];
     }
 
-    public function validateImportData(array $data): void
-    {
-
-    }
+    public function validateImportData(array $data): void {}
 
     public function filterImportData(array $data): array
     {
@@ -178,13 +175,14 @@ class ProviderRateLimitImporterService extends ImporterBase
             'root' => true,
             'import_type' => $this->getConfigItem(ImportConfig::NAME),
             'label' => $this->getConfigItem(ImportConfig::LABEL),
-            'children' => [$this->parseEntity($data)]
+            'children' => [$this->parseEntity($data)],
         ];
     }
 
     public function parseEntity(array $entity): array
     {
         $entity['import_type'] = $this->getConfigItem(ImportConfig::NAME);
+
         return $entity;
     }
 
@@ -205,20 +203,22 @@ class ProviderRateLimitImporterService extends ImporterBase
         return [];
     }
 
-    public function deepFind(ImportType $importType, array $data, array $conditions, ?string $operation = 'AND'): array|null {
+    public function deepFind(ImportType $importType, array $data, array $conditions, ?string $operation = 'AND'): ?array
+    {
         return UtilHelpers::deepFindInNestedEntity(
             data: $data,
             conditions: $conditions,
             childrenKeys: ['properties', 'provider_rate_limit'],
             itemToMatchHandler: function ($item) use ($importType) {
                 return match ($importType) {
-                    ImportType::PROVIDER_RATE_LIMIT => (!empty($item['provider_rate_limit']))? [$item['provider_rate_limit']] : [],
+                    ImportType::PROVIDER_RATE_LIMIT => (! empty($item['provider_rate_limit'])) ? [$item['provider_rate_limit']] : [],
                     default => [],
                 };
             },
             operation: $operation
         );
     }
+
     public function getExportTypeData($item): array|bool
     {
         return false;

@@ -2,9 +2,9 @@
 
 namespace App\Http\Requests\Property;
 
-use Truvoicer\TfDbReadCore\Services\ApiManager\Data\DataConstants;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
+use Truvoicer\TfDbReadCore\Services\ApiManager\Data\DataConstants;
 
 class CreatePropertyRequest extends FormRequest
 {
@@ -24,17 +24,17 @@ class CreatePropertyRequest extends FormRequest
     public function rules(): array
     {
         return [
-            "name" => "string",
-            "label" => "required|string",
-            "value_type" => [
-                Rule::in(DataConstants::REQUEST_CONFIG_VALUE_TYPES)
+            'name' => 'string',
+            'label' => 'required|string',
+            'value_type' => [
+                Rule::in(DataConstants::REQUEST_CONFIG_VALUE_TYPES),
             ],
-            "value_choices" => [
-                'required_if:value_type,choice'
+            'value_choices' => [
+                'required_if:value_type,choice',
             ],
-            "entities" => [
-                'required_if:value_type,entity_list'
-            ]
+            'entities' => [
+                'required_if:value_type,entity_list',
+            ],
         ];
     }
 }

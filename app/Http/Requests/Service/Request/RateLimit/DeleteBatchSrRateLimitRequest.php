@@ -2,9 +2,9 @@
 
 namespace App\Http\Requests\Service\Request\RateLimit;
 
-use Truvoicer\TfDbReadCore\Models\SrRateLimit;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
+use Truvoicer\TfDbReadCore\Models\SrRateLimit;
 
 class DeleteBatchSrRateLimitRequest extends FormRequest
 {
@@ -28,7 +28,7 @@ class DeleteBatchSrRateLimitRequest extends FormRequest
                 return [
                     Rule::exists(SrRateLimit::class, 'id'),
                 ];
-            })
+            }),
         ];
     }
 }

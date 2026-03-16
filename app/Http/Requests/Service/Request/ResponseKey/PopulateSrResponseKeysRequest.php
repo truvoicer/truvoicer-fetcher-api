@@ -3,13 +3,13 @@
 namespace App\Http\Requests\Service\Request\ResponseKey;
 
 use App\Enums\Ai\AiClient;
+use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
+use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Truvoicer\TfDbReadCore\Enums\Property\PropertyType;
 use Truvoicer\TfDbReadCore\Models\Sr;
 use Truvoicer\TfDbReadCore\Services\ApiManager\Data\DataConstants;
 use Truvoicer\TfDbReadCore\Services\ApiServices\ServiceRequests\SrConfigService;
-use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Validation\Rule;
-use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Truvoicer\TfDbReadCore\Services\Property\PropertyService;
 use Truvoicer\TfDbReadCore\Services\Provider\PrioritisedProviderProperty;
 
@@ -49,8 +49,8 @@ class PopulateSrResponseKeysRequest extends FormRequest
         );
         $responseFormat = $prioritisedProviderProperty->getQuery()?->first();
 
-        if (!$responseFormat) {
-            throw new BadRequestHttpException("Provider properties not found for operation.");
+        if (! $responseFormat) {
+            throw new BadRequestHttpException('Provider properties not found for operation.');
         }
         $responseFormatValue = PropertyService::getPropertyValue(
             $responseFormat->value_type,
@@ -62,9 +62,10 @@ class PopulateSrResponseKeysRequest extends FormRequest
             PropertyType::RESPONSE_FORMAT->value,
             $responseFormatValue
         );
+
         return array_merge(
             array_map(
-                fn($data) => ['sometimes', 'string'],
+                fn ($data) => ['sometimes', 'string'],
                 array_combine(
                     array_column(
                         match ($responseFormatValue) {
@@ -94,7 +95,7 @@ class PopulateSrResponseKeysRequest extends FormRequest
                 'ai_clients' => ['sometimes', 'array'],
                 'ai_clients.*' => [
                     'required',
-                    Rule::enum(AiClient::class)
+                    Rule::enum(AiClient::class),
                 ],
                 'srs.*' => Rule::forEach(function ($value, string $attribute) {
                     return [

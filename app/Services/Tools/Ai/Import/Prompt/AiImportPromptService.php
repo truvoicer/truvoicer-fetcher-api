@@ -2,15 +2,13 @@
 
 namespace App\Services\Tools\Ai\Import\Prompt;
 
-use App\Models\AiImportPrompt;
 use App\Repositories\AiImportPromptRepository;
-use RuntimeException;
+use Truvoicer\TfDbReadCore\Models\AiImportPrompt;
 use Truvoicer\TfDbReadCore\Traits\User\UserTrait;
 
 class AiImportPromptService
 {
     use UserTrait;
-
 
     public function __construct(
         private AiImportPromptRepository $aiImportPromptRepository,
@@ -37,5 +35,4 @@ class AiImportPromptService
     {
         return $this->aiImportPromptRepository->deleteBatch($ids);
     }
-
 }

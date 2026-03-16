@@ -2,13 +2,12 @@
 
 namespace App\Repositories;
 
-use App\Models\AiImportPrompt;
+use Truvoicer\TfDbReadCore\Models\AiImportPrompt;
 use Truvoicer\TfDbReadCore\Models\User;
 use Truvoicer\TfDbReadCore\Repositories\BaseRepository;
 
 class AiImportPromptRepository extends BaseRepository
 {
-
     public array $searchFields = [
         'prompt',
         'created_at',
@@ -25,7 +24,6 @@ class AiImportPromptRepository extends BaseRepository
         return $this->findAllWithParams($sort, $order, $count);
     }
 
-
     public function getModel(): AiImportPrompt
     {
         return parent::getModel();
@@ -37,12 +35,14 @@ class AiImportPromptRepository extends BaseRepository
             ...$data,
             'user_id' => $user->id,
         ]);
-        return  $importPrompt->save();
+
+        return $importPrompt->save();
     }
 
     public function updateImportPrompt(AiImportPrompt $aiImportPrompt, array $data): bool
     {
         $this->setModel($aiImportPrompt);
+
         return $this->save($data);
     }
 }

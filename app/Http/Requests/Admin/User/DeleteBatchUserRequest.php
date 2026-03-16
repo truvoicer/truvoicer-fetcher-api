@@ -2,10 +2,9 @@
 
 namespace App\Http\Requests\Admin\User;
 
-use Truvoicer\TfDbReadCore\Models\Property;
-use Truvoicer\TfDbReadCore\Models\User;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
+use Truvoicer\TfDbReadCore\Models\User;
 
 class DeleteBatchUserRequest extends FormRequest
 {
@@ -29,7 +28,7 @@ class DeleteBatchUserRequest extends FormRequest
                 return [
                     Rule::exists(User::class, 'id'),
                 ];
-            })
+            }),
         ];
     }
 }

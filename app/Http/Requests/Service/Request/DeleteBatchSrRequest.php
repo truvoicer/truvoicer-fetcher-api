@@ -2,9 +2,9 @@
 
 namespace App\Http\Requests\Service\Request;
 
-use Truvoicer\TfDbReadCore\Models\Sr;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
+use Truvoicer\TfDbReadCore\Models\Sr;
 
 class DeleteBatchSrRequest extends FormRequest
 {
@@ -28,7 +28,7 @@ class DeleteBatchSrRequest extends FormRequest
                 return [
                     Rule::exists(Sr::class, 'id'),
                 ];
-            })
+            }),
         ];
     }
 }

@@ -4,13 +4,10 @@ namespace App\Listeners;
 
 use App\Events\RunSrOperationEvent;
 use App\Jobs\SrOperation;
-use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Support\Facades\Log;
 
 class RunSrOperationListener
 {
-
     /**
      * The number of seconds the job can run before timing out.
      *
@@ -24,7 +21,6 @@ class RunSrOperationListener
      * @var int
      */
     public $tries = 3;
-
 
     /**
      * Handle the event.

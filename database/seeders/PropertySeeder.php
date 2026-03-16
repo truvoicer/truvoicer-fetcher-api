@@ -2,11 +2,11 @@
 
 namespace Database\Seeders;
 
+use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
 use Truvoicer\TfDbReadCore\Models\Property;
 use Truvoicer\TfDbReadCore\Services\ApiManager\Data\DefaultData;
 use Truvoicer\TfDbReadCore\Services\Property\PropertyService;
-use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\DB;
 
 class PropertySeeder extends Seeder
 {
@@ -31,7 +31,7 @@ class PropertySeeder extends Seeder
         })->delete();
 
         foreach ($providerProperties as $data) {
-            if (!isset($data['name'])) {
+            if (! isset($data['name'])) {
                 continue;
             }
 
@@ -70,10 +70,10 @@ class PropertySeeder extends Seeder
                 $save = Property::create($saveData);
             }
 
-            if (!$save) {
+            if (! $save) {
                 throw new \Exception(
                     sprintf(
-                        "Property not created | name: %s | label: %s",
+                        'Property not created | name: %s | label: %s',
                         $data['name'] ?? '',
                         $data['label'] ?? ''
                     )

@@ -2,11 +2,11 @@
 
 namespace Database\Factories;
 
-use Truvoicer\TfDbReadCore\Models\Sr;
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Truvoicer\TfDbReadCore\Models\Sr;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\SrResponseKey>
+ * @extends \Illuminate\Database\Eloquent\Factories\Factory<\Truvoicer\TfDbReadCore\Models\SrResponseKey>
  */
 class SrResponseKeyFactory extends Factory
 {
@@ -18,6 +18,7 @@ class SrResponseKeyFactory extends Factory
     public function definition(): array
     {
         $isDate = $this->faker->boolean;
+
         return [
             'value' => $this->faker->word,
             'show_in_response' => $this->faker->boolean,

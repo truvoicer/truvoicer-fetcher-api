@@ -9,7 +9,9 @@ use Illuminate\Database\Eloquent\Model;
 class FileDownload extends Model
 {
     use HasFactory;
+
     public const TABLE_NAME = 'file_downloads';
+
     public const REPOSITORY = FileDownloadRepository::class;
 
     protected $fillable = [
@@ -17,6 +19,7 @@ class FileDownload extends Model
         'client_ip',
         'user_agent',
     ];
+
     public function file()
     {
         return $this->belongsTo(File::class);

@@ -2,28 +2,25 @@
 
 namespace App\Console\Commands;
 
+use Carbon\Carbon;
+use Illuminate\Console\Command;
+use Illuminate\Database\Eloquent\Collection;
+use MongoDB\BSON\UTCDateTime;
+use Symfony\Component\Console\Command\Command as CommandAlias;
 use Truvoicer\TfDbReadCore\Helpers\Tools\DateHelpers;
-use App\Http\Requests\Admin\User\CreateUserRequest;
-use Truvoicer\TfDbReadCore\Models\Role;
-use Truvoicer\TfDbReadCore\Helpers\Tools\UtilHelpers;
 use Truvoicer\TfDbReadCore\Models\Sr;
 use Truvoicer\TfDbReadCore\Repositories\MongoDB\MongoDBRepository;
 use Truvoicer\TfDbReadCore\Repositories\SrRepository;
 use Truvoicer\TfDbReadCore\Services\ApiServices\ServiceRequests\ResponseKeys\SrResponseKeyService;
-use Truvoicer\TfDbReadCore\Services\User\RoleService;
-use Truvoicer\TfDbReadCore\Services\User\UserAdminService;
-use Carbon\Carbon;
-use Illuminate\Console\Command;
-use Illuminate\Database\Eloquent\Collection;
-use Illuminate\Support\Facades\Validator;
-use MongoDB\BSON\UTCDateTime;
-use Symfony\Component\Console\Command\Command as CommandAlias;
 
 class MongoDbDateFormat extends Command
 {
     private SrResponseKeyService $srResponseKeyService;
+
     private SrRepository $srRepository;
+
     private MongoDBRepository $mongoDBRepository;
+
     /**
      * The name and signature of the console command.
      *
@@ -47,14 +44,13 @@ class MongoDbDateFormat extends Command
         MongoDBRepository $mongoDBRepository,
         SrResponseKeyService $srResponseKeyService,
         SrRepository $srRepository
-    )
-    {
+    ) {
         $this->mongoDBRepository = $mongoDBRepository;
         $this->srResponseKeyService = $srResponseKeyService;
         $this->srRepository = $srRepository;
 
         $srId = $this->option('sr_id');
-        if (empty($srId)){
+        if (empty($srId)) {
             $srs = $this->srRepository->findAll();
         } else {
             $this->srRepository->addWhere(
@@ -69,8 +65,8 @@ class MongoDbDateFormat extends Command
             $srs,
             function () {
                 return [
-                    ['key' =>'updated_at', 'format' => null],
-                    ['key' =>'created_at', 'format' => null],
+                    ['key' => 'updated_at', 'format' => null],
+                    ['key' => 'created_at', 'format' => null],
                 ];
             }
         );
@@ -78,7 +74,7 @@ class MongoDbDateFormat extends Command
             $srs,
             function (Sr $sr) {
                 $dateKeys = $this->getDateResponseKeys($sr);
-                if (!empty($defaultData['date']) && !$dateKeys->where('name', 'date_published')->first()) {
+                if (! empty($defaultData['date']) && ! $dateKeys->where('name', 'date_published')->first()) {
                     $srResponseKey = $this->srResponseKeyService->getSrResponseKeyRepository()->findOneSrResponseKeysWithRelation(
                         $sr,
                         [],
@@ -92,18 +88,22 @@ class MongoDbDateFormat extends Command
                 foreach ($dateKeys as $dateKey) {
                     $data[] = ['key' => $dateKey->name, 'format' => $dateKey?->srResponseKey?->date_format];
                 }
+
                 return $data;
             }
         );
+
         return CommandAlias::SUCCESS;
     }
 
-    private function collectionIterator(Collection $srs, \Closure $callback) {
+    private function collectionIterator(Collection $srs, \Closure $callback)
+    {
 
         foreach ($srs as $sr) {
             $collectionName = $this->mongoDBRepository->getCollectionName($sr);
-            if (!$collectionName) {
+            if (! $collectionName) {
                 $this->error('Invalid collection name');
+
                 return CommandAlias::FAILURE;
             }
             $this->mongoDBRepository->setCollection($collectionName);
@@ -120,26 +120,27 @@ class MongoDbDateFormat extends Command
                     $dateFormat = $dateKey['format'];
                     if ($date instanceof UTCDateTime) {
                         $newDate = Carbon::createFromTimestamp($date);
-                        if (!$newDate->greaterThan(Carbon::now())) {
+                        if (! $newDate->greaterThan(Carbon::now())) {
                             continue;
                         }
                         $newDate = $document['updated_at'];
                         $updateData[$dateKey['key']] = $newDate;
                     } else {
                         $newDate = DateHelpers::parseDateString($date, $dateFormat);
-                        if (!$newDate) {
+                        if (! $newDate) {
                             $type = gettype($date);
                             $this->error("Error parsing date: {$date} | type: {$type} | collection: {$collectionName} | dateKey: {$dateKey['key']}");
+
                             continue;
                         }
                         $updateData[$dateKey['key']] = new UTCDateTime($newDate);
                     }
                 }
 
-                if (count($updateData) && !$this->mongoDBRepository->update($document['_id'], $updateData)) {
+                if (count($updateData) && ! $this->mongoDBRepository->update($document['_id'], $updateData)) {
                     $this->error(
                         sprintf(
-                            "Error updating document collection: %s | id: %s | data: %s",
+                            'Error updating document collection: %s | id: %s | data: %s',
                             $collectionName,
                             $document['_id'],
                             json_encode($updateData, JSON_PRETTY_PRINT)
@@ -149,17 +150,18 @@ class MongoDbDateFormat extends Command
             }
         }
     }
+
     private function getDateResponseKeys(Sr $sr): Collection
     {
         $srResponseKeys = $this->srResponseKeyService->findResponseKeysForOperationBySr($sr);
+
         return $srResponseKeys->filter(function ($srResponseKey) {
-            return (
+            return
                 str_contains($srResponseKey->name, 'date') &&
                 (
-                    !empty($srResponseKey?->srResponseKey?->value) &&
+                    ! empty($srResponseKey?->srResponseKey?->value) &&
                     DateHelpers::isValidDateString($srResponseKey->srResponseKey->value)
-                )
-            );
+                );
         });
     }
 }

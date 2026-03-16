@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers\Api\Backend\Services;
 
-use Truvoicer\TfDbReadCore\Enums\Sr\SrType;
 use App\Enums\Variable\VariableType;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Service\Request\CreateChildSrRequest;
@@ -15,6 +14,13 @@ use App\Http\Requests\Service\Request\UpdateSrDefaultsRequest;
 use App\Http\Requests\Service\Request\UpdateSrRequest;
 use App\Http\Resources\Service\ServiceRequest\ServiceRequestCollection;
 use App\Http\Resources\Service\ServiceRequest\ServiceRequestResource;
+use App\Services\ApiServices\ServiceRequests\ResponseKeys\Populate\PopulateFactory;
+use App\Services\ApiServices\ServiceRequests\SrOperationsService;
+use App\Services\Tools\VariablesService;
+use Illuminate\Http\Request;
+use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\Response;
+use Truvoicer\TfDbReadCore\Enums\Sr\SrType;
 use Truvoicer\TfDbReadCore\Http\Resources\Service\ServiceRequest\SrTreeViewCollection;
 use Truvoicer\TfDbReadCore\Models\Provider;
 use Truvoicer\TfDbReadCore\Models\S;
@@ -22,38 +28,29 @@ use Truvoicer\TfDbReadCore\Models\Sr;
 use Truvoicer\TfDbReadCore\Repositories\SrResponseKeySrRepository;
 use Truvoicer\TfDbReadCore\Services\ApiManager\Operations\ApiRequestService;
 use Truvoicer\TfDbReadCore\Services\ApiServices\ApiService;
-use App\Services\ApiServices\ServiceRequests\ResponseKeys\Populate\PopulateFactory;
-use App\Services\ApiServices\ServiceRequests\SrOperationsService;
 use Truvoicer\TfDbReadCore\Services\ApiServices\ServiceRequests\SrService;
 use Truvoicer\TfDbReadCore\Services\Permission\PermissionService;
 use Truvoicer\TfDbReadCore\Services\Provider\ProviderService;
-use App\Services\Tools\VariablesService;
-use Illuminate\Http\Request;
-use Symfony\Component\HttpFoundation\JsonResponse;
-use Symfony\Component\HttpFoundation\Response;
 
 /**
  * Contains Api endpoint functions for api service related request operations
  *
  * Require ROLE_ADMIN for *every* controller method in this class.
- *
  */
 class ServiceRequestController extends Controller
 {
-
     public function __construct(
-        private ProviderService      $providerService,
-        private ApiService           $apiServicesService,
-        private SrService            $srService,
-    )
-    {
+        private ProviderService $providerService,
+        private ApiService $apiServicesService,
+        private SrService $srService,
+    ) {
         parent::__construct();
     }
 
     public function getTypeList(): \Illuminate\Http\JsonResponse
     {
         return $this->sendSuccessResponse(
-            "success",
+            'success',
             SrType::values()
         );
     }
@@ -61,13 +58,12 @@ class ServiceRequestController extends Controller
     /**
      * Get list of service requests function
      * Returns a list of service requests based on the request query parameters
-     *
      */
     public function getProviderServiceRequestList(Provider $provider, Request $request): \Illuminate\Http\JsonResponse
     {
         $this->setAccessControlUser($request->user());
         if (
-            !$this->accessControlService->checkPermissionsForEntity(
+            ! $this->accessControlService->checkPermissionsForEntity(
                 $provider,
                 [
                     PermissionService::PERMISSION_ADMIN,
@@ -75,14 +71,14 @@ class ServiceRequestController extends Controller
                 ],
             )
         ) {
-            return $this->sendErrorResponse("Access denied");
+            return $this->sendErrorResponse('Access denied');
         }
 
         $this->srService->getServiceRequestRepository()
-            ->setSortField($request->get('sort', "name"))
-            ->setOrderDir($request->get('order', "asc"))
+            ->setSortField($request->get('sort', 'name'))
+            ->setOrderDir($request->get('order', 'asc'))
             ->setLimit($request->get('count', -1));
-        if (!$request->query->getBoolean('include_children', false)) {
+        if (! $request->query->getBoolean('include_children', false)) {
             $this->srService->getServiceRequestRepository()->setWhereDoesntHave(['parentSrs']);
         }
         if ($request->query->getBoolean('show_nested_children', false)) {
@@ -94,36 +90,37 @@ class ServiceRequestController extends Controller
 
         if ($request->query->getBoolean('tree_view', false)) {
             return $this->sendSuccessResponse(
-                "success",
+                'success',
                 new SrTreeViewCollection($getServices)
             );
         }
+
         return $this->sendSuccessResponse(
-            "success",
+            'success',
             new ServiceRequestCollection($getServices)
         );
     }
+
     /**
      * Get list of service requests function
      * Returns a list of service requests based on the request query parameters
-     *
      */
     public function getServiceRequestList(Request $request): \Illuminate\Http\JsonResponse
     {
         $this->srService->getServiceRequestRepository()
-            ->setSortField($request->get('sort', "name"))
-            ->setOrderDir($request->get('order', "asc"))
+            ->setSortField($request->get('sort', 'name'))
+            ->setOrderDir($request->get('order', 'asc'))
             ->setLimit($request->get('count', -1))
             ->setWith(['provider']);
-        if (!$request->query->getBoolean('include_children', false)) {
+        if (! $request->query->getBoolean('include_children', false)) {
             $this->srService->getServiceRequestRepository()->setWhereDoesntHave(['parentSrs']);
         }
         if ($request->query->getBoolean('show_nested_children', false)) {
             $this->srService->getServiceRequestRepository()->setWith(['childSrs']);
         }
         $providerIds = $request->get('provider_ids', []);
-        if (!count($providerIds)) {
-            return $this->sendErrorResponse("Provider ids not found in the request.");
+        if (! count($providerIds)) {
+            return $this->sendErrorResponse('Provider ids not found in the request.');
         }
 
         $getServices = $this->srService->getUserServiceRequestByProviderIds(
@@ -133,12 +130,13 @@ class ServiceRequestController extends Controller
 
         if ($request->query->getBoolean('tree_view', false)) {
             return $this->sendSuccessResponse(
-                "success",
+                'success',
                 new SrTreeViewCollection($getServices)
             );
         }
+
         return $this->sendSuccessResponse(
-            "success",
+            'success',
             new ServiceRequestCollection($getServices)
         );
     }
@@ -146,7 +144,6 @@ class ServiceRequestController extends Controller
     /**
      * Get list of service requests variables
      * Returns a list of service requests variables based on the request query parameters
-     *
      */
     public function variables(
         Provider $provider,
@@ -154,7 +151,7 @@ class ServiceRequestController extends Controller
         VariablesService $variablesService
     ) {
         return $this->sendSuccessResponse(
-            "success",
+            'success',
             $variablesService->getVariables(VariableType::SR)
                 ->getVariableList($provider, $serviceRequest)
         );
@@ -163,13 +160,12 @@ class ServiceRequestController extends Controller
     /**
      * Get list of service requests function
      * Returns a list of service requests based on the request query parameters
-     *
      */
     public function getChildServiceRequestList(Provider $provider, Sr $serviceRequest, Request $request): \Illuminate\Http\JsonResponse
     {
         $this->setAccessControlUser($request->user());
         if (
-            !$this->accessControlService->checkPermissionsForEntity(
+            ! $this->accessControlService->checkPermissionsForEntity(
                 $provider,
                 [
                     PermissionService::PERMISSION_ADMIN,
@@ -177,38 +173,35 @@ class ServiceRequestController extends Controller
                 ],
             )
         ) {
-            return $this->sendErrorResponse("Access denied");
+            return $this->sendErrorResponse('Access denied');
         }
 
         $getServices = $this->srService->getUserChildSrsByProvider(
             $provider,
             $serviceRequest,
-            $request->get('sort', "name"),
-            $request->get('order', "asc"),
+            $request->get('sort', 'name'),
+            $request->get('order', 'asc'),
             $request->get('count', -1)
         );
 
         return $this->sendSuccessResponse(
-            "success",
+            'success',
             new ServiceRequestCollection($getServices)
         );
     }
 
-
     /**
      * Get a provider service request based on the provider and service in the request data
      * Returns a single provider service request
-     *
      */
     public function getProviderServiceRequest(
         Provider $provider,
-        S        $service,
-        Request  $request
-    ): \Illuminate\Http\JsonResponse
-    {
+        S $service,
+        Request $request
+    ): \Illuminate\Http\JsonResponse {
         $this->setAccessControlUser($request->user());
         if (
-            !$this->accessControlService->checkPermissionsForEntity(
+            ! $this->accessControlService->checkPermissionsForEntity(
                 $provider,
                 [
                     PermissionService::PERMISSION_ADMIN,
@@ -216,10 +209,11 @@ class ServiceRequestController extends Controller
                 ],
             )
         ) {
-            return $this->sendErrorResponse("Access denied");
+            return $this->sendErrorResponse('Access denied');
         }
+
         return $this->sendSuccessResponse(
-            "success",
+            'success',
             new ServiceRequestResource(
                 $this->srService->getProviderServiceRequest($service, $provider)
             )
@@ -231,15 +225,13 @@ class ServiceRequestController extends Controller
      * Returns json success message and api service request data on successful creation
      * Returns error response and message on fail
      *
-     * @param Provider $provider
-     * @param Request $request
-     * @return JsonResponse
+     * @param  Request  $request
      */
     public function createServiceRequest(Provider $provider, CreateSrRequest $request): JsonResponse
     {
         $this->setAccessControlUser($request->user());
         if (
-            !$this->accessControlService->checkPermissionsForEntity(
+            ! $this->accessControlService->checkPermissionsForEntity(
                 $provider,
                 [
                     PermissionService::PERMISSION_ADMIN,
@@ -247,15 +239,16 @@ class ServiceRequestController extends Controller
                 ],
             )
         ) {
-            return $this->sendErrorResponse("Access denied");
+            return $this->sendErrorResponse('Access denied');
         }
         $create = $this->srService->createServiceRequest($provider, $request->validated());
-        if (!$create) {
-            return $this->sendErrorResponse("Error inserting service request");
+        if (! $create) {
+            return $this->sendErrorResponse('Error inserting service request');
         }
+
         return $this->sendSuccessResponse(
-            "Service request inserted",
-            new  ServiceRequestResource(
+            'Service request inserted',
+            new ServiceRequestResource(
                 $this->srService->getServiceRequestRepository()->getModel()
             )
         );
@@ -266,16 +259,13 @@ class ServiceRequestController extends Controller
      * Returns json success message and api service request data on successful creation
      * Returns error response and message on fail
      *
-     * @param Provider $provider
-     * @param Sr $serviceRequest
-     * @param CreateSrRequest $request
-     * @return JsonResponse
+     * @param  CreateSrRequest  $request
      */
     public function createChildServiceRequest(Provider $provider, Sr $serviceRequest, CreateChildSrRequest $request): JsonResponse
     {
         $this->setAccessControlUser($request->user());
         if (
-            !$this->accessControlService->checkPermissionsForEntity(
+            ! $this->accessControlService->checkPermissionsForEntity(
                 $provider,
                 [
                     PermissionService::PERMISSION_ADMIN,
@@ -283,15 +273,16 @@ class ServiceRequestController extends Controller
                 ],
             )
         ) {
-            return $this->sendErrorResponse("Access denied");
+            return $this->sendErrorResponse('Access denied');
         }
         $create = $this->srService->createChildSr($provider, $serviceRequest, $request->validated());
-        if (!$create) {
-            return $this->sendErrorResponse("Error inserting service request");
+        if (! $create) {
+            return $this->sendErrorResponse('Error inserting service request');
         }
+
         return $this->sendSuccessResponse(
-            "Service request inserted",
-            new  ServiceRequestResource(
+            'Service request inserted',
+            new ServiceRequestResource(
                 $this->srService->getServiceRequestRepository()->getModel()
             )
         );
@@ -301,7 +292,7 @@ class ServiceRequestController extends Controller
     {
         $this->setAccessControlUser($request->user());
         if (
-            !$this->accessControlService->checkPermissionsForEntity(
+            ! $this->accessControlService->checkPermissionsForEntity(
                 $provider,
                 [
                     PermissionService::PERMISSION_ADMIN,
@@ -309,15 +300,16 @@ class ServiceRequestController extends Controller
                 ],
             )
         ) {
-            return $this->sendErrorResponse("Access denied");
+            return $this->sendErrorResponse('Access denied');
         }
-        $create = $this->srService->overrideChildSr($childSr, $request->all());
-        if (!$create) {
-            return $this->sendErrorResponse("Error inserting service request");
+        $create = $this->srService->overrideChildSr($serviceRequest, $childSr, $request->all());
+        if (! $create) {
+            return $this->sendErrorResponse('Error inserting service request');
         }
+
         return $this->sendSuccessResponse(
-            "Service request inserted",
-            new  ServiceRequestResource(
+            'Service request inserted',
+            new ServiceRequestResource(
                 $this->srService->getServiceRequestRepository()->getModel()
             )
         );
@@ -327,17 +319,15 @@ class ServiceRequestController extends Controller
      * Update an api service request based on request POST data
      * Returns json success message and api service request data on successful update
      * Returns error response and message on fail
-     *
      */
     public function updateServiceRequest(
-        Provider        $provider,
-        Sr              $serviceRequest,
+        Provider $provider,
+        Sr $serviceRequest,
         UpdateSrRequest $request
-    ): \Illuminate\Http\JsonResponse
-    {
+    ): \Illuminate\Http\JsonResponse {
         $this->setAccessControlUser($request->user());
         if (
-            !$this->accessControlService->checkPermissionsForEntity(
+            ! $this->accessControlService->checkPermissionsForEntity(
                 $provider,
                 [
                     PermissionService::PERMISSION_ADMIN,
@@ -345,17 +335,18 @@ class ServiceRequestController extends Controller
                 ],
             )
         ) {
-            return $this->sendErrorResponse("Access denied");
+            return $this->sendErrorResponse('Access denied');
         }
 
         $update = $this->srService->updateServiceRequest($serviceRequest, $request->validated());
 
-        if (!$update) {
-            return $this->sendErrorResponse("Error updating service request");
+        if (! $update) {
+            return $this->sendErrorResponse('Error updating service request');
         }
+
         return $this->sendSuccessResponse(
-            "Service request updated",
-            new  ServiceRequestResource(
+            'Service request updated',
+            new ServiceRequestResource(
                 $this->srService->getServiceRequestRepository()->getModel()
             )
         );
@@ -365,17 +356,15 @@ class ServiceRequestController extends Controller
      * Update an api service request based on request POST data
      * Returns json success message and api service request data on successful update
      * Returns error response and message on fail
-     *
      */
     public function updateSrDefaults(
-        Provider                $provider,
-        Sr                      $serviceRequest,
+        Provider $provider,
+        Sr $serviceRequest,
         UpdateSrDefaultsRequest $request
-    ): \Illuminate\Http\JsonResponse
-    {
+    ): \Illuminate\Http\JsonResponse {
         $this->setAccessControlUser($request->user());
         if (
-            !$this->accessControlService->checkPermissionsForEntity(
+            ! $this->accessControlService->checkPermissionsForEntity(
                 $provider,
                 [
                     PermissionService::PERMISSION_ADMIN,
@@ -383,36 +372,37 @@ class ServiceRequestController extends Controller
                 ],
             )
         ) {
-            return $this->sendErrorResponse("Access denied");
+            return $this->sendErrorResponse('Access denied');
         }
 
         $update = $this->srService->updateSrDefaults($serviceRequest, $request->validated());
 
-        if (!$update) {
-            return $this->sendErrorResponse("Error updating sr default data");
+        if (! $update) {
+            return $this->sendErrorResponse('Error updating sr default data');
         }
+
         return $this->sendSuccessResponse(
-            "Sr default data updated",
-            new  ServiceRequestResource(
+            'Sr default data updated',
+            new ServiceRequestResource(
                 $this->srService->getServiceRequestRepository()->getModel()
             )
         );
     }
 
     public function runSrRequest(
-        Provider        $provider,
-        Sr              $serviceRequest,
+        Provider $provider,
+        Sr $serviceRequest,
         Request $request,
         SrOperationsService $srOperationsService
-    ): \Illuminate\Http\JsonResponse
-    {
+    ): \Illuminate\Http\JsonResponse {
         $srOperationsService->getRequestOperation()->setProvider($provider);
         $srOperationsService->runOperationForSr(
             $serviceRequest,
             SrResponseKeySrRepository::ACTION_STORE
         );
+
         return $this->sendSuccessResponse(
-            "Request ran successfully",
+            'Request ran successfully',
         );
     }
 
@@ -423,17 +413,15 @@ class ServiceRequestController extends Controller
      * - request_type
      * - provider
      * - (Parameters set for the provider service request)
-     *
      */
     public function runApiRequest(
-        Provider          $provider,
+        Provider $provider,
         ApiRequestService $requestOperation,
-        Request           $request
-    ): JsonResponse|\Illuminate\Http\JsonResponse
-    {
+        Request $request
+    ): JsonResponse|\Illuminate\Http\JsonResponse {
         $this->setAccessControlUser($request->user());
         if (
-            !$this->accessControlService->checkPermissionsForEntity(
+            ! $this->accessControlService->checkPermissionsForEntity(
                 $provider,
                 [
                     PermissionService::PERMISSION_ADMIN,
@@ -441,18 +429,18 @@ class ServiceRequestController extends Controller
                 ],
             )
         ) {
-            return $this->sendErrorResponse("Access denied");
+            return $this->sendErrorResponse('Access denied');
         }
         $data = $request->query->all();
 
-        if (empty($data["request_type"])) {
-            return $this->sendErrorResponse("Api request type not found in the request.");
+        if (empty($data['request_type'])) {
+            return $this->sendErrorResponse('Api request type not found in the request.');
         }
 
         $requestOperation->setProviderName($data['provider']);
-        $requestOperation->setApiRequestName($data["sr_name"]);
+        $requestOperation->setApiRequestName($data['sr_name']);
         $requestType = 'raw';
-        if (!empty($data['request_type'])) {
+        if (! empty($data['request_type'])) {
             $requestType = $data['request_type'];
         }
         $requestOperation->setUser($request->user());
@@ -478,19 +466,17 @@ class ServiceRequestController extends Controller
      * - request_type
      * - provider
      * - (Parameters set for the provider service request)
-     *
      */
     public function populateSrResponseKeys(
-        Provider          $provider,
-        Sr                $serviceRequest,
+        Provider $provider,
+        Sr $serviceRequest,
         PopulateFactory $populateFactory,
-        PopulateSrResponseKeysRequest           $request
-    ): JsonResponse|\Illuminate\Http\JsonResponse
-    {
+        PopulateSrResponseKeysRequest $request
+    ): JsonResponse|\Illuminate\Http\JsonResponse {
 
         $this->setAccessControlUser($request->user());
         if (
-            !$this->accessControlService->checkPermissionsForEntity(
+            ! $this->accessControlService->checkPermissionsForEntity(
                 $provider,
                 [
                     PermissionService::PERMISSION_ADMIN,
@@ -498,7 +484,7 @@ class ServiceRequestController extends Controller
                 ],
             )
         ) {
-            return $this->sendErrorResponse("Access denied");
+            return $this->sendErrorResponse('Access denied');
         }
 
         $populateFactory->setOverwrite($request->validated('overwrite', false));
@@ -515,28 +501,27 @@ class ServiceRequestController extends Controller
 
         if ($populateFactory->hasErrors()) {
             return $this->sendErrorResponse(
-                "Error running request",
+                'Error running request',
                 $populateFactory->getErrors(),
             );
         }
+
         return $this->sendSuccessResponse(
-            "Request ran successfully",
+            'Request ran successfully',
         );
     }
 
     /**
      * Duplicate a providers' service request
-     *
      */
     public function duplicateServiceRequest(
         Provider $provider,
-        Sr       $serviceRequest,
-        DuplicateSrRequest  $request
-    ): \Illuminate\Http\JsonResponse
-    {
+        Sr $serviceRequest,
+        DuplicateSrRequest $request
+    ): \Illuminate\Http\JsonResponse {
         $this->setAccessControlUser($request->user());
         if (
-            !$this->accessControlService->checkPermissionsForEntity(
+            ! $this->accessControlService->checkPermissionsForEntity(
                 $provider,
                 [
                     PermissionService::PERMISSION_ADMIN,
@@ -545,7 +530,7 @@ class ServiceRequestController extends Controller
                 ],
             )
         ) {
-            return $this->sendErrorResponse("Access denied");
+            return $this->sendErrorResponse('Access denied');
         }
         $update = $this->srService->duplicateServiceRequest(
             $serviceRequest,
@@ -555,11 +540,12 @@ class ServiceRequestController extends Controller
             $request->validated('parent_sr')
         );
 
-        if (!$update) {
-            return $this->sendErrorResponse("Error duplicating service request");
+        if (! $update) {
+            return $this->sendErrorResponse('Error duplicating service request');
         }
+
         return $this->sendSuccessResponse(
-            "Service request duplicated",
+            'Service request duplicated',
             new ServiceRequestResource(
                 $this->srService->getServiceRequestRepository()->getModel()
             )
@@ -568,14 +554,13 @@ class ServiceRequestController extends Controller
 
     public function duplicateChildServiceRequest(
         Provider $provider,
-        Sr       $serviceRequest,
-        Sr       $childSr,
-        DuplicateSrRequest  $request
-    ): \Illuminate\Http\JsonResponse
-    {
+        Sr $serviceRequest,
+        Sr $childSr,
+        DuplicateSrRequest $request
+    ): \Illuminate\Http\JsonResponse {
         $this->setAccessControlUser($request->user());
         if (
-            !$this->accessControlService->checkPermissionsForEntity(
+            ! $this->accessControlService->checkPermissionsForEntity(
                 $provider,
                 [
                     PermissionService::PERMISSION_ADMIN,
@@ -584,7 +569,7 @@ class ServiceRequestController extends Controller
                 ],
             )
         ) {
-            return $this->sendErrorResponse("Access denied");
+            return $this->sendErrorResponse('Access denied');
         }
         $update = $this->srService->duplicateServiceRequest(
             $childSr,
@@ -593,11 +578,12 @@ class ServiceRequestController extends Controller
             null,
             $request->validated('parent_sr')
         );
-        if (!$update) {
-            return $this->sendErrorResponse("Error duplicating service request");
+        if (! $update) {
+            return $this->sendErrorResponse('Error duplicating service request');
         }
+
         return $this->sendSuccessResponse(
-            "Service request duplicated",
+            'Service request duplicated',
             new ServiceRequestResource(
                 $this->srService->getServiceRequestRepository()->getModel()
             )
@@ -606,13 +592,12 @@ class ServiceRequestController extends Controller
 
     /**
      * Merge a providers' service request response keys
-     *
      */
     public function mergeServiceRequestResponseKeys(Provider $provider, Request $request): \Illuminate\Http\JsonResponse
     {
         $this->setAccessControlUser($request->user());
         if (
-            !$this->accessControlService->checkPermissionsForEntity(
+            ! $this->accessControlService->checkPermissionsForEntity(
                 $provider,
                 [
                     PermissionService::PERMISSION_ADMIN,
@@ -620,33 +605,32 @@ class ServiceRequestController extends Controller
                 ],
             )
         ) {
-            return $this->sendErrorResponse("Access denied");
+            return $this->sendErrorResponse('Access denied');
         }
         $update = $this->srService->mergeRequestResponseKeys(
             $request->all()
         );
 
-        if (!$update) {
-            return $this->sendErrorResponse("Error merging response keys");
+        if (! $update) {
+            return $this->sendErrorResponse('Error merging response keys');
         }
-        return $this->sendSuccessResponse("Request keys merge successful");
+
+        return $this->sendSuccessResponse('Request keys merge successful');
     }
 
     /**
      * Delete an api service request based on request POST data
      * Returns json success message and api service request data on successful delete
      * Returns error response and message on fail
-     *
      */
     public function deleteServiceRequest(
         Provider $provider,
-        Sr       $serviceRequest,
-        Request  $request
-    ): \Illuminate\Http\JsonResponse
-    {
+        Sr $serviceRequest,
+        Request $request
+    ): \Illuminate\Http\JsonResponse {
         $this->setAccessControlUser($request->user());
         if (
-            !$this->accessControlService->checkPermissionsForEntity(
+            ! $this->accessControlService->checkPermissionsForEntity(
                 $provider,
                 [
                     PermissionService::PERMISSION_ADMIN,
@@ -654,26 +638,26 @@ class ServiceRequestController extends Controller
                 ],
             )
         ) {
-            return $this->sendErrorResponse("Access denied");
+            return $this->sendErrorResponse('Access denied');
         }
-        if (!$this->srService->deleteServiceRequest($serviceRequest)) {
+        if (! $this->srService->deleteServiceRequest($serviceRequest)) {
             return $this->sendErrorResponse(
-                "Error deleting service request",
+                'Error deleting service request',
             );
         }
+
         return $this->sendSuccessResponse(
-            "Service request deleted.",
+            'Service request deleted.',
         );
     }
 
     public function deleteBatchServiceRequest(
-        Provider             $provider,
+        Provider $provider,
         DeleteBatchSrRequest $request
-    ): \Illuminate\Http\JsonResponse
-    {
+    ): \Illuminate\Http\JsonResponse {
         $this->setAccessControlUser($request->user());
         if (
-            !$this->accessControlService->checkPermissionsForEntity(
+            ! $this->accessControlService->checkPermissionsForEntity(
                 $provider,
                 [
                     PermissionService::PERMISSION_ADMIN,
@@ -681,33 +665,32 @@ class ServiceRequestController extends Controller
                 ],
             )
         ) {
-            return $this->sendErrorResponse("Access denied");
+            return $this->sendErrorResponse('Access denied');
         }
 
-        if (!$this->srService->deleteBatchServiceRequests($request->get('ids'))) {
+        if (! $this->srService->deleteBatchServiceRequests($request->get('ids'))) {
             return $this->sendErrorResponse(
-                "Error deleting service request",
+                'Error deleting service request',
             );
         }
+
         return $this->sendSuccessResponse(
-            "Service request deleted.",
+            'Service request deleted.',
         );
     }
 
     /**
      * Get a single api service request
      * Returns a single api service request based on the id passed in the request url
-     *
      */
     public function getServiceRequest(
         Provider $provider,
-        Sr       $serviceRequest,
-        Request  $request
-    ): \Illuminate\Http\JsonResponse
-    {
+        Sr $serviceRequest,
+        Request $request
+    ): \Illuminate\Http\JsonResponse {
         $this->setAccessControlUser($request->user());
         if (
-            !$this->accessControlService->checkPermissionsForEntity(
+            ! $this->accessControlService->checkPermissionsForEntity(
                 $provider,
                 [
                     PermissionService::PERMISSION_ADMIN,
@@ -715,11 +698,11 @@ class ServiceRequestController extends Controller
                 ],
             )
         ) {
-            return $this->sendErrorResponse("Access denied");
+            return $this->sendErrorResponse('Access denied');
         }
 
         return $this->sendSuccessResponse(
-            "success",
+            'success',
             new ServiceRequestResource(
                 $serviceRequest->with([
                     'category',
@@ -728,10 +711,9 @@ class ServiceRequestController extends Controller
                         $query->with(['parentSr' => function ($query) {
                             $query->without(['childSrs']);
                         }]);
-                    }
+                    },
                 ])->where('id', $serviceRequest->id)->first()
             )
         );
     }
-
 }

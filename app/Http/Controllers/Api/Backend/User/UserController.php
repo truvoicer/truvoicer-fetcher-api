@@ -3,32 +3,22 @@
 namespace App\Http\Controllers\Api\Backend\User;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\Admin\User\CreateUserRequest;
 use App\Http\Requests\Admin\User\UpdateUserRequest;
 use App\Http\Resources\PersonalAccessTokenCollection;
 use App\Http\Resources\PersonalAccessTokenResource;
 use App\Http\Resources\UserResource;
-use Truvoicer\TfDbReadCore\Services\ApiServices\ServiceRequests\SrService;
-use Truvoicer\TfDbReadCore\Services\Category\CategoryService;
-use Truvoicer\TfDbReadCore\Services\Permission\AccessControlService;
-use Truvoicer\TfDbReadCore\Services\Permission\PermissionEntities;
-use Truvoicer\TfDbReadCore\Services\Provider\ProviderService;
-use App\Services\Tools\HttpRequestService;
-use App\Services\SecurityService;
-use App\Services\Tools\SerializerService;
-use Truvoicer\TfDbReadCore\Services\User\UserAdminService;
 use Illuminate\Http\Request;
 use Laravel\Sanctum\PersonalAccessToken;
+use Truvoicer\TfDbReadCore\Services\Permission\PermissionEntities;
+use Truvoicer\TfDbReadCore\Services\User\UserAdminService;
 
 /**
  * Contains api endpoint functions for admin related tasks
  *
  * Require ROLE_ADMIN for *every* controller method in this class.
- *
  */
 class UserController extends Controller
 {
-
     public function __construct(
         private UserAdminService $userService,
     ) {
@@ -38,7 +28,7 @@ class UserController extends Controller
     public function getSessionUserDetail(Request $request)
     {
         return $this->sendSuccessResponse(
-            "success",
+            'success',
             new UserResource($request->user())
         );
     }
@@ -46,7 +36,7 @@ class UserController extends Controller
     public function getProtectedEntitiesList()
     {
         return $this->sendSuccessResponse(
-            "success",
+            'success',
             PermissionEntities::PROTECTED_ENTITIES
         );
     }
@@ -54,14 +44,11 @@ class UserController extends Controller
     public function getUserEntityPermissionList(string $entity, int $id, Request $request)
     {
         return $this->sendSuccessResponse(
-            "Successfully fetched permission list",
-            $this->serializerService->entityArrayToArray(
-                $this->accessControlService->getPermissionEntities()->getUserEntityPermissionList(
-                    $entity,
-                    $id,
-                    $request->user()
-                ),
-                ["list"]
+            'Successfully fetched permission list',
+            $this->accessControlService->getPermissionEntities()->getUserEntityPermissionList(
+                $entity,
+                $id,
+                $request->user()
             )
         );
     }
@@ -69,14 +56,11 @@ class UserController extends Controller
     public function getUserEntityPermission(string $entity, int $id, Request $request)
     {
         return $this->sendSuccessResponse(
-            "Successfully fetched permissions",
-            $this->serializerService->entityToArray(
-                $this->accessControlService->getPermissionEntities()->getUserEntityPermission(
-                    $entity,
-                    $id,
-                    $request->user()
-                ),
-                ["list"]
+            'Successfully fetched permissions',
+            $this->accessControlService->getPermissionEntities()->getUserEntityPermission(
+                $entity,
+                $id,
+                $request->user()
             )
         );
     }
@@ -84,7 +68,7 @@ class UserController extends Controller
     public function getSessionUserApiToken(Request $request)
     {
         return $this->sendSuccessResponse(
-            "success",
+            'success',
             new PersonalAccessTokenResource($request->user()->currentAccessToken())
         );
     }
@@ -93,12 +77,13 @@ class UserController extends Controller
     {
         $getApiTokens = $this->userService->findApiTokensByParams(
             $request->user(),
-            $request->get('sort', "id"),
-            $request->get('order', "asc"),
+            $request->get('sort', 'id'),
+            $request->get('order', 'asc'),
             $request->get('count')
         );
+
         return $this->sendSuccessResponse(
-            "success",
+            'success',
             new PersonalAccessTokenCollection($getApiTokens)
         );
     }
@@ -106,7 +91,7 @@ class UserController extends Controller
     public function generateSessionUserApiToken(Request $request)
     {
         return $this->sendSuccessResponse(
-            "success",
+            'success',
             new PersonalAccessTokenResource(
                 $this->userService->createUserToken(
                     $request->user(),
@@ -118,13 +103,14 @@ class UserController extends Controller
     public function deleteSessionUserApiToken(PersonalAccessToken $personalAccessToken, Request $request)
     {
         $delete = $this->userService->deleteApiToken($personalAccessToken);
-        if (!$delete) {
+        if (! $delete) {
             return $this->sendErrorResponse(
-                "Error deleting api token",
+                'Error deleting api token',
             );
         }
+
         return $this->sendSuccessResponse(
-            "Api Token deleted.",
+            'Api Token deleted.',
         );
     }
 
@@ -143,11 +129,12 @@ class UserController extends Controller
             $request->all(),
             $roles
         );
-        if (!$update) {
-            return $this->sendErrorResponse("Error updating user");
+        if (! $update) {
+            return $this->sendErrorResponse('Error updating user');
         }
+
         return $this->sendSuccessResponse(
-            "User updated",
+            'User updated',
             new UserResource(
                 $this->userService->getUserRepository()->getModel()
             )

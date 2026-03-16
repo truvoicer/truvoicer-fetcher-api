@@ -2,13 +2,14 @@
 
 namespace App\Console\Commands;
 
-use Truvoicer\TfDbReadCore\Repositories\SrRepository;
 use Illuminate\Console\Command;
 use Symfony\Component\Console\Command\Command as CommandAlias;
+use Truvoicer\TfDbReadCore\Repositories\SrRepository;
 
 class ListSrs extends Command
 {
     private SrRepository $srRepository;
+
     /**
      * The name and signature of the console command.
      *
@@ -40,13 +41,13 @@ class ListSrs extends Command
             $providerIds = array_map('intval', array_filter(
                 array_map('trim', explode(',', $provider)),
                 function ($value) {
-                    return !empty($value) && is_numeric($value);
+                    return ! empty($value) && is_numeric($value);
                 }
             ));
             $providerNames = array_map('strval', array_filter(
                 array_map('trim', explode(',', $provider)),
                 function ($value) {
-                    return !empty($value) && !is_numeric($value);
+                    return ! empty($value) && ! is_numeric($value);
                 }
             ));
             $this->srRepository->addWhere(
@@ -64,7 +65,7 @@ class ListSrs extends Command
             }
         }
         $srs = $this->srRepository->findMany();
-        //Display srs in table format
+        // Display srs in table format
         $this->table(
             ['ID', 'Name', 'Type', 'Provider', 'Active', 'Created At', 'Updated At'],
             $srs->map(function ($sr) {

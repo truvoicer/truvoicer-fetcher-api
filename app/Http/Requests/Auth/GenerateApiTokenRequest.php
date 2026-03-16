@@ -2,9 +2,9 @@
 
 namespace App\Http\Requests\Auth;
 
-use Truvoicer\TfDbReadCore\Models\Role;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
+use Truvoicer\TfDbReadCore\Models\Role;
 
 class GenerateApiTokenRequest extends FormRequest
 {
@@ -26,8 +26,8 @@ class GenerateApiTokenRequest extends FormRequest
         return [
             'expires_at' => 'date|after:now|nullable',
             'role_id' => [
-                Rule::exists(Role::TABLE_NAME, 'id')
-            ]
+                Rule::exists(Role::TABLE_NAME, 'id'),
+            ],
         ];
     }
 }

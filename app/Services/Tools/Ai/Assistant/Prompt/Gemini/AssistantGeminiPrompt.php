@@ -7,7 +7,5 @@ use App\Services\Tools\Ai\Assistant\Prompt\AiAssistantPrompt;
 
 class AssistantGeminiPrompt extends AiAssistantPrompt
 {
-
     protected ?AiClient $aiClient = AiClient::GEMINI;
-
 }

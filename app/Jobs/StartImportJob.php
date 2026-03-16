@@ -2,21 +2,22 @@
 
 namespace App\Jobs;
 
-use Truvoicer\TfDbReadCore\Models\User;
 use App\Notifications\ImportCompletedNotification;
 use App\Notifications\ImportStartedNotification;
 use App\Services\Tools\IExport\ImportService;
-use Truvoicer\TfDbReadCore\Services\User\UserAdminService;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Log;
+use Truvoicer\TfDbReadCore\Models\User;
+use Truvoicer\TfDbReadCore\Services\User\UserAdminService;
 
 class StartImportJob implements ShouldQueue
 {
     use Queueable;
 
     private ImportService $importService;
+
     private UserAdminService $userAdminService;
 
     /**
@@ -26,9 +27,7 @@ class StartImportJob implements ShouldQueue
         public int $userId,
         public int $fileId,
         public array $mappings
-    )
-    {
-    }
+    ) {}
 
     /**
      * Execute the job.
@@ -43,8 +42,9 @@ class StartImportJob implements ShouldQueue
         $mappings = $this->mappings;
 
         $user = $this->userAdminService->getUserRepository()->findById($userId);
-        if (!$user instanceof User) {
+        if (! $user instanceof User) {
             Log::log('error', 'ImportMappingsEvent: $user is not instance of User');
+
             return;
         }
 
@@ -52,11 +52,13 @@ class StartImportJob implements ShouldQueue
 
         if (empty($fileId)) {
             Log::log('error', 'ImportMappingsEvent: $fileId is empty');
+
             return;
         }
 
         if (empty($mappings)) {
             Log::log('error', 'ImportMappingsEvent: $mappings is empty');
+
             return;
         }
 

@@ -6,25 +6,23 @@ use App\Enums\Import\ImportAction;
 use App\Enums\Import\ImportConfig;
 use App\Enums\Import\ImportMappingType;
 use App\Enums\Import\ImportType;
+use App\Services\Tools\IExport\IExportTypeService;
+use Exception;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Log;
 use Truvoicer\TfDbReadCore\Helpers\Tools\UtilHelpers;
 use Truvoicer\TfDbReadCore\Models\Provider;
 use Truvoicer\TfDbReadCore\Models\ProviderProperty;
 use Truvoicer\TfDbReadCore\Services\Permission\AccessControlService;
 use Truvoicer\TfDbReadCore\Services\Provider\ProviderService;
-use App\Services\Tools\IExport\IExportTypeService;
-use Exception;
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Facades\Log;
 
 class ProviderPropertiesImporterService extends ImporterBase
 {
-
     public function __construct(
         private PropertyImporterService $propertyImporterService,
-        protected AccessControlService  $accessControlService
-    )
-    {
-        parent::__construct($accessControlService, new ProviderProperty());
+        protected AccessControlService $accessControlService
+    ) {
+        parent::__construct($accessControlService, new ProviderProperty);
     }
 
     protected function setConfig(): void
@@ -61,84 +59,90 @@ class ProviderPropertiesImporterService extends ImporterBase
     public function lock(ImportAction $action, array $map, array $data, ?array $dest = null): array
     {
         $provider = $this->findProvider(ImportType::PROVIDER_PROPERTY, $data, $map, $dest);
-        if (!$provider['success']) {
+        if (! $provider['success']) {
             return $provider;
         }
         $provider = $provider['provider'];
 
         $property = $this->findProperty($provider, $data, $map);
-        if (!$property['success']) {
+        if (! $property['success']) {
             return $property;
         }
         $property = $property['property'];
 
-        if (!$this->entityService->lockEntity($this->getUser(), $property->id, ProviderProperty::class)) {
+        if (! $this->entityService->lockEntity($this->getUser(), $property->id, ProviderProperty::class)) {
             return [
                 'success' => false,
-                'message' => "Failed to lock provider property {$data['name']}."
+                'message' => "Failed to lock provider property {$data['name']}.",
             ];
         }
+
         return [
             'success' => true,
-            'message' => 'Provider property import is locked.'
+            'message' => 'Provider property import is locked.',
         ];
     }
+
     public function unlock(ProviderProperty $providerProperty): array
     {
-        if (!$this->entityService->unlockEntity($this->getUser(), $providerProperty->id, ProviderProperty::class)) {
+        if (! $this->entityService->unlockEntity($this->getUser(), $providerProperty->id, ProviderProperty::class)) {
             return [
                 'success' => false,
-                'message' => "Failed to lock provider property {$providerProperty->name}."
+                'message' => "Failed to lock provider property {$providerProperty->name}.",
             ];
         }
+
         return [
             'success' => true,
-            'message' => 'Provider property import is locked.'
+            'message' => 'Provider property import is locked.',
         ];
     }
 
-    private function saveProviderProperty(array $data, array $map, ?array $dest = null): array{
+    private function saveProviderProperty(array $data, array $map, ?array $dest = null): array
+    {
         $provider = $this->findProvider(ImportType::PROVIDER_PROPERTY, $data, $map, $dest);
-        if (!$provider['success']) {
+        if (! $provider['success']) {
             return $provider;
         }
         $provider = $provider['provider'];
 
         $property = $this->findProperty($provider, $data, $map);
-        if (!$property['success']) {
+        if (! $property['success']) {
             return $property;
         }
         $property = $property['property'];
 
-        if (!$this->providerService->createProviderProperty($provider, $property, array_merge($data, $data['pivot']))) {
+        if (! $this->providerService->createProviderProperty($provider, $property, array_merge($data, $data['pivot']))) {
             return [
                 'success' => false,
-                'message' => "Failed to create provider property: {$data['name']} for provider {$provider->name}."
+                'message' => "Failed to create provider property: {$data['name']} for provider {$provider->name}.",
             ];
         }
         $unlock = $this->unlock(
             $this->providerService->getProviderPropertyRepository()->getModel()
         );
-        if (!$unlock['success']) {
+        if (! $unlock['success']) {
             return $unlock;
         }
+
         return [
             'success' => true,
-            'message' => "Provider property: {$data['name']} for provider {$provider->name} imported successfully."
+            'message' => "Provider property: {$data['name']} for provider {$provider->name} imported successfully.",
         ];
     }
+
     private function findProperty(Provider $provider, array $data, array $map): array
     {
         if (empty($data['name'])) {
             return [
                 'success' => false,
-                'message' => "Provider property key name is required for provider {$provider->name} property: {$data['name']}."
+                'message' => "Provider property key name is required for provider {$provider->name} property: {$data['name']}.",
             ];
         }
-        if (empty($data['pivot']) || !is_array($data['pivot']) || !count($data['pivot'])) {
+        if (empty($data['pivot']) || ! is_array($data['pivot']) || ! count($data['pivot'])) {
             return [
                 'success' => false,
-                'message' => "Provider property pivot is required for provider {$provider->name} property: {$data['name']}."
+                'message' => "Provider property pivot is required for provider {$provider->name} property: {$data['name']}.",
             ];
         }
         $this->propertyImporterService->getPropertyService()->getPropertyRepository()->addWhere(
@@ -146,21 +150,22 @@ class ProviderPropertiesImporterService extends ImporterBase
             $data['name']
         );
         $property = $this->propertyImporterService->getPropertyService()->getPropertyRepository()->findOne();
-        if (!$property instanceof Model) {
+        if (! $property instanceof Model) {
             $property = $this->propertyImporterService->import(
                 ImportAction::OVERWRITE,
                 $data,
                 false,
                 $map
             );
-            if (!$property['success']) {
+            if (! $property['success']) {
                 return $property;
             }
             $property = $this->propertyImporterService->getPropertyService()->getPropertyRepository()->getModel();
         }
+
         return [
             'success' => true,
-            'property' => $property
+            'property' => $property,
         ];
     }
 
@@ -172,12 +177,13 @@ class ProviderPropertiesImporterService extends ImporterBase
             Log::channel(IExportTypeService::LOGGING_NAME)->error(
                 $e->getMessage(),
                 [
-                    'data' => $data
+                    'data' => $data,
                 ]
             );
+
             return [
                 'success' => false,
-                'message' => $e->getMessage()
+                'message' => $e->getMessage(),
             ];
         }
     }
@@ -190,12 +196,13 @@ class ProviderPropertiesImporterService extends ImporterBase
             Log::channel(IExportTypeService::LOGGING_NAME)->error(
                 $e->getMessage(),
                 [
-                    'data' => $data
+                    'data' => $data,
                 ]
             );
+
             return [
                 'success' => false,
-                'message' => $e->getMessage()
+                'message' => $e->getMessage(),
             ];
         }
     }
@@ -210,7 +217,7 @@ class ProviderPropertiesImporterService extends ImporterBase
         if (empty($sr['value']) && empty($sr['array_value'])) {
             $this->addError(
                 'import_type_validation',
-                "Service Request name is required."
+                'Service Request name is required.'
             );
         }
     }
@@ -221,13 +228,14 @@ class ProviderPropertiesImporterService extends ImporterBase
             'root' => true,
             'import_type' => $this->getConfigItem(ImportConfig::NAME),
             'label' => $this->getConfigItem(ImportConfig::LABEL),
-            'children' => $this->parseEntityBatch($data)
+            'children' => $this->parseEntityBatch($data),
         ];
     }
 
     public function parseEntity(array $entity): array
     {
         $entity['import_type'] = $this->getConfigItem(ImportConfig::NAME);
+
         return $entity;
     }
 
@@ -248,20 +256,22 @@ class ProviderPropertiesImporterService extends ImporterBase
         return [];
     }
 
-    public function deepFind(ImportType $importType, array $data, array $conditions, ?string $operation = 'AND'): array|null {
+    public function deepFind(ImportType $importType, array $data, array $conditions, ?string $operation = 'AND'): ?array
+    {
         return UtilHelpers::deepFindInNestedEntity(
             data: $data,
             conditions: $conditions,
             childrenKeys: ['properties', 'provider_rate_limit'],
             itemToMatchHandler: function ($item) use ($importType) {
                 return match ($importType) {
-                    ImportType::PROVIDER_PROPERTY => (!empty($item['properties']))? $item['properties'] : [],
+                    ImportType::PROVIDER_PROPERTY => (! empty($item['properties'])) ? $item['properties'] : [],
                     default => [],
                 };
             },
             operation: $operation
         );
     }
+
     public function getExportTypeData($item): array|bool
     {
         return [];

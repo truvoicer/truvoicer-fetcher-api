@@ -7,12 +7,12 @@ use App\Http\Requests\Admin\Tools\Ai\Import\Prompt\AiImportPromptStoreRequest;
 use App\Http\Requests\Admin\Tools\Ai\Import\Prompt\AiImportPromptUpdateRequest;
 use App\Http\Resources\AiImportPromptCollection;
 use App\Http\Resources\AiImportPromptResource;
-use App\Models\AiImportPrompt;
 use App\Repositories\AiImportPromptRepository;
 use App\Services\Tools\Ai\Import\Prompt\AiImportPromptService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
+use Truvoicer\TfDbReadCore\Models\AiImportPrompt;
 
 class AiImportPromptController extends Controller
 {
@@ -20,7 +20,7 @@ class AiImportPromptController extends Controller
         private AiImportPromptService $aiImportPromptService,
         private AiImportPromptRepository $aiImportPromptRepository
     ) {
-        return parent::__construct();
+        parent::__construct();
     }
 
     public function index(Request $request): AiImportPromptCollection
@@ -42,21 +42,23 @@ class AiImportPromptController extends Controller
     public function store(AiImportPromptStoreRequest $request): AiImportPromptResource|JsonResponse
     {
         if (
-            !$this->aiImportPromptService->setUser($request->user())
+            ! $this->aiImportPromptService->setUser($request->user())
                 ->createAiImportPrompt($request->validated())
         ) {
             return $this->sendErrorResponse(
-                "Error storing ai import prompt.",
+                'Error storing ai import prompt.',
             );
         }
+
         return $this->sendSuccessResponse(
-            "Successfully updated ai import prompt.",
+            'Successfully updated ai import prompt.',
         );
     }
+
     public function update(AiImportPrompt $aiImportPrompt, AiImportPromptUpdateRequest $request): AiImportPromptResource|JsonResponse
     {
         if (
-            !$this->aiImportPromptService
+            ! $this->aiImportPromptService
                 ->setUser($request->user())
                 ->updateAiImportPrompt(
                     $aiImportPrompt,
@@ -64,11 +66,12 @@ class AiImportPromptController extends Controller
                 )
         ) {
             return $this->sendErrorResponse(
-                "Error updating ai import prompt.",
+                'Error updating ai import prompt.',
             );
         }
+
         return $this->sendSuccessResponse(
-            "Successfully updated ai import prompt.",
+            'Successfully updated ai import prompt.',
         );
     }
 
@@ -76,13 +79,14 @@ class AiImportPromptController extends Controller
     {
         $aiImportPrompt = $this->aiImportPromptService->setUser(request()->user())
             ->deleteAiImportPrompt($aiImportPrompt);
-        if (!$aiImportPrompt) {
+        if (! $aiImportPrompt) {
             return $this->sendErrorResponse(
-                "Error deleting ai import prompt.",
+                'Error deleting ai import prompt.',
             );
         }
+
         return $this->sendSuccessResponse(
-            "Successfully deleted ai import prompt.",
+            'Successfully deleted ai import prompt.',
         );
     }
 
@@ -96,16 +100,16 @@ class AiImportPromptController extends Controller
 
         $aiImportPrompt = $this->aiImportPromptService->setUser(request()->user())
             ->deleteBulkAiImportPrompts(
-                (!empty($validated['ids']) && is_array($validated['ids'])) ? $validated['ids'] : []
+                (! empty($validated['ids']) && is_array($validated['ids'])) ? $validated['ids'] : []
             );
-        if (!$aiImportPrompt) {
+        if (! $aiImportPrompt) {
             return $this->sendErrorResponse(
-                "Error deleting ai import prompts.",
+                'Error deleting ai import prompts.',
             );
         }
+
         return $this->sendSuccessResponse(
-            "Successfully deleted ai import prompts.",
+            'Successfully deleted ai import prompts.',
         );
     }
-
 }

@@ -27,8 +27,8 @@ class UpdateSrResponseKeySearchPriorityOrderRequest extends FormRequest
                 'required',
                 'array',
                 'min:1',
-                Rule::exists('sr_response_keys', 'id')
-            ]
+                Rule::exists('sr_response_keys', 'id'),
+            ],
         ];
     }
 }

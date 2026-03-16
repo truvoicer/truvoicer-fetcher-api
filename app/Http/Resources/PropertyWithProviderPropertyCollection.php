@@ -3,7 +3,6 @@
 namespace App\Http\Resources;
 
 use Illuminate\Http\Request;
-use Illuminate\Http\Resources\Json\ResourceCollection;
 use Truvoicer\TfDbReadCore\Http\Resources\BaseCollection;
 
 class PropertyWithProviderPropertyCollection extends BaseCollection
@@ -13,8 +12,8 @@ class PropertyWithProviderPropertyCollection extends BaseCollection
      *
      * @return array<int|string, mixed>
      */
-
     public static $wrap = 'provider_properties';
+
     public function toArray(Request $request): array
     {
         return parent::toArray($request);

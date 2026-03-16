@@ -4,9 +4,10 @@ namespace App\Services\ApiServices\ServiceRequests\ResponseKeys\Populate;
 
 trait PopulateTrait
 {
-
     protected array $reservedKeys = [];
+
     protected ?array $data = [];
+
     protected bool $overwrite = false;
 
     public function setReservedKeys(array $reservedKeys): void

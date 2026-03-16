@@ -5,53 +5,40 @@ namespace App\Http\Controllers\Api\Backend\Provider;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Property\DeleteBatchPropertyRequest;
 use App\Http\Requests\Provider\Property\SaveProviderPropertyRequest;
-use App\Http\Resources\PropertyCollection;
 use App\Http\Resources\PropertyResource;
 use App\Http\Resources\PropertyWithProviderPropertyCollection;
 use App\Http\Resources\PropertyWithProviderPropertyResource;
+use Illuminate\Http\Request;
 use Truvoicer\TfDbReadCore\Models\Property;
 use Truvoicer\TfDbReadCore\Models\Provider;
-use Truvoicer\TfDbReadCore\Repositories\ProviderRepository;
-use Truvoicer\TfDbReadCore\Services\Auth\AuthService;
-use Truvoicer\TfDbReadCore\Services\Permission\AccessControlService;
 use Truvoicer\TfDbReadCore\Services\Permission\PermissionService;
-use Truvoicer\TfDbReadCore\Services\Property\PropertyService;
-use App\Services\Tools\HttpRequestService;
 use Truvoicer\TfDbReadCore\Services\Provider\ProviderService;
-use App\Services\Tools\SerializerService;
-use Illuminate\Http\Request;
 
 /**
  * Contains api endpoint functions for provider related tasks
  *
  * Require ROLE_ADMIN for *every* controller method in this class.
- *
  */
 class ProviderPropertyController extends Controller
 {
-
-
     /**
      * ProviderController constructor.
-     * @param ProviderService $providerService
      */
     public function __construct(
-        private ProviderService      $providerService
-    )
-    {
+        private ProviderService $providerService
+    ) {
         parent::__construct();
     }
 
     /**
      * Gets a list of related provider property objects based on the get request
      * query parameters
-     *
      */
     public function getProviderPropertyList(Provider $provider, Request $request): \Illuminate\Http\JsonResponse
     {
         $this->setAccessControlUser($request->user());
         if (
-            !$this->accessControlService->checkPermissionsForEntity(
+            ! $this->accessControlService->checkPermissionsForEntity(
                 $provider,
                 [
                     PermissionService::PERMISSION_ADMIN,
@@ -59,16 +46,17 @@ class ProviderPropertyController extends Controller
                 ],
             )
         ) {
-            return $this->sendErrorResponse("Access control: operation not permitted");
+            return $this->sendErrorResponse('Access control: operation not permitted');
         }
-        $this->providerService->getProviderPropertyRepository()->setSortField($request->get('sort', "name"));
-        $this->providerService->getProviderPropertyRepository()->setOrderDir($request->get('order', "asc"));
-        $this->providerService->getProviderPropertyRepository()->setLimit((int)$request->get('count', -1));
+        $this->providerService->getProviderPropertyRepository()->setSortField($request->get('sort', 'name'));
+        $this->providerService->getProviderPropertyRepository()->setOrderDir($request->get('order', 'asc'));
+        $this->providerService->getProviderPropertyRepository()->setLimit((int) $request->get('count', -1));
         $getProviderProps = $this->providerService->getProviderProperties(
             $provider
         );
+
         return $this->sendSuccessResponse(
-            "success",
+            'success',
             new PropertyWithProviderPropertyCollection($getProviderProps)
         );
     }
@@ -76,17 +64,15 @@ class ProviderPropertyController extends Controller
     /**
      * Gets a single related provider property based on
      * the provider id and property id in the url
-     *
      */
     public function getProviderProperty(
         Provider $provider,
         Property $property,
-        Request  $request
-    ): \Illuminate\Http\JsonResponse
-    {
+        Request $request
+    ): \Illuminate\Http\JsonResponse {
         $this->setAccessControlUser($request->user());
         if (
-            !$this->accessControlService->checkPermissionsForEntity(
+            ! $this->accessControlService->checkPermissionsForEntity(
                 $provider,
                 [
                     PermissionService::PERMISSION_ADMIN,
@@ -94,10 +80,11 @@ class ProviderPropertyController extends Controller
                 ],
             )
         ) {
-            return $this->sendErrorResponse("Access control: operation not permitted");
+            return $this->sendErrorResponse('Access control: operation not permitted');
         }
+
         return $this->sendSuccessResponse(
-            "success",
+            'success',
             new PropertyWithProviderPropertyResource(
                 $this->providerService->getProviderProperty($provider, $property)
             )
@@ -114,7 +101,7 @@ class ProviderPropertyController extends Controller
     {
         $this->setAccessControlUser($request->user());
         if (
-            !$this->accessControlService->checkPermissionsForEntity(
+            ! $this->accessControlService->checkPermissionsForEntity(
                 $provider,
                 [
                     PermissionService::PERMISSION_ADMIN,
@@ -123,7 +110,7 @@ class ProviderPropertyController extends Controller
                 ],
             )
         ) {
-            return $this->sendErrorResponse("Access control: operation not permitted");
+            return $this->sendErrorResponse('Access control: operation not permitted');
         }
 
         $create = $this->providerService->createProviderProperty(
@@ -132,11 +119,12 @@ class ProviderPropertyController extends Controller
             $property,
             $request->validated()
         );
-        if (!$create) {
-            return $this->sendErrorResponse("Error adding provider property.");
+        if (! $create) {
+            return $this->sendErrorResponse('Error adding provider property.');
         }
+
         return $this->sendSuccessResponse(
-            "Successfully added provider property.",
+            'Successfully added provider property.',
             new PropertyResource(
                 $this->providerService->getProviderProperty($provider, $property)
             )
@@ -148,17 +136,15 @@ class ProviderPropertyController extends Controller
      * Required data request data fields:
      * - item_id (property_id)
      * - extra->provider_id
-     *
      */
     public function deleteProviderProperty(
         Provider $provider,
         Property $property,
-        Request  $request
-    ): \Illuminate\Http\JsonResponse
-    {
+        Request $request
+    ): \Illuminate\Http\JsonResponse {
         $this->setAccessControlUser($request->user());
         if (
-            !$this->accessControlService->checkPermissionsForEntity(
+            ! $this->accessControlService->checkPermissionsForEntity(
                 $provider,
                 [
                     PermissionService::PERMISSION_ADMIN,
@@ -166,27 +152,28 @@ class ProviderPropertyController extends Controller
                 ],
             )
         ) {
-            return $this->sendErrorResponse("Access control: operation not permitted");
+            return $this->sendErrorResponse('Access control: operation not permitted');
         }
 
         $delete = $this->providerService->deleteProviderProperty($provider, $property);
-        if (!$delete) {
+        if (! $delete) {
             return $this->sendErrorResponse(
-                "Error deleting provider property value"
+                'Error deleting provider property value'
             );
         }
+
         return $this->sendSuccessResponse(
-            "Provider property value deleted."
+            'Provider property value deleted.'
         );
     }
+
     public function deleteBatch(
         Provider $provider,
         DeleteBatchPropertyRequest $request
-    ): \Illuminate\Http\JsonResponse
-    {
+    ): \Illuminate\Http\JsonResponse {
         $this->setAccessControlUser($request->user());
         if (
-            !$this->accessControlService->checkPermissionsForEntity(
+            ! $this->accessControlService->checkPermissionsForEntity(
                 $provider,
                 [
                     PermissionService::PERMISSION_ADMIN,
@@ -194,16 +181,17 @@ class ProviderPropertyController extends Controller
                 ],
             )
         ) {
-            return $this->sendErrorResponse("Access denied");
+            return $this->sendErrorResponse('Access denied');
         }
 
-        if (!$this->providerService->deleteBatchProviderProperty($request->get('ids'))) {
+        if (! $this->providerService->deleteBatchProviderProperty($request->get('ids'))) {
             return $this->sendErrorResponse(
-                "Error deleting provider properties",
+                'Error deleting provider properties',
             );
         }
+
         return $this->sendSuccessResponse(
-            "Provider properties deleted.",
+            'Provider properties deleted.',
         );
     }
 }

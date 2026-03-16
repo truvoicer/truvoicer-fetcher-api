@@ -2,22 +2,7 @@
 
 namespace Tests\Feature\Frontend\Operations;
 
-use Truvoicer\TfDbReadCore\Enums\Api\ApiListKey;
-use Truvoicer\TfDbReadCore\Enums\Api\ApiMethod;
-use Truvoicer\TfDbReadCore\Enums\Api\ApiResponseFormat;
 use App\Enums\Api\ApiType;
-use Truvoicer\TfDbReadCore\Enums\Property\PropertyType;
-use Truvoicer\TfDbReadCore\Enums\Sr\SrType;
-use Truvoicer\TfDbReadCore\Events\ProcessSrOperationDataEvent;
-use Truvoicer\TfDbReadCore\Jobs\ProcessSrOperationData;
-use Truvoicer\TfDbReadCore\Models\Category;
-use Truvoicer\TfDbReadCore\Models\Property;
-use Truvoicer\TfDbReadCore\Models\Provider;
-use Truvoicer\TfDbReadCore\Models\S;
-use Truvoicer\TfDbReadCore\Models\Sr;
-use Truvoicer\TfDbReadCore\Models\User;
-use Truvoicer\TfDbReadCore\Repositories\MongoDB\MongoDBRepository;
-use Truvoicer\TfDbReadCore\Services\ApiManager\Operations\DataHandler\ApiRequestMongoDbHandler;
 use Database\Seeders\PropertySeeder;
 use Database\Seeders\RoleSeeder;
 use Database\Seeders\UserSeeder;
@@ -31,19 +16,35 @@ use Mockery\MockInterface;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\Feature\Frontend\Operations\Data\ApiDirect\DeepSeekData;
 use Tests\Feature\Frontend\Operations\Data\ApiDirect\DefaultGetData;
+use Tests\Feature\Frontend\Operations\Data\ApiDirect\DefaultPostData;
 use Tests\Feature\Frontend\Operations\Data\ApiDirect\GeminiData;
 use Tests\Feature\Frontend\Operations\Data\ApiDirect\GrokData;
 use Tests\Feature\Frontend\Operations\Data\ApiDirect\OpenAiData;
-use Tests\Feature\Frontend\Operations\Data\ApiDirect\DefaultPostData;
 use Tests\Feature\Frontend\Operations\Data\Helpers\OperationsDbHelpers;
 use Tests\TestCase;
+use Truvoicer\TfDbReadCore\Enums\Api\ApiListKey;
+use Truvoicer\TfDbReadCore\Enums\Api\ApiMethod;
+use Truvoicer\TfDbReadCore\Enums\Api\ApiResponseFormat;
+use Truvoicer\TfDbReadCore\Enums\Property\PropertyType;
+use Truvoicer\TfDbReadCore\Enums\Sr\SrType;
+use Truvoicer\TfDbReadCore\Events\ProcessSrOperationDataEvent;
+use Truvoicer\TfDbReadCore\Jobs\ProcessSrOperationData;
+use Truvoicer\TfDbReadCore\Models\Category;
+use Truvoicer\TfDbReadCore\Models\Property;
+use Truvoicer\TfDbReadCore\Models\Provider;
+use Truvoicer\TfDbReadCore\Models\S;
+use Truvoicer\TfDbReadCore\Models\Sr;
+use Truvoicer\TfDbReadCore\Models\User;
+use Truvoicer\TfDbReadCore\Repositories\MongoDB\MongoDBRepository;
+use Truvoicer\TfDbReadCore\Services\ApiManager\Operations\DataHandler\ApiRequestMongoDbHandler;
 
 class OperationsControllerTest extends TestCase
 {
     private User $superUser;
-    private MongoDBRepository $mongoDbRepository;
-    private OperationsDbHelpers $operationsDbHelpers;
 
+    private MongoDBRepository $mongoDbRepository;
+
+    private OperationsDbHelpers $operationsDbHelpers;
 
     protected function setUp(): void
     {
@@ -98,7 +99,7 @@ class OperationsControllerTest extends TestCase
     ): void {
 
         $this->seed([
-            PropertySeeder::class
+            PropertySeeder::class,
         ]);
 
         Sanctum::actingAs(
@@ -115,9 +116,9 @@ class OperationsControllerTest extends TestCase
                     'category_id' => $category->id,
                     'type' => SrType::LIST->value,
                     'default_sr' => true,
-                    ApiListKey::LIST_KEY->value => (!empty($srData[ApiListKey::LIST_KEY->value]))
+                    ApiListKey::LIST_KEY->value => (! empty($srData[ApiListKey::LIST_KEY->value]))
                         ? $srData[ApiListKey::LIST_KEY->value]
-                        : null
+                        : null,
                 ])
             )->create();
 
@@ -153,7 +154,7 @@ class OperationsControllerTest extends TestCase
 
                     $sResponseKey = $s->sResponseKeys()->create([
                         's_id' => $s->id,
-                        'name' => $srResponseKey['name']
+                        'name' => $srResponseKey['name'],
                     ]);
 
                     $srResponseKeyData = [
@@ -217,14 +218,14 @@ class OperationsControllerTest extends TestCase
         }
 
         $postData = [
-            "page_id" => 1,
-            "api_fetch_type" => "api_direct",
-            "date_key" => "created_at",
-            "page_number" => 1,
-            "page_size" => 10,
-            "service" => $s->name,
-            "sort_by" => "created_at",
-            "sort_order" => "desc",
+            'page_id' => 1,
+            'api_fetch_type' => 'api_direct',
+            'date_key' => 'created_at',
+            'page_number' => 1,
+            'page_size' => 10,
+            'service' => $s->name,
+            'sort_by' => 'created_at',
+            'sort_order' => 'desc',
         ];
 
         Http::fake([
@@ -242,7 +243,7 @@ class OperationsControllerTest extends TestCase
         if (array_key_exists('status', $afterResponseData)) {
             $response->assertStatus($afterResponseData['status']);
         }
-        if (!empty($afterResponseData['exception'])) {
+        if (! empty($afterResponseData['exception'])) {
 
             // Retrieve the exception from the response object
             $exception = $response->exception;
@@ -256,34 +257,34 @@ class OperationsControllerTest extends TestCase
                 $exception->getMessage()
             );
         }
-        if (!empty($responseData)) {
+        if (! empty($responseData)) {
 
             $response->assertJson([
                 'results' => array_map(function (array $item) use ($provider, $category) {
                     $sr = $provider->srs->first();
                     $s = $sr->s;
+
                     return array_merge(
                         $item,
                         [
-                            "provider" => $provider->name,
-                            "requestCategory" => $category->name,
-                            "serviceRequest" => $sr->name,
-                            "service" =>  [
-                                "id" => $s->id,
-                                "name" => $s->name
-                            ]
+                            'provider' => $provider->name,
+                            'requestCategory' => $category->name,
+                            'serviceRequest' => $sr->name,
+                            'service' => [
+                                'id' => $s->id,
+                                'name' => $s->name,
+                            ],
                         ]
                     );
-                }, $responseData)
+                }, $responseData),
             ]);
         }
     }
 
-
     public function test_database_list_search_operation(): void
     {
         $this->seed([
-            PropertySeeder::class
+            PropertySeeder::class,
         ]);
 
         Sanctum::actingAs(
@@ -300,7 +301,7 @@ class OperationsControllerTest extends TestCase
                     'category_id' => $category->id,
                     'type' => SrType::LIST->value,
                     'default_sr' => true,
-                    ApiListKey::LIST_KEY->value => 'results'
+                    ApiListKey::LIST_KEY->value => 'results',
                 ])
             )
             ->create();
@@ -334,29 +335,29 @@ class OperationsControllerTest extends TestCase
         $properties = [
             [
                 'name' => PropertyType::ACCESS_TOKEN->value,
-                'value' => '12345'
+                'value' => '12345',
             ],
             [
                 'name' => PropertyType::API_TYPE->value,
-                'value' => ApiType::DEFAULT->value
+                'value' => ApiType::DEFAULT->value,
             ],
             [
                 'name' => PropertyType::BASE_URL->value,
-                'value' => 'http://aurl.com/v1'
+                'value' => 'http://aurl.com/v1',
             ],
             [
                 'name' => PropertyType::RESPONSE_FORMAT->value,
-                'value' => ApiResponseFormat::JSON->value
+                'value' => ApiResponseFormat::JSON->value,
             ],
             [
                 'name' => PropertyType::METHOD->value,
-                'value' => ApiMethod::GET->value
+                'value' => ApiMethod::GET->value,
             ],
         ];
         $srConfigs = [
             [
                 'name' => PropertyType::ENDPOINT->value,
-                'value' => '/test-endpoint-1'
+                'value' => '/test-endpoint-1',
             ],
             [
                 'name' => PropertyType::QUERY->value,
@@ -370,17 +371,17 @@ class OperationsControllerTest extends TestCase
             [
                 'name' => 'test-name',
                 'title' => 'Test Title',
-                'description' => 'This is a test description for test title'
+                'description' => 'This is a test description for test title',
             ],
             [
                 'name' => 'test-name-2',
                 'title' => 'Test Title 2',
-                'description' => 'This is a test description for test title 2'
+                'description' => 'This is a test description for test title 2',
             ],
             [
                 'name' => 'test-name-3',
                 'title' => 'Test Title 3',
-                'description' => 'This is a test description for test title 3'
+                'description' => 'This is a test description for test title 3',
             ],
         ];
 
@@ -396,23 +397,22 @@ class OperationsControllerTest extends TestCase
         );
 
         $requestResponse = [
-            'results' => $responseData
+            'results' => $responseData,
         ];
 
         Http::fake([
             '*' => Http::response($requestResponse, 200),
         ]);
 
-
         $postData = [
-            "page_id" => 1,
-            "api_fetch_type" => "database",
-            "date_key" => "created_at",
-            "page_number" => 1,
-            "page_size" => 10,
-            "service" => $s->name,
-            "sort_by" => "created_at",
-            "sort_order" => "desc",
+            'page_id' => 1,
+            'api_fetch_type' => 'database',
+            'date_key' => 'created_at',
+            'page_number' => 1,
+            'page_size' => 10,
+            'service' => $s->name,
+            'sort_by' => 'created_at',
+            'sort_order' => 'desc',
         ];
 
         $response = $this->post(
@@ -427,13 +427,16 @@ class OperationsControllerTest extends TestCase
         // For arrays with different key order
         $normalizedExpected = array_map(function ($item) {
             ksort($item);
+
             return $item;
         }, $responseData);
 
         $normalizedActual = array_map(function ($item) use ($responseData) {
             ksort($item);
+
             return array_filter($item, function ($key) use ($responseData) {
                 $responseDataItemKeys = array_keys(array_first($responseData));
+
                 return in_array($key, $responseDataItemKeys);
             }, ARRAY_FILTER_USE_KEY);
         }, $resultData);
@@ -444,16 +447,15 @@ class OperationsControllerTest extends TestCase
     public function test_database_list_search_operation_api_direct_fallback(): void
     {
         $this->seed([
-            PropertySeeder::class
+            PropertySeeder::class,
         ]);
 
-        list(
+        [
             $normalizedExpected,
             $normalizedActual,
             $responseData
-        ) = $this->sharedPreparation();
+        ] = $this->sharedPreparation();
     }
-
 
     public function test_list_search_operation_can_dispatch_save_data_event(): void
     {
@@ -463,14 +465,14 @@ class OperationsControllerTest extends TestCase
         ]);
 
         $this->seed([
-            PropertySeeder::class
+            PropertySeeder::class,
         ]);
 
-        list(
+        [
             $normalizedExpected,
             $normalizedActual,
             $responseData
-        ) = $this->sharedPreparation();
+        ] = $this->sharedPreparation();
 
         Event::assertDispatched(ProcessSrOperationDataEvent::class, function (ProcessSrOperationDataEvent $event) use ($normalizedExpected, $responseData) {
             $this->assertEquals($this->superUser->id, $event->userId);
@@ -478,13 +480,16 @@ class OperationsControllerTest extends TestCase
 
             $normalizedActual = array_map(function ($item) use ($responseData) {
                 ksort($item);
+
                 return array_filter($item, function ($key) use ($responseData) {
                     $responseDataItemKeys = array_keys(array_first($responseData));
+
                     return in_array($key, $responseDataItemKeys);
                 }, ARRAY_FILTER_USE_KEY);
             }, $event->apiResponse->getRequestData());
 
             $this->assertEqualsCanonicalizing($normalizedExpected, $normalizedActual);
+
             return true;
         });
     }
@@ -497,14 +502,14 @@ class OperationsControllerTest extends TestCase
         ]);
 
         $this->seed([
-            PropertySeeder::class
+            PropertySeeder::class,
         ]);
 
-        list(
+        [
             $normalizedExpected,
             $normalizedActual,
             $responseData
-        ) = $this->sharedPreparation();
+        ] = $this->sharedPreparation();
 
         Queue::assertPushed(ProcessSrOperationData::class, function (ProcessSrOperationData $job) use ($normalizedExpected, $responseData) {
 
@@ -512,13 +517,16 @@ class OperationsControllerTest extends TestCase
             $this->assertEquals(Sr::first()->id, $job->apiResponse->serviceRequest['id']);
             $normalizedActual = array_map(function ($item) use ($responseData) {
                 ksort($item);
+
                 return array_filter($item, function ($key) use ($responseData) {
                     $responseDataItemKeys = array_keys(array_first($responseData));
+
                     return in_array($key, $responseDataItemKeys);
                 }, ARRAY_FILTER_USE_KEY);
             }, $job->apiResponse->getRequestData());
 
             $this->assertEqualsCanonicalizing($normalizedExpected, $normalizedActual);
+
             return true;
         });
     }
@@ -539,7 +547,7 @@ class OperationsControllerTest extends TestCase
                     'category_id' => $category->id,
                     'type' => SrType::LIST->value,
                     'default_sr' => true,
-                    ApiListKey::LIST_KEY->value => 'results'
+                    ApiListKey::LIST_KEY->value => 'results',
                 ])
             )
             ->create();
@@ -573,29 +581,29 @@ class OperationsControllerTest extends TestCase
         $properties = [
             [
                 'name' => PropertyType::ACCESS_TOKEN->value,
-                'value' => '12345'
+                'value' => '12345',
             ],
             [
                 'name' => PropertyType::API_TYPE->value,
-                'value' => ApiType::DEFAULT->value
+                'value' => ApiType::DEFAULT->value,
             ],
             [
                 'name' => PropertyType::BASE_URL->value,
-                'value' => 'http://aurl.com/v1'
+                'value' => 'http://aurl.com/v1',
             ],
             [
                 'name' => PropertyType::RESPONSE_FORMAT->value,
-                'value' => ApiResponseFormat::JSON->value
+                'value' => ApiResponseFormat::JSON->value,
             ],
             [
                 'name' => PropertyType::METHOD->value,
-                'value' => ApiMethod::GET->value
+                'value' => ApiMethod::GET->value,
             ],
         ];
         $srConfigs = [
             [
                 'name' => PropertyType::ENDPOINT->value,
-                'value' => '/test-endpoint-1'
+                'value' => '/test-endpoint-1',
             ],
             [
                 'name' => PropertyType::QUERY->value,
@@ -610,19 +618,19 @@ class OperationsControllerTest extends TestCase
                 'id' => 1,
                 'name' => 'test-name',
                 'title' => 'Test Title',
-                'description' => 'This is a test description for test title'
+                'description' => 'This is a test description for test title',
             ],
             [
                 'id' => 2,
                 'name' => 'test-name-2',
                 'title' => 'Test Title 2',
-                'description' => 'This is a test description for test title 2'
+                'description' => 'This is a test description for test title 2',
             ],
             [
                 'id' => 3,
                 'name' => 'test-name-3',
                 'title' => 'Test Title 3',
-                'description' => 'This is a test description for test title 3'
+                'description' => 'This is a test description for test title 3',
             ],
         ];
 
@@ -650,7 +658,7 @@ class OperationsControllerTest extends TestCase
         );
 
         $requestResponse = [
-            'results' => $responseData
+            'results' => $responseData,
         ];
 
         Http::fake([
@@ -658,14 +666,14 @@ class OperationsControllerTest extends TestCase
         ]);
 
         $postData = [
-            "page_id" => 1,
-            "api_fetch_type" => "api_direct",
-            "date_key" => "created_at",
-            "page_number" => 1,
-            "page_size" => 10,
-            "service" => $s->name,
-            "sort_by" => "created_at",
-            "sort_order" => "desc",
+            'page_id' => 1,
+            'api_fetch_type' => 'api_direct',
+            'date_key' => 'created_at',
+            'page_number' => 1,
+            'page_size' => 10,
+            'service' => $s->name,
+            'sort_by' => 'created_at',
+            'sort_order' => 'desc',
         ];
 
         $response = $this->post(
@@ -675,19 +683,21 @@ class OperationsControllerTest extends TestCase
             ->assertStatus(200)
             ->assertJsonCount(3, 'results');
 
-
         $resultData = json_decode($response->baseResponse->getContent(), true)['results'];
 
         // For arrays with different key order
         $normalizedExpected = array_map(function ($item) {
             ksort($item);
+
             return $item;
         }, $responseData);
 
         $normalizedActual = array_map(function ($item) use ($responseData) {
             ksort($item);
+
             return array_filter($item, function ($key) use ($responseData) {
                 $responseDataItemKeys = array_keys(array_first($responseData));
+
                 return in_array($key, $responseDataItemKeys);
             }, ARRAY_FILTER_USE_KEY);
         }, $resultData);
@@ -697,7 +707,7 @@ class OperationsControllerTest extends TestCase
         return [
             $normalizedExpected,
             $normalizedActual,
-            $responseData
+            $responseData,
         ];
     }
 }

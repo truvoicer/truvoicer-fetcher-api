@@ -2,10 +2,9 @@
 
 namespace App\Http\Requests\Provider\RateLimit;
 
-use Truvoicer\TfDbReadCore\Models\ProviderRateLimit;
-use Truvoicer\TfDbReadCore\Models\SrRateLimit;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
+use Truvoicer\TfDbReadCore\Models\ProviderRateLimit;
 
 class DeleteBatchProviderRateLimitRequest extends FormRequest
 {
@@ -29,7 +28,7 @@ class DeleteBatchProviderRateLimitRequest extends FormRequest
                 return [
                     Rule::exists(ProviderRateLimit::class, 'id'),
                 ];
-            })
+            }),
         ];
     }
 }

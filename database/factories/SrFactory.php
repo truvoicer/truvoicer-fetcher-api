@@ -2,15 +2,15 @@
 
 namespace Database\Factories;
 
-use Truvoicer\TfDbReadCore\Enums\Api\ApiListKey;
-use Truvoicer\TfDbReadCore\Enums\FormatOptions;
 use App\Enums\Sr\PaginationType;
-use Truvoicer\TfDbReadCore\Enums\Sr\SrType;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Str;
+use Truvoicer\TfDbReadCore\Enums\Api\ApiListKey;
+use Truvoicer\TfDbReadCore\Enums\FormatOptions;
+use Truvoicer\TfDbReadCore\Enums\Sr\SrType;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Sr>
+ * @extends \Illuminate\Database\Eloquent\Factories\Factory<\Truvoicer\TfDbReadCore\Models\Sr>
  */
 class SrFactory extends Factory
 {
@@ -160,6 +160,7 @@ class SrFactory extends Factory
         // CSS class selector
         'css_class' => '/^-?[_a-zA-Z]+[_a-zA-Z0-9-]*$/',
     ];
+
     /**
      * Define the model's default state.
      *
@@ -168,6 +169,7 @@ class SrFactory extends Factory
     public function definition(): array
     {
         $label = $this->faker->word;
+
         return [
             ApiListKey::LIST_KEY->value => $this->faker->word,
             ApiListKey::LIST_ITEM_REPEATER_KEY->value => $this->faker->word,

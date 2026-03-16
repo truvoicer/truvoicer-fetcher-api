@@ -11,5 +11,4 @@ class UserSettingRepository extends BaseRepository
     {
         parent::__construct(UserSetting::class);
     }
-
 }

@@ -3,38 +3,44 @@
 namespace App\Services\User;
 
 use Truvoicer\TfDbReadCore\Models\UserSetting;
-use App\Repositories\UserSettingRepository;
 use Truvoicer\TfDbReadCore\Services\BaseService;
 
 class UserSettingService extends BaseService
 {
 
-    public function __construct(
-        private UserSettingRepository $userSettingRepository
-    )
+    public function findUserSettings()
     {
-        parent::__construct();
-    }
-
-    public function findUserSettings() {
         $findSettings = $this->user->settings()->first();
-        if (!$findSettings) {
+        if (! $findSettings) {
             return $this->initialiseUserSettings();
         }
+
         return $findSettings;
     }
 
-    public function initialiseUserSettings(): UserSetting {
+    /**
+     * Initialize user settings for the current user.
+     *
+     * @return \Truvoicer\TfDbReadCore\Models\UserSetting
+     */
+    public function initialiseUserSettings(): UserSetting
+    {
         return $this->user->settings()->create();
     }
 
-    public function updateUserSettings(array $data): UserSetting {
+    /**
+     * Update or create user settings for the current user.
+     *
+     * @param array $data The settings data to update/create
+     * @return \Truvoicer\TfDbReadCore\Models\UserSetting
+     */
+    public function updateUserSettings(array $data): UserSetting
+    {
         return $this->user->settings()->updateOrCreate(
             [
-                'user_id' => $this->user->id
+                'user_id' => $this->user->id,
             ],
             $data
         );
     }
-
 }

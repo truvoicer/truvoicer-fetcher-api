@@ -17,8 +17,6 @@ class SrResponseKeyResource extends JsonResource
      *
      * @return array<string, mixed>
      */
-
-
     public function toArray(Request $request): array
     {
         $data = parent::toArray($request);
@@ -27,6 +25,7 @@ class SrResponseKeyResource extends JsonResource
             new SResponseKeyMinimalResource($this->sResponseKey)
         );
         $data['provider'] = new ProviderMinimalResource($this->provider);
+
         return $data;
     }
 }

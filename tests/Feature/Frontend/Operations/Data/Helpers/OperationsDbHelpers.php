@@ -2,20 +2,18 @@
 
 namespace Tests\Feature\Frontend\Operations\Data\Helpers;
 
-use Truvoicer\TfDbReadCore\Models\Category;
-use App\Models\Mongo\Entity;
 use App\Models\Mongo\EntityList;
+use Illuminate\Database\Eloquent\Factories\Sequence;
+use Illuminate\Support\Facades\DB;
+use Truvoicer\TfDbReadCore\Models\Category;
 use Truvoicer\TfDbReadCore\Models\Property;
 use Truvoicer\TfDbReadCore\Models\Provider;
 use Truvoicer\TfDbReadCore\Models\S;
 use Truvoicer\TfDbReadCore\Models\Sr;
 use Truvoicer\TfDbReadCore\Repositories\MongoDB\MongoDBRepository;
-use Illuminate\Database\Eloquent\Factories\Sequence;
-use Illuminate\Support\Facades\DB;
 
 class OperationsDbHelpers
 {
-
     private MongoDBRepository $mongoDbRepository;
 
     public function __construct()
@@ -29,7 +27,7 @@ class OperationsDbHelpers
             ->dropDatabase($databaseName);
     }
 
-    static public function instance()
+    public static function instance()
     {
         return app(self::class);
     }
@@ -98,10 +96,10 @@ class OperationsDbHelpers
                             $srResponseKey['name']
                         )
                         ->first();
-                    if (!$sResponseKey) {
+                    if (! $sResponseKey) {
                         $sResponseKey = $s->sResponseKeys()->create([
                             's_id' => $s->id,
-                            'name' => $srResponseKey['name']
+                            'name' => $srResponseKey['name'],
                         ]);
                     }
 
@@ -171,6 +169,7 @@ class OperationsDbHelpers
                                 ) {
                                     $extractItem = $responseData[$sequence->index];
                                     unset($extractItem['id']);
+
                                     return array_merge(
                                         $entityData,
                                         $extractItem

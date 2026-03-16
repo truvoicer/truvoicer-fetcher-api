@@ -3,7 +3,6 @@
 namespace App\Services\Tools\Ai\Assistant\Prompt;
 
 use App\Enums\Ai\AiClient;
-use InvalidArgumentException;
 use App\Http\Requests\Category\CreateCategoryRequest;
 use App\Http\Requests\Provider\CreateProviderRequest;
 use App\Http\Requests\Provider\Property\SaveProviderPropertyRequest;
@@ -13,6 +12,7 @@ use App\Http\Requests\Service\Request\CreateSrRequest;
 use App\Http\Requests\Service\Request\Parameter\CreateServiceRequestParameterRequest;
 use Exception;
 use Illuminate\Support\Facades\Log;
+use InvalidArgumentException;
 use RuntimeException;
 use Truvoicer\TfDbReadCore\Enums\Property\PropertyType;
 use Truvoicer\TfDbReadCore\Services\ApiManager\Client\ApiClientHandler;
@@ -24,12 +24,19 @@ class AiAssistantPrompt
     protected ?AiClient $aiClient = null;
 
     protected array $serviceRules = [];
+
     protected array $categoryRules = [];
+
     protected array $provider = [];
+
     protected array $properties = [];
+
     protected array $propertyValueRules = [];
+
     protected array $srRules = [];
+
     protected array $srConfigRules = [];
+
     protected array $srParameterRules = [];
 
     public function __construct()
@@ -212,16 +219,16 @@ class AiAssistantPrompt
     public function init()
     {
 
-        $this->serviceRules = $this->parseRules((new CreateSRequest())->rules());
-        $this->categoryRules = $this->parseRules((new CreateCategoryRequest())->rules());
-        $this->provider = $this->parseRules((new CreateProviderRequest())->rules());
+        $this->serviceRules = $this->parseRules((new CreateSRequest)->rules());
+        $this->categoryRules = $this->parseRules((new CreateCategoryRequest)->rules());
+        $this->provider = $this->parseRules((new CreateProviderRequest)->rules());
         $this->properties = array_map(function (PropertyType $propertyType) {
             return $propertyType->config();
         }, PropertyType::cases());
-        $this->propertyValueRules = $this->parseRules((new SaveProviderPropertyRequest())->rules());
-        $this->srRules = $this->parseRules((new CreateSrRequest())->rules());
-        $this->srConfigRules = $this->parseRules((new CreateServiceRequestConfigRequest())->rules());
-        $this->srParameterRules = $this->parseRules((new CreateServiceRequestParameterRequest())->rules());
+        $this->propertyValueRules = $this->parseRules((new SaveProviderPropertyRequest)->rules());
+        $this->srRules = $this->parseRules((new CreateSrRequest)->rules());
+        $this->srConfigRules = $this->parseRules((new CreateServiceRequestConfigRequest)->rules());
+        $this->srParameterRules = $this->parseRules((new CreateServiceRequestParameterRequest)->rules());
     }
 
     private function parseRules(array $rules)
@@ -230,6 +237,7 @@ class AiAssistantPrompt
             return is_string($rule);
         }, ARRAY_FILTER_USE_BOTH);
     }
+
     /**
      * Convert array to JSON with error handling
      */
@@ -238,7 +246,7 @@ class AiAssistantPrompt
         $json = json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
 
         if (json_last_error() !== JSON_ERROR_NONE) {
-            throw new InvalidArgumentException('Failed to encode data to JSON: ' . json_last_error_msg());
+            throw new InvalidArgumentException('Failed to encode data to JSON: '.json_last_error_msg());
         }
 
         return $json;
@@ -252,7 +260,7 @@ class AiAssistantPrompt
         $apiRequest = app(ApiRequest::class);
 
         $aiClientEnum = $this->aiClient;
-        if (!$aiClientEnum) {
+        if (! $aiClientEnum) {
             throw new RuntimeException('AI client is invalid enum.');
         }
         $apiTypeEnum = $aiClientEnum->apiType();
@@ -279,6 +287,7 @@ class AiAssistantPrompt
             return $responseManager->getJsonBody($response);
         } catch (Exception $e) {
             Log::error($e->getMessage());
+
             return false;
         }
     }
@@ -291,6 +300,7 @@ class AiAssistantPrompt
     public function setServiceRules(array $serviceRules): self
     {
         $this->serviceRules = $serviceRules;
+
         return $this;
     }
 
@@ -302,6 +312,7 @@ class AiAssistantPrompt
     public function setCategoryRules(array $categoryRules): self
     {
         $this->categoryRules = $categoryRules;
+
         return $this;
     }
 
@@ -313,6 +324,7 @@ class AiAssistantPrompt
     public function setProvider(array $provider): self
     {
         $this->provider = $provider;
+
         return $this;
     }
 
@@ -324,6 +336,7 @@ class AiAssistantPrompt
     public function setProperties(array $properties): self
     {
         $this->properties = $properties;
+
         return $this;
     }
 
@@ -335,6 +348,7 @@ class AiAssistantPrompt
     public function setPropertyValueRules(array $propertyValueRules): self
     {
         $this->propertyValueRules = $propertyValueRules;
+
         return $this;
     }
 
@@ -346,6 +360,7 @@ class AiAssistantPrompt
     public function setSrRules(array $srRules): self
     {
         $this->srRules = $srRules;
+
         return $this;
     }
 
@@ -357,6 +372,7 @@ class AiAssistantPrompt
     public function setSrConfigRules(array $srConfigRules): self
     {
         $this->srConfigRules = $srConfigRules;
+
         return $this;
     }
 
@@ -368,13 +384,14 @@ class AiAssistantPrompt
     public function setSrParameterRules(array $srParameterRules): self
     {
         $this->srParameterRules = $srParameterRules;
+
         return $this;
     }
 
     public function prompt(string $prompt): string
     {
         $propertiesJson = $this->toJson($this->properties);
-        $requiredPropertiesJson =  $this->toJson(
+        $requiredPropertiesJson = $this->toJson(
             array_map(function (PropertyType $propertyType) {
                 return $propertyType->config();
             }, [

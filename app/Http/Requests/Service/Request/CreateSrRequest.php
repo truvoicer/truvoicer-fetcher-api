@@ -2,12 +2,12 @@
 
 namespace App\Http\Requests\Service\Request;
 
+use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 use Truvoicer\TfDbReadCore\Enums\Api\ApiListKey;
 use Truvoicer\TfDbReadCore\Enums\FormatOptions;
 use Truvoicer\TfDbReadCore\Enums\Sr\SrType;
 use Truvoicer\TfDbReadCore\Models\Sr;
-use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Validation\Rule;
 
 class CreateSrRequest extends FormRequest
 {
@@ -30,22 +30,22 @@ class CreateSrRequest extends FormRequest
             'type' => [
                 'required',
                 'string',
-                Rule::enum(SrType::class)
+                Rule::enum(SrType::class),
             ],
             'default_sr' => 'boolean|nullable',
             ApiListKey::LIST_KEY->value => 'string|nullable',
             ApiListKey::LIST_ITEM_REPEATER_KEY->value => 'string|nullable',
-             ApiListKey::LIST_FORMAT_OPTIONS->value => [
+            ApiListKey::LIST_FORMAT_OPTIONS->value => [
                 'sometimes',
-                'array'
-             ],
-             ApiListKey::LIST_FORMAT_OPTIONS->value . '.*' => [
+                'array',
+            ],
+            ApiListKey::LIST_FORMAT_OPTIONS->value.'.*' => [
                 'required',
-                Rule::enum(FormatOptions::class)
-             ],
+                Rule::enum(FormatOptions::class),
+            ],
             ApiListKey::LIST_FORMAT_OPTION_PREG_MATCH->value => [
                 'sometimes',
-                'string'
+                'string',
             ],
             'name' => 'string|nullable',
             'label' => 'required|string',
@@ -54,7 +54,7 @@ class CreateSrRequest extends FormRequest
             'pagination_type' => [
                 'nullable',
                 'string',
-                Rule::in(['page', 'offset'])
+                Rule::in(['page', 'offset']),
             ],
             'query_parameters' => 'array|nullable',
             'default_data' => 'array|nullable',

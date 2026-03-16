@@ -2,9 +2,9 @@
 
 namespace App\Http\Requests\Provider;
 
-use Truvoicer\TfDbReadCore\Models\Category;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
+use Truvoicer\TfDbReadCore\Models\Category;
 
 class CreateProviderRequest extends FormRequest
 {

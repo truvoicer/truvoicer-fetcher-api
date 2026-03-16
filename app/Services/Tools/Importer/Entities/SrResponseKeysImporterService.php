@@ -7,23 +7,19 @@ use App\Enums\Import\ImportConfig;
 use App\Enums\Import\ImportMappingType;
 use App\Enums\Import\ImportType;
 use Truvoicer\TfDbReadCore\Helpers\Tools\UtilHelpers;
-use Truvoicer\TfDbReadCore\Models\Sr;
 use Truvoicer\TfDbReadCore\Models\SResponseKey;
 use Truvoicer\TfDbReadCore\Models\SrResponseKey;
 use Truvoicer\TfDbReadCore\Services\ApiServices\ServiceRequests\ResponseKeys\SrResponseKeyService;
-use Truvoicer\TfDbReadCore\Services\ApiServices\ServiceRequests\SrService;
 use Truvoicer\TfDbReadCore\Services\Permission\AccessControlService;
 
 class SrResponseKeysImporterService extends ImporterBase
 {
-
     public function __construct(
-        private SResponseKeysImporterService   $sResponseKeysImporterService,
-        private SrResponseKeyService   $srResponseKeyService,
+        private SResponseKeysImporterService $sResponseKeysImporterService,
+        private SrResponseKeyService $srResponseKeyService,
         protected AccessControlService $accessControlService
-    )
-    {
-        parent::__construct($accessControlService, new SrResponseKey());
+    ) {
+        parent::__construct($accessControlService, new SrResponseKey);
     }
 
     protected function loadDependencies(): void
@@ -67,48 +63,50 @@ class SrResponseKeysImporterService extends ImporterBase
     public function lock(ImportAction $action, array $map, array $data, ?array $dest = null): array
     {
         $sr = $this->findSr(ImportType::SR_RESPONSE_KEY, $data, $map, $dest);
-        if (!$sr['success']) {
+        if (! $sr['success']) {
             return $sr;
         }
         $sr = $sr['sr'];
 
         $srResponseKey = $sr->srResponseKeys()->where('name', $data['name'])->first();
-        if (!$srResponseKey instanceof SrResponseKey) {
+        if (! $srResponseKey instanceof SrResponseKey) {
             return [
                 'success' => false,
-                'message' => "Sr response key not found for Sr {$sr->name}"
+                'message' => "Sr response key not found for Sr {$sr->name}",
             ];
         }
-        if (!$this->entityService->lockEntity($this->getUser(), $srResponseKey->id, SrResponseKey::class)) {
+        if (! $this->entityService->lockEntity($this->getUser(), $srResponseKey->id, SrResponseKey::class)) {
             return [
                 'success' => false,
-                'message' => "Failed to lock sr response key {$data['name']}."
+                'message' => "Failed to lock sr response key {$data['name']}.",
             ];
         }
+
         return [
             'success' => true,
-            'message' => 'Sr response key import is locked.'
+            'message' => 'Sr response key import is locked.',
         ];
     }
 
     public function unlock(SrResponseKey $srResponseKey): array
     {
-        if (!$this->entityService->unlockEntity($this->getUser(), $srResponseKey->id, SrResponseKey::class)) {
+        if (! $this->entityService->unlockEntity($this->getUser(), $srResponseKey->id, SrResponseKey::class)) {
             return [
                 'success' => false,
-                'message' => "Failed to unlock sr response key {$srResponseKey->name}."
+                'message' => "Failed to unlock sr response key {$srResponseKey->sResponseKey?->name}.",
             ];
         }
+
         return [
             'success' => true,
-            'message' => 'Sr response key import is unlocked.'
+            'message' => 'Sr response key import is unlocked.',
         ];
     }
 
     protected function overwrite(array $data, bool $withChildren, array $map, ?array $dest = null, ?array $extraData = []): array
     {
         $sr = $this->findSr(ImportType::SR_RESPONSE_KEY, $data, $map, $dest);
-        if (!$sr['success']) {
+        if (! $sr['success']) {
             return $sr;
         }
         $sr = $sr['sr'];
@@ -116,7 +114,7 @@ class SrResponseKeysImporterService extends ImporterBase
         if (empty($data['name'])) {
             return [
                 'success' => false,
-                'message' => "S response key name is required for sr {$sr->name}."
+                'message' => "S response key name is required for sr {$sr->name}.",
             ];
         }
         $this->sResponseKeysImporterService->getSResponseKeyService()->getResponseKeyRepository()->addWhere(
@@ -124,14 +122,14 @@ class SrResponseKeysImporterService extends ImporterBase
             $data['name']
         );
         $responseKey = $this->sResponseKeysImporterService->getSResponseKeyService()->getResponseKeyRepository()->findOne();
-        if (!$responseKey instanceof SResponseKey) {
+        if (! $responseKey instanceof SResponseKey) {
             return [
                 'success' => false,
-                'message' => "S response key {$data['name']} not found for sr {$sr->name}."
+                'message' => "S response key {$data['name']} not found for sr {$sr->name}.",
             ];
         }
         if (
-            !$this->srResponseKeyService->createSrResponseKey(
+            ! $this->srResponseKeyService->createSrResponseKey(
                 $this->getUser(),
                 $sr,
                 $responseKey->name,
@@ -140,25 +138,26 @@ class SrResponseKeysImporterService extends ImporterBase
         ) {
             return [
                 'success' => false,
-                'message' => "Failed to create sr response key."
+                'message' => 'Failed to create sr response key.',
             ];
         }
         $unlock = $this->unlock(
             $this->srResponseKeyService->getSrResponseKeyRepository()->getModel()
         );
-        if (!$unlock['success']) {
+        if (! $unlock['success']) {
             return $unlock;
         }
+
         return [
             'success' => true,
-            'message' => "Sr response key({$responseKey->name}) for Sr {$sr->name} imported successfully."
+            'message' => "Sr response key({$responseKey->name}) for Sr {$sr->name} imported successfully.",
         ];
     }
 
     protected function create(array $data, bool $withChildren, array $map, ?array $dest = null, ?array $extraData = []): array
     {
-       $sr = $this->findSr(ImportType::SR_RESPONSE_KEY, $data, $map, $dest);
-        if (!$sr['success']) {
+        $sr = $this->findSr(ImportType::SR_RESPONSE_KEY, $data, $map, $dest);
+        if (! $sr['success']) {
             return $sr;
         }
         $sr = $sr['sr'];
@@ -166,7 +165,7 @@ class SrResponseKeysImporterService extends ImporterBase
         if (empty($data['name'])) {
             return [
                 'success' => false,
-                'message' => "S response key name is required."
+                'message' => 'S response key name is required.',
             ];
         }
         $this->sResponseKeysImporterService->getSResponseKeyService()->getResponseKeyRepository()->addWhere(
@@ -174,23 +173,23 @@ class SrResponseKeysImporterService extends ImporterBase
             $data['name']
         );
         $responseKey = $this->sResponseKeysImporterService->getSResponseKeyService()->getResponseKeyRepository()->findOne();
-        if (!$responseKey instanceof SResponseKey) {
+        if (! $responseKey instanceof SResponseKey) {
             $responseKey = $this->sResponseKeysImporterService->create(
                 $data,
                 $withChildren,
                 $map
             );
-            if (!$responseKey['success']) {
+            if (! $responseKey['success']) {
                 return $responseKey;
             }
             $responseKey = $this->sResponseKeysImporterService->getSResponseKeyService()->getResponseKeyRepository()->getModel();
         }
 
         if (
-            !empty($data['sr_response_key']) &&
+            ! empty($data['sr_response_key']) &&
             is_array($data['sr_response_key']) &&
             count($data['sr_response_key']) > 1 &&
-            !$this->srResponseKeyService->createSrResponseKey(
+            ! $this->srResponseKeyService->createSrResponseKey(
                 $this->getUser(),
                 $sr,
                 $responseKey->name,
@@ -199,18 +198,19 @@ class SrResponseKeysImporterService extends ImporterBase
         ) {
             return [
                 'success' => false,
-                'message' => "Failed to create sr response key."
+                'message' => 'Failed to create sr response key.',
             ];
         }
         $unlock = $this->unlock(
             $this->srResponseKeyService->getSrResponseKeyRepository()->getModel()
         );
-        if (!$unlock['success']) {
+        if (! $unlock['success']) {
             return $unlock;
         }
+
         return [
             'success' => true,
-            'message' => "Sr response key({$responseKey->name}) for Sr {$sr->name} imported successfully."
+            'message' => "Sr response key({$responseKey->name}) for Sr {$sr->name} imported successfully.",
         ];
     }
 
@@ -225,17 +225,17 @@ class SrResponseKeysImporterService extends ImporterBase
             if (empty($sr['name'])) {
                 $this->addError(
                     'import_type_validation',
-                    "Service Request name is required."
+                    'Service Request name is required.'
                 );
             }
             if (empty($sr['label'])) {
                 $this->addError(
                     'import_type_validation',
-                    "Service Request label is required."
+                    'Service Request label is required.'
                 );
             }
             if (
-                !empty($sr['child_srs']) &&
+                ! empty($sr['child_srs']) &&
                 is_array($sr['child_srs'])
             ) {
                 $this->validateImportData($sr['child_srs']);
@@ -253,13 +253,14 @@ class SrResponseKeysImporterService extends ImporterBase
             'root' => true,
             'import_type' => $this->getConfigItem(ImportConfig::NAME),
             'label' => $this->getConfigItem(ImportConfig::LABEL),
-            'children' => $this->parseEntityBatch($filter)
+            'children' => $this->parseEntityBatch($filter),
         ];
     }
 
     public function parseEntity(array $entity): array
     {
         $entity['import_type'] = $this->getConfigItem(ImportConfig::NAME);
+
         return $entity;
     }
 
@@ -285,7 +286,8 @@ class SrResponseKeysImporterService extends ImporterBase
         return false;
     }
 
-    public function deepFind(ImportType $importType, array $data, array $conditions, ?string $operation = 'AND'): array|null {
+    public function deepFind(ImportType $importType, array $data, array $conditions, ?string $operation = 'AND'): ?array
+    {
 
         return UtilHelpers::deepFindInNestedEntity(
             data: $data,
@@ -293,12 +295,11 @@ class SrResponseKeysImporterService extends ImporterBase
             childrenKeys: ['srs', 'sr', 'child_srs'],
             itemToMatchHandler: function ($item) use ($importType) {
                 return match ($importType) {
-                    ImportType::SR_RESPONSE_KEY => (!empty($item['sr_response_keys']))? $item['sr_response_keys'] : [],
+                    ImportType::SR_RESPONSE_KEY => (! empty($item['sr_response_keys'])) ? $item['sr_response_keys'] : [],
                     default => [],
                 };
             },
             operation: $operation
         );
     }
-
 }

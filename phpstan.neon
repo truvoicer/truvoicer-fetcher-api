@@ -1,0 +1,24 @@
+includes:
+    - vendor/larastan/larastan/extension.neon
+    - vendor/nesbot/carbon/extension.neon
+
+parameters:
+    paths:
+        - app
+        - config
+        - database
+        - routes
+        - packages/truvoicer/tf-db-read-core/src
+        - packages/truvoicer/tf-db-read-core/tests
+
+    # Level 10 is the highest level
+    level: 5
+
+    bootstrapFiles:
+        - packages/truvoicer/tf-db-read-core/vendor/autoload.php
+
+#    ignoreErrors:
+#        - '#PHPDoc tag @var#'
+#
+#    excludePaths:
+#        - ./*/*/FileToBeExcluded.php

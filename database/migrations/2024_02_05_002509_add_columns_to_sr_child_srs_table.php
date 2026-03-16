@@ -31,7 +31,7 @@ return new class extends Migration
                 'config_override',
                 'parameter_override',
                 'scheduler_override',
-                'rate_limits_override'
+                'rate_limits_override',
             ]);
         });
     }

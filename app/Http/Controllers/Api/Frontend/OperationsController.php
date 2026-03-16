@@ -8,11 +8,9 @@ use Truvoicer\TfDbReadCore\Services\ApiManager\Operations\DataHandler\ApiRequest
 
 /**
  * Require ROLE_ADMIN for *every* controller method in this class.
- *
  */
 class OperationsController extends Controller
 {
-
     public function searchOperation(string $type, ApiRequestDataInterface $apiRequestDataHandler, OperationsRequest $request)
     {
         $validatedData = $request->validated();
@@ -31,13 +29,14 @@ class OperationsController extends Controller
             $service
         );
 
-        if (!$results) {
+        if (! $results) {
             return $this->sendErrorResponse(
                 'No results found',
             );
         }
 
         ini_restore('max_execution_time');
+
         return $results;
     }
 }

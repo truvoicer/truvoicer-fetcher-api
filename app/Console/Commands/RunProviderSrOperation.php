@@ -2,12 +2,12 @@
 
 namespace App\Console\Commands;
 
-use Truvoicer\TfDbReadCore\Models\Provider;
-use Truvoicer\TfDbReadCore\Models\User;
 use App\Services\ApiServices\ServiceRequests\SrOperationsService;
 use App\Services\Provider\ProviderEventService;
 use Illuminate\Console\Command;
 use Symfony\Component\Console\Command\Command as CommandAlias;
+use Truvoicer\TfDbReadCore\Models\Provider;
+use Truvoicer\TfDbReadCore\Models\User;
 
 class RunProviderSrOperation extends Command
 {
@@ -32,40 +32,45 @@ class RunProviderSrOperation extends Command
      */
     public function handle(SrOperationsService $srOperationsService, ProviderEventService $providerEventService)
     {
-//        $type = $this->ask('Event type? (queue/event)');
-//        $interval = $this->ask(
-//            sprintf(
-//                'Interval? (%s)',
-//                implode(', ', array_keys(ScheduleService::SCHEDULE_INTERVALS))
-//            )
-//        );
-//        $providerName = $this->ask('Enter provider name');
+        //        $type = $this->ask('Event type? (queue/event)');
+        //        $interval = $this->ask(
+        //            sprintf(
+        //                'Interval? (%s)',
+        //                implode(', ', array_keys(ScheduleService::SCHEDULE_INTERVALS))
+        //            )
+        //        );
+        //        $providerName = $this->ask('Enter provider name');
         $type = $this->option('type');
         $providerName = $this->option('provider_name');
 
         $email = $this->option('email');
-        if (empty($type) || empty($providerName) || empty($email)){
+        if (empty($type) || empty($providerName) || empty($email)) {
             $this->error('Missing required arguments');
+
             return CommandAlias::FAILURE;
         }
         $user = User::where('email', '=', $email)->first();
-        if (!$user) {
+        if (! $user) {
             $this->error('User not found');
+
             return CommandAlias::FAILURE;
         }
         $interval = 'every_minute';
 
         $provider = Provider::where('name', '=', $providerName)->first();
-        if (!$provider) {
+        if (! $provider) {
             $this->error('Provider not found');
+
             return CommandAlias::FAILURE;
         }
         if ($type === 'queue') {
             $providerEventService->dispatchProviderSrOperationEvent($user, $provider, $interval, true);
+
             return CommandAlias::SUCCESS;
         }
         $srOperationsService->setUser($user);
         $srOperationsService->runSrOperationsByInterval($provider, $interval, true);
+
         return CommandAlias::SUCCESS;
     }
 }

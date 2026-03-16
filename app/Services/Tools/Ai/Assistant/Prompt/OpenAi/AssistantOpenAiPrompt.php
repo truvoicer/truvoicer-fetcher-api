@@ -7,7 +7,5 @@ use App\Services\Tools\Ai\Assistant\Prompt\AiAssistantPrompt;
 
 class AssistantOpenAiPrompt extends AiAssistantPrompt
 {
-
     protected ?AiClient $aiClient = AiClient::OPEN_AI;
-
 }

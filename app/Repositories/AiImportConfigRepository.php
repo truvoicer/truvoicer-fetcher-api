@@ -2,13 +2,12 @@
 
 namespace App\Repositories;
 
-use App\Models\AiImportConfig;
+use Truvoicer\TfDbReadCore\Models\AiImportConfig;
 use Truvoicer\TfDbReadCore\Models\User;
 use Truvoicer\TfDbReadCore\Repositories\BaseRepository;
 
 class AiImportConfigRepository extends BaseRepository
 {
-
     public array $searchFields = [
         'label',
         'description',
@@ -26,7 +25,6 @@ class AiImportConfigRepository extends BaseRepository
         return $this->findAllWithParams($sort, $order, $count);
     }
 
-
     public function getModel(): AiImportConfig
     {
         return parent::getModel();
@@ -38,12 +36,14 @@ class AiImportConfigRepository extends BaseRepository
             ...$data,
             'user_id' => $user->id,
         ]);
-        return  $importConfig->save();
+
+        return $importConfig->save();
     }
 
     public function updateImportConfig(AiImportConfig $aiImportConfig, array $data): bool
     {
         $this->setModel($aiImportConfig);
+
         return $this->save($data);
     }
 }
