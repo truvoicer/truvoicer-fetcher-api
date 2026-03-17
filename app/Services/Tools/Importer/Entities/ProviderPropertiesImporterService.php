@@ -25,7 +25,7 @@ class ProviderPropertiesImporterService extends ImporterBase
         parent::__construct($accessControlService, new ProviderProperty);
     }
 
-    protected function setConfig(): void
+    public function setConfig(): void
     {
         $this->buildConfig(
             false,
@@ -38,7 +38,7 @@ class ProviderPropertiesImporterService extends ImporterBase
         );
     }
 
-    protected function setMappings(): void
+    public function setMappings(): void
     {
         $this->mappings = [
             [
@@ -50,7 +50,7 @@ class ProviderPropertiesImporterService extends ImporterBase
         ];
     }
 
-    protected function loadDependencies(): void
+    public function loadDependencies(): void
     {
         $this->providerService->setThrowException(false);
         $this->propertyImporterService->setUser($this->getUser());
@@ -88,7 +88,7 @@ class ProviderPropertiesImporterService extends ImporterBase
         if (! $this->entityService->unlockEntity($this->getUser(), $providerProperty->id, ProviderProperty::class)) {
             return [
                 'success' => false,
-                'message' => "Failed to lock provider property {$providerProperty->name}.",
+                'message' => "Failed to lock provider property {$providerProperty->property->name}.",
             ];
         }
 
@@ -112,7 +112,7 @@ class ProviderPropertiesImporterService extends ImporterBase
         }
         $property = $property['property'];
 
-        if (! $this->providerService->createProviderProperty($provider, $property, array_merge($data, $data['pivot']))) {
+        if (! $this->providerService->createProviderProperty($this->user, $provider, $property, array_merge($data, $data['pivot']))) {
             return [
                 'success' => false,
                 'message' => "Failed to create provider property: {$data['name']} for provider {$provider->name}.",
@@ -139,7 +139,7 @@ class ProviderPropertiesImporterService extends ImporterBase
                 'message' => "Provider property key name is required for provider {$provider->name} property: {$data['name']}.",
             ];
         }
-        if (empty($data['pivot']) || ! is_array($data['pivot']) || ! count($data['pivot'])) {
+        if (empty($data['pivot']) || ! is_array($data['pivot'])) {
             return [
                 'success' => false,
                 'message' => "Provider property pivot is required for provider {$provider->name} property: {$data['name']}.",
@@ -169,7 +169,7 @@ class ProviderPropertiesImporterService extends ImporterBase
         ];
     }
 
-    protected function overwrite(array $data, bool $withChildren, array $map, ?array $dest = null, ?array $extraData = []): array
+    public function overwrite(array $data, bool $withChildren, array $map, ?array $dest = null, ?array $extraData = []): array
     {
         try {
             return $this->saveProviderProperty($data, $map, $dest);
@@ -188,7 +188,7 @@ class ProviderPropertiesImporterService extends ImporterBase
         }
     }
 
-    protected function create(array $data, bool $withChildren, array $map, ?array $dest = null, ?array $extraData = []): array
+    public function create(array $data, bool $withChildren, array $map, ?array $dest = null, ?array $extraData = []): array
     {
         try {
             return $this->saveProviderProperty($data, $map, $dest);
@@ -214,7 +214,7 @@ class ProviderPropertiesImporterService extends ImporterBase
 
     public function validateImportData(array $data): void
     {
-        if (empty($sr['value']) && empty($sr['array_value'])) {
+        if (empty($data['value']) && empty($data['array_value'])) {
             $this->addError(
                 'import_type_validation',
                 'Service Request name is required.'

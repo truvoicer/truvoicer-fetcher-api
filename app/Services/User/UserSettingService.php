@@ -17,7 +17,6 @@ class UserSettingService extends BaseService
 
         return $findSettings;
     }
-
     /**
      * Initialize user settings for the current user.
      *
@@ -25,7 +24,9 @@ class UserSettingService extends BaseService
      */
     public function initialiseUserSettings(): UserSetting
     {
-        return $this->user->settings()->create();
+        /** @var \Truvoicer\TfDbReadCore\Models\UserSetting $settings */
+        $settings = $this->user->settings()->create();
+        return $settings;
     }
 
     /**
@@ -36,11 +37,13 @@ class UserSettingService extends BaseService
      */
     public function updateUserSettings(array $data): UserSetting
     {
-        return $this->user->settings()->updateOrCreate(
+        /** @var \Truvoicer\TfDbReadCore\Models\UserSetting $settings */
+        $settings = $this->user->settings()->updateOrCreate(
             [
                 'user_id' => $this->user->id,
             ],
             $data
         );
+        return $settings;
     }
 }

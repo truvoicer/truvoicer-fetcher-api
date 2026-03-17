@@ -97,7 +97,7 @@ class EntityList extends Model
 
     public function setService(string $service): self
     {
-        $this->service = $service;
+        $this->service['name'] = $service;
 
         return $this;
     }

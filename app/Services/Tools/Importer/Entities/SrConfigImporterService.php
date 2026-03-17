@@ -27,7 +27,7 @@ class SrConfigImporterService extends ImporterBase
         parent::__construct($accessControlService, new SrConfig);
     }
 
-    protected function loadDependencies(): void
+    public function loadDependencies(): void
     {
         $this->srService->setThrowException(false);
         $this->srConfigService->setThrowException(false);
@@ -35,7 +35,7 @@ class SrConfigImporterService extends ImporterBase
         $this->propertyImporterService->setUser($this->getUser());
     }
 
-    protected function setConfig(): void
+    public function setConfig(): void
     {
         $this->buildConfig(
             false,
@@ -48,7 +48,7 @@ class SrConfigImporterService extends ImporterBase
         );
     }
 
-    protected function setMappings(): void
+    public function setMappings(): void
     {
         $this->mappings = [
             [
@@ -93,7 +93,7 @@ class SrConfigImporterService extends ImporterBase
         if (! $this->entityService->unlockEntity($this->getUser(), $srConfig->id, SrConfig::class)) {
             return [
                 'success' => false,
-                'message' => "Failed to unlock sr config. | property name: {$srConfig->property?->name}.",
+                'message' => "Failed to unlock sr config. | property name: {$srConfig->property->name}.",
             ];
         }
 
@@ -129,7 +129,7 @@ class SrConfigImporterService extends ImporterBase
         ];
     }
 
-    protected function overwrite(array $data, bool $withChildren, array $map, ?array $dest = null, ?array $extraData = []): array
+    public function overwrite(array $data, bool $withChildren, array $map, ?array $dest = null, ?array $extraData = []): array
     {
         try {
             $sr = $this->findSr(ImportType::SR_CONFIG, $data, $map, $dest);
@@ -170,7 +170,7 @@ class SrConfigImporterService extends ImporterBase
         }
     }
 
-    protected function create(array $data, bool $withChildren, array $map, ?array $dest = null, ?array $extraData = []): array
+    public function create(array $data, bool $withChildren, array $map, ?array $dest = null, ?array $extraData = []): array
     {
         try {
             $sr = $this->findSr(ImportType::SR_CONFIG, $data, $map, $dest);

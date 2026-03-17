@@ -30,9 +30,9 @@ class FileSystemServiceBase extends BaseService
         $this->setFilesystem($fileSystem);
     }
 
-    public function getFileDownloadUrl(File $file)
+    public function getFileDownloadUrl(File $file, string $clientIp, ?string $userAgent = null)
     {
-        if (! $this->fileSystemService->createFileDownload($file)) {
+        if (! $this->fileSystemService->createFileDownload($file, $clientIp, $userAgent)) {
             throw new BadRequestHttpException(
                 'Error creating file download'
             );

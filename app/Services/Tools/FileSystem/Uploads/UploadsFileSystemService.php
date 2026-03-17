@@ -4,6 +4,7 @@ namespace App\Services\Tools\FileSystem\Uploads;
 
 use App\Services\Tools\FileSystem\FileSystemService;
 use App\Services\Tools\FileSystem\FileSystemServiceBase;
+use Exception;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\File as FileFacade;
 use Symfony\Component\HttpFoundation\File\File;
@@ -25,9 +26,7 @@ class UploadsFileSystemService extends FileSystemServiceBase
         try {
             return $uploadedFile->move($this->getRootPath(), $uploadedFile->getFileName());
         } catch (\Exception $exception) {
-            echo 'An error occurred while creating your directory at '.$exception->getPath();
-
-            return false;
+            throw new Exception($exception->getMessage() . ' '.$uploadedFile->getPath());
         }
     }
 
@@ -59,7 +58,7 @@ class UploadsFileSystemService extends FileSystemServiceBase
     public function readFileStream(string $path)
     {
         $resource = $this->filesystem->readStream($path);
-        if ($resource === false) {
+        if (!$resource) {
             throw new BadRequestHttpException(sprintf('Error opening file stream for path: (%s)', $path));
         }
 

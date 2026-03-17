@@ -31,7 +31,7 @@ class ImportExportController extends Controller
         if ($request->query->getBoolean('include_data', false)) {
             $data = $this->exportService->getExportEntityListData($request->user());
         } else {
-            $data = $this->exportService->getExportEntityFields($request->user());
+            $data = $this->exportService->getExportEntityFields();
         }
 
         return $this->sendSuccessResponse(

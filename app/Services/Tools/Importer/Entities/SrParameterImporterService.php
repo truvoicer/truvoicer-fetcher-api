@@ -23,13 +23,13 @@ class SrParameterImporterService extends ImporterBase
         parent::__construct($accessControlService, new SrParameter);
     }
 
-    protected function loadDependencies(): void
+    public function loadDependencies(): void
     {
         $this->srService->setThrowException(false);
         $this->srParametersService->setThrowException(false);
     }
 
-    protected function setConfig(): void
+    public function setConfig(): void
     {
         $this->buildConfig(
             false,
@@ -42,7 +42,7 @@ class SrParameterImporterService extends ImporterBase
         );
     }
 
-    protected function setMappings(): void
+    public function setMappings(): void
     {
         $this->mappings = [
             [
@@ -100,7 +100,7 @@ class SrParameterImporterService extends ImporterBase
         ];
     }
 
-    protected function overwrite(array $data, bool $withChildren, array $map, ?array $dest = null, ?array $extraData = []): array
+    public function overwrite(array $data, bool $withChildren, array $map, ?array $dest = null, ?array $extraData = []): array
     {
         try {
             $sr = $this->findSr(ImportType::SR_PARAMETER, $data, $map, $dest);
@@ -162,7 +162,7 @@ class SrParameterImporterService extends ImporterBase
         }
     }
 
-    protected function create(array $data, bool $withChildren, array $map, ?array $dest = null, ?array $extraData = []): array
+    public function create(array $data, bool $withChildren, array $map, ?array $dest = null, ?array $extraData = []): array
     {
         try {
             $sr = $this->findSr(ImportType::SR_PARAMETER, $data, $map, $dest);

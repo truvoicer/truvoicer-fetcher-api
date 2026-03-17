@@ -91,7 +91,7 @@ class AiAssistantService
                 break;
 
             default:
-                throw new RuntimeException('Ai client is not supported. | ai client: '.$aiClient->value);
+                throw new RuntimeException('Ai client is not supported. | ai client: ' . $aiClient->value);
         }
         if (! $response) {
             throw new RuntimeException('Error making ai request.');
@@ -111,7 +111,7 @@ class AiAssistantService
             'config' => $data,
         ])) {
             throw new RuntimeException(
-                'Error storing ai import config. | json: ('.json_encode($data).')'
+                'Error storing ai import config. | json: (' . json_encode($data) . ')'
             );
         }
 
@@ -278,32 +278,20 @@ class AiAssistantService
 
             $service = (! empty($data['service']) && is_array($data['service'])) ? $data['service'] : null;
             $serviceData = $this->handleService($service);
-            if (! $serviceData) {
-                throw new RuntimeException('Error importing service.');
-            }
 
             $category = (! empty($data['category']) && is_array($data['category'])) ? $data['category'] : null;
             $categoryData = $this->handleCategory($category);
-            if (! $categoryData) {
-                throw new RuntimeException('Error importing category.');
-            }
 
             $provider = (! empty($data['provider']) && is_array($data['provider'])) ? $data['provider'] : null;
             $providerProperties = (! empty($data['providerProperties']) && is_array($data['providerProperties'])) ? $data['providerProperties'] : [];
 
             $providerData = $this->handleProvider($provider, $providerProperties);
-            if (! $providerData) {
-                throw new RuntimeException('Error importing provider.');
-            }
 
             $serviceRequest = (! empty($data['serviceRequest']) && is_array($data['serviceRequest'])) ? $data['serviceRequest'] : [];
             $serviceRequestConfigProperties = (! empty($data['serviceRequestConfigProperties']) && is_array($data['serviceRequestConfigProperties'])) ? $data['serviceRequestConfigProperties'] : [];
             $serviceRequestParameters = (! empty($data['serviceRequestParameters']) && is_array($data['serviceRequestParameters'])) ? $data['serviceRequestParameters'] : [];
 
-            $serviceRequestData = $this->handleServiceRequest($providerData, $serviceRequest, $serviceRequestConfigProperties, $serviceRequestParameters);
-            if (! $serviceRequestData) {
-                throw new RuntimeException('Error importing serviceRequest.');
-            }
+            $this->handleServiceRequest($providerData, $serviceRequest, $serviceRequestConfigProperties, $serviceRequestParameters);
         });
     }
 
@@ -315,41 +303,11 @@ class AiAssistantService
         return $this->nameMappings[$type][$originalName] ?? $originalName;
     }
 
-    /**
-     * Recursively update all name references in an array
-     */
-    private function updateNameReferences(array $data, string $type, string $oldName, string $newName): array
-    {
-        array_walk_recursive($data, function (&$value, $key) use ($type, $oldName, $newName) {
-            // Update service name references
-            if ($type === 'service' && $key === 'name' && $value === $oldName) {
-                $value = $newName;
-            }
-
-            // Update category name references
-            if ($type === 'category' && $key === 'name' && $value === $oldName) {
-                $value = $newName;
-            }
-
-            // Update service request name references
-            if ($type === 'service_request' && ($key === 'service_request_name' || $key === 'name') && $value === $oldName) {
-                $value = $newName;
-            }
-
-            // Update provider name references in categories array
-            if ($type === 'provider' && $key === 'name' && $value === $oldName) {
-                $value = $newName;
-            }
-        });
-
-        return $data;
-    }
-
-    private function handleService(array $data): ?S
+    private function handleService(array $data): S
     {
         if (empty($data['label'])) {
             throw new Exception(
-                'Label (label) not found in service data. | json: ('.json_encode($data).')'
+                'Label (label) not found in service data. | json: (' . json_encode($data) . ')'
             );
         }
 
@@ -373,7 +331,7 @@ class AiAssistantService
 
         if (! $this->sService->createService($this->user, $data)) {
             throw new Exception(
-                'Error storing service. | json: ('.json_encode($data).')'
+                'Error storing service. | json: (' . json_encode($data) . ')'
             );
         }
 
@@ -385,11 +343,11 @@ class AiAssistantService
         return $service;
     }
 
-    private function handleCategory(array $data): ?Category
+    private function handleCategory(array $data): Category
     {
         if (empty($data['label'])) {
             throw new Exception(
-                'Label (label) not found in category data. | json: ('.json_encode($data).')'
+                'Label (label) not found in category data. | json: (' . json_encode($data) . ')'
             );
         }
 
@@ -412,7 +370,7 @@ class AiAssistantService
 
         if (! $this->categoryService->createCategory($this->user, $data)) {
             throw new Exception(
-                'Error storing category. | json: ('.json_encode($data).')'
+                'Error storing category. | json: (' . json_encode($data) . ')'
             );
         }
 
@@ -432,7 +390,7 @@ class AiAssistantService
             ! array_key_exists('big_text_value', $data)
         ) {
             throw new Exception(
-                'Provider property has an missing value. | json: ('.json_encode($data).')'
+                'Provider property has an missing value. | json: (' . json_encode($data) . ')'
             );
         }
 
@@ -449,11 +407,11 @@ class AiAssistantService
         return $data;
     }
 
-    private function handleProvider(array $data, array $providerProperties): ?Provider
+    private function handleProvider(array $data, array $providerProperties): Provider
     {
         if (empty($data['label'])) {
             throw new Exception(
-                'Label (label) not found in provider data. | json: ('.json_encode($data).')'
+                'Label (label) not found in provider data. | json: (' . json_encode($data) . ')'
             );
         }
 
@@ -490,7 +448,7 @@ class AiAssistantService
 
         if (! $this->providerService->createProvider($this->user, $data)) {
             throw new Exception(
-                'Error storing provider. | json: ('.json_encode($data).')'
+                'Error storing provider. | json: (' . json_encode($data) . ')'
             );
         }
 
@@ -507,7 +465,7 @@ class AiAssistantService
                 $categoryName = $category['name'];
             } else {
                 throw new Exception(
-                    'Category has no name. | json: ('.json_encode($category).')'
+                    'Category has no name. | json: (' . json_encode($category) . ')'
                 );
             }
 
@@ -549,14 +507,14 @@ class AiAssistantService
                 $propertyName = $providerProperty['property_name'];
             } else {
                 throw new Exception(
-                    'Provider property has no name. | json: ('.json_encode($providerProperty).')'
+                    'Provider property has no name. | json: (' . json_encode($providerProperty) . ')'
                 );
             }
 
             $findProperty = $this->propertyService->getPropertyByName($propertyName);
             if (! $findProperty) {
                 throw new Exception(
-                    'Provider property with this name does not exist. | json: ('.json_encode($providerProperty).')'
+                    'Provider property with this name does not exist. | json: (' . json_encode($providerProperty) . ')'
                 );
             }
 
@@ -569,17 +527,12 @@ class AiAssistantService
 
             if (! $create) {
                 throw new Exception(
-                    'Error storing provider property. | json: ('.json_encode($providerProperty).')'
+                    'Error storing provider property. | json: (' . json_encode($providerProperty) . ')'
                 );
             }
 
-            // Track created provider property for rollback
-            // Note: You'll need to get the created property model from the service
-            // This assumes the service has a getModel() method or returns the model
-            if (method_exists($this->providerService, 'getProviderPropertyRepository')) {
-                $property = $this->providerService->getProviderPropertyRepository()->getModel();
-                $this->createdEntities['provider_properties'][] = $property;
-            }
+            $property = $this->providerService->getProviderPropertyRepository()->getModel();
+            $this->createdEntities['provider_properties'][] = $property;
         }
 
         return $provider;
@@ -593,7 +546,7 @@ class AiAssistantService
         foreach ($srs as $index => $srData) {
             if (empty($srData['label'])) {
                 throw new Exception(
-                    'Label (label) not found in service request data. | json: ('.json_encode($srData).')'
+                    'Label (label) not found in service request data. | json: (' . json_encode($srData) . ')'
                 );
             }
 
@@ -637,7 +590,7 @@ class AiAssistantService
 
             if (! $this->srService->createServiceRequest($provider, $srData, false)) {
                 throw new Exception(
-                    'Error storing service request. | json: ('.json_encode($srData).')'
+                    'Error storing service request. | json: (' . json_encode($srData) . ')'
                 );
             }
             $sr = $this->srService->getServiceRequestRepository()->getModel();
@@ -654,7 +607,7 @@ class AiAssistantService
                     $categoryName = $category['name'];
                 } else {
                     throw new Exception(
-                        'Category has no name. | json: ('.json_encode($category).')'
+                        'Category has no name. | json: (' . json_encode($category) . ')'
                     );
                 }
 
@@ -695,7 +648,7 @@ class AiAssistantService
         foreach ($serviceRequestConfigProperties as $configProperty) {
             if (empty($configProperty['service_request_name'])) {
                 throw new Exception(
-                    'Sr config property has no service_request_name. | json: ('.json_encode($configProperty).')'
+                    'Sr config property has no service_request_name. | json: (' . json_encode($configProperty) . ')'
                 );
             }
 
@@ -713,7 +666,7 @@ class AiAssistantService
         foreach ($serviceRequestParameters as $parameter) {
             if (empty($parameter['service_request_name'])) {
                 throw new Exception(
-                    'Sr parameter has no service_request_name. | json: ('.json_encode($parameter).')'
+                    'Sr parameter has no service_request_name. | json: (' . json_encode($parameter) . ')'
                 );
             }
 
@@ -731,7 +684,7 @@ class AiAssistantService
             $findSr = $srCache->get($srConfigProperty['service_request_name']);
             if (! $findSr instanceof Sr) {
                 throw new Exception(
-                    'Sr with this name does not exist. | name:'.$srConfigProperty['service_request_name']
+                    'Sr with this name does not exist. | name:' . $srConfigProperty['service_request_name']
                 );
             }
 
@@ -746,14 +699,14 @@ class AiAssistantService
                     $propertyName = $propertyData['property_name'];
                 } else {
                     throw new Exception(
-                        'Provider property has no name. | json: ('.json_encode($propertyData).')'
+                        'Provider property has no name. | json: (' . json_encode($propertyData) . ')'
                     );
                 }
 
                 $findProperty = $this->propertyService->getPropertyByName($propertyName);
                 if (! $findProperty) {
                     throw new Exception(
-                        'Provider property with this name does not exist. | json: ('.json_encode($propertyData).')'
+                        'Provider property with this name does not exist. | json: (' . json_encode($propertyData) . ')'
                     );
                 }
 
@@ -766,7 +719,7 @@ class AiAssistantService
 
                 if (! $create) {
                     throw new Exception(
-                        'Error storing provider property. | json: ('.json_encode($propertyData).')'
+                        'Error storing provider property. | json: (' . json_encode($propertyData) . ')'
                     );
                 }
 
@@ -784,7 +737,7 @@ class AiAssistantService
             $findSr = $srCache->get($sRParameter['service_request_name']);
             if (! $findSr instanceof Sr) {
                 throw new Exception(
-                    'Sr with this name does not exist. | name:'.$sRParameter['service_request_name']
+                    'Sr with this name does not exist. | name:' . $sRParameter['service_request_name']
                 );
             }
 
@@ -795,7 +748,7 @@ class AiAssistantService
 
             if (! $create) {
                 throw new Exception(
-                    'Error storing sr parameter. | json: ('.json_encode($sRParameter).')'
+                    'Error storing sr parameter. | json: (' . json_encode($sRParameter) . ')'
                 );
             }
 

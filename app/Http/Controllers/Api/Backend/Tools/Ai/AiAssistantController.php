@@ -127,8 +127,10 @@ class AiAssistantController extends Controller
         ) {
 
             if ($this->accessControlService->inAdminGroup()) {
+                /** @var \Truvoicer\TfDbReadCore\Models\AiImportConfig|null $findAiImportConfig */
                 $findAiImportConfig = AiImportConfig::where('id', $id)->first();
             } else {
+                /** @var \Truvoicer\TfDbReadCore\Models\AiImportConfig|null $findAiImportConfig */
                 $findAiImportConfig = $user->aiImportConfigs()->where('ai_import_configs.id', $id)->first();
             }
             if (! $findAiImportConfig) {

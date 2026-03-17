@@ -20,13 +20,13 @@ class SrScheduleImporterService extends ImporterBase
         parent::__construct($accessControlService, new SrSchedule);
     }
 
-    protected function loadDependencies(): void
+    public function loadDependencies(): void
     {
         $this->srService->setThrowException(false);
         $this->srScheduleService->setThrowException(false);
     }
 
-    protected function setConfig(): void
+    public function setConfig(): void
     {
         $this->buildConfig(
             false,
@@ -36,7 +36,7 @@ class SrScheduleImporterService extends ImporterBase
         );
     }
 
-    protected function setMappings(): void
+    public function setMappings(): void
     {
         $this->mappings = [
             [
@@ -91,12 +91,12 @@ class SrScheduleImporterService extends ImporterBase
         ];
     }
 
-    protected function overwrite(array $data, bool $withChildren, array $map, ?array $dest = null, ?array $extraData = []): array
+    public function overwrite(array $data, bool $withChildren, array $map, ?array $dest = null, ?array $extraData = []): array
     {
         return $this->create($data, $withChildren, $map);
     }
 
-    protected function create(array $data, bool $withChildren, array $map, ?array $dest = null, ?array $extraData = []): array
+    public function create(array $data, bool $withChildren, array $map, ?array $dest = null, ?array $extraData = []): array
     {
         $sr = $this->findSr(ImportType::SR_SCHEDULE, $data, $map, $dest);
         if (! $sr['success']) {

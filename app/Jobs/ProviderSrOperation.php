@@ -54,16 +54,6 @@ class ProviderSrOperation implements ShouldQueue
         $userId = $this->userId;
         $interval = $this->interval;
         $executeImmediately = $this->executeImmediately;
-        if (! is_int($userId)) {
-            Log::log('error', 'RunSrOperationListener: $userId is not int');
-
-            return;
-        }
-        if (! is_int($providerId)) {
-            Log::log('error', 'RunSrOperationListener: $providerId is not int');
-
-            return;
-        }
         $user = $providerService->getUserRepository()->findById($userId);
         if (! $user instanceof User) {
             Log::log('error', 'RunSrOperationListener: $user is not instance of User');
@@ -76,7 +66,7 @@ class ProviderSrOperation implements ShouldQueue
 
             return;
         }
-        if (! is_string($interval) || ! array_key_exists($interval, ScheduleService::SCHEDULE_INTERVALS)) {
+        if (! array_key_exists($interval, ScheduleService::SCHEDULE_INTERVALS)) {
             Log::log('error', 'RunSrOperationListener: $interval is not string');
 
             return;

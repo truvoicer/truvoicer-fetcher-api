@@ -86,23 +86,6 @@ class AuthController extends Controller
         );
     }
 
-    public function accountTokenLogin(Request $request): Response
-    {
-        $user = $request->user();
-        $apiToken = $user->currentAccessToken();
-        $data = [
-            // you may want to customize or obfuscate the message first
-            'message' => 'Successfully logged in.',
-            'session' => [
-                'email' => $user->email,
-                'access_token' => $apiToken,
-                //                "expires_at" => $apiToken->getExpiresAt()->getTimestamp()
-            ],
-        ];
-
-        return $this->sendSuccessResponse('success', $data);
-    }
-
     public function getAccountDetails(Request $request): \Illuminate\Http\JsonResponse
     {
         $user = $this->userAdminService->getUserByEmail($request->get('email'));

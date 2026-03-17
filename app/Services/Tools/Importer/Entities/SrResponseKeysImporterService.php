@@ -22,14 +22,14 @@ class SrResponseKeysImporterService extends ImporterBase
         parent::__construct($accessControlService, new SrResponseKey);
     }
 
-    protected function loadDependencies(): void
+    public function loadDependencies(): void
     {
         $this->srService->setThrowException(false);
         $this->srResponseKeyService->setThrowException(false);
         $this->sResponseKeysImporterService->setThrowException(false)->setUser($this->getUser());
     }
 
-    protected function setConfig(): void
+    public function setConfig(): void
     {
         $this->buildConfig(
             false,
@@ -42,7 +42,7 @@ class SrResponseKeysImporterService extends ImporterBase
         );
     }
 
-    protected function setMappings(): void
+    public function setMappings(): void
     {
         $this->mappings = [
             [
@@ -93,7 +93,7 @@ class SrResponseKeysImporterService extends ImporterBase
         if (! $this->entityService->unlockEntity($this->getUser(), $srResponseKey->id, SrResponseKey::class)) {
             return [
                 'success' => false,
-                'message' => "Failed to unlock sr response key {$srResponseKey->sResponseKey?->name}.",
+                'message' => "Failed to unlock sr response key {$srResponseKey->sResponseKey->name}.",
             ];
         }
 
@@ -103,7 +103,7 @@ class SrResponseKeysImporterService extends ImporterBase
         ];
     }
 
-    protected function overwrite(array $data, bool $withChildren, array $map, ?array $dest = null, ?array $extraData = []): array
+    public function overwrite(array $data, bool $withChildren, array $map, ?array $dest = null, ?array $extraData = []): array
     {
         $sr = $this->findSr(ImportType::SR_RESPONSE_KEY, $data, $map, $dest);
         if (! $sr['success']) {
@@ -154,7 +154,7 @@ class SrResponseKeysImporterService extends ImporterBase
         ];
     }
 
-    protected function create(array $data, bool $withChildren, array $map, ?array $dest = null, ?array $extraData = []): array
+    public function create(array $data, bool $withChildren, array $map, ?array $dest = null, ?array $extraData = []): array
     {
         $sr = $this->findSr(ImportType::SR_RESPONSE_KEY, $data, $map, $dest);
         if (! $sr['success']) {

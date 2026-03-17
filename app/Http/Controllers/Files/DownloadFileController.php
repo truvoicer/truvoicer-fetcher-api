@@ -20,7 +20,7 @@ class DownloadFileController extends Controller
         private DownloadsFileSystemService $downloadsFileSystemService,
         private UploadsFileSystemService $uploadsFileSystemService,
     ) {
-        parent::__construct($accessControlService);
+        parent::__construct();
     }
 
     public function __invoke(FileDownload $fileDownload, FileSystemService $fileSystemService, Request $request): StreamedResponse

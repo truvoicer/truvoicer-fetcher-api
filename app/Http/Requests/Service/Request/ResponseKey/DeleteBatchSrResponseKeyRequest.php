@@ -25,6 +25,7 @@ class DeleteBatchSrResponseKeyRequest extends FormRequest
     public function rules(): array
     {
         return [
+            'ids' => ['required', 'array'],
             'ids.*' => Rule::forEach(function () {
                 return [
                     Rule::exists(SResponseKey::class, 'id'),

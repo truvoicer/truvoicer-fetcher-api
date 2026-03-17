@@ -51,6 +51,7 @@ class ListController extends Controller
     public function frontendServiceResponseKeyList(Request $request, SResponseKeysService $responseKeysService)
     {
         $data = $request->query->all();
+        $responseKeys = [];
         if (isset($data['service_id'])) {
             $responseKeys = $responseKeysService->getResponseKeysByServiceId($data['service_id']);
         } elseif (isset($data['name'])) {

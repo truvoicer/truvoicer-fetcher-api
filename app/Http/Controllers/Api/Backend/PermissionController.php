@@ -55,7 +55,6 @@ class PermissionController extends Controller
     {
         return $this->sendSuccessResponse(
             'Successfully fetched permission list',
-            $this->accessControlService->getPermissionEntities()->getUserEntityPermissionList($entity, $user)
         );
     }
 

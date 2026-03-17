@@ -27,21 +27,13 @@ use Truvoicer\TfDbReadCore\Models\S;
 use Truvoicer\TfDbReadCore\Models\Sr;
 use Truvoicer\TfDbReadCore\Repositories\SrResponseKeySrRepository;
 use Truvoicer\TfDbReadCore\Services\ApiManager\Operations\ApiRequestService;
-use Truvoicer\TfDbReadCore\Services\ApiServices\ApiService;
 use Truvoicer\TfDbReadCore\Services\ApiServices\ServiceRequests\SrService;
 use Truvoicer\TfDbReadCore\Services\Permission\PermissionService;
-use Truvoicer\TfDbReadCore\Services\Provider\ProviderService;
 
-/**
- * Contains Api endpoint functions for api service related request operations
- *
- * Require ROLE_ADMIN for *every* controller method in this class.
- */
+
 class ServiceRequestController extends Controller
 {
     public function __construct(
-        private ProviderService $providerService,
-        private ApiService $apiServicesService,
         private SrService $srService,
     ) {
         parent::__construct();

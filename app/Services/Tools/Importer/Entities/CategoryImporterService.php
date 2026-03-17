@@ -24,7 +24,7 @@ class CategoryImporterService extends ImporterBase
         parent::__construct($accessControlService, new Category);
     }
 
-    protected function setConfig(): void
+    public function setConfig(): void
     {
         $this->buildConfig(
             true,
@@ -37,7 +37,7 @@ class CategoryImporterService extends ImporterBase
         );
     }
 
-    protected function setMappings(): void
+    public function setMappings(): void
     {
         $this->mappings = [
             [
@@ -49,7 +49,7 @@ class CategoryImporterService extends ImporterBase
         ];
     }
 
-    protected function loadDependencies(): void
+    public function loadDependencies(): void
     {
         $this->categoryService->setThrowException(false);
     }
@@ -102,7 +102,7 @@ class CategoryImporterService extends ImporterBase
         ];
     }
 
-    protected function create(array $data, bool $withChildren, array $map, ?array $dest = null, ?array $extraData = []): array
+    public function create(array $data, bool $withChildren, array $map, ?array $dest = null, ?array $extraData = []): array
     {
         try {
             $checkCategory = $this->categoryService->getUserCategoryRepository()->findUserModelBy(
@@ -152,7 +152,7 @@ class CategoryImporterService extends ImporterBase
         }
     }
 
-    protected function overwrite(array $data, bool $withChildren, array $map, ?array $dest = null, ?array $extraData = []): array
+    public function overwrite(array $data, bool $withChildren, array $map, ?array $dest = null, ?array $extraData = []): array
     {
         try {
             $checkCategory = $this->categoryService->getUserCategoryRepository()->findUserModelBy(

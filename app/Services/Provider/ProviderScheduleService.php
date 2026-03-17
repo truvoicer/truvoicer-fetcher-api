@@ -96,12 +96,13 @@ class ProviderScheduleService
     }
 
     /**
-     * @var \Illuminate\Database\Eloquent\Collection<\Truvoicer\TfDbReadCore\Models\Sr> $srs
+     * @property \Illuminate\Database\Eloquent\Collection<\Truvoicer\TfDbReadCore\Models\Sr> $srs
      *
      */
     private function runBatchSrs(Collection $srs, ?bool $isChild = false)
     {
         foreach ($srs as $serviceRequest) {
+            /** @var \Truvoicer\TfDbReadCore\Models\Sr $serviceRequest */
             $this->runScheduleForSr($serviceRequest, $isChild);
         }
     }

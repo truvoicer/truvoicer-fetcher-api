@@ -11,7 +11,7 @@ use Illuminate\Http\Resources\Json\JsonResource;
 use Truvoicer\TfDbReadCore\Enums\Api\ApiListKey;
 use Truvoicer\TfDbReadCore\Enums\FormatOptions;
 
-/** @mixin \App\Models\Sr */
+/** @mixin \Truvoicer\TfDbReadCore\Models\Sr */
 class ServiceRequestResource extends JsonResource
 {
     /**
@@ -27,7 +27,6 @@ class ServiceRequestResource extends JsonResource
             'category_id' => $this->category_id,
             'category' => $this->whenLoaded('category', CategoryResource::make($this->category)),
             'provider_id' => $this->provider_id,
-            'provider' => $this->whenLoaded('provider', ProviderResource::make($this->provider)),
             's_id' => $this->s_id,
             's' => $this->whenLoaded('s', ServiceResource::make($this->s)),
             'created_at' => $this->created_at,
@@ -61,7 +60,7 @@ class ServiceRequestResource extends JsonResource
                     array_filter(
                         $this->{ApiListKey::LIST_FORMAT_OPTIONS->value},
 
-                        fn (string $value) => FormatOptions::tryFrom($value),
+                        fn (string $value) => FormatOptions::tryFrom($value) !== null,
                         ARRAY_FILTER_USE_BOTH
                     )
                 )

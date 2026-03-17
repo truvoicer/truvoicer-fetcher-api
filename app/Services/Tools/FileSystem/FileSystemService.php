@@ -38,41 +38,6 @@ class FileSystemService
         return $file;
     }
 
-    private function getFileObject(
-        string $fileName,
-        string $fullPath,
-        string $relativePath,
-        string $fileType,
-        string $ext,
-        string $mimeType,
-        int $fileSize,
-        string $fileSystem
-    ) {
-        //        $this->fileSystemService->createFile([
-        //            "file_name" => $fileName,
-        //            "file_path" => $dir,
-        //            "file_type" => $fileType,
-        //            "file_extension" => $ext,
-        //            "mime_type" => File::mimeType(
-        //                $this->getFullPath($dir)
-        //            ),
-        //            "file_size" => File::size(
-        //                $this->getFullPath($dir)
-        //            ),
-        //            "file_system" => self::FILE_SYSTEM_NAME,
-        //        ]);
-        $fileData = [];
-        $fileData['file_name'] = $data['filename'];
-        $fileData['file_path'] = $data['path'];
-        $fileData['file_type'] = $data['file_type'];
-        $fileData['mime_type'] = $data['mime_type'];
-        $fileData['file_extension'] = $data['extension'];
-        $fileData['file_size'] = $data['file_size'];
-        $fileData['file_system'] = $data['file_system'];
-
-        return $fileData;
-    }
-
     private function generateRandomString($length = 10)
     {
         $characters = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
@@ -83,15 +48,6 @@ class FileSystemService
         }
 
         return $randomString;
-    }
-
-    private function getFileDownloadObject(File $file)
-    {
-        $data = [];
-        $data['file_id'] = $file->id;
-        $data['download_key'] = $this->generateRandomString(16);
-
-        return $data;
     }
 
     public function createFileDownload(File $file, string $clientIp, ?string $userAgent = null): bool
@@ -124,18 +80,6 @@ class FileSystemService
             $fileSize,
             $fileSystem
         );
-    }
-
-    public function updateFile(array $data)
-    {
-        $file = $this->fileRepository->findById($data['id']);
-        if ($file === null) {
-            throw new BadRequestHttpException(sprintf('File id:%d not found in database.', $data['id']));
-        }
-        $fileData = $this->getFileObject($data);
-        $this->fileRepository->setModel($file);
-
-        return $this->fileRepository->save($fileData);
     }
 
     public function findByParams(string $sort, string $order, int $count = -1)

@@ -27,6 +27,7 @@ class CreateUserRequest extends FormRequest
         return [
             'email' => 'required|email|unique:users,email',
             'password' => ['required', 'confirmed', Password::min(8)],
+            'roles' => ['required', 'array'],
             'roles.*' => Rule::forEach(function ($value, string $attribute) {
                 return [
                     Rule::exists(Role::class, 'id'),

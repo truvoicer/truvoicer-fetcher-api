@@ -26,8 +26,6 @@ use Truvoicer\TfDbReadCore\Services\Provider\ProviderService;
 class ServiceResponseKeyController extends Controller
 {
     public function __construct(
-        private ProviderService $providerService,
-        private ApiService $apiServicesService,
         private SResponseKeysService $responseKeysService,
     ) {
         parent::__construct();

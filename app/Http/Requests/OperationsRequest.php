@@ -50,10 +50,6 @@ class OperationsRequest extends FormRequest
                 'required',
                 'string',
             ],
-            'search_fields' => [
-                'sometimes',
-                'array',
-            ],
             'filters' => [
                 'sometimes',
                 'array',

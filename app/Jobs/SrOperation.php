@@ -52,16 +52,6 @@ class SrOperation implements ShouldQueue
         $srId = $this->srId;
         $userId = $this->userId;
         $queryData = $this->queryData;
-        if (! is_int($userId)) {
-            Log::log('error', 'RunSrOperationJob: $userId is not int');
-
-            return;
-        }
-        if (! is_int($srId)) {
-            Log::log('error', 'RunSrOperationJob: $srId is not int');
-
-            return;
-        }
         $user = $srService->getUserRepository()->findById($userId);
         if (! $user instanceof User) {
             Log::log('error', 'RunSrOperationJob: $user is not instance of User');
@@ -77,11 +67,6 @@ class SrOperation implements ShouldQueue
         $provider = $sr->provider()->first();
         if (! $provider instanceof Provider) {
             Log::log('error', 'RunSrOperationJob: $provider is not instance of Provider');
-
-            return;
-        }
-        if (! is_array($queryData)) {
-            Log::log('error', 'RunSrOperationJob: $queryData is not array');
 
             return;
         }

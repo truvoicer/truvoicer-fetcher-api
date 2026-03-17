@@ -39,7 +39,7 @@ class NotificationController extends Controller
 
     public function destroy(Notification $notification, Request $request)
     {
-        $request->user()->notifications()->where('id', $notification->id)->delete($notification->id);
+        $request->user()->notifications()->where('notifications.id', $notification->id)->delete();
 
         return NotificationListResource::collection(
             $request->user()->notifications()->paginate(
@@ -67,7 +67,7 @@ class NotificationController extends Controller
 
     public function markAsRead(Notification $notification, Request $request)
     {
-        $request->user()->notifications()->where('id', $notification->id)->first()?->markAsRead($notification->id);
+        $request->user()->notifications()->where('notifications.id', $notification->id)->first()?->markAsRead();
         $notification->refresh();
 
         return new NotificationListResource($notification);
@@ -75,7 +75,7 @@ class NotificationController extends Controller
 
     public function markAsUnread(Notification $notification, Request $request)
     {
-        $request->user()->notifications()->where('id', $notification->id)->first()?->markAsUnread($notification->id);
+        $request->user()->notifications()->where('notifications.id', $notification->id)->first()?->markAsUnread();
         $notification->refresh();
 
         return new NotificationListResource($notification);

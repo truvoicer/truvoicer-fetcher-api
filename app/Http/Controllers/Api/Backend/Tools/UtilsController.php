@@ -2,12 +2,11 @@
 
 namespace App\Http\Controllers\Api\Backend\Tools;
 
+use App\Enums\Variable\VariableType;
 use App\Http\Controllers\Controller;
-use App\Services\Tools\FileSystem\FileSystemService;
 use App\Services\Tools\VariablesService;
 use Illuminate\Http\Request;
 use Truvoicer\TfDbReadCore\Services\ApiManager\Data\DataConstants;
-use Truvoicer\TfDbReadCore\Services\User\UserAdminService;
 
 /**
  * Contains api endpoint functions for exporting tasks
@@ -16,12 +15,6 @@ use Truvoicer\TfDbReadCore\Services\User\UserAdminService;
  */
 class UtilsController extends Controller
 {
-    public function __construct(
-        private FileSystemService $fileSystemService,
-        private UserAdminService $userService,
-    ) {
-        parent::__construct();
-    }
 
     /**
      * Get list of service requests variables
@@ -33,10 +26,13 @@ class UtilsController extends Controller
             return $this->sendErrorResponse('Missing type parameter', []);
         }
         $variableType = $request->query->get('type');
-
+        $variableTypeEnum = VariableType::tryFrom($variableType);
+        if (! $variableTypeEnum) {
+            return $this->sendErrorResponse('Variable type not supported. | variable type: ' . $variableType);
+        }
         return $this->sendSuccessResponse(
             'success',
-            $variablesService->getVariables($variableType)
+            $variablesService->getVariables($variableTypeEnum)
         );
     }
 

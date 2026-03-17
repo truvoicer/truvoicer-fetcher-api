@@ -7,7 +7,6 @@ use App\Models\File;
 use App\Services\Tools\FileSystem\Downloads\DownloadsFileSystemService;
 use App\Services\Tools\FileSystem\FileSystemService;
 use Illuminate\Http\Request;
-use Truvoicer\TfDbReadCore\Services\User\UserAdminService;
 
 /**
  * Contains api endpoint functions for exporting tasks
@@ -18,16 +17,18 @@ class FileSystemController extends Controller
 {
     public function __construct(
         private FileSystemService $fileSystemService,
-        private UserAdminService $userService,
     ) {
         parent::__construct();
     }
 
-    public function downloadFile(File $file, DownloadsFileSystemService $fileSystemService)
-    {
-        $getFileDownloadLink = $fileSystemService->getFileDownloadUrl($file);
+    public function downloadFile(
+        File $file,
+        DownloadsFileSystemService $fileSystemService,
+        Request $request
+    ) {
+        $getFileDownloadLink = $fileSystemService->getFileDownloadUrl($file, $request->ip(), $request->userAgent());
         if ($getFileDownloadLink === null) {
-            return $this->sendErrorResponse('Error downloading file.'.[]);
+            return $this->sendErrorResponse('Error downloading file.');
         }
 
         return $this->sendSuccessResponse('File download success', [

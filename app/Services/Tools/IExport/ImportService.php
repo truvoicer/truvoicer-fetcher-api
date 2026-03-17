@@ -3,9 +3,7 @@
 namespace App\Services\Tools\IExport;
 
 use App\Exceptions\ImportException;
-use App\Services\Tools\FileSystem\Downloads\DownloadsFileSystemService;
 use App\Services\Tools\FileSystem\Imports\ImportsFileSystemService;
-use App\Services\Tools\FileSystem\Uploads\UploadsFileSystemService;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Truvoicer\TfDbReadCore\Traits\Error\ErrorTrait;
@@ -16,8 +14,6 @@ class ImportService
     use ErrorTrait, UserTrait;
 
     public function __construct(
-        private DownloadsFileSystemService $downloadsFileSystemService,
-        private UploadsFileSystemService $uploadsFileSystemService,
         private IExportTypeService $iExportTypeService,
         private ImporterValidator $importerValidator,
         private ImportsFileSystemService $importsFileSystemService

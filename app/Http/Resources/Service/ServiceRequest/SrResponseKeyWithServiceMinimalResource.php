@@ -5,6 +5,9 @@ namespace App\Http\Resources\Service\ServiceRequest;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
+/**
+ * @mixin \Truvoicer\TfDbReadCore\Models\SResponseKey
+ */
 class SrResponseKeyWithServiceMinimalResource extends JsonResource
 {
     /**

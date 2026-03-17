@@ -54,7 +54,7 @@ class ServiceRequestScheduleController extends Controller
                 return $this->sendErrorResponse('Failed to initialise schedule');
             }
             $srSchedule = $this->srScheduleService->getSrScheduleRepository()->getModel();
-            if (! $srSchedule || ! $srSchedule->exists()) {
+            if ($srSchedule->exists()) {
                 return $this->sendErrorResponse('Failed to initialise schedule');
             }
         }

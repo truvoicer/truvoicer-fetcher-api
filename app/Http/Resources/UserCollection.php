@@ -3,6 +3,7 @@
 namespace App\Http\Resources;
 
 use Illuminate\Http\Request;
+use Truvoicer\TfDbReadCore\Http\Resources\BaseCollection;
 
 class UserCollection extends BaseCollection
 {

@@ -6,7 +6,7 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
 /**
- * @mixin \App\Models\SrResponseKeySr
+ * @mixin \Truvoicer\TfDbReadCore\Models\SrResponseKeySr
  */
 class SrResponseKeySrsResource extends JsonResource
 {

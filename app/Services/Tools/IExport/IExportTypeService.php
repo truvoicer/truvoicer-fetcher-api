@@ -200,7 +200,7 @@ class IExportTypeService extends BaseService
 
     private function buildDeepFindConditions(array $map): array
     {
-        if (! empty($map['root']) && ! empty($map['children']) && is_array($map['children']) && count($map['children'])) {
+        if (! empty($map['root']) && ! empty($map['children']) && is_array($map['children'])) {
             $conditions = array_map(function ($child) {
                 return ['id' => $child['id']];
             }, $map['children']);

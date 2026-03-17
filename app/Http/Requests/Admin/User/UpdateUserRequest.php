@@ -27,6 +27,7 @@ class UpdateUserRequest extends FormRequest
         return [
             'email' => 'email|unique:users,email',
             'password' => ['confirmed', Password::min(8)],
+            'roles' => ['required', 'array'],
             'roles.*' => Rule::forEach(function ($value, string $attribute) {
                 return [
                     Rule::exists(Role::class, 'id'),

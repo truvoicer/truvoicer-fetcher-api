@@ -2,16 +2,11 @@
 
 namespace App\Services\Tools\IExport;
 
-use App\Services\ServiceFactory;
 use App\Services\Tools\FileSystem\Downloads\DownloadsFileSystemService;
 use Illuminate\Support\Facades\App;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Truvoicer\TfDbReadCore\Models\User;
-use Truvoicer\TfDbReadCore\Services\ApiServices\ApiService;
-use Truvoicer\TfDbReadCore\Services\Category\CategoryService;
 use Truvoicer\TfDbReadCore\Services\Permission\AccessControlService;
-use Truvoicer\TfDbReadCore\Services\Property\PropertyService;
-use Truvoicer\TfDbReadCore\Services\Provider\ProviderService;
 use Truvoicer\TfDbReadCore\Traits\User\UserTrait;
 
 class ExportService
@@ -19,26 +14,16 @@ class ExportService
     use UserTrait;
 
     private DownloadsFileSystemService $downloadsFileSystem;
-
     private IExportTypeService $iExportTypeService;
-
-    private ServiceFactory $serviceFactory;
-
     protected AccessControlService $accessControlService;
 
     public function __construct(
         DownloadsFileSystemService $downloadsFileSystemService,
         IExportTypeService $iExportTypeService,
-        ServiceFactory $serviceFactory,
         AccessControlService $accessControlService,
-        private CategoryService $categoryService,
-        private PropertyService $propertyService,
-        private ProviderService $providerService,
-        private ApiService $apiService
     ) {
         $this->downloadsFileSystem = $downloadsFileSystemService;
         $this->iExportTypeService = $iExportTypeService;
-        $this->serviceFactory = $serviceFactory;
         $this->accessControlService = $accessControlService;
     }
 
@@ -125,7 +110,6 @@ class ExportService
 
         array_walk($data[IExportTypeService::REQUEST_KEYS['EXPORT_DATA']], function ($item, $key) {
             if (! is_array($item) || ! array_key_exists('id', $item)) {
-                dd($item);
                 throw new BadRequestHttpException(
                     sprintf('Export data error: (id) does not exist in item position (%d)', $key)
                 );

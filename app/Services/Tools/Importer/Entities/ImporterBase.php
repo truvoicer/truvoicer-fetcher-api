@@ -7,6 +7,7 @@ use App\Enums\Import\ImportConfig;
 use App\Enums\Import\ImportMappingType;
 use App\Enums\Import\ImportType;
 use App\Services\Tools\IExport\IExportTypeService;
+use Exception;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Log;
@@ -19,7 +20,7 @@ use Truvoicer\TfDbReadCore\Services\Provider\ProviderService;
 use Truvoicer\TfDbReadCore\Traits\Error\ErrorTrait;
 use Truvoicer\TfDbReadCore\Traits\User\UserTrait;
 
-abstract class ImporterBase
+class ImporterBase implements ImporterInterface
 {
     use ErrorTrait, UserTrait;
 
@@ -47,29 +48,54 @@ abstract class ImporterBase
         $this->setMappings();
     }
 
-    abstract protected function setConfig(): void;
-
-    abstract protected function setMappings(): void;
-
-    abstract protected function loadDependencies(): void;
-
-    abstract public function validateImportData(array $data): void;
-
-    abstract public function filterImportData(array $data): array;
-
-    abstract public function getExportData(): array;
-
-    abstract public function getExportTypeData($item): array|bool;
-
-    abstract public function parseEntity(array $entity): array;
-
-    abstract public function parseEntityBatch(array $data): array;
-
-    abstract protected function overwrite(array $data, bool $withChildren, array $map, ?array $dest = null, ?array $extraData = []): array;
-
-    abstract protected function create(array $data, bool $withChildren, array $map, ?array $dest = null, ?array $extraData = []): array;
-
-    abstract protected function deepFind(ImportType $importType, array $data, array $conditions, ?string $operation = 'AND'): ?array;
+    public function setConfig(): void
+    {
+        throw new Exception('Not implemented');
+    }
+    public function setMappings(): void
+    {
+        throw new Exception('Not implemented');
+    }
+    public function loadDependencies(): void
+    {
+        throw new Exception('Not implemented');
+    }
+    public function validateImportData(array $data): void
+    {
+        throw new Exception('Not implemented');
+    }
+    public function filterImportData(array $data): array
+    {
+        throw new Exception('Not implemented');
+    }
+    public function getExportData(): array
+    {
+        throw new Exception('Not implemented');
+    }
+    public function getExportTypeData($item): array|bool
+    {
+        throw new Exception('Not implemented');
+    }
+    public function parseEntity(array $entity): array
+    {
+        throw new Exception('Not implemented');
+    }
+    public function parseEntityBatch(array $data): array
+    {
+        throw new Exception('Not implemented');
+    }
+    public function overwrite(array $data, bool $withChildren, array $map, ?array $dest = null, ?array $extraData = []): array
+    {
+        throw new Exception('Not implemented');
+    }
+    public function create(array $data, bool $withChildren, array $map, ?array $dest = null, ?array $extraData = []): array
+    {
+        throw new Exception('Not implemented');
+    }
+    public function deepFind(ImportType $importType, array $data, array $conditions, ?string $operation = 'AND'): ?array
+    {
+        throw new Exception('Not implemented');
+    }
 
     public function lock(ImportAction $action, array $map, array $data, ?array $dest = null): array
     {
@@ -263,7 +289,7 @@ abstract class ImporterBase
     protected function importSelf(ImportAction $action, array $map, array $data, bool $withChildren, ?array $dest = null, ?bool $lock = false): array
     {
         $this->loadDependencies();
-        if (! empty($map['root']) && ! empty($map['children']) && is_array($map['children']) && count($map['children'])) {
+        if (! empty($map['root']) && ! empty($map['children']) && is_array($map['children'])) {
             return [
                 'success' => true,
                 'data' => array_map(function ($map) use ($data, $action, $dest, $lock) {
