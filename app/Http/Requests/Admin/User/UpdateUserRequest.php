@@ -2,12 +2,10 @@
 
 namespace App\Http\Requests\Admin\User;
 
-use Truvoicer\TfDbReadCore\Models\Role;
-use Illuminate\Database\Query\Builder;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Password;
-use Illuminate\Support\Facades\Validator;
+use Truvoicer\TfDbReadCore\Models\Role;
 
 class UpdateUserRequest extends FormRequest
 {
@@ -29,11 +27,11 @@ class UpdateUserRequest extends FormRequest
         return [
             'email' => 'email|unique:users,email',
             'password' => ['confirmed', Password::min(8)],
-            'roles.*' => Rule::forEach(function ($value, string $attribute) {
-                return [
-                    Rule::exists(Role::class, 'id'),
-                ];
-            })
+            'roles' => ['required', 'array'],
+            'roles.*' => [
+                'integer',
+                Rule::exists(Role::class, 'id'),
+            ],
         ];
     }
 }

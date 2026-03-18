@@ -11,7 +11,6 @@ use Truvoicer\TfDbReadCore\Traits\Enum\EnumUtilityTrait;
 
 enum AiClient: string
 {
-
     use EnumUtilityTrait;
 
     case GEMINI = 'gemini';
@@ -38,6 +37,7 @@ enum AiClient: string
             self::GROK => ApiType::AI_GROK,
         };
     }
+
     public function populatePrompt(array $apiResponse, array $serviceResponseKeys): string
     {
         return match ($this) {

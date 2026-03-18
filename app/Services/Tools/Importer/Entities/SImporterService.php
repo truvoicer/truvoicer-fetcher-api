@@ -6,26 +6,24 @@ use App\Enums\Import\ImportAction;
 use App\Enums\Import\ImportConfig;
 use App\Enums\Import\ImportMappingType;
 use App\Enums\Import\ImportType;
+use App\Services\Tools\IExport\IExportTypeService;
+use Exception;
+use Illuminate\Support\Facades\Log;
 use Truvoicer\TfDbReadCore\Helpers\Tools\UtilHelpers;
 use Truvoicer\TfDbReadCore\Models\S;
 use Truvoicer\TfDbReadCore\Services\ApiServices\ApiService;
 use Truvoicer\TfDbReadCore\Services\Permission\AccessControlService;
-use App\Services\Tools\IExport\IExportTypeService;
-use Exception;
-use Illuminate\Support\Facades\Log;
 
 class SImporterService extends ImporterBase
 {
-
     public function __construct(
         private ApiService $apiService,
         protected AccessControlService $accessControlService
-    )
-    {
-        parent::__construct($accessControlService, new S());
+    ) {
+        parent::__construct($accessControlService, new S);
     }
 
-    protected function setConfig(): void
+    public function setConfig(): void
     {
         $this->buildConfig(
             true,
@@ -38,7 +36,7 @@ class SImporterService extends ImporterBase
         );
     }
 
-    protected function setMappings(): void
+    public function setMappings(): void
     {
         $this->mappings = [
             [
@@ -56,7 +54,7 @@ class SImporterService extends ImporterBase
         ];
     }
 
-    protected function loadDependencies(): void
+    public function loadDependencies(): void
     {
         $this->apiService->setThrowException(false);
     }
@@ -66,92 +64,96 @@ class SImporterService extends ImporterBase
         $service = $this->apiService->getServiceRepository()->findByName(
             $data['name']
         );
-        if (!$service instanceof S) {
+        if (! $service instanceof S) {
             return [
                 'success' => false,
-                'message' => "Service {$data['name']} not found."
+                'message' => "Service {$data['name']} not found.",
             ];
         }
-        if (!$this->entityService->lockEntity($this->getUser(), $service->id, S::class)) {
+        if (! $this->entityService->lockEntity($this->getUser(), $service->id, S::class)) {
             return [
                 'success' => false,
-                'message' => "Failed to lock service {$data['name']}."
+                'message' => "Failed to lock service {$data['name']}.",
             ];
         }
+
         return [
             'success' => true,
-            'message' => 'Service is locked.'
+            'message' => 'Service is locked.',
         ];
     }
 
     public function unlock(S $service): array
     {
-        if (!$this->entityService->unlockEntity($this->getUser(), $service->id, S::class)) {
+        if (! $this->entityService->unlockEntity($this->getUser(), $service->id, S::class)) {
             return [
                 'success' => false,
-                'message' => "Failed to unlock service {$service->name}."
+                'message' => "Failed to unlock service {$service->name}.",
             ];
         }
+
         return [
             'success' => true,
-            'message' => 'Service is unlocked.'
+            'message' => 'Service is unlocked.',
         ];
     }
 
-    protected function overwrite(array $data, bool $withChildren, array $map, ?array $dest = null, ?array $extraData = []): array
+    public function overwrite(array $data, bool $withChildren, array $map, ?array $dest = null, ?array $extraData = []): array
     {
 
         try {
-            $checkService = $this->apiService->getServiceRepository()->findUserModelBy(new S(), $this->getUser(), [
-                ['name', '=', $data['name']]
+            $checkService = $this->apiService->getServiceRepository()->findUserModelBy(new S, $this->getUser(), [
+                ['name', '=', $data['name']],
             ], false);
 
-            if (!$checkService instanceof S) {
+            if (! $checkService instanceof S) {
                 return [
                     'success' => false,
-                    'message' => "Service {$data['name']} not found."
+                    'message' => "Service {$data['name']} not found.",
                 ];
             }
             if (
-                !$this->apiService->updateService(
+                ! $this->apiService->updateService(
                     $checkService,
                     $data
                 )
             ) {
                 return [
                     'success' => false,
-                    'message' => "Error updating service {$data['name']}."
+                    'message' => "Error updating service {$data['name']}.",
                 ];
             }
             $unlockService = $this->unlock($this->apiService->getServiceRepository()->getModel());
-            if (!$unlockService['success']) {
+            if (! $unlockService['success']) {
                 return $unlockService;
             }
+
             return [
                 'success' => true,
-                'message' => "Service {$data['name']} imported successfully,"
+                'message' => "Service {$data['name']} imported successfully,",
             ];
         } catch (Exception $e) {
             Log::channel(IExportTypeService::LOGGING_NAME)->error(
                 $e->getMessage(),
                 [
-                    'data' => $data
+                    'data' => $data,
                 ]
             );
+
             return [
                 'success' => false,
                 'code' => $e->getCode(),
                 'file' => $e->getFile(),
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ];
         }
     }
 
-    protected function create(array $data, bool $withChildren, array $map, ?array $dest = null, ?array $extraData = []): array
+    public function create(array $data, bool $withChildren, array $map, ?array $dest = null, ?array $extraData = []): array
     {
         try {
-            $checkService = $this->apiService->getServiceRepository()->findUserModelBy(new S(), $this->getUser(), [
-                ['name', '=', $data['name']]
+            $checkService = $this->apiService->getServiceRepository()->findUserModelBy(new S, $this->getUser(), [
+                ['name', '=', $data['name']],
             ], false);
 
             if ($checkService && $checkService->first() instanceof S) {
@@ -162,36 +164,38 @@ class SImporterService extends ImporterBase
                 );
             }
             if (
-                !$this->apiService->createService(
+                ! $this->apiService->createService(
                     $this->getUser(),
                     $data
                 )
             ) {
                 return [
                     'success' => false,
-                    'message' => "Error creating service {$data['name']}."
+                    'message' => "Error creating service {$data['name']}.",
                 ];
             }
             $unlockService = $this->unlock($this->apiService->getServiceRepository()->getModel());
-            if (!$unlockService['success']) {
+            if (! $unlockService['success']) {
                 return $unlockService;
             }
+
             return [
                 'success' => true,
-                'message' => "Service {$data['name']} imported successfully,"
+                'message' => "Service {$data['name']} imported successfully,",
             ];
         } catch (Exception $e) {
             Log::channel(IExportTypeService::LOGGING_NAME)->error(
                 $e->getMessage(),
                 [
-                    'data' => $data
+                    'data' => $data,
                 ]
             );
+
             return [
                 'success' => false,
                 'code' => $e->getCode(),
                 'file' => $e->getFile(),
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ];
         }
     }
@@ -203,23 +207,26 @@ class SImporterService extends ImporterBase
                 $this->getUser(),
                 $data
             );
+
             return [
                 'success' => true,
-                'data' => $this->apiService->getServiceRepository()->getModel()
+                'data' => $this->apiService->getServiceRepository()->getModel(),
             ];
         } catch (Exception $e) {
             Log::channel(IExportTypeService::LOGGING_NAME)->error(
                 $e->getMessage(),
                 [
-                    'data' => $data
+                    'data' => $data,
                 ]
             );
+
             return [
                 'success' => false,
-                'message' => $e->getMessage()
+                'message' => $e->getMessage(),
             ];
         }
     }
+
     public function importServiceIncludeChildren(array $data): array
     {
         try {
@@ -230,18 +237,19 @@ class SImporterService extends ImporterBase
 
             return [
                 'success' => true,
-                'data' => $this->apiService->getServiceRepository()->getModel()
+                'data' => $this->apiService->getServiceRepository()->getModel(),
             ];
         } catch (Exception $e) {
             Log::channel(IExportTypeService::LOGGING_NAME)->error(
                 $e->getMessage(),
                 [
-                    'data' => $data
+                    'data' => $data,
                 ]
             );
+
             return [
                 'success' => false,
-                'message' => $e->getMessage()
+                'message' => $e->getMessage(),
             ];
         }
     }
@@ -250,21 +258,28 @@ class SImporterService extends ImporterBase
     {
         return [];
     }
-    public function validateImportData(array $data): void {
+
+    public function validateImportData(array $data): void
+    {
         $this->compareKeysWithModelFields($data);
     }
-    public function filterImportData(array $data): array {
+
+    public function filterImportData(array $data): array
+    {
         $filter = array_filter($data, function ($service) {
             return $this->compareItemKeysWithModelFields($service);
         });
+
         return [
             'root' => true,
             'import_type' => $this->getConfigItem(ImportConfig::NAME),
             'label' => $this->getConfigItem(ImportConfig::LABEL),
-            'children' => $this->parseEntityBatch($filter)
+            'children' => $this->parseEntityBatch($filter),
         ];
     }
-    public function getExportData(): array {
+
+    public function getExportData(): array
+    {
         return $this->apiService->findUserServices(
             $this->getUser(),
             false
@@ -273,11 +288,13 @@ class SImporterService extends ImporterBase
 
     public function getExportTypeData($item): bool|array
     {
-        return $this->apiService->getServiceById($item["id"])->toArray();
+        return $this->apiService->getServiceById($item['id'])->toArray();
     }
 
-    public function parseEntity(array $entity): array {
+    public function parseEntity(array $entity): array
+    {
         $entity['import_type'] = $this->getConfigItem(ImportConfig::NAME);
+
         return $entity;
     }
 
@@ -287,7 +304,9 @@ class SImporterService extends ImporterBase
             return $this->parseEntity($providerData);
         }, $data);
     }
-    public function deepFind(ImportType $importType, array $data, array $conditions, ?string $operation = 'AND'): array|null {
+
+    public function deepFind(ImportType $importType, array $data, array $conditions, ?string $operation = 'AND'): ?array
+    {
         return UtilHelpers::deepFindInNestedEntity(
             data: $data,
             conditions: $conditions,
@@ -295,16 +314,16 @@ class SImporterService extends ImporterBase
             itemToMatchHandler: function ($item) use ($importType) {
                 return match ($importType) {
                     ImportType::SERVICE => [$item],
-                    ImportType::S_RESPONSE_KEY => (!empty($item['s_response_key']))? $item['s_response_key'] : [],
+                    ImportType::S_RESPONSE_KEY => (! empty($item['s_response_key'])) ? $item['s_response_key'] : [],
                     default => [],
                 };
             },
             operation: $operation
         );
     }
+
     public function getApiService(): ApiService
     {
         return $this->apiService;
     }
-
 }

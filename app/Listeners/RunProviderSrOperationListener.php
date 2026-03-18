@@ -4,12 +4,10 @@ namespace App\Listeners;
 
 use App\Events\RunProviderSrOperationEvent;
 use App\Jobs\ProviderSrOperation;
-use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Support\Facades\Log;
 
 class RunProviderSrOperationListener
 {
-
     /**
      * The number of seconds the job can run before timing out.
      *

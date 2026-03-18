@@ -2,9 +2,9 @@
 
 namespace App\Http\Requests\Service\Request\Parameter;
 
-use Truvoicer\TfDbReadCore\Enums\MbEncoding;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
+use Truvoicer\TfDbReadCore\Enums\MbEncoding;
 
 class UpdateServiceRequestParameterRequest extends FormRequest
 {
@@ -27,19 +27,19 @@ class UpdateServiceRequestParameterRequest extends FormRequest
             'name' => 'string',
             'value' => [
                 'sometimes',
-                'string'
+                'string',
             ],
             'encode_value' => [
                 'sometimes',
-                'boolean'
+                'boolean',
             ],
             'encode_from' => [
                 'sometimes',
-                Rule::enum(MbEncoding::class)
+                Rule::enum(MbEncoding::class),
             ],
             'encode_to' => [
                 'sometimes',
-                Rule::enum(MbEncoding::class)
+                Rule::enum(MbEncoding::class),
             ],
         ];
     }

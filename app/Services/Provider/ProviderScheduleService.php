@@ -2,61 +2,64 @@
 
 namespace App\Services\Provider;
 
-use Truvoicer\TfDbReadCore\Models\Sr;
-use Truvoicer\TfDbReadCore\Models\SrSchedule;
 use App\Services\ApiServices\ServiceRequests\SrScheduleService;
-use Truvoicer\TfDbReadCore\Services\ApiServices\ServiceRequests\SrService;
-use Truvoicer\TfDbReadCore\Traits\User\UserTrait;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Log;
-use App\Services\Provider\ProviderEventService;
+use Truvoicer\TfDbReadCore\Models\Sr;
+use Truvoicer\TfDbReadCore\Models\SrSchedule;
+use Truvoicer\TfDbReadCore\Services\ApiServices\ServiceRequests\SrService;
 use Truvoicer\TfDbReadCore\Services\Provider\ProviderService;
+use Truvoicer\TfDbReadCore\Traits\User\UserTrait;
 
 class ProviderScheduleService
 {
     use UserTrait;
 
     const SCHEDULE_EVERY_MINUTE = 'every_minute';
+
     const SCHEDULE_EVERY_HOUR = 'every_hour';
+
     const SCHEDULE_EVERY_DAY = 'every_day';
+
     const SCHEDULE_EVERY_WEEK = 'every_weekday';
+
     const SCHEDULE_EVERY_MONTH = 'every_month';
 
     const SCHEDULE_INTERVALS = [
         self::SCHEDULE_EVERY_MINUTE => [
             'field' => 'every_minute',
-            'method' => 'everyMinute'
+            'method' => 'everyMinute',
         ],
         self::SCHEDULE_EVERY_HOUR => [
             'field' => 'every_hour',
-            'method' => 'hourly'
+            'method' => 'hourly',
         ],
         self::SCHEDULE_EVERY_DAY => [
             'field' => 'every_day',
-            'method' => 'daily'
+            'method' => 'daily',
         ],
         self::SCHEDULE_EVERY_WEEK => [
             'field' => 'every_weekday',
-            'method' => 'weekly'
+            'method' => 'weekly',
         ],
         self::SCHEDULE_EVERY_MONTH => [
             'field' => 'every_month',
-            'method' => 'monthly'
+            'method' => 'monthly',
         ],
     ];
 
     private Schedule $schedule;
+
     private Carbon $today;
 
     public function __construct(
         private ProviderEventService $providerEventsService,
-        private ProviderService      $providerService,
-        private SrService            $srService,
-        private SrScheduleService           $srScheduleService
-    )
-    {
+        private ProviderService $providerService,
+        private SrService $srService,
+        private SrScheduleService $srScheduleService
+    ) {
         $this->today = now();
     }
 
@@ -67,18 +70,22 @@ class ProviderScheduleService
 
         if (empty($scheduleUserEmail)) {
             Log::log('info', 'No schedule user email found');
+
             return;
         }
         $this->providerService->getUserRepository()->addWhere('email', $scheduleUserEmail);
+
+        /** @var \Truvoicer\TfDbReadCore\Models\User|null $findUser */
         $findUser = $this->providerService->getUserRepository()->findOne();
-        if (!$findUser) {
-            // dd(User::all()->toArray());
+        if (! $findUser) {
             Log::log('info', 'No schedule user found');
+
             return;
         }
 
         $this->setUser($findUser);
 
+        /** @var \Illuminate\Database\Eloquent\Collection<\Truvoicer\TfDbReadCore\Models\Provider> $providers */
         $providers = $this->providerService->getProviderRepository()->findAll();
         foreach ($providers as $provider) {
             $srs = $this->srService->getServiceRequestRepository()->findSrsWithSchedule($provider);
@@ -89,9 +96,13 @@ class ProviderScheduleService
         }
     }
 
+    /**
+     * @property \Illuminate\Database\Eloquent\Collection<\Truvoicer\TfDbReadCore\Models\Sr> $srs
+     */
     private function runBatchSrs(Collection $srs, ?bool $isChild = false)
     {
         foreach ($srs as $serviceRequest) {
+            /** @var \Truvoicer\TfDbReadCore\Models\Sr $serviceRequest */
             $this->runScheduleForSr($serviceRequest, $isChild);
         }
     }
@@ -102,15 +113,17 @@ class ProviderScheduleService
         $isParentSrSchedule = $findParentChildSr['is_parent'];
         $schedule = $findParentChildSr['schedule'];
 
-        if (!$schedule instanceof SrSchedule) {
-            Log::log('info', 'No schedule found for SR: ' . $sr->label);
+        if (! $schedule instanceof SrSchedule) {
+            Log::log('info', 'No schedule found for SR: '.$sr->label);
+
             return;
         }
-        if (!$isChild) {
+        if (! $isChild) {
             if ($schedule->disabled && $schedule->disable_child_srs) {
                 return;
-            } elseif ($schedule->disabled && !$schedule->disable_child_srs) {
+            } elseif ($schedule->disabled && ! $schedule->disable_child_srs) {
                 $this->runChildSrSchedule($sr);
+
                 return;
             }
         } else {
@@ -118,10 +131,10 @@ class ProviderScheduleService
                 return;
             }
         }
-        if (!empty($schedule->has_start_date) && !empty($schedule->start_date) && $schedule->start_date <= $this->today->toDateString()) {
+        if (! empty($schedule->has_start_date) && ! empty($schedule->start_date) && $schedule->start_date <= $this->today->toDateString()) {
             return;
         }
-        if (!empty($schedule->has_end_date) && !empty($schedule->end_date) && $schedule->end_date >= $this->today->toDateString()) {
+        if (! empty($schedule->has_end_date) && ! empty($schedule->end_date) && $schedule->end_date >= $this->today->toDateString()) {
             return;
         }
 
@@ -138,12 +151,12 @@ class ProviderScheduleService
             $scheduleCall = $this->getSrScheduleCall($sr, $schedule, "hourlyAt({$minute})");
             $scheduleCall->hourlyAt($minute)->withoutOverlapping();
             $this->runChildSrSchedule($sr);
-        } else if ($schedule->every_day) {
+        } elseif ($schedule->every_day) {
             $hourMinutes = $this->getHourMinutes($schedule);
             $this->getSrScheduleCall($sr, $schedule, "dailyAt({$hourMinutes})")
                 ->dailyAt($hourMinutes)->withoutOverlapping();
             $this->runChildSrSchedule($sr);
-        } else if ($schedule->every_weekday) {
+        } elseif ($schedule->every_weekday) {
             $hourMinutes = $this->getHourMinutes($schedule);
             $weekday = $schedule->weekday;
             if (empty($weekday)) {
@@ -152,7 +165,7 @@ class ProviderScheduleService
             $this->getSrScheduleCall($sr, $schedule, "weeklyOn({$weekday} '{$hourMinutes}')")
                 ->weeklyOn($weekday, $hourMinutes)->withoutOverlapping();
             $this->runChildSrSchedule($sr);
-        } else if ($schedule->every_month) {
+        } elseif ($schedule->every_month) {
             $hourMinutes = $this->getHourMinutes($schedule);
             $day = $schedule->day;
             if (empty($day)) {
@@ -160,11 +173,10 @@ class ProviderScheduleService
             }
             $this->getSrScheduleCall($sr, $schedule, "monthlyOn({$day} '{$hourMinutes}')")
                 ->monthlyOn($day, $hourMinutes)->withoutOverlapping();
-            if (!$schedule->disable_child_srs) {
+            if (! $schedule->disable_child_srs) {
                 $this->runChildSrSchedule($sr);
             }
         }
-
     }
 
     private function runChildSrSchedule(Sr $sr)
@@ -186,6 +198,7 @@ class ProviderScheduleService
         if (empty($minute)) {
             $minute = '00';
         }
+
         return "$hour:$minute";
     }
 
@@ -201,7 +214,7 @@ class ProviderScheduleService
     public function setSchedule(Schedule $schedule): self
     {
         $this->schedule = $schedule;
+
         return $this;
     }
-
 }

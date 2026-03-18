@@ -4,12 +4,15 @@ namespace Database\Factories;
 
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Str;
+use Truvoicer\TfDbReadCore\Models\S;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\S>
+ * @extends \Illuminate\Database\Eloquent\Factories\Factory<\Truvoicer\TfDbReadCore\Models\S>
  */
 class SFactory extends Factory
 {
+    protected $model = S::class;
+
     /**
      * Define the model's default state.
      *
@@ -18,6 +21,7 @@ class SFactory extends Factory
     public function definition(): array
     {
         $label = $this->faker->word;
+
         return [
             'name' => Str::slug($label),
             'label' => $label,

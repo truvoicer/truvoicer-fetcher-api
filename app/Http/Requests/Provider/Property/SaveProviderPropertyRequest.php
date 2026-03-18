@@ -2,9 +2,9 @@
 
 namespace App\Http\Requests\Provider\Property;
 
-use Truvoicer\TfDbReadCore\Services\ApiManager\Data\DataConstants;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
+use Truvoicer\TfDbReadCore\Services\ApiManager\Data\DataConstants;
 
 class SaveProviderPropertyRequest extends FormRequest
 {
@@ -27,21 +27,21 @@ class SaveProviderPropertyRequest extends FormRequest
             'value' => [
                 'string',
                 'nullable',
-                Rule::requiredIf(fn () => in_array($this->get('value_type'), ['text', 'choice']))
+                Rule::requiredIf(fn () => in_array($this->get('value_type'), ['text', 'choice'])),
             ],
-            "value_type" => [
-                Rule::in(DataConstants::REQUEST_CONFIG_VALUE_TYPES)
+            'value_type' => [
+                Rule::in(DataConstants::REQUEST_CONFIG_VALUE_TYPES),
             ],
-            "big_text_value" => [
+            'big_text_value' => [
                 'string',
                 'nullable',
-                'required_if:value_type,big_text'
+                'required_if:value_type,big_text',
             ],
-            "array_value" => [
+            'array_value' => [
                 'array',
                 'nullable',
-                'required_if:value_type,list,entity_list'
-            ]
+                'required_if:value_type,list,entity_list',
+            ],
         ];
     }
 }

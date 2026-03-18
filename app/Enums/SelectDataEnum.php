@@ -6,7 +6,6 @@ use App\Enums\Ai\AiClient;
 
 enum SelectDataEnum: string
 {
-
     case AI_CLiENT = 'ai_client';
 
     public function label(): string

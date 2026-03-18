@@ -16,10 +16,9 @@ enum PaginationType: string
      */
     public function label(): string
     {
-        return match($this) {
+        return match ($this) {
             self::PAGE => 'Page-based Pagination',
             self::OFFSET => 'Offset-based Pagination',
         };
     }
-
 }

@@ -4,9 +4,8 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
-use App\Enums\ApiFetchType;
-use Truvoicer\TfDbReadCore\Enums\DatabaseFilterType;
 use Illuminate\Validation\Validator;
+use Truvoicer\TfDbReadCore\Enums\DatabaseFilterType;
 
 class OperationsRequest extends FormRequest
 {
@@ -32,7 +31,7 @@ class OperationsRequest extends FormRequest
             'sort_by' => ['sometimes', 'string', 'nullable'],
             'sort_order' => ['sometimes', 'string', 'nullable'],
             'date_key' => ['sometimes', 'string', 'nullable'],
-            'provider' =>['sometimes', 'array', 'nullable'],
+            'provider' => ['sometimes', 'array', 'nullable'],
             'service' => ['sometimes', 'string', 'nullable'],
             'item_id' => ['sometimes', 'nullable'],
             'api_fetch_on_record_not_found' => [
@@ -51,10 +50,6 @@ class OperationsRequest extends FormRequest
                 'required',
                 'string',
             ],
-            'search_fields' => [
-                'sometimes',
-                'array',
-            ],
             'filters' => [
                 'sometimes',
                 'array',
@@ -66,42 +61,42 @@ class OperationsRequest extends FormRequest
             'filters.*.field' => [
                 'required',
                 'string',
-                'max:255'
+                'max:255',
             ],
             'filters.*.value' => [
                 'nullable', // Allows it to be present as 'null' initially
             ],
             'positions' => [
                 'sometimes',
-                'array'
+                'array',
             ],
             'positions.start' => [
                 'sometimes',
-                'array'
+                'array',
             ],
             'positions.start.*.document_id' => [
                 'required',
-                'string'
+                'string',
             ],
             'positions.end' => [
                 'sometimes',
-                'array'
+                'array',
             ],
             'positions.end.*.document_id' => [
                 'required',
-                'string'
+                'string',
             ],
             'positions.custom' => [
                 'sometimes',
-                'array'
+                'array',
             ],
             'positions.custom.*.document_id' => [
                 'required',
-                'string'
+                'string',
             ],
             'positions.custom.*.insert_index' => [
                 'required',
-                'integer'
+                'integer',
             ],
         ];
 
@@ -109,9 +104,9 @@ class OperationsRequest extends FormRequest
 
     /**
      * Get the validated data from the request.
+     *
      * * @param  string|null  $key
      * @param  mixed  $default
-     * @return array
      */
     public function validated($key = null, $default = null): array
     {
@@ -128,7 +123,7 @@ class OperationsRequest extends FormRequest
 
                 // This condition keeps items if the value is 0 (valid) OR if the value
                 // is not null AND not an empty string.
-                return ($value === 0) || (!is_null($value) && $value !== '');
+                return ($value === 0) || (! is_null($value) && $value !== '');
             });
 
             // Update the validated data with the cleaned, re-indexed array.
@@ -138,10 +133,10 @@ class OperationsRequest extends FormRequest
         // 3. Return the fully filtered data.
         return $validatedData;
     }
+
     /**
      * Configure the validator instance.
      *
-     * @param  \Illuminate\Validation\Validator  $validator
      * @return void
      */
     public function withValidator(Validator $validator)
@@ -180,7 +175,7 @@ class OperationsRequest extends FormRequest
                     case DatabaseFilterType::STRING->value:
                         $valueRules = array_merge($valueRules, [
                             'string',
-                            'max:255'
+                            'max:255',
                         ]);
                         break;
                     case DatabaseFilterType::GREATER_THAN->value:

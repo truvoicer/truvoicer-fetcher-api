@@ -6,34 +6,30 @@ use App\Enums\Import\ImportAction;
 use App\Enums\Import\ImportConfig;
 use App\Enums\Import\ImportMappingType;
 use App\Enums\Import\ImportType;
+use Exception;
 use Truvoicer\TfDbReadCore\Helpers\Tools\UtilHelpers;
-use Truvoicer\TfDbReadCore\Models\Sr;
 use Truvoicer\TfDbReadCore\Models\SrRateLimit;
 use Truvoicer\TfDbReadCore\Services\ApiServices\RateLimitService;
-use Truvoicer\TfDbReadCore\Services\ApiServices\ServiceRequests\SrService;
 use Truvoicer\TfDbReadCore\Services\Permission\AccessControlService;
-use Exception;
 
 class SrRateLimitImporterService extends ImporterBase
 {
-
     public function __construct(
-        private RateLimitService       $rateLimitService,
+        private RateLimitService $rateLimitService,
         protected AccessControlService $accessControlService
-    )
-    {
-        parent::__construct($accessControlService, new SrRateLimit());
+    ) {
+        parent::__construct($accessControlService, new SrRateLimit);
         $this->srService->setThrowException(false);
         $this->rateLimitService->setThrowException(false);
     }
 
-    protected function loadDependencies(): void
+    public function loadDependencies(): void
     {
         $this->srService->setThrowException(false);
         $this->rateLimitService->setThrowException(false);
     }
 
-    protected function setConfig(): void
+    public function setConfig(): void
     {
         $this->buildConfig(
             false,
@@ -43,7 +39,7 @@ class SrRateLimitImporterService extends ImporterBase
         );
     }
 
-    protected function setMappings(): void
+    public function setMappings(): void
     {
         $this->mappings = [
             [
@@ -64,75 +60,78 @@ class SrRateLimitImporterService extends ImporterBase
     public function lock(ImportAction $action, array $map, array $data, ?array $dest = null): array
     {
         $sr = $this->findSr(ImportType::SR_RATE_LIMIT, $data, $map, $dest);
-        if (!$sr['success']) {
+        if (! $sr['success']) {
             return $sr;
         }
         $sr = $sr['sr'];
         $srRateLimit = $sr->srRateLimit()->first();
 
-        if (!$srRateLimit instanceof SrRateLimit) {
+        if (! $srRateLimit instanceof SrRateLimit) {
             return [
                 'success' => false,
-                'message' => "Sr rate limit not found for Sr {$sr->name}"
+                'message' => "Sr rate limit not found for Sr {$sr->name}",
             ];
         }
-        if (!$this->entityService->lockEntity($this->getUser(), $srRateLimit->id, SrRateLimit::class)) {
+        if (! $this->entityService->lockEntity($this->getUser(), $srRateLimit->id, SrRateLimit::class)) {
             return [
                 'success' => false,
-                'message' => "Failed to lock sr rate limit {$data['name']}."
+                'message' => "Failed to lock sr rate limit {$data['name']}.",
             ];
         }
+
         return [
             'success' => true,
-            'message' => 'Sr rate limit import is locked.'
+            'message' => 'Sr rate limit import is locked.',
         ];
     }
 
     public function unlock(SrRateLimit $srRateLimit): array
     {
-        if (!$this->entityService->unlockEntity($this->getUser(), $srRateLimit->id, SrRateLimit::class)) {
+        if (! $this->entityService->unlockEntity($this->getUser(), $srRateLimit->id, SrRateLimit::class)) {
             return [
                 'success' => false,
-                'message' => "Failed to unlock sr rate limit."
+                'message' => 'Failed to unlock sr rate limit.',
             ];
         }
+
         return [
             'success' => true,
-            'message' => 'Sr rate limit import is unlocked.'
+            'message' => 'Sr rate limit import is unlocked.',
         ];
     }
 
-    protected function overwrite(array $data, bool $withChildren, array $map, ?array $dest = null, ?array $extraData = []): array
+    public function overwrite(array $data, bool $withChildren, array $map, ?array $dest = null, ?array $extraData = []): array
     {
         return $this->create($data, $withChildren, $map);
     }
 
-    protected function create(array $data, bool $withChildren, array $map, ?array $dest = null, ?array $extraData = []): array
+    public function create(array $data, bool $withChildren, array $map, ?array $dest = null, ?array $extraData = []): array
     {
         try {
             $sr = $this->findSr(ImportType::SR_RATE_LIMIT, $data, $map, $dest);
-            if (!$sr['success']) {
+            if (! $sr['success']) {
                 return $sr;
             }
             $sr = $sr['sr'];
-            if (!$this->rateLimitService->createSrRateLimit($sr, $data)) {
+            if (! $this->rateLimitService->createSrRateLimit($sr, $data)) {
                 return [
                     'success' => false,
-                    'message' => "Failed to create sr rate limit for Sr {$sr->name}."
+                    'message' => "Failed to create sr rate limit for Sr {$sr->name}.",
                 ];
             }
             $unlockSrRateLimit = $this->unlock($this->rateLimitService->getSrRateLimitRepository()->getModel());
-            if (!$unlockSrRateLimit['success']) {
+            if (! $unlockSrRateLimit['success']) {
                 return $unlockSrRateLimit;
             }
+
             return [
                 'success' => true,
-                'message' => "Sr rate limit for Sr {$sr->name} imported successfully."
+                'message' => "Sr rate limit for Sr {$sr->name} imported successfully.",
             ];
         } catch (Exception $e) {
             return [
                 'success' => false,
-                'message' => $e->getMessage()
+                'message' => $e->getMessage(),
             ];
         }
     }
@@ -142,10 +141,7 @@ class SrRateLimitImporterService extends ImporterBase
         return [];
     }
 
-    public function validateImportData(array $data): void
-    {
-
-    }
+    public function validateImportData(array $data): void {}
 
     public function filterImportData(array $data): array
     {
@@ -153,13 +149,14 @@ class SrRateLimitImporterService extends ImporterBase
             'root' => true,
             'import_type' => $this->getConfigItem(ImportConfig::NAME),
             'label' => $this->getConfigItem(ImportConfig::LABEL),
-            'children' => [$this->parseEntity($data)]
+            'children' => [$this->parseEntity($data)],
         ];
     }
 
     public function parseEntity(array $entity): array
     {
         $entity['import_type'] = $this->getConfigItem(ImportConfig::NAME);
+
         return $entity;
     }
 
@@ -185,7 +182,8 @@ class SrRateLimitImporterService extends ImporterBase
         return false;
     }
 
-    public function deepFind(ImportType $importType, array $data, array $conditions, ?string $operation = 'AND'): array|null {
+    public function deepFind(ImportType $importType, array $data, array $conditions, ?string $operation = 'AND'): ?array
+    {
 
         return UtilHelpers::deepFindInNestedEntity(
             data: $data,
@@ -193,12 +191,11 @@ class SrRateLimitImporterService extends ImporterBase
             childrenKeys: ['srs', 'sr', 'child_srs'],
             itemToMatchHandler: function ($item) use ($importType) {
                 return match ($importType) {
-                    ImportType::SR_RATE_LIMIT => (!empty($item['sr_rate_limit']))? [$item['sr_rate_limit']] : [],
+                    ImportType::SR_RATE_LIMIT => (! empty($item['sr_rate_limit'])) ? [$item['sr_rate_limit']] : [],
                     default => [],
                 };
             },
             operation: $operation
         );
     }
-
 }

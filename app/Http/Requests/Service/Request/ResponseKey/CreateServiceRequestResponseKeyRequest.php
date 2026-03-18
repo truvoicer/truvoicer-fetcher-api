@@ -2,9 +2,7 @@
 
 namespace App\Http\Requests\Service\Request\ResponseKey;
 
-use Truvoicer\TfDbReadCore\Models\Sr;
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Validation\Rule;
 
 class CreateServiceRequestResponseKeyRequest extends FormRequest
 {
@@ -27,7 +25,7 @@ class CreateServiceRequestResponseKeyRequest extends FormRequest
             'name' => 'required|string',
             'value' => [
                 'required',
-                'string'
+                'string',
             ],
             'show_in_response' => 'nullable|boolean',
             'searchable' => 'nullable|boolean',

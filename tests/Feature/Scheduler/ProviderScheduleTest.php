@@ -2,64 +2,90 @@
 
 namespace Tests\Feature\Scheduler;
 
-use Truvoicer\TfDbReadCore\Enums\Api\ApiListKey;
-use Truvoicer\TfDbReadCore\Enums\Api\ApiMethod;
-use Truvoicer\TfDbReadCore\Enums\Api\ApiResponseFormat;
 use App\Enums\Api\ApiType;
-use Truvoicer\TfDbReadCore\Enums\Property\PropertyType;
-use Truvoicer\TfDbReadCore\Enums\Sr\SrType;
 use App\Events\RunSrOperationEvent;
-use Truvoicer\TfDbReadCore\Models\Category;
-use Truvoicer\TfDbReadCore\Models\Provider;
-use Truvoicer\TfDbReadCore\Models\S;
-use Truvoicer\TfDbReadCore\Models\Sr;
-use Truvoicer\TfDbReadCore\Models\SrSchedule;
-use Truvoicer\TfDbReadCore\Models\User;
-use Truvoicer\TfDbReadCore\Repositories\MongoDB\MongoDBRepository;
-use Truvoicer\TfDbReadCore\Services\ApiManager\Operations\DataHandler\ApiRequestMongoDbHandler;
 use App\Services\Provider\ProviderScheduleService;
 use Database\Seeders\PropertySeeder;
 use Database\Seeders\RoleSeeder;
 use Database\Seeders\UserSeeder;
 use Illuminate\Console\Scheduling\CallbackEvent;
-use Tests\TestCase;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
-use Mockery;
-use Mockery\MockInterface;
 use Tests\Feature\Frontend\Operations\Data\Helpers\OperationsDbHelpers;
+use Tests\TestCase;
+use Truvoicer\TfDbReadCore\Enums\Api\ApiListKey;
+use Truvoicer\TfDbReadCore\Enums\Api\ApiMethod;
+use Truvoicer\TfDbReadCore\Enums\Api\ApiResponseFormat;
+use Truvoicer\TfDbReadCore\Enums\Property\PropertyType;
+use Truvoicer\TfDbReadCore\Enums\Sr\SrType;
+use Truvoicer\TfDbReadCore\Models\Category;
+use Truvoicer\TfDbReadCore\Models\Provider;
+use Truvoicer\TfDbReadCore\Models\S;
+use Truvoicer\TfDbReadCore\Models\SanctumUser;
+use Truvoicer\TfDbReadCore\Models\Sr;
+use Truvoicer\TfDbReadCore\Models\User;
+use Truvoicer\TfDbReadCore\Repositories\MongoDB\MongoDBRepository;
 
 class ProviderScheduleTest extends TestCase
 {
-
     private User $superUser;
-    private MongoDBRepository $mongoDbRepository;
-    private OperationsDbHelpers $operationsDbHelpers;
 
+    private MongoDBRepository $mongoDbRepository;
+
+    private OperationsDbHelpers $operationsDbHelpers;
 
     protected function setUp(): void
     {
         parent::setUp();
 
+        // Or specifically set the connection for this query
+        config(['database.connections.tf_mysql' => [
+            'driver' => 'sqlite',
+            'database' => ':memory:',
+        ]]);
+        // Set this as the default connection
+        config(['database.default' => 'sqlite']);
+
+        // Run migrations
+        $this->artisan('migrate:fresh', [
+            '--database' => 'tf_mysql',
+            '--path' => 'database/migrations',
+            '--seed' => false,
+            '--force' => true,
+        ]);
+
         // CRITICAL: Only run this in the testing environment
         if (app()->environment() !== 'testing') {
             throw new \Exception('Database cleanup is only allowed in the testing environment.');
         }
+        $this->artisan('db:seed', [
+            '--database' => 'tf_mysql', // Specify your connection
+            '--class' => 'RoleSeeder',
+        ]);
 
+        $this->artisan('db:seed', [
+            '--database' => 'tf_mysql',
+            '--class' => 'UserSeeder',
+        ]);
+        // Or for multiple seeders
+        $this->artisan('db:seed', [
+            '--database' => 'tf_mysql',
+            '--class' => 'PropertySeeder',
+        ]);
         $this->seed([
             RoleSeeder::class,
             UserSeeder::class,
             PropertySeeder::class,
         ]);
 
-        $this->superUser = User::first();
+        $this->superUser = SanctumUser::first();
         $this->mongoDbRepository = app(MongoDBRepository::class);
 
         $databaseName = DB::connection('mongodb')->getDatabaseName();
         $this->mongoDbRepository->getMongoDBQuery()
             ->getConnection()
-            ->getMongoClient()
+            ->getClient()
             ->dropDatabase($databaseName);
 
         $this->operationsDbHelpers = OperationsDbHelpers::instance();
@@ -67,12 +93,11 @@ class ProviderScheduleTest extends TestCase
 
     public function test_sr_operation_schedules_run_correctly()
     {
-
-        list(
+        [
             $provider,
             $category,
             $s
-        ) = $this->sharedPreparation();
+        ] = $this->sharedPreparation();
 
         $provider->srs->each(function (Sr $sr) {
 
@@ -96,7 +121,6 @@ class ProviderScheduleTest extends TestCase
 
         // Assert the job is scheduled
         $this->assertCount(1, $events, 'Sr operation schedules are not scheduled.');
-
 
         $event = $events->first();
 
@@ -113,7 +137,7 @@ class ProviderScheduleTest extends TestCase
     {
         // Mock the Event facade
         Event::fake([
-            RunSrOperationEvent::class
+            RunSrOperationEvent::class,
         ]);
 
         $responseData = [
@@ -121,27 +145,27 @@ class ProviderScheduleTest extends TestCase
                 'id' => 1,
                 'name' => 'test-name',
                 'title' => 'Test Title',
-                'description' => 'This is a test description for test title'
+                'description' => 'This is a test description for test title',
             ],
             [
                 'id' => 2,
                 'name' => 'test-name-2',
                 'title' => 'Test Title 2',
-                'description' => 'This is a test description for test title 2'
+                'description' => 'This is a test description for test title 2',
             ],
             [
                 'id' => 3,
                 'name' => 'test-name-3',
                 'title' => 'Test Title 3',
-                'description' => 'This is a test description for test title 3'
+                'description' => 'This is a test description for test title 3',
             ],
         ];
 
-        list(
+        [
             $provider,
             $category,
             $s
-        ) = $this->sharedPreparation($responseData, count($responseData));
+        ] = $this->sharedPreparation($responseData, count($responseData));
 
         $provider->srs->each(function (Sr $sr) {
 
@@ -166,7 +190,6 @@ class ProviderScheduleTest extends TestCase
 
         // Assert the job is scheduled
         $this->assertCount(1, $events, 'Sr operation schedules are not scheduled.');
-
 
         $scheduledEvent = $events->first();
 
@@ -186,17 +209,18 @@ class ProviderScheduleTest extends TestCase
 
         // Assert the event was dispatched
         Event::assertDispatched(RunSrOperationEvent::class, function ($event) {
-            if (!$event->userId) {
+            if (! $event->userId) {
                 return false;
             }
             $user = User::find($event->userId);
-            if (!$user) {
+            if (! $user) {
                 return false;
             }
             $configUser = config('services.scheduler.schedule_user_email');
-            if (!$configUser) {
+            if (! $configUser) {
                 return false;
             }
+
             return $user->email === $configUser;
         });
     }
@@ -205,6 +229,7 @@ class ProviderScheduleTest extends TestCase
     {
         $reflection = new \ReflectionClass($event);
         $callbackProperty = $reflection->getProperty('callback');
+
         return $callbackProperty->getValue($event);
     }
 
@@ -220,7 +245,7 @@ class ProviderScheduleTest extends TestCase
                     'category_id' => $category->id,
                     'type' => SrType::LIST->value,
                     'default_sr' => true,
-                    ApiListKey::LIST_KEY->value => 'results'
+                    ApiListKey::LIST_KEY->value => 'results',
                 ])
             )
             ->create();
@@ -254,29 +279,29 @@ class ProviderScheduleTest extends TestCase
         $properties = [
             [
                 'name' => PropertyType::ACCESS_TOKEN->value,
-                'value' => '12345'
+                'value' => '12345',
             ],
             [
                 'name' => PropertyType::API_TYPE->value,
-                'value' => ApiType::DEFAULT->value
+                'value' => ApiType::DEFAULT->value,
             ],
             [
                 'name' => PropertyType::BASE_URL->value,
-                'value' => 'http://aurl.com/v1'
+                'value' => 'http://aurl.com/v1',
             ],
             [
                 'name' => PropertyType::RESPONSE_FORMAT->value,
-                'value' => ApiResponseFormat::JSON->value
+                'value' => ApiResponseFormat::JSON->value,
             ],
             [
                 'name' => PropertyType::METHOD->value,
-                'value' => ApiMethod::GET->value
+                'value' => ApiMethod::GET->value,
             ],
         ];
         $srConfigs = [
             [
                 'name' => PropertyType::ENDPOINT->value,
-                'value' => '/test-endpoint-1'
+                'value' => '/test-endpoint-1',
             ],
             [
                 'name' => PropertyType::QUERY->value,
@@ -297,6 +322,7 @@ class ProviderScheduleTest extends TestCase
             $responseData,
             $entityCount
         );
+
         return [
             $provider,
             $category,

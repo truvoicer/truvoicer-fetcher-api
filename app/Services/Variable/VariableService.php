@@ -1,10 +1,11 @@
 <?php
+
 namespace App\Services\Variable;
 
 use Truvoicer\TfDbReadCore\Services\ApiManager\Data\DataConstants;
 
-class VariableService {
-
+class VariableService
+{
     protected function getReservedParameterKeys()
     {
         return array_map(function ($item) {

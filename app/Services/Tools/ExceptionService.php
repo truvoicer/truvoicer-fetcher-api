@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Services\Tools;
 
 use Symfony\Component\HttpFoundation\Response;
@@ -10,12 +11,12 @@ class ExceptionService
     public function processException(ExceptionEvent $event)
     {
         $exception = $event->getThrowable();
-        $message = sprintf("Error: %s  Status code %s", $exception->getMessage(), $exception->getCode());
+        $message = sprintf('Error: %s  Status code %s', $exception->getMessage(), $exception->getCode());
 
-        $response = new Response();
+        $response = new Response;
         $response->setContent($message);
 
-        if($exception instanceof  HttpExceptionInterface) {
+        if ($exception instanceof HttpExceptionInterface) {
             $response->setStatusCode($exception->getStatusCode());
             $response->headers->replace($exception->getHeaders());
         } else {

@@ -14,8 +14,8 @@ return new class extends Migration
         Schema::create('sr_config_entities', function (Blueprint $table) {
             $table->id();
             $table->foreignId('sr_config_id')
-            ->constrained('sr_configs')
-            ->cascadeOnDelete();
+                ->constrained('sr_configs')
+                ->cascadeOnDelete();
             $table->morphs('entityable');
             $table->timestamps();
         });

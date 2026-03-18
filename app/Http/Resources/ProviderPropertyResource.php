@@ -5,9 +5,11 @@ namespace App\Http\Resources;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
+/**
+ * @mixin \Truvoicer\TfDbReadCore\Models\ProviderProperty
+ */
 class ProviderPropertyResource extends JsonResource
 {
-
     /**
      * Transform the resource into an array.
      *
@@ -17,11 +19,11 @@ class ProviderPropertyResource extends JsonResource
     {
         return [
             'id' => $this->id,
-            "provider_id" => $this->provider_id,
-            "property_id" => $this->property_id,
-            "value" => $this->value,
-            "big_text_value" => $this->big_text_value,
-            "array_value" => $this->array_value,
+            'provider_id' => $this->provider_id,
+            'property_id' => $this->property_id,
+            'value' => $this->value,
+            'big_text_value' => $this->big_text_value,
+            'array_value' => $this->array_value,
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
         ];

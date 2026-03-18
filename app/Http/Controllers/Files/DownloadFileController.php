@@ -4,50 +4,40 @@ namespace App\Http\Controllers\Files;
 
 use App\Http\Controllers\Controller;
 use App\Models\FileDownload;
-use Truvoicer\TfDbReadCore\Services\Permission\AccessControlService;
 use App\Services\Tools\FileSystem\Downloads\DownloadsFileSystemService;
 use App\Services\Tools\FileSystem\FileSystemService;
 use App\Services\Tools\FileSystem\Uploads\UploadsFileSystemService;
-use App\Services\Tools\HttpRequestService;
-use App\Services\Tools\SerializerService;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\HeaderUtils;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
+use Truvoicer\TfDbReadCore\Services\Permission\AccessControlService;
 
 class DownloadFileController extends Controller
 {
-
     public function __construct(
-        protected AccessControlService     $accessControlService,
-        protected HttpRequestService       $httpRequestService,
-        protected SerializerService        $serializerService,
+        protected AccessControlService $accessControlService,
         private DownloadsFileSystemService $downloadsFileSystemService,
-        private UploadsFileSystemService   $uploadsFileSystemService,
-    )
-    {
-        parent::__construct($accessControlService);
+        private UploadsFileSystemService $uploadsFileSystemService,
+    ) {
+        parent::__construct();
     }
 
-    /**
-     * @param FileDownload $fileDownload
-     * @param FileSystemService $fileSystemService
-     */
     public function __invoke(FileDownload $fileDownload, FileSystemService $fileSystemService, Request $request): StreamedResponse
     {
-        if (!$fileDownload->exists) {
-            throw new BadRequestHttpException("File download not found.");
+        if (! $fileDownload->exists) {
+            throw new BadRequestHttpException('File download not found.');
         }
 
         $file = $fileDownload->file()->first();
-        if (!$file) {
-            throw new BadRequestHttpException("File not found.");
+        if (! $file) {
+            throw new BadRequestHttpException('File not found.');
         }
         if ($fileDownload->client_ip !== $request->getClientIp()) {
-            throw new BadRequestHttpException("Client IP does not match.");
+            throw new BadRequestHttpException('Client IP does not match.');
         }
         if ($fileDownload->user_agent !== $request->userAgent()) {
-            throw new BadRequestHttpException("User agent does not match.");
+            throw new BadRequestHttpException('User agent does not match.');
         }
         $contentDisposition = HeaderUtils::makeDisposition(
             HeaderUtils::DISPOSITION_ATTACHMENT,
@@ -65,6 +55,7 @@ class DownloadFileController extends Controller
         $response->headers->set('Content-Disposition', $contentDisposition);
 
         $fileSystemService->deleteFileDownload($fileDownload);
+
         return $response;
     }
 
@@ -73,7 +64,7 @@ class DownloadFileController extends Controller
         return match ($fileSystem) {
             DownloadsFileSystemService::FILE_SYSTEM_NAME => $this->downloadsFileSystemService->readFileStream($path),
             UploadsFileSystemService::FILE_SYSTEM_NAME => $this->uploadsFileSystemService->readFileStream($path),
-            default => throw new BadRequestHttpException(sprintf("File system not recognised: (%s)", $fileSystem)),
+            default => throw new BadRequestHttpException(sprintf('File system not recognised: (%s)', $fileSystem)),
         };
     }
 }

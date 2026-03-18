@@ -2,24 +2,21 @@
 
 namespace App\Services\ApiServices\ServiceRequests\ResponseKeys\Populate;
 
-use Truvoicer\TfDbReadCore\Enums\Property\PropertyType;
-use Truvoicer\TfDbReadCore\Models\Provider;
-use Truvoicer\TfDbReadCore\Models\Sr;
-use Truvoicer\TfDbReadCore\Repositories\SrRepository;
-use Truvoicer\TfDbReadCore\Services\ApiManager\Data\DataConstants;
-use Truvoicer\TfDbReadCore\Services\ApiManager\Response\ResponseManager;
 use App\Services\ApiServices\ServiceRequests\ResponseKeys\Populate\Types\PopulateTypeJson;
 use App\Services\ApiServices\ServiceRequests\ResponseKeys\Populate\Types\PopulateTypeXml;
+use Illuminate\Support\Arr;
+use Truvoicer\TfDbReadCore\Enums\Property\PropertyType;
+use Truvoicer\TfDbReadCore\Models\Sr;
+use Truvoicer\TfDbReadCore\Repositories\SrRepository;
+use Truvoicer\TfDbReadCore\Services\ApiManager\Response\ResponseManager;
 use Truvoicer\TfDbReadCore\Services\ApiServices\ServiceRequests\SrConfigService;
 use Truvoicer\TfDbReadCore\Services\Provider\ProviderService;
 use Truvoicer\TfDbReadCore\Traits\Error\ErrorTrait;
 use Truvoicer\TfDbReadCore\Traits\User\UserTrait;
-use Exception;
-use Illuminate\Support\Arr;
 
 class PopulateFactory
 {
-    use UserTrait, PopulateTrait, ErrorTrait;
+    use ErrorTrait, PopulateTrait, UserTrait;
 
     private SrRepository $srRepository;
 
@@ -29,7 +26,7 @@ class PopulateFactory
         private PopulateTypeXml $populateTypeXml,
         private PopulateTypeJson $populateTypeJson
     ) {
-        $this->srRepository = new SrRepository();
+        $this->srRepository = new SrRepository;
     }
 
     public function create(Sr $destSr, array $sourceSrs, ?array $query = [])
@@ -47,12 +44,12 @@ class PopulateFactory
 
                 $arrayKeys = array_keys($item);
                 $key = $arrayKeys[array_key_first($arrayKeys)];
+
                 return [$key => $item[$key]];
             });
         }
         foreach ($fetchSourceSrs as $sr) {
             $provider = $sr->provider;
-
 
             /** @var \Truvoicer\TfDbReadCore\Models\Provider|null $provider */
             $entityProvider = $this->providerService->getProviderEntityFromProviderProperties(
@@ -69,7 +66,7 @@ class PopulateFactory
                 $responseFormat = $this->srConfigService->getConfigValue($sr, PropertyType::RESPONSE_FORMAT->value);
             }
 
-            if (!$responseFormat) {
+            if (! $responseFormat) {
                 continue;
             }
             switch ($responseFormat) {

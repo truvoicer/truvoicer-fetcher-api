@@ -6,35 +6,40 @@ use App\Enums\Import\ImportAction;
 use App\Enums\Import\ImportConfig;
 use App\Enums\Import\ImportMappingType;
 use App\Enums\Import\ImportType;
+use App\Services\Tools\IExport\IExportTypeService;
+use Exception;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\App;
+use Illuminate\Support\Facades\Log;
 use Truvoicer\TfDbReadCore\Models\Provider;
 use Truvoicer\TfDbReadCore\Models\Sr;
 use Truvoicer\TfDbReadCore\Services\ApiServices\ServiceRequests\SrService;
 use Truvoicer\TfDbReadCore\Services\EntityService;
 use Truvoicer\TfDbReadCore\Services\Permission\AccessControlService;
 use Truvoicer\TfDbReadCore\Services\Provider\ProviderService;
-use App\Services\Tools\IExport\IExportTypeService;
 use Truvoicer\TfDbReadCore\Traits\Error\ErrorTrait;
 use Truvoicer\TfDbReadCore\Traits\User\UserTrait;
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Facades\App;
-use Illuminate\Support\Facades\Log;
 
-abstract class ImporterBase
+class ImporterBase implements ImporterInterface
 {
     use ErrorTrait, UserTrait;
 
     protected SrService $srService;
+
     protected ProviderService $providerService;
+
     protected Model $model;
+
     protected array $config;
+
     protected array $mappings;
+
     protected EntityService $entityService;
 
     public function __construct(
         protected AccessControlService $accessControlService,
-        Model                          $model
-    )
-    {
+        Model $model
+    ) {
         $this->srService = App::make(SrService::class);
         $this->providerService = App::make(ProviderService::class);
         $this->entityService = App::make(EntityService::class);
@@ -43,29 +48,65 @@ abstract class ImporterBase
         $this->setMappings();
     }
 
-    abstract protected function setConfig(): void;
+    public function setConfig(): void
+    {
+        throw new Exception('Not implemented');
+    }
 
-    abstract protected function setMappings(): void;
+    public function setMappings(): void
+    {
+        throw new Exception('Not implemented');
+    }
 
-    abstract protected function loadDependencies(): void;
+    public function loadDependencies(): void
+    {
+        throw new Exception('Not implemented');
+    }
 
-    abstract public function validateImportData(array $data): void;
+    public function validateImportData(array $data): void
+    {
+        throw new Exception('Not implemented');
+    }
 
-    abstract public function filterImportData(array $data): array;
+    public function filterImportData(array $data): array
+    {
+        throw new Exception('Not implemented');
+    }
 
-    abstract public function getExportData(): array;
+    public function getExportData(): array
+    {
+        throw new Exception('Not implemented');
+    }
 
-    abstract public function getExportTypeData($item): array|bool;
+    public function getExportTypeData($item): array|bool
+    {
+        throw new Exception('Not implemented');
+    }
 
-    abstract public function parseEntity(array $entity): array;
+    public function parseEntity(array $entity): array
+    {
+        throw new Exception('Not implemented');
+    }
 
-    abstract public function parseEntityBatch(array $data): array;
+    public function parseEntityBatch(array $data): array
+    {
+        throw new Exception('Not implemented');
+    }
 
-    abstract protected function overwrite(array $data, bool $withChildren, array $map, ?array $dest = null, ?array $extraData = []): array;
+    public function overwrite(array $data, bool $withChildren, array $map, ?array $dest = null, ?array $extraData = []): array
+    {
+        throw new Exception('Not implemented');
+    }
 
-    abstract protected function create(array $data, bool $withChildren, array $map, ?array $dest = null, ?array $extraData = []): array;
+    public function create(array $data, bool $withChildren, array $map, ?array $dest = null, ?array $extraData = []): array
+    {
+        throw new Exception('Not implemented');
+    }
 
-    abstract protected function deepFind(ImportType $importType, array $data, array $conditions, ?string $operation = 'AND'): array|null;
+    public function deepFind(ImportType $importType, array $data, array $conditions, ?string $operation = 'AND'): ?array
+    {
+        throw new Exception('Not implemented');
+    }
 
     public function lock(ImportAction $action, array $map, array $data, ?array $dest = null): array
     {
@@ -90,6 +131,7 @@ abstract class ImporterBase
         if ($overwrite['success']) {
             return $overwrite;
         }
+
         return $this->create($data, $withChildren, $map, $dest, $extraData);
     }
 
@@ -102,7 +144,7 @@ abstract class ImporterBase
             ];
         }
         $action = ImportAction::tryFrom($map['action']);
-        if (!$action) {
+        if (! $action) {
             return [
                 'success' => false,
                 'error' => 'Invalid action found.',
@@ -120,14 +162,15 @@ abstract class ImporterBase
                         return $this->importSelfWithChildren($action, $map, $data, $dest, $lock);
                     default:
                         Log::channel(IExportTypeService::LOGGING_NAME)->error(
-                            "Invalid mapping type.",
+                            'Invalid mapping type.',
                             [
-                                'data' => $data
+                                'data' => $data,
                             ]
                         );
+
                         return [
                             'success' => false,
-                            'message' => 'Invalid mapping type.'
+                            'message' => 'Invalid mapping type.',
                         ];
                 }
         }
@@ -139,6 +182,7 @@ abstract class ImporterBase
         foreach ($data as $provider) {
             $response[] = $this->import($action, $provider, $withChildren, $map, null, $extraData);
         }
+
         return $response;
     }
 
@@ -150,7 +194,7 @@ abstract class ImporterBase
             ImportAction::OVERWRITE,
             ImportAction::OVERWRITE_OR_CREATE,
         ];
-        if (!$lock) {
+        if (! $lock) {
             return match ($action) {
                 ImportAction::CREATE => $this->create($data, $withChildren, $map, $dest, $extraData),
                 ImportAction::OVERWRITE => $this->overwrite($data, $withChildren, $map, $dest, $extraData),
@@ -160,22 +204,24 @@ abstract class ImporterBase
         if (in_array($action, $lockableActions)) {
             return $this->lock($action, $map, $data, $dest);
         }
+
         return [
             'success' => true,
-            'message' => 'Action is not lockable.'
+            'message' => 'Action is not lockable.',
         ];
     }
 
     protected function compareKeysWithModelFields(array $data): bool
     {
         $modelKeys = $this->model->getFillable();
-        //validate data has same keys as model
+        // validate data has same keys as model
         foreach ($data as $category) {
-            if (!$this->compareItemKeysWithModelFields($category)) {
+            if (! $this->compareItemKeysWithModelFields($category)) {
                 $this->addError(
                     'import_type_validation',
-                    "Data keys do not match model fields."
+                    'Data keys do not match model fields.'
                 );
+
                 return false;
             }
         }
@@ -189,6 +235,7 @@ abstract class ImporterBase
         if (count(array_diff($modelKeys, array_keys($data))) > 0) {
             return false;
         }
+
         return true;
     }
 
@@ -205,8 +252,9 @@ abstract class ImporterBase
             ...$this->config,
             ImportConfig::IMPORT_MAPPINGS->value => array_map(function ($map) {
                 $map['source'] = $this->getConfigItem(ImportConfig::NAME);
+
                 return $map;
-            }, $this->mappings)
+            }, $this->mappings),
         ];
     }
 
@@ -216,16 +264,15 @@ abstract class ImporterBase
     }
 
     protected function buildConfig(
-        bool    $show,
-        string  $id,
-        string  $name,
-        string  $label,
+        bool $show,
+        string $id,
+        string $name,
+        string $label,
         ?string $nameField = null,
         ?string $labelField = null,
         ?string $rootLabelField = null,
-        ?array  $childrenKeys = [],
-    ): void
-    {
+        ?array $childrenKeys = [],
+    ): void {
         $this->config[ImportConfig::SHOW->value] = $show;
         $this->config[ImportConfig::ID->value] = $id;
         $this->config[ImportConfig::NAME->value] = $name;
@@ -238,9 +285,10 @@ abstract class ImporterBase
 
     protected function getConfigItem(ImportConfig $importConfig): mixed
     {
-        if (!array_key_exists($importConfig->value, $this->config)) {
+        if (! array_key_exists($importConfig->value, $this->config)) {
             return null;
         }
+
         return $this->config[$importConfig->value];
     }
 
@@ -252,13 +300,14 @@ abstract class ImporterBase
     protected function importSelf(ImportAction $action, array $map, array $data, bool $withChildren, ?array $dest = null, ?bool $lock = false): array
     {
         $this->loadDependencies();
-        if (!empty($map['root']) && !empty($map['children']) && is_array($map['children']) && count($map['children'])) {
+        if (! empty($map['root']) && ! empty($map['children']) && is_array($map['children'])) {
             return [
                 'success' => true,
                 'data' => array_map(function ($map) use ($data, $action, $dest, $lock) {
                     $map['action'] = $action->value;
+
                     return $this->importMapFactory($map, $data, $dest, $lock);
-                }, $map['children'])
+                }, $map['children']),
             ];
         }
 
@@ -270,15 +319,16 @@ abstract class ImporterBase
                 'map' => $map,
             ];
         }
+
         return $this->import($action, $data[$findItemIndex], $withChildren, $map, $dest, [], $lock);
     }
 
     protected function findProvider(ImportType $importType, array $data, array $map, ?array $dest = null): array
     {
-        if (!empty($data['provider'])) {
+        if (! empty($data['provider'])) {
             $provider = $data['provider'];
         } elseif (
-            !empty($map['mapping']['dest']) &&
+            ! empty($map['mapping']['dest']) &&
             $map['mapping']['dest'] === ImportType::PROVIDER->value &&
             is_array($dest)
         ) {
@@ -286,41 +336,42 @@ abstract class ImporterBase
             if ($destIndex === false) {
                 return [
                     'success' => false,
-                    'message' => "Provider not found | Import type: {$importType->value}"
+                    'message' => "Provider not found | Import type: {$importType->value}",
                 ];
             }
-            if (!empty($dest[$destIndex]['id'])) {
-                $provider = $this->providerService->getProviderById((int)$dest[$destIndex]['id']);
+            if (! empty($dest[$destIndex]['id'])) {
+                $provider = $this->providerService->getProviderById((int) $dest[$destIndex]['id']);
             } else {
                 return [
                     'success' => false,
-                    'message' => "Provider is required | Import type: {$importType->value}"
+                    'message' => "Provider is required | Import type: {$importType->value}",
                 ];
             }
         } else {
             return [
                 'success' => false,
-                'message' => "Provider is required | Import type: {$importType->value}"
+                'message' => "Provider is required | Import type: {$importType->value}",
             ];
         }
-        if (!$provider instanceof Provider) {
+        if (! $provider instanceof Provider) {
             return [
                 'success' => false,
-                'message' => "Provider not found | Import type: {$importType->value}"
+                'message' => "Provider not found | Import type: {$importType->value}",
             ];
         }
+
         return [
             'success' => true,
-            'provider' => $provider
+            'provider' => $provider,
         ];
     }
 
     public function findSr(ImportType $importType, array $data, array $map, ?array $dest = null): array
     {
-        if (!empty($data['sr'])) {
+        if (! empty($data['sr'])) {
             $sr = $data['sr'];
         } elseif (
-            !empty($map['mapping']['dest']) &&
+            ! empty($map['mapping']['dest']) &&
             $map['mapping']['dest'] === ImportType::SR->value &&
             is_array($dest)
         ) {
@@ -328,33 +379,33 @@ abstract class ImporterBase
             if ($destIndex === false) {
                 return [
                     'success' => false,
-                    'message' => "Sr not found for sr schedule | Import type: {$importType->value}"
+                    'message' => "Sr not found for sr schedule | Import type: {$importType->value}",
                 ];
             }
-            if (!empty($dest[$destIndex]['id'])) {
-                $sr = $this->srService->getServiceRequestById((int)$dest[$destIndex]['id']);
+            if (! empty($dest[$destIndex]['id'])) {
+                $sr = $this->srService->getServiceRequestById((int) $dest[$destIndex]['id']);
             } else {
                 return [
                     'success' => false,
-                    'message' => "Sr is required for sr schedule | Import type: {$importType->value}"
+                    'message' => "Sr is required for sr schedule | Import type: {$importType->value}",
                 ];
             }
         } else {
             return [
                 'success' => false,
-                'message' => "Sr is required for sr schedule | Import type: {$importType->value}"
+                'message' => "Sr is required for sr schedule | Import type: {$importType->value}",
             ];
         }
-        if (!$sr instanceof Sr) {
+        if (! $sr instanceof Sr) {
             return [
                 'success' => false,
-                'message' => "Sr not found for sr schedule | Import type: {$importType->value}"
+                'message' => "Sr not found for sr schedule | Import type: {$importType->value}",
             ];
         }
+
         return [
             'success' => true,
-            'sr' => $sr
+            'sr' => $sr,
         ];
     }
-
 }

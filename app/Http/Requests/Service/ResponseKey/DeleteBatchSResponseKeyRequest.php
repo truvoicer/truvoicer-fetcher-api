@@ -2,11 +2,9 @@
 
 namespace App\Http\Requests\Service\ResponseKey;
 
-use Truvoicer\TfDbReadCore\Models\Provider;
-use Truvoicer\TfDbReadCore\Models\S;
-use Truvoicer\TfDbReadCore\Models\SResponseKey;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
+use Truvoicer\TfDbReadCore\Models\SResponseKey;
 
 class DeleteBatchSResponseKeyRequest extends FormRequest
 {
@@ -26,11 +24,11 @@ class DeleteBatchSResponseKeyRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'ids.*' => Rule::forEach(function ($value, string $attribute) {
-                return [
-                    Rule::exists(SResponseKey::class, 'id'),
-                ];
-            })
+            'ids' => ['required', 'array'],
+            'ids.*' => [
+                'integer',
+                Rule::exists(SResponseKey::class, 'id'),
+            ],
         ];
     }
 }

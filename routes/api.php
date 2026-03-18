@@ -10,21 +10,22 @@ use App\Http\Controllers\Api\Backend\Property\PropertyProfileController;
 use App\Http\Controllers\Api\Backend\Provider\ProviderController;
 use App\Http\Controllers\Api\Backend\Provider\ProviderPropertyController;
 use App\Http\Controllers\Api\Backend\Provider\ProviderRateLimitController;
-use App\Http\Controllers\Api\Backend\Services\ServiceRequestScheduleController;
-use App\Http\Controllers\Api\Backend\Services\SrRateLimitController;
-use App\Http\Controllers\Api\Backend\Tools\EntityController;
-use App\Http\Controllers\Api\Backend\ValidationController;
 use App\Http\Controllers\Api\Backend\SearchController;
 use App\Http\Controllers\Api\Backend\Services\ServiceController;
 use App\Http\Controllers\Api\Backend\Services\ServiceRequestConfigController;
 use App\Http\Controllers\Api\Backend\Services\ServiceRequestController;
 use App\Http\Controllers\Api\Backend\Services\ServiceRequestParameterController;
 use App\Http\Controllers\Api\Backend\Services\ServiceRequestResponseKeyController;
+use App\Http\Controllers\Api\Backend\Services\ServiceRequestScheduleController;
 use App\Http\Controllers\Api\Backend\Services\ServiceResponseKeyController;
+use App\Http\Controllers\Api\Backend\Services\SrRateLimitController;
 use App\Http\Controllers\Api\Backend\Services\SrResponseKeyHighestPriorityController;
 use App\Http\Controllers\Api\Backend\Services\SrResponseKeyOrderSearchPriorityController;
 use App\Http\Controllers\Api\Backend\Services\SrResponseKeySrController;
+use App\Http\Controllers\Api\Backend\Tools\Ai\AiAssistantController;
+use App\Http\Controllers\Api\Backend\Tools\Ai\AiImportPromptController;
 use App\Http\Controllers\Api\Backend\Tools\Encoding\MbEncodingController;
+use App\Http\Controllers\Api\Backend\Tools\EntityController;
 use App\Http\Controllers\Api\Backend\Tools\EnumController;
 use App\Http\Controllers\Api\Backend\Tools\FileSystemController;
 use App\Http\Controllers\Api\Backend\Tools\Format\FormatOptionController;
@@ -32,11 +33,11 @@ use App\Http\Controllers\Api\Backend\Tools\ImportExportController;
 use App\Http\Controllers\Api\Backend\Tools\UtilsController;
 use App\Http\Controllers\Api\Backend\User\UserController;
 use App\Http\Controllers\Api\Backend\User\UserSettingController;
+use App\Http\Controllers\Api\Backend\ValidationController;
 use App\Http\Controllers\Api\Frontend\ListController;
 use App\Http\Controllers\Api\Frontend\OperationsController;
-use Truvoicer\TfDbReadCore\Models\Provider;
-use Truvoicer\TfDbReadCore\Models\Sr;
 use Illuminate\Support\Facades\Route;
+use Truvoicer\TfDbReadCore\Models\Provider;
 
 /*
 |--------------------------------------------------------------------------
@@ -239,7 +240,6 @@ Route::middleware(['auth:sanctum', 'ability:api:admin,api:superuser,api:super_ad
                         Route::prefix('response-key')->name('response-key.')->group(function () {
                             Route::get('/list', [ServiceRequestResponseKeyController::class, 'getRequestResponseKeyList'])->name('list');
 
-
                             Route::post('/create', [ServiceRequestResponseKeyController::class, 'createRequestResponseKey'])->name('create');
 
                             Route::prefix('order')->name('order.')->group(function () {
@@ -352,6 +352,32 @@ Route::middleware(['auth:sanctum', 'ability:api:superuser,'])->group(function ()
 
 Route::middleware(['auth:sanctum', 'ability:api:admin,api:superuser,api:super_admin'])->group(function () {
     Route::prefix('backend')->name('backend.')->group(function () {
+        Route::prefix('tools')->name('tools.')->group(function () {
+            Route::prefix('ai')->name('ai.')->group(function () {
+                Route::prefix('import')->name('import.')->group(function () {
+                    Route::prefix('prompt')->name('prompt.')->group(function () {
+                        Route::get('/', [AiImportPromptController::class, 'index'])->name('index');
+                        Route::post('/', [AiImportPromptController::class, 'store'])->name('store');
+                        Route::post('/bulk/destroy', [AiImportPromptController::class, 'bulkDestroy'])->name('bulk.destroy');
+                        Route::prefix('{aiImportPrompt}')->group(function () {
+                            Route::patch('/', [AiImportPromptController::class, 'update'])->name('update');
+                            Route::delete('/', [AiImportPromptController::class, 'destroy'])->name('destroy');
+                        });
+                    });
+                });
+                Route::prefix('assistant')->name('assistant.')->group(function () {
+                    Route::get('/', [AiAssistantController::class, 'index'])->name('index');
+                    Route::post('/', [AiAssistantController::class, 'store'])->name('store');
+                    Route::post('/bulk/destroy', [AiAssistantController::class, 'bulkDestroy'])->name('bulk.destroy');
+                    Route::post('/bulk/import', [AiAssistantController::class, 'bulkImport'])->name('bulk.import');
+                    Route::prefix('{aiImportConfig}')->group(function () {
+                        Route::patch('/', [AiAssistantController::class, 'update'])->name('update');
+                        Route::post('/import', [AiAssistantController::class, 'import'])->name('import');
+                        Route::delete('/', [AiAssistantController::class, 'destroy'])->name('destroy');
+                    });
+                });
+            });
+        });
         Route::prefix('admin')->name('admin.')->group(function () {
             Route::prefix('user')->name('user.')->group(function () {
                 Route::get('/list', [AdminController::class, 'getUsersList'])->name('list');

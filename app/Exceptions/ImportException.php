@@ -2,20 +2,17 @@
 
 namespace App\Exceptions;
 
-use Truvoicer\TfDbReadCore\Services\ApiManager\Client\Entity\ApiRequest;
 use Exception;
 
 class ImportException extends Exception
 {
     public function __construct(
-        string         $message = "Import error",
+        string $message = 'Import error',
         private ?array $errors = [],
-        private ?int   $statusCode = 400,
-    )
-    {
+        private ?int $statusCode = 400,
+    ) {
         parent::__construct($message);
     }
-
 
     public function render($request): \Illuminate\Http\JsonResponse
     {

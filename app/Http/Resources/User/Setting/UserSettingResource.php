@@ -5,6 +5,9 @@ namespace App\Http\Resources\User\Setting;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
+/**
+ * @mixin \Truvoicer\TfDbReadCore\Models\UserSetting
+ */
 class UserSettingResource extends JsonResource
 {
     /**
@@ -16,7 +19,7 @@ class UserSettingResource extends JsonResource
     {
         return [
             'theme' => $this->theme,
-            'open_mode' => $this->open_mode
+            'open_mode' => $this->open_mode,
         ];
     }
 }

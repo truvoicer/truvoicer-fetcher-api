@@ -4,12 +4,15 @@ namespace Database\Factories;
 
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Carbon;
+use Truvoicer\TfDbReadCore\Models\SrSchedule;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\SrSchedule>
+ * @extends \Illuminate\Database\Eloquent\Factories\Factory<\Truvoicer\TfDbReadCore\Models\SrSchedule>
  */
 class SrScheduleFactory extends Factory
 {
+    protected $model = SrSchedule::class;
+
     /**
      * Define the model's default state.
      *
@@ -29,6 +32,7 @@ class SrScheduleFactory extends Factory
         } elseif ($has_end_date) {
             $end_date = Carbon::make($this->faker->dateTime());
         }
+
         return [
             'execute_immediately' => $this->faker->boolean,
             'forever' => $this->faker->boolean,
@@ -42,15 +46,15 @@ class SrScheduleFactory extends Factory
             'use_cron_expression' => $this->faker->boolean,
             'cron_expression' => null,
             'every_minute' => $this->faker->boolean,
-            'minute' => $this->faker->randomNumber(1, 59),
+            'minute' => $this->faker->numberBetween(1, 59),
             'every_hour' => $this->faker->boolean,
-            'hour' => $this->faker->randomNumber(1, 23),
+            'hour' => $this->faker->numberBetween(1, 23),
             'every_day' => $this->faker->boolean,
-            'day' => $this->faker->randomNumber(1, 31),
+            'day' => $this->faker->numberBetween(1, 31),
             'every_weekday' => $this->faker->boolean,
             'weekday' => $this->faker->randomElement([0, 1, 2, 3, 4, 5, 6]),
             'every_month' => $this->faker->boolean,
-            'month' => $this->faker->randomNumber(1, 12),
+            'month' => $this->faker->numberBetween(1, 12),
             'parameters' => $this->faker->randomElement(['a', 'b', 'c']),
         ];
     }

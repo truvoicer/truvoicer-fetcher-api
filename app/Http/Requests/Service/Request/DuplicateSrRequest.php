@@ -2,10 +2,9 @@
 
 namespace App\Http\Requests\Service\Request;
 
-use Truvoicer\TfDbReadCore\Models\Sr;
-use Truvoicer\TfDbReadCore\Repositories\SrRepository;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
+use Truvoicer\TfDbReadCore\Models\Sr;
 
 class DuplicateSrRequest extends FormRequest
 {

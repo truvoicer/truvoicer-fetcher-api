@@ -2,10 +2,9 @@
 
 namespace App\Http\Requests;
 
-use Truvoicer\TfDbReadCore\Enums\Entity\EntityType;
-use Truvoicer\TfDbReadCore\Services\EntityService;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
+use Truvoicer\TfDbReadCore\Enums\Entity\EntityType;
 
 class EntityRequest extends FormRequest
 {
@@ -25,7 +24,7 @@ class EntityRequest extends FormRequest
     public function rules(): array
     {
         return [
-            "entity" => ["required", "string", Rule::enum(EntityType::class)],
+            'entity' => ['required', 'string', Rule::enum(EntityType::class)],
             'ids' => 'array',
         ];
     }

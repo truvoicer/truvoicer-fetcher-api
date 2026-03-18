@@ -2,16 +2,15 @@
 
 namespace App\Http\Resources\Service\ServiceRequest;
 
-use Truvoicer\TfDbReadCore\Enums\Api\ApiListKey;
-use Truvoicer\TfDbReadCore\Enums\FormatOptions;
 use App\Http\Resources\CategoryResource;
 use App\Http\Resources\ProviderMinimalResource;
-use App\Http\Resources\ProviderResource;
 use App\Http\Resources\Service\ServiceResource;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
+use Truvoicer\TfDbReadCore\Enums\Api\ApiListKey;
+use Truvoicer\TfDbReadCore\Enums\FormatOptions;
 
-/** @mixin \App\Models\Sr */
+/** @mixin \Truvoicer\TfDbReadCore\Models\Sr */
 class ServiceRequestResource extends JsonResource
 {
     /**
@@ -27,12 +26,11 @@ class ServiceRequestResource extends JsonResource
             'category_id' => $this->category_id,
             'category' => $this->whenLoaded('category', CategoryResource::make($this->category)),
             'provider_id' => $this->provider_id,
-            'provider' => $this->whenLoaded('provider', ProviderResource::make($this->provider)),
             's_id' => $this->s_id,
             's' => $this->whenLoaded('s', ServiceResource::make($this->s)),
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
-            'child_srs' =>$this->whenLoaded('childSrs', ServiceRequestResource::collection($this->childSrs)),
+            'child_srs' => $this->whenLoaded('childSrs', ServiceRequestResource::collection($this->childSrs)),
             'provider' => new ProviderMinimalResource($this->provider),
             'hasChildren' => $this->childSrs->count() > 0,
             'srChildSr' => $this->whenLoaded('srChildSr'),
@@ -52,15 +50,16 @@ class ServiceRequestResource extends JsonResource
                 array_map(
                     function (string $value) {
                         $formatOption = FormatOptions::tryFrom($value);
+
                         return [
                             'value' => $formatOption->value,
-                            'label' => $formatOption->label()
+                            'label' => $formatOption->label(),
                         ];
                     },
                     array_filter(
                         $this->{ApiListKey::LIST_FORMAT_OPTIONS->value},
 
-                        fn(string $value) => FormatOptions::tryFrom($value),
+                        fn (string $value) => FormatOptions::tryFrom($value) !== null,
                         ARRAY_FILTER_USE_BOTH
                     )
                 )

@@ -2,9 +2,9 @@
 
 namespace App\Http\Requests\Service\Request\Schedule;
 
-use Truvoicer\TfDbReadCore\Models\SrSchedule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
+use Truvoicer\TfDbReadCore\Models\SrSchedule;
 
 class DeleteBatchSrScheduleRequest extends FormRequest
 {
@@ -24,11 +24,11 @@ class DeleteBatchSrScheduleRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'ids.*' => Rule::forEach(function ($value, string $attribute) {
-                return [
-                    Rule::exists(SrSchedule::class, 'id'),
-                ];
-            })
+            'ids' => ['required', 'array'],
+            'ids.*' => [
+                'integer',
+                Rule::exists(SrSchedule::class, 'id'),
+            ],
         ];
     }
 }

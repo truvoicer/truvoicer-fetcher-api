@@ -2,13 +2,13 @@
 
 namespace App\Http\Resources\Service\ServiceRequest;
 
-use Truvoicer\TfDbReadCore\Http\Resources\BaseCollection;
 use App\Http\Resources\ProviderMinimalResource;
-use App\Http\Resources\ProviderResource;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
-use Illuminate\Http\Resources\Json\ResourceCollection;
 
+/**
+ * @mixin \Truvoicer\TfDbReadCore\Models\Sr
+ */
 class SrTreeViewResource extends JsonResource
 {
     /**

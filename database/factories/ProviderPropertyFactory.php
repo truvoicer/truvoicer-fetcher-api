@@ -3,12 +3,15 @@
 namespace Database\Factories;
 
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Truvoicer\TfDbReadCore\Models\ProviderProperty;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\ProviderProperty>
+ * @extends \Illuminate\Database\Eloquent\Factories\Factory<\Truvoicer\TfDbReadCore\Models\ProviderProperty>
  */
 class ProviderPropertyFactory extends Factory
 {
+    protected $model = ProviderProperty::class;
+
     /**
      * Define the model's default state.
      *
@@ -20,7 +23,7 @@ class ProviderPropertyFactory extends Factory
             'value' => $this->faker->unique()->word(),
             'big_text_value' => $this->faker->unique()->sentence(),
             'array_value' => $this->faker->randomElements([
-                'a', 'b', 'c', 'd'
+                'a', 'b', 'c', 'd',
             ]),
         ];
     }

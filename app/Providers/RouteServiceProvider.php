@@ -2,14 +2,15 @@
 
 namespace App\Providers;
 
-use Truvoicer\TfDbReadCore\Models\Provider;
-use Truvoicer\TfDbReadCore\Models\User;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Foundation\Support\Providers\RouteServiceProvider as ServiceProvider;
 use Illuminate\Http\Request;
+use Illuminate\Routing\Route as RoutingRoute;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\Route;
-use Illuminate\Routing\Route as RoutingRoute;
+use Truvoicer\TfDbReadCore\Models\Provider;
+use Truvoicer\TfDbReadCore\Models\Sr;
+use Truvoicer\TfDbReadCore\Models\User;
 
 class RouteServiceProvider extends ServiceProvider
 {
@@ -30,14 +31,54 @@ class RouteServiceProvider extends ServiceProvider
         Route::model('user', User::class);
         Route::model('provider', Provider::class);
 
-        Route::bind('serviceRequest', function ($value, RoutingRoute $ssd) {
-            $provider = $ssd->parameter('provider');
-            return $provider->serviceRequest()->where('id', $value)->firstOrFail();
+        /**
+         * Bind serviceRequest to a provider's service requests.
+         *
+         * @throws \Symfony\Component\HttpKernel\Exception\NotFoundHttpException
+         */
+        Route::bind('serviceRequest', function (string $value, RoutingRoute $route) {
+            /** @var \Truvoicer\TfDbReadCore\Models\Provider|null $provider */
+            $provider = $route->parameter('provider');
+
+            if (! $provider instanceof Provider) {
+                abort(404, 'Provider not found or invalid.');
+            }
+
+            /** @var \Truvoicer\TfDbReadCore\Models\Sr|null $serviceRequest */
+            $serviceRequest = $provider->serviceRequest()
+                ->where('id', $value)
+                ->first();
+
+            if (! $serviceRequest) {
+                abort(404, 'Service request not found for this provider.');
+            }
+
+            return $serviceRequest;
         });
 
-        Route::bind('childSr', function (int $value, RoutingRoute $ssd) {
-            $serviceRequest = $ssd->parameter('serviceRequest');
-            return $serviceRequest->childSrs()->where('sr_child_id', $value)->firstOrFail();
+        /**
+         * Bind childSr to a service request's child service requests.
+         *
+         * @throws \Symfony\Component\HttpKernel\Exception\NotFoundHttpException
+         */
+        Route::bind('childSr', function (string $value, RoutingRoute $route) {
+            /** @var \Truvoicer\TfDbReadCore\Models\Sr|null $serviceRequest */
+            $serviceRequest = $route->parameter('serviceRequest');
+
+            if (! $serviceRequest instanceof Sr) {
+                abort(404, 'Service request not found or invalid.');
+            }
+
+            /** @var \Truvoicer\TfDbReadCore\Models\Sr|null $childSr */
+            $childSr = $serviceRequest->childSrs()
+                ->where('sr_child_id', $value)
+                ->first();
+
+            if (! $childSr) {
+                abort(404, 'Child service request not found.');
+            }
+
+            return $childSr;
         });
 
         RateLimiter::for('api', function (Request $request) {

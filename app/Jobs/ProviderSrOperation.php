@@ -2,12 +2,12 @@
 
 namespace App\Jobs;
 
-use Truvoicer\TfDbReadCore\Models\Provider;
-use Truvoicer\TfDbReadCore\Models\User;
 use App\Services\ApiServices\ServiceRequests\SrOperationsService;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
 use Illuminate\Support\Facades\Log;
+use Truvoicer\TfDbReadCore\Models\Provider;
+use Truvoicer\TfDbReadCore\Models\User;
 use Truvoicer\TfDbReadCore\Services\Provider\ProviderService;
 use Truvoicer\TfDbReadCore\Services\Task\ScheduleService;
 
@@ -37,8 +37,7 @@ class ProviderSrOperation implements ShouldQueue
         public int $providerId,
         public string $interval,
         public ?bool $executeImmediately = false
-    ) {
-    }
+    ) {}
 
     /**
      * Execute the job.
@@ -55,26 +54,21 @@ class ProviderSrOperation implements ShouldQueue
         $userId = $this->userId;
         $interval = $this->interval;
         $executeImmediately = $this->executeImmediately;
-        if (!is_int($userId)) {
-            Log::log('error', 'RunSrOperationListener: $userId is not int');
-            return;
-        }
-        if (!is_int($providerId)) {
-            Log::log('error', 'RunSrOperationListener: $providerId is not int');
-            return;
-        }
         $user = $providerService->getUserRepository()->findById($userId);
-        if (!$user instanceof User) {
+        if (! $user instanceof User) {
             Log::log('error', 'RunSrOperationListener: $user is not instance of User');
+
             return;
         }
         $provider = $providerService->getProviderRepository()->findById($providerId);
-        if (!$provider instanceof Provider) {
+        if (! $provider instanceof Provider) {
             Log::log('error', 'RunSrOperationListener: $provider is not instance of Provider');
+
             return;
         }
-        if (!is_string($interval) || !array_key_exists($interval, ScheduleService::SCHEDULE_INTERVALS)) {
+        if (! array_key_exists($interval, ScheduleService::SCHEDULE_INTERVALS)) {
             Log::log('error', 'RunSrOperationListener: $interval is not string');
+
             return;
         }
         $srOperationsService->setUser($user);
@@ -89,7 +83,7 @@ class ProviderSrOperation implements ShouldQueue
             'interval' => $this->interval,
             'executeImmediately' => $this->executeImmediately,
             'error' => $exception->getMessage(),
-            'trace' => $exception->getTraceAsString()
+            'trace' => $exception->getTraceAsString(),
         ]);
     }
 }

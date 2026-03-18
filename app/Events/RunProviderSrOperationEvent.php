@@ -19,8 +19,7 @@ class RunProviderSrOperationEvent
         public int $providerId,
         public string $interval,
         public ?bool $executeImmediately = false
-    )
-    {
+    ) {
         //
     }
 

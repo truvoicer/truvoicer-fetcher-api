@@ -5,6 +5,9 @@ namespace App\Http\Resources\Service;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
+/**
+ * @mixin \Truvoicer\TfDbReadCore\Models\SResponseKey
+ */
 class SResponseKeyMinimalResource extends JsonResource
 {
     /**
@@ -18,7 +21,7 @@ class SResponseKeyMinimalResource extends JsonResource
             'id' => $this->id,
             'name' => $this->name,
             'created_at' => $this->created_at,
-            'updated_at' => $this->updated_at
+            'updated_at' => $this->updated_at,
         ];
     }
 }

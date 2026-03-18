@@ -44,7 +44,7 @@ class CreateSrScheduleRequest extends FormRequest
             'weekday' => 'integer|nullable',
             'every_month' => 'boolean|nullable',
             'month' => 'integer|nullable',
-            'parameters' => 'array|nullable'
+            'parameters' => 'array|nullable',
         ];
     }
 }

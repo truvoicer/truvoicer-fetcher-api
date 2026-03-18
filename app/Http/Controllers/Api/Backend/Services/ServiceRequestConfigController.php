@@ -7,24 +7,22 @@ use App\Http\Requests\Service\Request\Config\CreateServiceRequestConfigRequest;
 use App\Http\Requests\Service\Request\Config\DeleteBatchSrConfigRequest;
 use App\Http\Resources\Service\ServiceRequest\ServiceRequestConfigCollection;
 use App\Http\Resources\Service\ServiceRequest\ServiceRequestConfigResource;
+use Illuminate\Http\Request;
 use Truvoicer\TfDbReadCore\Models\Property;
 use Truvoicer\TfDbReadCore\Models\Provider;
 use Truvoicer\TfDbReadCore\Models\Sr;
 use Truvoicer\TfDbReadCore\Services\ApiServices\ServiceRequests\SrConfigService;
 use Truvoicer\TfDbReadCore\Services\Permission\PermissionService;
-use Illuminate\Http\Request;
 
 /**
  * Contains Api endpoint functions for service request config related operations
  *
  * Require ROLE_ADMIN for *every* controller method in this class.
- *
  */
 class ServiceRequestConfigController extends Controller
 {
-
     public function __construct(
-        private SrConfigService      $requestConfigService
+        private SrConfigService $requestConfigService
     ) {
         parent::__construct();
     }
@@ -32,13 +30,12 @@ class ServiceRequestConfigController extends Controller
     /**
      * Get list of service request configs function
      * Returns a list of service request configs based on the request query parameters
-     *
      */
     public function getRequestConfigList(Provider $provider, Sr $serviceRequest, Request $request): \Illuminate\Http\JsonResponse
     {
         $this->setAccessControlUser($request->user());
         if (
-            !$this->accessControlService->checkPermissionsForEntity(
+            ! $this->accessControlService->checkPermissionsForEntity(
                 $provider,
                 [
                     PermissionService::PERMISSION_ADMIN,
@@ -46,13 +43,14 @@ class ServiceRequestConfigController extends Controller
                 ]
             )
         ) {
-            return $this->sendErrorResponse("Access denied");
+            return $this->sendErrorResponse('Access denied');
         }
 
         $findRequestConfigs = $this->requestConfigService->findByParams(
             $serviceRequest,
         );
-        return $this->sendSuccessResponse("success",
+
+        return $this->sendSuccessResponse('success',
             new ServiceRequestConfigCollection(
                 $findRequestConfigs
             )
@@ -62,18 +60,16 @@ class ServiceRequestConfigController extends Controller
     /**
      * Get a single service request config
      * Returns a single service request config based on the id passed in the request url
-     *
      */
     public function getServiceRequestConfig(
         Provider $provider,
-        Sr       $serviceRequest,
+        Sr $serviceRequest,
         Property $property,
-        Request  $request
-    ): \Illuminate\Http\JsonResponse
-    {
+        Request $request
+    ): \Illuminate\Http\JsonResponse {
         $this->setAccessControlUser($request->user());
         if (
-            !$this->accessControlService->checkPermissionsForEntity(
+            ! $this->accessControlService->checkPermissionsForEntity(
                 $provider,
                 [
                     PermissionService::PERMISSION_ADMIN,
@@ -81,10 +77,11 @@ class ServiceRequestConfigController extends Controller
                 ]
             )
         ) {
-            return $this->sendErrorResponse("Access denied");
+            return $this->sendErrorResponse('Access denied');
         }
+
         return $this->sendSuccessResponse(
-            "success",
+            'success',
             new ServiceRequestConfigResource(
                 $this->requestConfigService->getRequestConfigRepo()->findSrConfigProperty($serviceRequest, $property)
             )
@@ -95,18 +92,16 @@ class ServiceRequestConfigController extends Controller
      * Create an service request config based on request POST data
      * Returns json success message and service request config data on successful creation
      * Returns error response and message on fail
-     *
      */
     public function createRequestConfig(
-        Provider                          $provider,
-        Sr                                $serviceRequest,
+        Provider $provider,
+        Sr $serviceRequest,
         Property $property,
         CreateServiceRequestConfigRequest $request
-    ): \Illuminate\Http\JsonResponse
-    {
+    ): \Illuminate\Http\JsonResponse {
         $this->setAccessControlUser($request->user());
         if (
-            !$this->accessControlService->checkPermissionsForEntity(
+            ! $this->accessControlService->checkPermissionsForEntity(
                 $provider,
                 [
                     PermissionService::PERMISSION_ADMIN,
@@ -115,7 +110,7 @@ class ServiceRequestConfigController extends Controller
                 ]
             )
         ) {
-            return $this->sendErrorResponse("Access denied");
+            return $this->sendErrorResponse('Access denied');
         }
         $create = $this->requestConfigService->saveRequestConfig(
             $request->user(),
@@ -124,11 +119,12 @@ class ServiceRequestConfigController extends Controller
             $request->all()
         );
 
-        if (!$create) {
-            return $this->sendErrorResponse("Error inserting config item");
+        if (! $create) {
+            return $this->sendErrorResponse('Error inserting config item');
         }
+
         return $this->sendSuccessResponse(
-            "Config item inserted",
+            'Config item inserted',
             new ServiceRequestConfigResource(
                 $this->requestConfigService->getRequestConfigRepo()->getModel()
             )
@@ -143,41 +139,41 @@ class ServiceRequestConfigController extends Controller
      */
     public function deleteRequestConfig(
         Provider $provider,
-        Sr       $serviceRequest,
+        Sr $serviceRequest,
         Property $property,
-        Request  $request
-    ): \Illuminate\Http\JsonResponse
-    {
+        Request $request
+    ): \Illuminate\Http\JsonResponse {
         $this->setAccessControlUser($request->user());
         if (
-            !$this->accessControlService->checkPermissionsForEntity(
+            ! $this->accessControlService->checkPermissionsForEntity(
                 $provider,
                 [
                     PermissionService::PERMISSION_ADMIN,
-                    PermissionService::PERMISSION_DELETE
+                    PermissionService::PERMISSION_DELETE,
                 ]
             )
         ) {
-            return $this->sendErrorResponse("Access denied");
+            return $this->sendErrorResponse('Access denied');
         }
-        if (!$this->requestConfigService->deleteRequestConfig($serviceRequest, $property)) {
+        if (! $this->requestConfigService->deleteRequestConfig($serviceRequest, $property)) {
             return $this->sendErrorResponse(
-                "Error deleting config item"
+                'Error deleting config item'
             );
         }
+
         return $this->sendSuccessResponse(
-            "Config item deleted."
+            'Config item deleted.'
         );
     }
+
     public function deleteBatch(
-        Provider      $provider,
-        Sr            $serviceRequest,
+        Provider $provider,
+        Sr $serviceRequest,
         DeleteBatchSrConfigRequest $request
-    ): \Illuminate\Http\JsonResponse
-    {
+    ): \Illuminate\Http\JsonResponse {
         $this->setAccessControlUser($request->user());
         if (
-            !$this->accessControlService->checkPermissionsForEntity(
+            ! $this->accessControlService->checkPermissionsForEntity(
                 $provider,
                 [
                     PermissionService::PERMISSION_ADMIN,
@@ -185,16 +181,17 @@ class ServiceRequestConfigController extends Controller
                 ],
             )
         ) {
-            return $this->sendErrorResponse("Access denied");
+            return $this->sendErrorResponse('Access denied');
         }
 
-        if (!$this->requestConfigService->deleteBatch($request->get('ids'))) {
+        if (! $this->requestConfigService->deleteBatch($request->get('ids'))) {
             return $this->sendErrorResponse(
-                "Error deleting service request configs",
+                'Error deleting service request configs',
             );
         }
+
         return $this->sendSuccessResponse(
-            "Service request configs deleted.",
+            'Service request configs deleted.',
         );
     }
 }

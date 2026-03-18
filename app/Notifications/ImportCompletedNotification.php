@@ -2,12 +2,12 @@
 
 namespace App\Notifications;
 
-use Truvoicer\TfDbReadCore\Models\User;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\BroadcastMessage;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
+use Truvoicer\TfDbReadCore\Models\User;
 
 class ImportCompletedNotification extends Notification implements ShouldQueue
 {
@@ -19,8 +19,7 @@ class ImportCompletedNotification extends Notification implements ShouldQueue
     public function __construct(
         public User $user,
         private array $results
-    )
-    {
+    ) {
         //
     }
 
@@ -40,9 +39,9 @@ class ImportCompletedNotification extends Notification implements ShouldQueue
     public function toMail(object $notifiable): MailMessage
     {
         return (new MailMessage)
-                    ->line('The introduction to the notification.')
-                    ->action('Notification Action', url('/'))
-                    ->line('Thank you for using our application!');
+            ->line('The introduction to the notification.')
+            ->action('Notification Action', url('/'))
+            ->line('Thank you for using our application!');
     }
 
     /**
@@ -55,7 +54,7 @@ class ImportCompletedNotification extends Notification implements ShouldQueue
         return [
             'type' => 'import',
             'message' => 'Import completed',
-            'results' => $this->results
+            'results' => $this->results,
         ];
     }
 
@@ -64,7 +63,7 @@ class ImportCompletedNotification extends Notification implements ShouldQueue
         return new BroadcastMessage([
             'type' => 'import',
             'message' => 'Import completed',
-            'results' => $this->results
+            'results' => $this->results,
         ]);
     }
 }

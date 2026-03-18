@@ -2,17 +2,16 @@
 
 namespace App\Http\Controllers\Api\Backend\Tools\Format;
 
-use Truvoicer\TfDbReadCore\Enums\FormatOptions;
 use App\Http\Controllers\Controller;
+use Truvoicer\TfDbReadCore\Enums\FormatOptions;
+
 class FormatOptionController extends Controller
 {
-
     public function index()
     {
         return $this->sendSuccessResponse(
-            "success",
+            'success',
             FormatOptions::labelAndValueArray()
         );
     }
-
 }

@@ -2,9 +2,9 @@
 
 namespace App\Http\Requests\Service\Request\RateLimit;
 
-use Truvoicer\TfDbReadCore\Models\SrRateLimit;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
+use Truvoicer\TfDbReadCore\Models\SrRateLimit;
 
 class DeleteBatchSrRateLimitRequest extends FormRequest
 {
@@ -24,11 +24,11 @@ class DeleteBatchSrRateLimitRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'ids.*' => Rule::forEach(function ($value, string $attribute) {
-                return [
-                    Rule::exists(SrRateLimit::class, 'id'),
-                ];
-            })
+            'ids' => ['required', 'array'],
+            'ids.*' => [
+                'integer',
+                Rule::exists(SrRateLimit::class, 'id'),
+            ],
         ];
     }
 }

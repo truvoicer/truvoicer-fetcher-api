@@ -27,11 +27,11 @@ class UpdateUserSettingRequest extends FormRequest
         return [
             'theme' => [
                 'sometimes',
-                Rule::enum(Theme::class)
+                Rule::enum(Theme::class),
             ],
             'open_mode' => [
                 'sometimes',
-                Rule::enum(OpenMode::class)
+                Rule::enum(OpenMode::class),
             ],
         ];
     }

@@ -3,12 +3,15 @@
 namespace Database\Factories;
 
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Truvoicer\TfDbReadCore\Models\SrRateLimit;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\SrRateLimit>
+ * @extends \Illuminate\Database\Eloquent\Factories\Factory<\Truvoicer\TfDbReadCore\Models\SrRateLimit>
  */
 class SrRateLimitFactory extends Factory
 {
+    protected $model = SrRateLimit::class;
+
     /**
      * Define the model's default state.
      *

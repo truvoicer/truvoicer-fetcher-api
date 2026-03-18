@@ -8,31 +8,22 @@ use App\Http\Requests\Service\ResponseKey\DeleteBatchSResponseKeyRequest;
 use App\Http\Requests\Service\ResponseKey\UpdateSResponseKeyRequest;
 use App\Http\Resources\Service\ServiceResponseKeyCollection;
 use App\Http\Resources\Service\ServiceResponseKeyResource;
+use Illuminate\Http\Request;
 use Truvoicer\TfDbReadCore\Models\Provider;
 use Truvoicer\TfDbReadCore\Models\S;
 use Truvoicer\TfDbReadCore\Models\Sr;
 use Truvoicer\TfDbReadCore\Models\SResponseKey;
-use Truvoicer\TfDbReadCore\Services\ApiServices\ApiService;
 use Truvoicer\TfDbReadCore\Services\ApiServices\SResponseKeysService;
-use Truvoicer\TfDbReadCore\Services\Permission\AccessControlService;
 use Truvoicer\TfDbReadCore\Services\Permission\PermissionService;
-use Truvoicer\TfDbReadCore\Services\Provider\ProviderService;
-use App\Services\Tools\HttpRequestService;
-use App\Services\Tools\SerializerService;
-use Illuminate\Http\Request;
 
 /**
  * Contains Api endpoint functions for api service response keys related operations
  *
  * Require ROLE_ADMIN for *every* controller method in this class.
- *
  */
 class ServiceResponseKeyController extends Controller
 {
-
     public function __construct(
-        private ProviderService      $providerService,
-        private ApiService           $apiServicesService,
         private SResponseKeysService $responseKeysService,
     ) {
         parent::__construct();
@@ -41,13 +32,12 @@ class ServiceResponseKeyController extends Controller
     /**
      * Get a list of response keys.
      * Returns a list of response keys based on the request query parameters
-     *
      */
     public function getServiceResponseKeyList(S $service, Request $request)
     {
         $this->setAccessControlUser($request->user());
         if (
-            !$this->accessControlService->checkPermissionsForEntity(
+            ! $this->accessControlService->checkPermissionsForEntity(
                 $service,
                 [
                     PermissionService::PERMISSION_ADMIN,
@@ -56,11 +46,12 @@ class ServiceResponseKeyController extends Controller
             )
         ) {
             return $this->sendErrorResponse(
-                "You do not have permission to view this service",
+                'You do not have permission to view this service',
             );
         }
+
         return $this->sendSuccessResponse(
-            "success",
+            'success',
             new ServiceResponseKeyCollection(
                 $this->responseKeysService->getResponseKeysByService(
                     $service,
@@ -73,13 +64,12 @@ class ServiceResponseKeyController extends Controller
     /**
      * Get a single service response key
      * Returns a single service response key based on the id passed in the request url
-     *
      */
     public function getServiceResponseKey(S $service, SResponseKey $serviceResponseKey, Request $request)
     {
         $this->setAccessControlUser($request->user());
         if (
-            !$this->accessControlService->checkPermissionsForEntity(
+            ! $this->accessControlService->checkPermissionsForEntity(
                 $service,
                 [
                     PermissionService::PERMISSION_ADMIN,
@@ -88,28 +78,26 @@ class ServiceResponseKeyController extends Controller
             )
         ) {
             return $this->sendErrorResponse(
-                "You do not have permission to view this service",
+                'You do not have permission to view this service',
             );
         }
+
         return $this->sendSuccessResponse(
-            "success",
+            'success',
             new ServiceResponseKeyResource($serviceResponseKey)
         );
     }
-
-
 
     /**
      * Create an api service response key based on request POST data
      * Returns json success message and api service response key data on successful creation
      * Returns error response and message on fail
-     *
      */
     public function loadDefaultServiceResponseKeys(S $service, Request $request)
     {
         $this->setAccessControlUser($request->user());
         if (
-            !$this->accessControlService->checkPermissionsForEntity(
+            ! $this->accessControlService->checkPermissionsForEntity(
                 $service,
                 [
                     PermissionService::PERMISSION_ADMIN,
@@ -118,14 +106,15 @@ class ServiceResponseKeyController extends Controller
             )
         ) {
             return $this->sendErrorResponse(
-                "You do not have permission to view this service",
+                'You do not have permission to view this service',
             );
         }
-        if (!$this->responseKeysService->createDefaultServiceResponseKeys($service)) {
-            return $this->sendErrorResponse("Error loading default service response keys");
+        if (! $this->responseKeysService->createDefaultServiceResponseKeys($service)) {
+            return $this->sendErrorResponse('Error loading default service response keys');
         }
+
         return $this->sendSuccessResponse(
-            "Default service response keys loaded",
+            'Default service response keys loaded',
         );
     }
 
@@ -133,13 +122,12 @@ class ServiceResponseKeyController extends Controller
      * Create an api service response key based on request POST data
      * Returns json success message and api service response key data on successful creation
      * Returns error response and message on fail
-     *
      */
     public function createServiceResponseKey(S $service, CreateSResponseKeyRequest $request)
     {
         $this->setAccessControlUser($request->user());
         if (
-            !$this->accessControlService->checkPermissionsForEntity(
+            ! $this->accessControlService->checkPermissionsForEntity(
                 $service,
                 [
                     PermissionService::PERMISSION_ADMIN,
@@ -148,7 +136,7 @@ class ServiceResponseKeyController extends Controller
             )
         ) {
             return $this->sendErrorResponse(
-                "You do not have permission to view this service",
+                'You do not have permission to view this service',
             );
         }
         $create = $this->responseKeysService->createServiceResponseKeys(
@@ -156,11 +144,12 @@ class ServiceResponseKeyController extends Controller
             $request->validated(),
         );
 
-        if (!$create) {
-            return $this->sendErrorResponse("Error inserting service response key");
+        if (! $create) {
+            return $this->sendErrorResponse('Error inserting service response key');
         }
+
         return $this->sendSuccessResponse(
-            "Service response key inserted",
+            'Service response key inserted',
             new ServiceResponseKeyResource(
                 $this->responseKeysService->getResponseKeyRepository()->getModel()
             )
@@ -171,13 +160,12 @@ class ServiceResponseKeyController extends Controller
      * Update an api service response key based on request POST data
      * Returns json success message and api service response key data on successful update
      * Returns error response and message on fail
-     *
      */
     public function updateServiceResponseKey(S $service, SResponseKey $serviceResponseKey, UpdateSResponseKeyRequest $request)
     {
         $this->setAccessControlUser($request->user());
         if (
-            !$this->accessControlService->checkPermissionsForEntity(
+            ! $this->accessControlService->checkPermissionsForEntity(
                 $service,
                 [
                     PermissionService::PERMISSION_ADMIN,
@@ -186,7 +174,7 @@ class ServiceResponseKeyController extends Controller
             )
         ) {
             return $this->sendErrorResponse(
-                "You do not have permission to view this service",
+                'You do not have permission to view this service',
             );
         }
         $update = $this->responseKeysService->updateServiceResponseKeys(
@@ -194,11 +182,12 @@ class ServiceResponseKeyController extends Controller
             $request->validated(),
         );
 
-        if (!$update) {
-            return $this->sendErrorResponse("Error updating service response key");
+        if (! $update) {
+            return $this->sendErrorResponse('Error updating service response key');
         }
+
         return $this->sendSuccessResponse(
-            "Service response key updated",
+            'Service response key updated',
             new ServiceResponseKeyResource(
                 $this->responseKeysService->getResponseKeyRepository()->getModel()
             )
@@ -209,13 +198,12 @@ class ServiceResponseKeyController extends Controller
      * Delete an api service response key based on request POST data
      * Returns json success message and api service response key data on successful delete
      * Returns error response and message on fail
-     *
      */
     public function deleteServiceResponseKey(S $service, SResponseKey $serviceResponseKey, Request $request)
     {
         $this->setAccessControlUser($request->user());
         if (
-            !$this->accessControlService->checkPermissionsForEntity(
+            ! $this->accessControlService->checkPermissionsForEntity(
                 $service,
                 [
                     PermissionService::PERMISSION_ADMIN,
@@ -224,27 +212,28 @@ class ServiceResponseKeyController extends Controller
             )
         ) {
             return $this->sendErrorResponse(
-                "You do not have permission to view this service",
+                'You do not have permission to view this service',
             );
         }
-        if (!$this->responseKeysService->deleteServiceResponseKey($serviceResponseKey)) {
+        if (! $this->responseKeysService->deleteServiceResponseKey($serviceResponseKey)) {
             return $this->sendErrorResponse(
-                "Error deleting service response key"
+                'Error deleting service response key'
             );
         }
+
         return $this->sendSuccessResponse(
-            "Response key service deleted."
+            'Response key service deleted.'
         );
     }
+
     public function deleteBatch(
-        Provider      $provider,
-        Sr            $serviceRequest,
+        Provider $provider,
+        Sr $serviceRequest,
         DeleteBatchSResponseKeyRequest $request
-    ): \Illuminate\Http\JsonResponse
-    {
+    ): \Illuminate\Http\JsonResponse {
         $this->setAccessControlUser($request->user());
         if (
-            !$this->accessControlService->checkPermissionsForEntity(
+            ! $this->accessControlService->checkPermissionsForEntity(
                 $provider,
                 [
                     PermissionService::PERMISSION_ADMIN,
@@ -252,16 +241,17 @@ class ServiceResponseKeyController extends Controller
                 ],
             )
         ) {
-            return $this->sendErrorResponse("Access denied");
+            return $this->sendErrorResponse('Access denied');
         }
 
-        if (!$this->responseKeysService->deleteBatch($request->validated('ids'))) {
+        if (! $this->responseKeysService->deleteBatch($request->validated('ids'))) {
             return $this->sendErrorResponse(
-                "Error deleting service response keys",
+                'Error deleting service response keys',
             );
         }
+
         return $this->sendSuccessResponse(
-            "Service response keys deleted.",
+            'Service response keys deleted.',
         );
     }
 }

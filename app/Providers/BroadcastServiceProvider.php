@@ -12,7 +12,7 @@ class BroadcastServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        if(request()->hasHeader('authorization')) {
+        if (request()->hasHeader('authorization')) {
             Broadcast::routes(['prefix' => 'api', 'middleware' => ['auth:sanctum', 'ability:api:admin,api:superuser,api:super_admin,api:user,api:app_user']]);
         } else {
             Broadcast::routes();

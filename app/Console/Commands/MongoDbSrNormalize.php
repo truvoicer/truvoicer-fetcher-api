@@ -2,17 +2,18 @@
 
 namespace App\Console\Commands;
 
+use Illuminate\Console\Command;
+use Symfony\Component\Console\Command\Command as CommandAlias;
 use Truvoicer\TfDbReadCore\Models\Sr;
 use Truvoicer\TfDbReadCore\Repositories\MongoDB\MongoDBRepository;
 use Truvoicer\TfDbReadCore\Repositories\SrRepository;
-use Illuminate\Console\Command;
-use Illuminate\Database\Eloquent\Collection;
-use Symfony\Component\Console\Command\Command as CommandAlias;
 
 class MongoDbSrNormalize extends Command
 {
     private SrRepository $srRepository;
+
     private MongoDBRepository $mongoDBRepository;
+
     /**
      * The name and signature of the console command.
      *
@@ -43,24 +44,29 @@ class MongoDbSrNormalize extends Command
         $destSrId = $this->option('dest_sr_id');
         $fields = $this->option('fields');
         $fields = array_map('trim', explode(',', $fields));
-        if (!count($fields)) {
+        // Check if we have an empty string as the only element
+        if (count($fields) === 1 && $fields[0] === '') {
             $this->error('Please provide at least one field to normalize.');
+
             return CommandAlias::FAILURE;
         }
-        if (empty($srcSrId) || empty($destSrId) || empty($fields)) {
+        if (empty($srcSrId) || empty($destSrId)) {
             $this->error('Please provide --src_sr_id, --dest_sr_id, and --fields options.');
+
             return CommandAlias::FAILURE;
         }
 
-        $srcSr = $this->srRepository->findById($srcSrId);
-        if (!$srcSr) {
+        $srcSr = $this->srRepository->findById((int) $srcSrId);
+        if (! $srcSr) {
             $this->error('Source SR not found.');
+
             return CommandAlias::FAILURE;
         }
 
-        $destSr = $this->srRepository->findById($destSrId);
-        if (!$destSr) {
+        $destSr = $this->srRepository->findById((int) $destSrId);
+        if (! $destSr) {
             $this->error('Destination SR not found.');
+
             return CommandAlias::FAILURE;
         }
 
@@ -69,16 +75,17 @@ class MongoDbSrNormalize extends Command
             $destSr,
             $fields
         );
+
         return CommandAlias::SUCCESS;
     }
 
     private function setCollectionBySr(Sr $sr): void
     {
         $collectionName = $this->mongoDBRepository->getCollectionName($sr);
-        if (!$collectionName) {
-            throw new \Exception('Could not determine collection name for SR: ' . $sr->name);
+        if (! $collectionName) {
+            throw new \Exception('Could not determine collection name for SR: '.$sr->name);
         }
-        $this->mongoDBRepository->setCollection($collectionName);
+        $this->mongoDBRepository->getMongoDBQuery()->setCollection($collectionName);
     }
 
     private function collectionIterator(Sr $srcSr, Sr $destSr, array $fields)
@@ -89,10 +96,10 @@ class MongoDbSrNormalize extends Command
         $offset = 0;
         $finished = false;
         $results = [];
-        while (!$finished) {
-            $this->info('Processing documents from ' . $this->mongoDBRepository->getCollectionName($srcSr) . ' with offset ' . $offset);
-            $results = $this->mongoDBRepository->setLimit($limit)->setOffset($offset)->findMany();
-            $this->info('Found ' . count($results) . ' documents.');
+        while (! $finished) {
+            $this->info('Processing documents from '.$this->mongoDBRepository->getCollectionName($srcSr).' with offset '.$offset);
+            $results = $this->mongoDBRepository->getMongoDBQuery()->setLimit($limit)->setOffset($offset)->findMany();
+            $this->info('Found '.count($results).' documents.');
             if (count($results) < $limit) {
                 $finished = true;
             }
@@ -108,25 +115,26 @@ class MongoDbSrNormalize extends Command
 
                 $this->setCollectionBySr($destSr);
                 foreach ($fields as $field) {
-                    $this->mongoDBRepository->buildWhereData(
+                    $this->mongoDBRepository->getMongoDBQuery()->buildWhereData(
                         $field,
                         $document[$field],
                         '='
                     );
                 }
-                $existing = $this->mongoDBRepository->findOne();
+                $existing = $this->mongoDBRepository->getMongoDBQuery()->findOne();
 
                 if ($existing) {
-                    $this->info('Document exists in destination SR collection ' . $this->mongoDBRepository->getCollectionName($destSr) . ', skipping.');
+                    $this->info('Document exists in destination SR collection '.$this->mongoDBRepository->getCollectionName($destSr).', skipping.');
+
                     continue;
                 }
 
                 $this->setCollectionBySr($srcSr);
-                $delete = $this->mongoDBRepository->deleteBatch([$document['_id']]);
+                $delete = $this->mongoDBRepository->getMongoDBQuery()->deleteBatch([$document['_id']]);
                 if ($delete === 1) {
-                    $this->info('Deleted document with _id: ' . $document['_id']);
+                    $this->info('Deleted document with _id: '.$document['_id']);
                 } else {
-                    $this->error('Failed to delete document with _id: ' . $document['_id']);
+                    $this->error('Failed to delete document with _id: '.$document['_id']);
                 }
             }
         }

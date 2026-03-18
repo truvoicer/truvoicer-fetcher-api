@@ -23,7 +23,7 @@ class CreateCategoryRequest extends FormRequest
     {
         return [
             'name' => 'string',
-            'label' => 'required|string'
+            'label' => 'required|string',
         ];
     }
 }

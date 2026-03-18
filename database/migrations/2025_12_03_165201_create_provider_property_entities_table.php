@@ -14,8 +14,8 @@ return new class extends Migration
         Schema::create('provider_property_entities', function (Blueprint $table) {
             $table->id();
             $table->foreignId('provider_property_id')
-            ->constrained('provider_properties')
-            ->cascadeOnDelete();
+                ->constrained('provider_properties')
+                ->cascadeOnDelete();
             $table->morphs('entityable');
             $table->timestamps();
         });

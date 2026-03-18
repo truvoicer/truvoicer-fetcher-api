@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('sr_response_key_srs', function (Blueprint $table) {
-            $table->enum('action', \App\Repositories\SrResponseKeySrRepository::ALLOWED_ACTIONS)->after('sr_id');
+            $table->enum('action', \Truvoicer\TfDbReadCore\Repositories\SrResponseKeySrRepository::ALLOWED_ACTIONS)->after('sr_id');
         });
     }
 

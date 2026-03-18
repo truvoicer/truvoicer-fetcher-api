@@ -3,7 +3,6 @@
 namespace App\Http\Requests\Service\Request;
 
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Validation\Rule;
 
 class UpdateSrDefaultsRequest extends FormRequest
 {

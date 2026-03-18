@@ -10,26 +10,21 @@ use App\Http\Resources\Service\ServiceRequest\SrResponseKeyResource;
 use App\Http\Resources\Service\ServiceRequest\SrResponseKeyWithServiceCollection;
 use App\Http\Resources\Service\ServiceRequest\SrResponseKeyWithServiceMinimalCollection;
 use App\Http\Resources\Service\ServiceRequest\SrResponseKeyWithServiceResource;
+use Illuminate\Http\Request;
 use Truvoicer\TfDbReadCore\Models\Provider;
 use Truvoicer\TfDbReadCore\Models\Sr;
 use Truvoicer\TfDbReadCore\Models\SResponseKey;
 use Truvoicer\TfDbReadCore\Models\SrResponseKey;
 use Truvoicer\TfDbReadCore\Services\ApiServices\ServiceRequests\ResponseKeys\SrResponseKeyService;
-use Truvoicer\TfDbReadCore\Services\Permission\AccessControlService;
 use Truvoicer\TfDbReadCore\Services\Permission\PermissionService;
-use App\Services\Tools\HttpRequestService;
-use App\Services\Tools\SerializerService;
-use Illuminate\Http\Request;
 
 /**
  * Contains Api endpoint functions for api service request response keys related operations
  *
  * Require ROLE_ADMIN for *every* controller method in this class.
- *
  */
 class ServiceRequestResponseKeyController extends Controller
 {
-
     public function __construct(
         private SrResponseKeyService $srResponseKeyService,
     ) {
@@ -39,13 +34,12 @@ class ServiceRequestResponseKeyController extends Controller
     /**
      * Get a list of service request response keys.
      * Returns a list of service request response keys based on the request query parameters
-     *
      */
     public function getRequestResponseKeyList(Provider $provider, Sr $serviceRequest, Request $request)
     {
         $this->setAccessControlUser($request->user());
         if (
-            !$this->accessControlService->checkPermissionsForEntity(
+            ! $this->accessControlService->checkPermissionsForEntity(
                 $provider,
                 [
                     PermissionService::PERMISSION_ADMIN,
@@ -53,11 +47,11 @@ class ServiceRequestResponseKeyController extends Controller
                 ]
             )
         ) {
-            return $this->sendErrorResponse("Access denied");
+            return $this->sendErrorResponse('Access denied');
         }
-        if (!$this->srResponseKeyService->validateSrResponseKeys($serviceRequest, true)) {
+        if (! $this->srResponseKeyService->validateSrResponseKeys($serviceRequest, true)) {
             return $this->sendErrorResponse(
-                "Error validating response keys",
+                'Error validating response keys',
                 [],
                 $this->srResponseKeyService->getSrResponseKeyRepository()->getErrors()
             );
@@ -66,10 +60,10 @@ class ServiceRequestResponseKeyController extends Controller
             $request->query->filter('pagination', true, FILTER_VALIDATE_BOOLEAN)
         );
         $this->srResponseKeyService->getSrResponseKeyRepository()->setSortField(
-            $request->get('sort', "name")
+            $request->get('sort', 'name')
         );
         $this->srResponseKeyService->getSrResponseKeyRepository()->setOrderDir(
-            $request->get('order', "asc")
+            $request->get('order', 'asc')
         );
 
         $this->srResponseKeyService->getSrResponseKeyRepository()->setPerPage(
@@ -79,17 +73,18 @@ class ServiceRequestResponseKeyController extends Controller
             $serviceRequest,
             [],
             [],
-            $request->get('order_by', "name"),
-            $request->get('order_direction', "asc")
+            $request->get('order_by', 'name'),
+            $request->get('order_direction', 'asc')
         );
         if ($request->query->getBoolean('minimal')) {
             return $this->sendSuccessResponse(
-                "success",
+                'success',
                 new SrResponseKeyWithServiceMinimalCollection($responseKeys)
             );
         }
+
         return $this->sendSuccessResponse(
-            "success",
+            'success',
             new SrResponseKeyWithServiceCollection($responseKeys)
         );
     }
@@ -97,17 +92,16 @@ class ServiceRequestResponseKeyController extends Controller
     /**
      * Get a single service request response key
      * Returns a single service request response key based on the id passed in the request url
-     *
      */
     public function getRequestResponseKey(
-        Provider     $provider,
-        Sr           $serviceRequest,
+        Provider $provider,
+        Sr $serviceRequest,
         SrResponseKey $srResponseKey,
-        Request      $request
+        Request $request
     ) {
         $this->setAccessControlUser($request->user());
         if (
-            !$this->accessControlService->checkPermissionsForEntity(
+            ! $this->accessControlService->checkPermissionsForEntity(
                 $provider,
                 [
                     PermissionService::PERMISSION_ADMIN,
@@ -115,22 +109,24 @@ class ServiceRequestResponseKeyController extends Controller
                 ]
             )
         ) {
-            return $this->sendErrorResponse("Access denied");
+            return $this->sendErrorResponse('Access denied');
         }
+
         return $this->sendSuccessResponse(
-            "success",
+            'success',
             new SrResponseKeyResource($srResponseKey)
         );
     }
+
     public function getRequestResponseKeyByResponseKey(
-        Provider     $provider,
-        Sr           $serviceRequest,
+        Provider $provider,
+        Sr $serviceRequest,
         SResponseKey $sResponseKey,
-        Request      $request
+        Request $request
     ) {
         $this->setAccessControlUser($request->user());
         if (
-            !$this->accessControlService->checkPermissionsForEntity(
+            ! $this->accessControlService->checkPermissionsForEntity(
                 $provider,
                 [
                     PermissionService::PERMISSION_ADMIN,
@@ -138,17 +134,18 @@ class ServiceRequestResponseKeyController extends Controller
                 ]
             )
         ) {
-            return $this->sendErrorResponse("Access denied");
+            return $this->sendErrorResponse('Access denied');
         }
         $find = $this->srResponseKeyService->getRequestResponseKeyByResponseKey(
             $serviceRequest,
             $sResponseKey
         );
-        if (!$find) {
-            return $this->sendErrorResponse("Error finding response key.");
+        if (! $find) {
+            return $this->sendErrorResponse('Error finding response key.');
         }
+
         return $this->sendSuccessResponse(
-            "success",
+            'success',
             new SrResponseKeyWithServiceResource($find)
         );
     }
@@ -157,16 +154,15 @@ class ServiceRequestResponseKeyController extends Controller
      * Create an api service request response key based on request POST data
      * Returns json success message and api service request response key data on successful creation
      * Returns error response and message on fail
-     *
      */
     public function createRequestResponseKey(
-        Provider     $provider,
-        Sr           $serviceRequest,
+        Provider $provider,
+        Sr $serviceRequest,
         CreateServiceRequestResponseKeyRequest $request
     ) {
         $this->setAccessControlUser($request->user());
         if (
-            !$this->accessControlService->checkPermissionsForEntity(
+            ! $this->accessControlService->checkPermissionsForEntity(
                 $provider,
                 [
                     PermissionService::PERMISSION_ADMIN,
@@ -174,10 +170,10 @@ class ServiceRequestResponseKeyController extends Controller
                 ]
             )
         ) {
-            return $this->sendErrorResponse("Access denied");
+            return $this->sendErrorResponse('Access denied');
         }
         if (
-            !$this->accessControlService->checkPermissionsForEntity(
+            ! $this->accessControlService->checkPermissionsForEntity(
                 $serviceRequest->s()->first(),
                 [
                     PermissionService::PERMISSION_ADMIN,
@@ -185,12 +181,12 @@ class ServiceRequestResponseKeyController extends Controller
                 ]
             )
         ) {
-            return $this->sendErrorResponse("Access denied");
+            return $this->sendErrorResponse('Access denied');
         }
         $create = $this->srResponseKeyService->createSrResponseKey(
             $request->user(),
             $serviceRequest,
-            $request->get('name'),
+            $request->input('name'),
             $request->all([
                 'value',
                 'show_in_response',
@@ -201,11 +197,12 @@ class ServiceRequestResponseKeyController extends Controller
                 'prepend_extra_data_value',
             ])
         );
-        if (!$create) {
-            return $this->sendErrorResponse("Error adding response key.");
+        if (! $create) {
+            return $this->sendErrorResponse('Error adding response key.');
         }
+
         return $this->sendSuccessResponse(
-            "Successfully added response key.",
+            'Successfully added response key.',
             new SrResponseKeyResource(
                 $this->srResponseKeyService->getSrResponseKeyRepository()->getModel()
             )
@@ -213,14 +210,14 @@ class ServiceRequestResponseKeyController extends Controller
     }
 
     public function saveRequestResponseKey(
-        Provider     $provider,
-        Sr           $serviceRequest,
+        Provider $provider,
+        Sr $serviceRequest,
         SResponseKey $sResponseKey,
-        UpdateServiceRequestResponseKeyRequest       $request
+        UpdateServiceRequestResponseKeyRequest $request
     ) {
         $this->setAccessControlUser($request->user());
         if (
-            !$this->accessControlService->checkPermissionsForEntity(
+            ! $this->accessControlService->checkPermissionsForEntity(
                 $provider,
                 [
                     PermissionService::PERMISSION_ADMIN,
@@ -228,7 +225,7 @@ class ServiceRequestResponseKeyController extends Controller
                 ]
             )
         ) {
-            return $this->sendErrorResponse("Access denied");
+            return $this->sendErrorResponse('Access denied');
         }
         $create = $this->srResponseKeyService->saveSrResponseKey(
             $request->user(),
@@ -236,11 +233,12 @@ class ServiceRequestResponseKeyController extends Controller
             $sResponseKey,
             $request->validated()
         );
-        if (!$create) {
-            return $this->sendErrorResponse("Error adding response key.");
+        if (! $create) {
+            return $this->sendErrorResponse('Error adding response key.');
         }
+
         return $this->sendSuccessResponse(
-            "Successfully added response key.",
+            'Successfully added response key.',
             new SrResponseKeyResource(
                 $this->srResponseKeyService->getSrResponseKeyRepository()->getModel()
             )
@@ -251,17 +249,16 @@ class ServiceRequestResponseKeyController extends Controller
      * Update an api service request response key based on request POST data
      * Returns json success message and api service request response key data on successful update
      * Returns error response and message on fail
-     *
      */
     public function updateRequestResponseKey(
-        Provider      $provider,
-        Sr            $serviceRequest,
+        Provider $provider,
+        Sr $serviceRequest,
         SrResponseKey $srResponseKey,
-        UpdateServiceRequestResponseKeyRequest       $request
+        UpdateServiceRequestResponseKeyRequest $request
     ) {
         $this->setAccessControlUser($request->user());
         if (
-            !$this->accessControlService->checkPermissionsForEntity(
+            ! $this->accessControlService->checkPermissionsForEntity(
                 $provider,
                 [
                     PermissionService::PERMISSION_ADMIN,
@@ -269,7 +266,7 @@ class ServiceRequestResponseKeyController extends Controller
                 ]
             )
         ) {
-            return $this->sendErrorResponse("Access denied");
+            return $this->sendErrorResponse('Access denied');
         }
 
         $update = $this->srResponseKeyService->updateRequestResponseKey(
@@ -279,11 +276,12 @@ class ServiceRequestResponseKeyController extends Controller
             $request->validated()
         );
 
-        if (!$update) {
-            return $this->sendErrorResponse("Error updating service response key");
+        if (! $update) {
+            return $this->sendErrorResponse('Error updating service response key');
         }
+
         return $this->sendSuccessResponse(
-            "Service response key updated",
+            'Service response key updated',
             new SrResponseKeyResource(
                 $this->srResponseKeyService->getSrResponseKeyRepository()->getModel()
             )
@@ -294,17 +292,16 @@ class ServiceRequestResponseKeyController extends Controller
      * Delete  an api service request response key based on request POST data
      * Returns json success message and api service request response key data on successful delete
      * Returns error response and message on fail
-     *
      */
     public function deleteRequestResponseKey(
-        Provider      $provider,
-        Sr            $serviceRequest,
+        Provider $provider,
+        Sr $serviceRequest,
         SrResponseKey $srResponseKey,
-        Request       $request
+        Request $request
     ) {
         $this->setAccessControlUser($request->user());
         if (
-            !$this->accessControlService->checkPermissionsForEntity(
+            ! $this->accessControlService->checkPermissionsForEntity(
                 $provider,
                 [
                     PermissionService::PERMISSION_ADMIN,
@@ -312,26 +309,27 @@ class ServiceRequestResponseKeyController extends Controller
                 ]
             )
         ) {
-            return $this->sendErrorResponse("Access denied");
+            return $this->sendErrorResponse('Access denied');
         }
-        if (!$this->srResponseKeyService->deleteRequestResponseKey($srResponseKey)) {
+        if (! $this->srResponseKeyService->deleteRequestResponseKey($srResponseKey)) {
             return $this->sendErrorResponse(
-                "Error deleting service response key"
+                'Error deleting service response key'
             );
         }
+
         return $this->sendSuccessResponse(
-            "Response key service deleted."
+            'Response key service deleted.'
         );
     }
+
     public function deleteBatch(
-        Provider      $provider,
-        Sr            $serviceRequest,
+        Provider $provider,
+        Sr $serviceRequest,
         DeleteBatchSrResponseKeyRequest $request
-    ): \Illuminate\Http\JsonResponse
-    {
+    ): \Illuminate\Http\JsonResponse {
         $this->setAccessControlUser($request->user());
         if (
-            !$this->accessControlService->checkPermissionsForEntity(
+            ! $this->accessControlService->checkPermissionsForEntity(
                 $provider,
                 [
                     PermissionService::PERMISSION_ADMIN,
@@ -339,16 +337,17 @@ class ServiceRequestResponseKeyController extends Controller
                 ],
             )
         ) {
-            return $this->sendErrorResponse("Access denied");
+            return $this->sendErrorResponse('Access denied');
         }
 
-        if (!$this->srResponseKeyService->deleteBatch($request->validated('ids'))) {
+        if (! $this->srResponseKeyService->deleteBatch($request->validated('ids'))) {
             return $this->sendErrorResponse(
-                "Error deleting service request response keys",
+                'Error deleting service request response keys',
             );
         }
+
         return $this->sendSuccessResponse(
-            "Service request response keys deleted.",
+            'Service request response keys deleted.',
         );
     }
 }

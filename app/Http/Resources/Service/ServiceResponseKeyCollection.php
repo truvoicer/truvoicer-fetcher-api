@@ -2,9 +2,8 @@
 
 namespace App\Http\Resources\Service;
 
-use Truvoicer\TfDbReadCore\Http\Resources\BaseCollection;
 use Illuminate\Http\Request;
-use Illuminate\Http\Resources\Json\ResourceCollection;
+use Truvoicer\TfDbReadCore\Http\Resources\BaseCollection;
 
 class ServiceResponseKeyCollection extends BaseCollection
 {
@@ -14,6 +13,7 @@ class ServiceResponseKeyCollection extends BaseCollection
      * @return array<int|string, mixed>
      */
     public static $wrap = 'service_response_keys';
+
     public function toArray(Request $request): array
     {
         return parent::toArray($request);

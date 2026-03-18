@@ -2,14 +2,17 @@
 
 namespace Database\Factories;
 
-use Truvoicer\TfDbReadCore\Models\Property;
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Truvoicer\TfDbReadCore\Models\Property;
+use Truvoicer\TfDbReadCore\Models\SrConfig;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\SrConfig>
+ * @extends \Illuminate\Database\Eloquent\Factories\Factory<\Truvoicer\TfDbReadCore\Models\SrConfig>
  */
 class SrConfigFactory extends Factory
 {
+    protected $model = SrConfig::class;
+
     /**
      * Define the model's default state.
      *
@@ -20,7 +23,7 @@ class SrConfigFactory extends Factory
         return [
             'value' => $this->faker->word,
             'array_value' => $this->faker->words,
-            'big_text_value' => $this->faker->sentences(7)
+            'big_text_value' => $this->faker->sentences(7),
         ];
     }
 

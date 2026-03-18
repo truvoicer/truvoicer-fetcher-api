@@ -2,9 +2,9 @@
 
 namespace App\Http\Requests\Service\Request;
 
-use Truvoicer\TfDbReadCore\Models\SrChildSr;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
+use Truvoicer\TfDbReadCore\Models\SrChildSr;
 
 class OverrideChildSrRequest extends FormRequest
 {
@@ -24,11 +24,11 @@ class OverrideChildSrRequest extends FormRequest
     public function rules(): array
     {
         return [
-            "key" => [
+            'key' => [
                 'required',
-                Rule::in(SrChildSr::FIELDS)
+                Rule::in(SrChildSr::FIELDS),
             ],
-            "value" => "boolean|required"
+            'value' => 'boolean|required',
         ];
     }
 }

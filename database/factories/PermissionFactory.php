@@ -2,14 +2,17 @@
 
 namespace Database\Factories;
 
-use Truvoicer\TfDbReadCore\Services\Permission\PermissionService;
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Truvoicer\TfDbReadCore\Models\Permission;
+use Truvoicer\TfDbReadCore\Services\Permission\PermissionService;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Permission>
+ * @extends \Illuminate\Database\Eloquent\Factories\Factory<\Truvoicer\TfDbReadCore\Models\Permission>
  */
 class PermissionFactory extends Factory
 {
+    protected $model = Permission::class;
+
     /**
      * Define the model's default state.
      *
@@ -18,6 +21,7 @@ class PermissionFactory extends Factory
     public function definition(): array
     {
         $permission = $this->faker->randomElement(PermissionService::DEFAULT_PERMISSIONS);
+
         return [
             'name' => $permission['name'],
             'label' => $permission['label'],

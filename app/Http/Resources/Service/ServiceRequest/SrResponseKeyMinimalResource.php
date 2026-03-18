@@ -2,10 +2,12 @@
 
 namespace App\Http\Resources\Service\ServiceRequest;
 
-use App\Http\Resources\ProviderMinimalResource;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
+/**
+ * @mixin \Truvoicer\TfDbReadCore\Models\SrResponseKey
+ */
 class SrResponseKeyMinimalResource extends JsonResource
 {
     /**
@@ -13,8 +15,6 @@ class SrResponseKeyMinimalResource extends JsonResource
      *
      * @return array<string, mixed>
      */
-
-
     public function toArray(Request $request): array
     {
         return [

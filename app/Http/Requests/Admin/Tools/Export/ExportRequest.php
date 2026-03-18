@@ -2,7 +2,6 @@
 
 namespace App\Http\Requests\Admin\Tools\Export;
 
-use Truvoicer\TfDbReadCore\Services\EntityService;
 use App\Services\Tools\IExport\ExportService;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -31,7 +30,7 @@ class ExportRequest extends FormRequest
                 'string',
                 Rule::in(
                     array_column(ExportService::getExportEntityFields(), 'name')
-                )
+                ),
             ],
             'data.*.export_data' => [
                 'required',

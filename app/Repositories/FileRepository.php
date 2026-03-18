@@ -16,7 +16,8 @@ class FileRepository extends BaseRepository
     {
         return parent::getModel();
     }
-    public function findByParams(string $sort, string  $order, ?int $count = null)
+
+    public function findByParams(string $sort, string $order, ?int $count = null)
     {
         return $this->findAllWithParams($sort, $order, $count);
     }
@@ -24,6 +25,7 @@ class FileRepository extends BaseRepository
     public function findByQuery($query)
     {
         $this->addWhere('filename', $query, 'LIKE');
+
         return $this->findAll();
     }
 
@@ -36,24 +38,25 @@ class FileRepository extends BaseRepository
         string $mimeType,
         int $fileSize,
         string $fileSystem
-    )
-    {
+    ) {
         return $this->save(
             [
-                "filename" => $fileName,
-                "full_path" => $fullPath,
-                "rel_path" => $relativePath,
-                "type" => $fileType,
-                "extension" => $ext,
-                "mime_type" => $mimeType,
-                "size" => $fileSize,
-                "file_system" => $fileSystem
+                'filename' => $fileName,
+                'full_path' => $fullPath,
+                'rel_path' => $relativePath,
+                'type' => $fileType,
+                'extension' => $ext,
+                'mime_type' => $mimeType,
+                'size' => $fileSize,
+                'file_system' => $fileSystem,
             ]
         );
     }
 
-    public function deleteFile(File $fileSystemItem) {
+    public function deleteFile(File $fileSystemItem)
+    {
         $this->setModel($fileSystemItem);
+
         return $this->delete();
     }
 }

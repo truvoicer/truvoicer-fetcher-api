@@ -1,6 +1,5 @@
 <?php
 
-use App\Http\Controllers\Api\Auth\AuthController;
 use App\Http\Controllers\Files\DownloadFileController;
 use Illuminate\Support\Facades\Route;
 

@@ -12,11 +12,9 @@ use Illuminate\Http\Request;
  * Contains api endpoint functions for admin related tasks
  *
  * Require ROLE_ADMIN for *every* controller method in this class.
- *
  */
 class NotificationController extends Controller
 {
-
     public function __construct()
     {
         parent::__construct();
@@ -41,7 +39,8 @@ class NotificationController extends Controller
 
     public function destroy(Notification $notification, Request $request)
     {
-        $request->user()->notifications()->where('id', $notification->id)->delete($notification->id);
+        $request->user()->notifications()->where('notifications.id', $notification->id)->delete();
+
         return NotificationListResource::collection(
             $request->user()->notifications()->paginate(
                 $request->query->getInt('per_page', 10),
@@ -55,6 +54,7 @@ class NotificationController extends Controller
     public function deleteAll(Request $request)
     {
         $request->user()->notifications()->delete();
+
         return NotificationListResource::collection(
             $request->user()->notifications()->paginate(
                 $request->query->getInt('per_page', 10),
@@ -65,24 +65,26 @@ class NotificationController extends Controller
         );
     }
 
-
     public function markAsRead(Notification $notification, Request $request)
     {
-        $request->user()->notifications()->where('id', $notification->id)->first()?->markAsRead($notification->id);
+        $request->user()->notifications()->where('notifications.id', $notification->id)->first()?->markAsRead();
         $notification->refresh();
+
         return new NotificationListResource($notification);
     }
 
     public function markAsUnread(Notification $notification, Request $request)
     {
-        $request->user()->notifications()->where('id', $notification->id)->first()?->markAsUnread($notification->id);
+        $request->user()->notifications()->where('notifications.id', $notification->id)->first()?->markAsUnread();
         $notification->refresh();
+
         return new NotificationListResource($notification);
     }
 
     public function markAllAsRead(Request $request)
     {
         $request->user()->notifications->markAsRead();
+
         return NotificationListResource::collection(
             $request->user()->notifications()->paginate(
                 $request->query->getInt('per_page', 10),
@@ -96,6 +98,7 @@ class NotificationController extends Controller
     public function markAllAsUnread(Request $request)
     {
         $request->user()->notifications->markAsUnread();
+
         return NotificationListResource::collection(
             $request->user()->notifications()->paginate(
                 $request->query->getInt('per_page', 10),
@@ -110,7 +113,7 @@ class NotificationController extends Controller
     {
 
         return $this->sendSuccessResponse(
-            "Unread count.",
+            'Unread count.',
             $request->user()->unreadNotifications()->count()
         );
     }
@@ -118,10 +121,8 @@ class NotificationController extends Controller
     public function getReadCount(Request $request)
     {
         return $this->sendSuccessResponse(
-            "Read count.",
+            'Read count.',
             $request->user()->readNotifications()->count()
         );
     }
-
-
 }

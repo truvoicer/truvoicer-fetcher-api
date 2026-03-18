@@ -5,37 +5,28 @@ namespace App\Http\Controllers\Api\Backend\Provider;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Provider\RateLimit\CreateProviderRateLimitRequest;
 use App\Http\Requests\Provider\RateLimit\UpdateProviderRateLimitRequest;
-use App\Http\Resources\Service\ServiceRequest\ServiceRequestConfigResource;
 use App\Http\Resources\ProviderRateLimitResource;
+use Illuminate\Http\Request;
 use Truvoicer\TfDbReadCore\Models\Provider;
-use Truvoicer\TfDbReadCore\Models\Sr;
 use Truvoicer\TfDbReadCore\Models\ProviderRateLimit;
 use Truvoicer\TfDbReadCore\Services\ApiServices\RateLimitService;
-use Truvoicer\TfDbReadCore\Services\Permission\AccessControlService;
 use Truvoicer\TfDbReadCore\Services\Permission\PermissionService;
-use App\Services\Tools\HttpRequestService;
-use App\Services\Tools\SerializerService;
-use Illuminate\Http\Request;
 
 /**
  * Contains Api endpoint functions for service request config related operations
  *
  * Require ROLE_ADMIN for *every* controller method in this class.
- *
  */
 class ProviderRateLimitController extends Controller
 {
-
     // Initialise services for this controller
 
     /**
      * ServiceRequestConfigController constructor.
      * Initialise services for this controller
-     *
-     * @param RateLimitService $providerRateLimitService
      */
     public function __construct(
-        private RateLimitService     $providerRateLimitService
+        private RateLimitService $providerRateLimitService
     ) {
         parent::__construct();
     }
@@ -43,12 +34,11 @@ class ProviderRateLimitController extends Controller
     public function getProviderRateLimit(
         Provider $provider,
         ProviderRateLimit $providerRateLimit,
-        Request  $request
-    ): \Illuminate\Http\JsonResponse
-    {
+        Request $request
+    ): \Illuminate\Http\JsonResponse {
         $this->setAccessControlUser($request->user());
         if (
-            !$this->accessControlService->checkPermissionsForEntity(
+            ! $this->accessControlService->checkPermissionsForEntity(
                 $provider,
                 [
                     PermissionService::PERMISSION_ADMIN,
@@ -56,10 +46,11 @@ class ProviderRateLimitController extends Controller
                 ]
             )
         ) {
-            return $this->sendErrorResponse("Access denied");
+            return $this->sendErrorResponse('Access denied');
         }
+
         return $this->sendSuccessResponse(
-            "success",
+            'success',
             new ProviderRateLimitResource($providerRateLimit)
         );
     }
@@ -68,16 +59,14 @@ class ProviderRateLimitController extends Controller
      * Create an service request config based on request POST data
      * Returns json success message and service request config data on successful creation
      * Returns error response and message on fail
-     *
      */
     public function createProviderRateLimit(
-        Provider                          $provider,
+        Provider $provider,
         CreateProviderRateLimitRequest $request
-    ): \Illuminate\Http\JsonResponse
-    {
+    ): \Illuminate\Http\JsonResponse {
         $this->setAccessControlUser($request->user());
         if (
-            !$this->accessControlService->checkPermissionsForEntity(
+            ! $this->accessControlService->checkPermissionsForEntity(
                 $provider,
                 [
                     PermissionService::PERMISSION_ADMIN,
@@ -86,18 +75,19 @@ class ProviderRateLimitController extends Controller
                 ]
             )
         ) {
-            return $this->sendErrorResponse("Access denied");
+            return $this->sendErrorResponse('Access denied');
         }
         $create = $this->providerRateLimitService->createProviderRateLimit(
             $provider,
             $request->all()
         );
 
-        if (!$create) {
-            return $this->sendErrorResponse("Error creating rate limit");
+        if (! $create) {
+            return $this->sendErrorResponse('Error creating rate limit');
         }
+
         return $this->sendSuccessResponse(
-            "Rate Limit created",
+            'Rate Limit created',
             new ProviderRateLimitResource(
                 $this->providerRateLimitService->getProviderRateLimitRepository()->getModel()
             )
@@ -111,14 +101,13 @@ class ProviderRateLimitController extends Controller
      * Returns error response and message on fail
      */
     public function updateProviderRateLimit(
-        Provider                          $provider,
-        ProviderRateLimit                    $providerRateLimit,
+        Provider $provider,
+        ProviderRateLimit $providerRateLimit,
         UpdateProviderRateLimitRequest $request
-    ): \Illuminate\Http\JsonResponse
-    {
+    ): \Illuminate\Http\JsonResponse {
         $this->setAccessControlUser($request->user());
         if (
-            !$this->accessControlService->checkPermissionsForEntity(
+            ! $this->accessControlService->checkPermissionsForEntity(
                 $provider,
                 [
                     PermissionService::PERMISSION_ADMIN,
@@ -126,18 +115,19 @@ class ProviderRateLimitController extends Controller
                 ]
             )
         ) {
-            return $this->sendErrorResponse("Access denied");
+            return $this->sendErrorResponse('Access denied');
         }
         $update = $this->providerRateLimitService->saveProviderRateLimit(
             $providerRateLimit,
             $request->all()
         );
 
-        if (!$update) {
-            return $this->sendErrorResponse("Error updating rate limit");
+        if (! $update) {
+            return $this->sendErrorResponse('Error updating rate limit');
         }
+
         return $this->sendSuccessResponse(
-            "RateLimit updated",
+            'RateLimit updated',
             new ProviderRateLimitResource(
                 $this->providerRateLimitService->getProviderRateLimitRepository()->getModel()
             )
@@ -153,28 +143,28 @@ class ProviderRateLimitController extends Controller
     public function deleteProviderRateLimit(
         Provider $provider,
         ProviderRateLimit $providerRateLimit,
-        Request  $request
-    ): \Illuminate\Http\JsonResponse
-    {
+        Request $request
+    ): \Illuminate\Http\JsonResponse {
         $this->setAccessControlUser($request->user());
         if (
-            !$this->accessControlService->checkPermissionsForEntity(
+            ! $this->accessControlService->checkPermissionsForEntity(
                 $provider,
                 [
                     PermissionService::PERMISSION_ADMIN,
-                    PermissionService::PERMISSION_DELETE
+                    PermissionService::PERMISSION_DELETE,
                 ]
             )
         ) {
-            return $this->sendErrorResponse("Access denied");
+            return $this->sendErrorResponse('Access denied');
         }
-        if (!$this->providerRateLimitService->deleteProviderRateLimit($providerRateLimit)) {
+        if (! $this->providerRateLimitService->deleteProviderRateLimit($providerRateLimit)) {
             return $this->sendErrorResponse(
-                "Error deleting rate limit"
+                'Error deleting rate limit'
             );
         }
+
         return $this->sendSuccessResponse(
-            "RateLimit deleted."
+            'RateLimit deleted.'
         );
     }
 }

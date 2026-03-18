@@ -2,6 +2,7 @@
 
 namespace App\Services\ApiServices\ServiceRequests\ResponseKeys\Populate\Types;
 
+use Illuminate\Support\Arr;
 use Truvoicer\TfDbReadCore\Enums\Api\ApiListKey;
 use Truvoicer\TfDbReadCore\Enums\Sr\SrType;
 use Truvoicer\TfDbReadCore\Models\Sr;
@@ -11,15 +12,13 @@ use Truvoicer\TfDbReadCore\Services\ApiManager\Response\Entity\ApiDetailedRespon
 use Truvoicer\TfDbReadCore\Services\ApiManager\Response\Handlers\ResponseHandler;
 use Truvoicer\TfDbReadCore\Services\ApiManager\Response\ResponseManager;
 use Truvoicer\TfDbReadCore\Services\ApiServices\ServiceRequests\SrConfigService;
-use Illuminate\Support\Arr;
 
 class PopulateTypeJson extends PopulateTypeBase
 {
-
     public function __construct(
         protected ApiRequestService $requestOperation,
-        protected SrConfigService   $srConfigService,
-        protected ResponseHandler   $responseHandler
+        protected SrConfigService $srConfigService,
+        protected ResponseHandler $responseHandler
     ) {
         parent::__construct($requestOperation, $srConfigService, $responseHandler);
         $this->setReservedKeys(
@@ -29,10 +28,14 @@ class PopulateTypeJson extends PopulateTypeBase
             )
         );
     }
+
     public function runSrRequest(Sr $sr, ?array $query = []): ApiDetailedResponse
     {
+        /** @var \Truvoicer\TfDbReadCore\Models\Provider|null $provider */
         $provider = $sr->provider()->first();
-        $this->requestOperation->setProviderName($provider->name);
+        if ($provider) {
+            $this->requestOperation->setProviderName($provider->name);
+        }
         $this->requestOperation->setApiRequestName($sr->name);
         $this->requestOperation->setUser($this->getUser());
 
@@ -43,6 +46,7 @@ class PopulateTypeJson extends PopulateTypeBase
     {
         $this->score = [];
         $this->response = $response;
+
         return match ($response->getStatus()) {
             'success' => match (ResponseManager::getSrResponseContentType($sr, $response->getResponse())) {
                 ResponseManager::CONTENT_TYPE_JSON => $this->handleJsonResponse($sr),
@@ -52,7 +56,6 @@ class PopulateTypeJson extends PopulateTypeBase
         };
     }
 
-
     private function extractDataFromScoreData(array $scoreData): array
     {
         $itemsArrayData = $this->getItemsArrayValueFromScoreData($scoreData);
@@ -60,9 +63,10 @@ class PopulateTypeJson extends PopulateTypeBase
 
         return [
             'value' => $itemsArrayData['list_key_value'],
-            'data' => $this->findByKeyTree($resultsTrack['parent'], $this->response->getRequestData(), false)
+            'data' => $this->findByKeyTree($resultsTrack['parent'], $this->response->getRequestData(), false),
         ];
     }
+
     private function getItemsArrayValueFromScoreData(array $scoreData): array|bool
     {
         if (empty($scoreData)) {
@@ -72,21 +76,21 @@ class PopulateTypeJson extends PopulateTypeBase
             if ($a['score'] == $b['score']) {
                 return 0;
             }
+
             return ($a['score'] < $b['score']) ? -1 : 1;
         });
         $value = array_keys($scoreData)[0];
-        if (is_integer($value)) {
+        if (is_int($value)) {
             return [
                 'list_key_value' => 'root_array',
-                'value' => $value
+                'value' => $value,
             ];
-        } elseif (is_string($value)) {
+        } else {
             return [
                 'list_key_value' => $value,
-                'value' => $value
+                'value' => $value,
             ];
         }
-        return false;
     }
 
     private function findByKeyTree(array $data, ?array $requestData = [], ?bool $pop = true): mixed
@@ -96,11 +100,12 @@ class PopulateTypeJson extends PopulateTypeBase
         }
         foreach ($data as $value) {
             array_shift($data);
-            if (!isset($requestData[$value])) {
+            if (! isset($requestData[$value])) {
                 return $requestData;
             }
             $requestData = $requestData[$value];
         }
+
         return $requestData;
     }
 
@@ -108,28 +113,27 @@ class PopulateTypeJson extends PopulateTypeBase
     {
         $parentKey = (array_key_exists('key', $parent)) ? $parent['key'] : null;
 
-
         foreach ($data as $key => $value) {
             $parent['key'] = $key;
-            if (!array_key_exists('parent', $parent)) {
+            if (! array_key_exists('parent', $parent)) {
                 $parent['parent'] = [];
             }
             $parent['parent'][] = $key;
-            if (!is_array($value)) {
+            if (! is_array($value)) {
                 continue;
             }
             if (Arr::isAssoc($value)) {
                 $parentData = $this->findByKeyTree($parent['parent'], $this->response->getRequestData());
                 foreach ($value as $valKey => $val) {
                     foreach ($parentData as $values) {
-                        if (!is_array($values)) {
+                        if (! is_array($values)) {
                             continue;
                         }
                         if (array_key_exists($valKey, $values)) {
-                            if (!array_key_exists($parentKey, $this->score)) {
+                            if (! array_key_exists($parentKey, $this->score)) {
                                 $this->score[$parentKey] = [
                                     'score' => 0,
-                                    'parent' => []
+                                    'parent' => [],
                                 ];
                             }
                             $this->score[$parentKey]['score']++;
@@ -152,13 +156,13 @@ class PopulateTypeJson extends PopulateTypeBase
         }
 
         if (
-            !empty($this->data['list_key']) &&
+            ! empty($this->data['list_key']) &&
             $this->data['list_key'] === 'root_item'
         ) {
             return $this->srTypeHandler($sr, $requestData);
         }
         if (
-            !empty($this->data['list_key']) &&
+            ! empty($this->data['list_key']) &&
             $this->data['list_key'] === 'root_array'
         ) {
             return $this->srTypeHandler(
@@ -169,23 +173,24 @@ class PopulateTypeJson extends PopulateTypeBase
 
         if (Arr::isList($requestData)) {
             $this->destSr->{ApiListKey::LIST_KEY->value} = 'root_items';
-            if (!$this->destSr->save()) {
+            if (! $this->destSr->save()) {
                 $this->addError(
-                    "error",
-                    "Error saving " . ApiListKey::LIST_KEY->value . '.'
+                    'error',
+                    'Error saving '.ApiListKey::LIST_KEY->value.'.'
                 );
+
                 return false;
             }
+
             return $this->srTypeHandler($sr, $requestData);
         }
-
 
         $this->prepareItemsArrayScoreData($requestData);
         $extractData = $this->extractDataFromScoreData($this->score);
         $this->destSr->{ApiListKey::LIST_KEY->value} = $this->data['list_key'];
-        if (!$this->destSr->save()) {
+        if (! $this->destSr->save()) {
             $this->addError(
-                "error",
+                'error',
                 sprintf(
                     'Error saving %s. | %s value: %s',
                     ApiListKey::LIST_KEY->value,
@@ -193,8 +198,10 @@ class PopulateTypeJson extends PopulateTypeBase
                     $this->data['list_key']
                 )
             );
+
             return false;
         }
+
         return $this->srTypeHandler($sr, $extractData['data']);
     }
 
