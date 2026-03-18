@@ -81,4 +81,4 @@ jobs:
           echo "MongoDB is ready!"
 
       - name: Tests
-        run: ./vendor/bin/pest
+        run: php artisan test
