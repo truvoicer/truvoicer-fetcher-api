@@ -40,7 +40,7 @@ class RouteServiceProvider extends ServiceProvider
             /** @var \Truvoicer\TfDbReadCore\Models\Provider|null $provider */
             $provider = $route->parameter('provider');
 
-            if (!$provider instanceof Provider) {
+            if (! $provider instanceof Provider) {
                 abort(404, 'Provider not found or invalid.');
             }
 
@@ -49,7 +49,7 @@ class RouteServiceProvider extends ServiceProvider
                 ->where('id', $value)
                 ->first();
 
-            if (!$serviceRequest) {
+            if (! $serviceRequest) {
                 abort(404, 'Service request not found for this provider.');
             }
 
@@ -65,7 +65,7 @@ class RouteServiceProvider extends ServiceProvider
             /** @var \Truvoicer\TfDbReadCore\Models\Sr|null $serviceRequest */
             $serviceRequest = $route->parameter('serviceRequest');
 
-            if (!$serviceRequest instanceof Sr) {
+            if (! $serviceRequest instanceof Sr) {
                 abort(404, 'Service request not found or invalid.');
             }
 
@@ -74,7 +74,7 @@ class RouteServiceProvider extends ServiceProvider
                 ->where('sr_child_id', $value)
                 ->first();
 
-            if (!$childSr) {
+            if (! $childSr) {
                 abort(404, 'Child service request not found.');
             }
 

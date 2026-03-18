@@ -3,12 +3,15 @@
 namespace Database\Factories;
 
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Truvoicer\TfDbReadCore\Models\ProviderProperty;
 
 /**
  * @extends \Illuminate\Database\Eloquent\Factories\Factory<\Truvoicer\TfDbReadCore\Models\ProviderProperty>
  */
 class ProviderPropertyFactory extends Factory
 {
+    protected $model = ProviderProperty::class;
+
     /**
      * Define the model's default state.
      *

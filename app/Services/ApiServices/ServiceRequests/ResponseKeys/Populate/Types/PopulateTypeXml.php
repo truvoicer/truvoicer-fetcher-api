@@ -38,8 +38,11 @@ class PopulateTypeXml extends PopulateTypeBase
 
     public function runSrRequest(Sr $sr, ?array $query = []): ApiDetailedResponse
     {
+        /** @var \Truvoicer\TfDbReadCore\Models\Provider|null $provider */
         $provider = $sr->provider()->first();
-        $this->requestOperation->setProviderName($provider->name);
+        if ($provider) {
+            $this->requestOperation->setProviderName($provider->name);
+        }
         $this->requestOperation->setApiRequestName($sr->name);
         $this->requestOperation->setUser($this->getUser());
 

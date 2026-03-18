@@ -186,7 +186,7 @@ class ServiceRequestResponseKeyController extends Controller
         $create = $this->srResponseKeyService->createSrResponseKey(
             $request->user(),
             $serviceRequest,
-            $request->get('name'),
+            $request->input('name'),
             $request->all([
                 'value',
                 'show_in_response',

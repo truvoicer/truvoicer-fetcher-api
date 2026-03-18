@@ -5,6 +5,7 @@ namespace App\Services\ApiServices\ServiceRequests;
 use App\Services\Provider\ProviderEventService;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\App;
+use RuntimeException;
 use Truvoicer\TfDbReadCore\Models\Sr;
 use Truvoicer\TfDbReadCore\Models\SrSchedule;
 use Truvoicer\TfDbReadCore\Models\User;
@@ -105,11 +106,24 @@ class SrScheduleService extends BaseService
             return false;
         }
 
+        /** @var \Truvoicer\TfDbReadCore\Models\Provider|null $provider */
+        $provider = $sr->provider()->first();
+
+        if (! $provider) {
+            throw new RuntimeException(
+                sprintf(
+                    'Provider does not exist for this sr. | sr id: %d | sr: name: %s | sr label: %s',
+                    $sr->id,
+                    $sr->name,
+                    $sr->label,
+                )
+            );
+        }
         switch ($executeImmediatelyOp) {
             case 'execute':
                 $srOperationsService = App::make(SrOperationsService::class);
                 $srOperationsService->setUser($user);
-                $srOperationsService->getRequestOperation()->setProvider($sr->provider()->first());
+                $srOperationsService->getRequestOperation()->setProvider($provider);
                 $srOperationsService->runOperationForSr($sr, SrResponseKeySrRepository::ACTION_STORE);
                 break;
             default:

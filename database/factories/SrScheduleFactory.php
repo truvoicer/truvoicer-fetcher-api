@@ -4,12 +4,15 @@ namespace Database\Factories;
 
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Carbon;
+use Truvoicer\TfDbReadCore\Models\SrSchedule;
 
 /**
  * @extends \Illuminate\Database\Eloquent\Factories\Factory<\Truvoicer\TfDbReadCore\Models\SrSchedule>
  */
 class SrScheduleFactory extends Factory
 {
+    protected $model = SrSchedule::class;
+
     /**
      * Define the model's default state.
      *

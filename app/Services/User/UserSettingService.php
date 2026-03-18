@@ -7,7 +7,6 @@ use Truvoicer\TfDbReadCore\Services\BaseService;
 
 class UserSettingService extends BaseService
 {
-
     public function findUserSettings()
     {
         $findSettings = $this->user->settings()->first();
@@ -17,23 +16,22 @@ class UserSettingService extends BaseService
 
         return $findSettings;
     }
+
     /**
      * Initialize user settings for the current user.
-     *
-     * @return \Truvoicer\TfDbReadCore\Models\UserSetting
      */
     public function initialiseUserSettings(): UserSetting
     {
         /** @var \Truvoicer\TfDbReadCore\Models\UserSetting $settings */
         $settings = $this->user->settings()->create();
+
         return $settings;
     }
 
     /**
      * Update or create user settings for the current user.
      *
-     * @param array $data The settings data to update/create
-     * @return \Truvoicer\TfDbReadCore\Models\UserSetting
+     * @param  array  $data  The settings data to update/create
      */
     public function updateUserSettings(array $data): UserSetting
     {
@@ -44,6 +42,7 @@ class UserSettingService extends BaseService
             ],
             $data
         );
+
         return $settings;
     }
 }

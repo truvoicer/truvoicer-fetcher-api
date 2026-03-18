@@ -28,11 +28,10 @@ class CreateProviderRequest extends FormRequest
             'label' => 'required|string',
             'global' => 'sometimes|boolean',
             'categories' => 'sometimes|array',
-            'categories.*.id' => Rule::forEach(function ($value, string $attribute) {
-                return [
-                    Rule::exists(Category::class, 'id'),
-                ];
-            }),
+            'categories.*.id' => [
+                'integer',
+                Rule::exists(Category::class, 'id'),
+            ],
         ];
     }
 }

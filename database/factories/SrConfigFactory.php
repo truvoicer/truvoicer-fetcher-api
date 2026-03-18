@@ -4,12 +4,15 @@ namespace Database\Factories;
 
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Truvoicer\TfDbReadCore\Models\Property;
+use Truvoicer\TfDbReadCore\Models\SrConfig;
 
 /**
  * @extends \Illuminate\Database\Eloquent\Factories\Factory<\Truvoicer\TfDbReadCore\Models\SrConfig>
  */
 class SrConfigFactory extends Factory
 {
+    protected $model = SrConfig::class;
+
     /**
      * Define the model's default state.
      *

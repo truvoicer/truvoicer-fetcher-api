@@ -79,6 +79,7 @@ class ProviderScheduleService
         $findUser = $this->providerService->getUserRepository()->findOne();
         if (! $findUser) {
             Log::log('info', 'No schedule user found');
+
             return;
         }
 
@@ -97,7 +98,6 @@ class ProviderScheduleService
 
     /**
      * @property \Illuminate\Database\Eloquent\Collection<\Truvoicer\TfDbReadCore\Models\Sr> $srs
-     *
      */
     private function runBatchSrs(Collection $srs, ?bool $isChild = false)
     {
@@ -114,7 +114,7 @@ class ProviderScheduleService
         $schedule = $findParentChildSr['schedule'];
 
         if (! $schedule instanceof SrSchedule) {
-            Log::log('info', 'No schedule found for SR: ' . $sr->label);
+            Log::log('info', 'No schedule found for SR: '.$sr->label);
 
             return;
         }

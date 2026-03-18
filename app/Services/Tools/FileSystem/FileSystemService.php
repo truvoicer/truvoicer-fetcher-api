@@ -10,7 +10,6 @@ use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 
 class FileSystemService
 {
-
     private FileRepository $fileRepository;
 
     private FileDownloadRepository $fileDownloadRepository;

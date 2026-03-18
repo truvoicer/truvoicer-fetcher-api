@@ -8,12 +8,15 @@ use Illuminate\Support\Str;
 use Truvoicer\TfDbReadCore\Enums\Api\ApiListKey;
 use Truvoicer\TfDbReadCore\Enums\FormatOptions;
 use Truvoicer\TfDbReadCore\Enums\Sr\SrType;
+use Truvoicer\TfDbReadCore\Models\Sr;
 
 /**
  * @extends \Illuminate\Database\Eloquent\Factories\Factory<\Truvoicer\TfDbReadCore\Models\Sr>
  */
 class SrFactory extends Factory
 {
+    protected $model = Sr::class;
+
     private array $availablePregMatches = [
 
         // Email validation (RFC 5322 compliant)

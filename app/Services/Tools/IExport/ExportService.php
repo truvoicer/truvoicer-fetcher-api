@@ -14,7 +14,9 @@ class ExportService
     use UserTrait;
 
     private DownloadsFileSystemService $downloadsFileSystem;
+
     private IExportTypeService $iExportTypeService;
+
     protected AccessControlService $accessControlService;
 
     public function __construct(

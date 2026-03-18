@@ -21,6 +21,7 @@ class SearchController extends Controller
     public function search(string $query)
     {
         $searchArray = $this->searchService->performSearch($query);
+
         return $this->sendSuccessResponse('success', $searchArray);
     }
 }

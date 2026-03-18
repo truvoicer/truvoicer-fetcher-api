@@ -26,7 +26,7 @@ class UploadsFileSystemService extends FileSystemServiceBase
         try {
             return $uploadedFile->move($this->getRootPath(), $uploadedFile->getFileName());
         } catch (\Exception $exception) {
-            throw new Exception($exception->getMessage() . ' '.$uploadedFile->getPath());
+            throw new Exception($exception->getMessage().' '.$uploadedFile->getPath());
         }
     }
 
@@ -58,7 +58,7 @@ class UploadsFileSystemService extends FileSystemServiceBase
     public function readFileStream(string $path)
     {
         $resource = $this->filesystem->readStream($path);
-        if (!$resource) {
+        if (! $resource) {
             throw new BadRequestHttpException(sprintf('Error opening file stream for path: (%s)', $path));
         }
 

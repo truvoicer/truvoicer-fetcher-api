@@ -4,11 +4,11 @@ namespace App\Services\Provider;
 
 use App\Events\RunProviderSrOperationEvent;
 use App\Events\RunSrOperationEvent;
+use App\Services\ApiServices\ServiceRequests\SrOperationsService;
 use Truvoicer\TfDbReadCore\Models\Provider;
 use Truvoicer\TfDbReadCore\Models\Sr;
 use Truvoicer\TfDbReadCore\Models\SrSchedule;
 use Truvoicer\TfDbReadCore\Models\User;
-use App\Services\ApiServices\ServiceRequests\SrOperationsService;
 
 class ProviderEventService
 {

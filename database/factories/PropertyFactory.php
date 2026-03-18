@@ -5,6 +5,7 @@ namespace Database\Factories;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Str;
 use Truvoicer\TfDbReadCore\Enums\Entity\EntityType;
+use Truvoicer\TfDbReadCore\Models\Property;
 use Truvoicer\TfDbReadCore\Services\ApiManager\Data\DataConstants;
 
 /**
@@ -12,6 +13,8 @@ use Truvoicer\TfDbReadCore\Services\ApiManager\Data\DataConstants;
  */
 class PropertyFactory extends Factory
 {
+    protected $model = Property::class;
+
     /**
      * Define the model's default state.
      *

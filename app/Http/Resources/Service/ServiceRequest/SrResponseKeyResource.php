@@ -2,7 +2,6 @@
 
 namespace App\Http\Resources\Service\ServiceRequest;
 
-use App\Http\Resources\ProviderMinimalResource;
 use App\Http\Resources\Service\SResponseKeyMinimalResource;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
@@ -24,7 +23,7 @@ class SrResponseKeyResource extends JsonResource
             'sResponseKey',
             new SResponseKeyMinimalResource($this->sResponseKey)
         );
-        $data['provider'] = new ProviderMinimalResource($this->provider);
+        // $data['provider'] = new ProviderMinimalResource($this->provider);
 
         return $data;
     }

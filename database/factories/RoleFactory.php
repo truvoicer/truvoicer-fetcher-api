@@ -3,6 +3,7 @@
 namespace Database\Factories;
 
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Truvoicer\TfDbReadCore\Models\Role;
 use Truvoicer\TfDbReadCore\Services\Auth\AuthService;
 
 /**
@@ -10,6 +11,8 @@ use Truvoicer\TfDbReadCore\Services\Auth\AuthService;
  */
 class RoleFactory extends Factory
 {
+    protected $model = Role::class;
+
     /**
      * Define the model's default state.
      *

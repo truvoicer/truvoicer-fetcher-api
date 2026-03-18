@@ -25,11 +25,10 @@ class DeleteBatchProviderRateLimitRequest extends FormRequest
     {
         return [
             'ids' => ['required', 'array'],
-            'ids.*' => Rule::forEach(function ($value, string $attribute) {
-                return [
-                    Rule::exists(ProviderRateLimit::class, 'id'),
-                ];
-            }),
+            'ids.*' => [
+                'integer',
+                Rule::exists(ProviderRateLimit::class, 'id'),
+            ],
         ];
     }
 }

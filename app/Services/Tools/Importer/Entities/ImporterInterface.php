@@ -6,7 +6,6 @@ use App\Enums\Import\ImportType;
 
 interface ImporterInterface
 {
-
     public function setConfig(): void;
 
     public function setMappings(): void;

@@ -48,12 +48,15 @@ class RunSrOperation extends Command
 
             return CommandAlias::FAILURE;
         }
+        /** @var \Truvoicer\TfDbReadCore\Models\Provider|null $provider */
         $provider = Provider::where('name', '=', $providerName)->first();
         if (! $provider) {
             $this->error('Provider not found');
 
             return CommandAlias::FAILURE;
         }
+
+        /** @var \Truvoicer\TfDbReadCore\Models\Sr|null $sr */
         $sr = $provider->sr()->where('name', '=', $srName)->first();
         if (! $sr) {
             $this->error('Sr not found');

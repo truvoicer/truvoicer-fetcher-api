@@ -22,6 +22,7 @@ use Truvoicer\TfDbReadCore\Enums\Sr\SrType;
 use Truvoicer\TfDbReadCore\Models\Category;
 use Truvoicer\TfDbReadCore\Models\Provider;
 use Truvoicer\TfDbReadCore\Models\S;
+use Truvoicer\TfDbReadCore\Models\SanctumUser;
 use Truvoicer\TfDbReadCore\Models\Sr;
 use Truvoicer\TfDbReadCore\Models\User;
 use Truvoicer\TfDbReadCore\Repositories\MongoDB\MongoDBRepository;
@@ -38,24 +39,53 @@ class ProviderScheduleTest extends TestCase
     {
         parent::setUp();
 
+        // Or specifically set the connection for this query
+        config(['database.connections.tf_mysql' => [
+            'driver' => 'sqlite',
+            'database' => ':memory:',
+        ]]);
+        // Set this as the default connection
+        config(['database.default' => 'sqlite']);
+
+        // Run migrations
+        $this->artisan('migrate:fresh', [
+            '--database' => 'tf_mysql',
+            '--path' => 'database/migrations',
+            '--seed' => false,
+            '--force' => true,
+        ]);
+
         // CRITICAL: Only run this in the testing environment
         if (app()->environment() !== 'testing') {
             throw new \Exception('Database cleanup is only allowed in the testing environment.');
         }
+        $this->artisan('db:seed', [
+            '--database' => 'tf_mysql', // Specify your connection
+            '--class' => 'RoleSeeder',
+        ]);
 
+        $this->artisan('db:seed', [
+            '--database' => 'tf_mysql',
+            '--class' => 'UserSeeder',
+        ]);
+        // Or for multiple seeders
+        $this->artisan('db:seed', [
+            '--database' => 'tf_mysql',
+            '--class' => 'PropertySeeder',
+        ]);
         $this->seed([
             RoleSeeder::class,
             UserSeeder::class,
             PropertySeeder::class,
         ]);
 
-        $this->superUser = User::first();
+        $this->superUser = SanctumUser::first();
         $this->mongoDbRepository = app(MongoDBRepository::class);
 
         $databaseName = DB::connection('mongodb')->getDatabaseName();
         $this->mongoDbRepository->getMongoDBQuery()
             ->getConnection()
-            ->getMongoClient()
+            ->getClient()
             ->dropDatabase($databaseName);
 
         $this->operationsDbHelpers = OperationsDbHelpers::instance();
@@ -63,7 +93,6 @@ class ProviderScheduleTest extends TestCase
 
     public function test_sr_operation_schedules_run_correctly()
     {
-
         [
             $provider,
             $category,

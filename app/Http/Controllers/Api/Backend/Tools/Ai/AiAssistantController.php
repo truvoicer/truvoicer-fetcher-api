@@ -147,7 +147,7 @@ class AiAssistantController extends Controller
 
     public function import(AiImportConfig $aiImportConfig): JsonResponse
     {
-        $aiImportConfig = $this->aiAssistantService->setUser(request()->user())
+        $this->aiAssistantService->setUser(request()->user())
             ->makeImport($aiImportConfig);
 
         return $this->sendSuccessResponse(

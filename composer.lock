@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "5a0cb77303a52a59ac6e8e54dedcae0d",
+    "content-hash": "b6cb5d9cd6b0aa4704c4f07a454ef215",
     "packages": [
         {
             "name": "brick/math",
@@ -7154,11 +7154,17 @@
         },
         {
             "name": "truvoicer/tf-db-read-core",
-            "version": "dev-develop",
+            "version": "v1.1.13",
+            "source": {
+                "type": "git",
+                "url": "git@github.com:truvoicer/tf-db-read-core.git",
+                "reference": "bc935345fee94fa134a8216e27218b861c8bf4ee"
+            },
             "dist": {
-                "type": "path",
-                "url": "packages/truvoicer/tf-db-read-core",
-                "reference": "6a2faabde8f0cf3511f715acb3960e5201ed797b"
+                "type": "zip",
+                "url": "https://api.github.com/repos/truvoicer/tf-db-read-core/zipball/bc935345fee94fa134a8216e27218b861c8bf4ee",
+                "reference": "bc935345fee94fa134a8216e27218b861c8bf4ee",
+                "shasum": ""
             },
             "require": {
                 "illuminate/contracts": "^11.0||^12.0",
@@ -7230,9 +7236,17 @@
                 "tf-db-read-core",
                 "truvoicer"
             ],
-            "transport-options": {
-                "relative": true
-            }
+            "support": {
+                "source": "https://github.com/truvoicer/tf-db-read-core/tree/v1.1.13",
+                "issues": "https://github.com/truvoicer/tf-db-read-core/issues"
+            },
+            "funding": [
+                {
+                    "type": "github",
+                    "url": "https://github.com/truvoicer"
+                }
+            ],
+            "time": "2026-03-18T19:55:27+00:00"
         },
         {
             "name": "vlucas/phpdotenv",
@@ -10245,9 +10259,7 @@
     ],
     "aliases": [],
     "minimum-stability": "stable",
-    "stability-flags": {
-        "truvoicer/tf-db-read-core": 20
-    },
+    "stability-flags": {},
     "prefer-stable": true,
     "prefer-lowest": false,
     "platform": {

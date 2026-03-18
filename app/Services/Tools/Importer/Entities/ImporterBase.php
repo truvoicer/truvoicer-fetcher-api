@@ -52,46 +52,57 @@ class ImporterBase implements ImporterInterface
     {
         throw new Exception('Not implemented');
     }
+
     public function setMappings(): void
     {
         throw new Exception('Not implemented');
     }
+
     public function loadDependencies(): void
     {
         throw new Exception('Not implemented');
     }
+
     public function validateImportData(array $data): void
     {
         throw new Exception('Not implemented');
     }
+
     public function filterImportData(array $data): array
     {
         throw new Exception('Not implemented');
     }
+
     public function getExportData(): array
     {
         throw new Exception('Not implemented');
     }
+
     public function getExportTypeData($item): array|bool
     {
         throw new Exception('Not implemented');
     }
+
     public function parseEntity(array $entity): array
     {
         throw new Exception('Not implemented');
     }
+
     public function parseEntityBatch(array $data): array
     {
         throw new Exception('Not implemented');
     }
+
     public function overwrite(array $data, bool $withChildren, array $map, ?array $dest = null, ?array $extraData = []): array
     {
         throw new Exception('Not implemented');
     }
+
     public function create(array $data, bool $withChildren, array $map, ?array $dest = null, ?array $extraData = []): array
     {
         throw new Exception('Not implemented');
     }
+
     public function deepFind(ImportType $importType, array $data, array $conditions, ?string $operation = 'AND'): ?array
     {
         throw new Exception('Not implemented');

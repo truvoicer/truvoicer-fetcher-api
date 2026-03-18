@@ -25,11 +25,10 @@ class DeleteBatchCategoryRequest extends FormRequest
     {
         return [
             'ids' => ['required', 'array'],
-            'ids.*' => Rule::forEach(function ($value, string $attribute) {
-                return [
-                    Rule::exists(Category::class, 'id'),
-                ];
-            }),
+            'ids.*' => [
+                'integer',
+                Rule::exists(Category::class, 'id'),
+            ],
         ];
     }
 }

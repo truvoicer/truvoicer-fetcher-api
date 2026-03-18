@@ -30,7 +30,6 @@ use Truvoicer\TfDbReadCore\Services\ApiManager\Operations\ApiRequestService;
 use Truvoicer\TfDbReadCore\Services\ApiServices\ServiceRequests\SrService;
 use Truvoicer\TfDbReadCore\Services\Permission\PermissionService;
 
-
 class ServiceRequestController extends Controller
 {
     public function __construct(
@@ -216,8 +215,6 @@ class ServiceRequestController extends Controller
      * Create an api service request based on request POST data
      * Returns json success message and api service request data on successful creation
      * Returns error response and message on fail
-     *
-     * @param  Request  $request
      */
     public function createServiceRequest(Provider $provider, CreateSrRequest $request): JsonResponse
     {
@@ -250,8 +247,6 @@ class ServiceRequestController extends Controller
      * Create an api service request based on request POST data
      * Returns json success message and api service request data on successful creation
      * Returns error response and message on fail
-     *
-     * @param  CreateSrRequest  $request
      */
     public function createChildServiceRequest(Provider $provider, Sr $serviceRequest, CreateChildSrRequest $request): JsonResponse
     {
@@ -429,12 +424,11 @@ class ServiceRequestController extends Controller
             return $this->sendErrorResponse('Api request type not found in the request.');
         }
 
+        $requestType = $data['request_type'];
+
         $requestOperation->setProviderName($data['provider']);
         $requestOperation->setApiRequestName($data['sr_name']);
-        $requestType = 'raw';
-        if (! empty($data['request_type'])) {
-            $requestType = $data['request_type'];
-        }
+
         $requestOperation->setUser($request->user());
 
         ini_set('max_execution_time', 60);

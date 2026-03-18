@@ -3,6 +3,7 @@
 namespace Database\Factories;
 
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Truvoicer\TfDbReadCore\Models\Permission;
 use Truvoicer\TfDbReadCore\Services\Permission\PermissionService;
 
 /**
@@ -10,6 +11,8 @@ use Truvoicer\TfDbReadCore\Services\Permission\PermissionService;
  */
 class PermissionFactory extends Factory
 {
+    protected $model = Permission::class;
+
     /**
      * Define the model's default state.
      *

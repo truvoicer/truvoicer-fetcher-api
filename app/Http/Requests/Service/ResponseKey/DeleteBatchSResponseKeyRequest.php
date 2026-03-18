@@ -25,11 +25,10 @@ class DeleteBatchSResponseKeyRequest extends FormRequest
     {
         return [
             'ids' => ['required', 'array'],
-            'ids.*' => Rule::forEach(function ($value, string $attribute) {
-                return [
-                    Rule::exists(SResponseKey::class, 'id'),
-                ];
-            }),
+            'ids.*' => [
+                'integer',
+                Rule::exists(SResponseKey::class, 'id'),
+            ],
         ];
     }
 }

@@ -4,7 +4,6 @@ namespace App\Http\Resources\Service\ServiceRequest;
 
 use App\Http\Resources\CategoryResource;
 use App\Http\Resources\ProviderMinimalResource;
-use App\Http\Resources\ProviderResource;
 use App\Http\Resources\Service\ServiceResource;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;

@@ -25,11 +25,10 @@ class DeleteBatchProvidersRequest extends FormRequest
     {
         return [
             'ids' => ['required', 'array'],
-            'ids.*' => Rule::forEach(function ($value, string $attribute) {
-                return [
-                    Rule::exists(Provider::class, 'id'),
-                ];
-            }),
+            'ids.*' => [
+                'integer',
+                Rule::exists(Provider::class, 'id'),
+            ],
         ];
     }
 }

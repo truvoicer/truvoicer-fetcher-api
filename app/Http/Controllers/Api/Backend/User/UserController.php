@@ -67,9 +67,16 @@ class UserController extends Controller
 
     public function getSessionUserApiToken(Request $request)
     {
+        $user = $request->user();
+        if (! method_exists($user, 'currentAccessToken')) {
+            return $this->sendErrorResponse(
+                'currentAccessToken method doesnt exist on user model.',
+            );
+        }
+
         return $this->sendSuccessResponse(
             'success',
-            new PersonalAccessTokenResource($request->user()->currentAccessToken())
+            new PersonalAccessTokenResource($user->currentAccessToken())
         );
     }
 
@@ -77,9 +84,9 @@ class UserController extends Controller
     {
         $getApiTokens = $this->userService->findApiTokensByParams(
             $request->user(),
-            $request->get('sort', 'id'),
-            $request->get('order', 'asc'),
-            $request->get('count')
+            $request->input('sort', 'id'),
+            $request->input('order', 'asc'),
+            $request->input('count')
         );
 
         return $this->sendSuccessResponse(

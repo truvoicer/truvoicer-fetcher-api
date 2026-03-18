@@ -35,9 +35,6 @@ class ValidatorService extends BaseService
         $this->responseKeysService = $responseKeysService;
     }
 
-    /**
-     * @return bool
-     */
     public function validateAllProviderData(User $user): bool
     {
         $providers = $this->providerService->findProviders($user);
