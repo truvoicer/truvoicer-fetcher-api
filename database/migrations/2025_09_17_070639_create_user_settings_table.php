@@ -1,7 +1,7 @@
 <?php
 
-use App\Enums\User\Setting\OpenMode;
-use App\Enums\User\Setting\Theme;
+use Truvoicer\TfDbReadCore\Enums\User\Setting\OpenMode;
+use Truvoicer\TfDbReadCore\Enums\User\Setting\Theme;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
