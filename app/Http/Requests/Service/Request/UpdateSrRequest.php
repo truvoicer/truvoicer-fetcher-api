@@ -54,7 +54,7 @@ class UpdateSrRequest extends FormRequest
             'pagination_type' => [
                 'nullable',
                 'string',
-                Rule::in(['page', 'offset']),
+                Rule::in(['page', 'offset', '']),
             ],
             'query_parameters' => 'array|nullable',
             'default_data' => 'array|nullable',
