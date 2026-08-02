@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "5a0cb77303a52a59ac6e8e54dedcae0d",
+    "content-hash": "2ea612b8e8b0bf362d104a32d969b3f4",
     "packages": [
         {
             "name": "brick/math",
@@ -7154,11 +7154,17 @@
         },
         {
             "name": "truvoicer/tf-db-read-core",
-            "version": "dev-develop",
+            "version": "v2.0.5",
+            "source": {
+                "type": "git",
+                "url": "git@github.com:truvoicer/tf-db-read-core.git",
+                "reference": "b29aaff391ab3d04d4af46c6c0c1456cf8be5225"
+            },
             "dist": {
-                "type": "path",
-                "url": "packages/truvoicer/tf-db-read-core",
-                "reference": "865bbb4c71c19d318502f8d786c71599ed286b6b"
+                "type": "zip",
+                "url": "https://api.github.com/repos/truvoicer/tf-db-read-core/zipball/b29aaff391ab3d04d4af46c6c0c1456cf8be5225",
+                "reference": "b29aaff391ab3d04d4af46c6c0c1456cf8be5225",
+                "shasum": ""
             },
             "require": {
                 "illuminate/contracts": "^11.0||^12.0",
@@ -7166,6 +7172,7 @@
                 "spatie/laravel-package-tools": "^1.16"
             },
             "require-dev": {
+                "larastan/larastan": "^3.10",
                 "laravel/pint": "^1.14",
                 "nunomaduro/collision": "^8.8",
                 "orchestra/testbench": "^10.0",
@@ -7230,9 +7237,17 @@
                 "tf-db-read-core",
                 "truvoicer"
             ],
-            "transport-options": {
-                "relative": true
-            }
+            "support": {
+                "source": "https://github.com/truvoicer/tf-db-read-core/tree/v2.0.5",
+                "issues": "https://github.com/truvoicer/tf-db-read-core/issues"
+            },
+            "funding": [
+                {
+                    "type": "github",
+                    "url": "https://github.com/truvoicer"
+                }
+            ],
+            "time": "2026-08-02T13:23:17+00:00"
         },
         {
             "name": "vlucas/phpdotenv",
@@ -10245,9 +10260,7 @@
     ],
     "aliases": [],
     "minimum-stability": "stable",
-    "stability-flags": {
-        "truvoicer/tf-db-read-core": 20
-    },
+    "stability-flags": {},
     "prefer-stable": true,
     "prefer-lowest": false,
     "platform": {
