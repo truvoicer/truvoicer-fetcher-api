@@ -2,10 +2,10 @@
 
 namespace App\Http\Requests\User\Setting;
 
-use Truvoicer\TfDbReadCore\Enums\User\Setting\OpenMode;
-use Truvoicer\TfDbReadCore\Enums\User\Setting\Theme;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
+use Truvoicer\TfDbReadCore\Enums\User\Setting\OpenMode;
+use Truvoicer\TfDbReadCore\Enums\User\Setting\Theme;
 
 class UpdateUserSettingRequest extends FormRequest
 {

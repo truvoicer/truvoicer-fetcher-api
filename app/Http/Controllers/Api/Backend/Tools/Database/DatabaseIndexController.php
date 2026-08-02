@@ -55,7 +55,6 @@ class DatabaseIndexController extends Controller
         return $indexes;
     }
 
-
     /**
      * Helper method to build index_data array across all SrTypes for a given Service.
      */
@@ -143,7 +142,7 @@ class DatabaseIndexController extends Controller
 
         $existingCollections = iterator_to_array($mongoDb->listCollectionNames());
 
-        $service->index_data = $this->buildServiceIndexData($service, $mongoDb, $existingCollections);
+        $service->setAttribute('index_data', $this->buildServiceIndexData($service, $mongoDb, $existingCollections));
 
         return $this->sendSuccessResponse(
             'Service index data retrieved successfully.',
@@ -202,7 +201,6 @@ class DatabaseIndexController extends Controller
             SDBCollectionIndexCollection::make($paginator)
         );
     }
-
 
     public function collectionIdxShow(Request $request, Service $service, string $collection, string $indexName): JsonResponse
     {
@@ -278,6 +276,7 @@ class DatabaseIndexController extends Controller
                             'index_name' => $expectedIndexName,
                             'status' => 'already_exists',
                         ];
+
                         continue;
                     }
 
@@ -288,6 +287,7 @@ class DatabaseIndexController extends Controller
                             'index_name' => $this->getIndexNameByKeys($rawCollection, $keys),
                             'status' => 'already_exists',
                         ];
+
                         continue;
                     }
 

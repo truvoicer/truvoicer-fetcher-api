@@ -36,44 +36,20 @@ class CreateProviderCommand extends Command
      */
     protected $description = 'Create a new provider with interactive prompts or create the internal provider';
 
-    /**
-     * @var ProviderService
-     */
     protected ProviderService $providerService;
 
-    /**
-     * @var ApiService
-     */
     protected ApiService $apiService;
 
-    /**
-     * @var SrService
-     */
     protected SrService $srService;
 
-    /**
-     * @var CategoryService
-     */
     protected CategoryService $categoryService;
 
-    /**
-     * @var VariablesService
-     */
     protected VariablesService $variablesService;
 
-    /**
-     * @var User|null
-     */
     protected ?User $adminUser = null;
 
-    /**
-     * @var Provider|null
-     */
     protected ?Provider $currentProvider = null;
 
-    /**
-     * @var S|null
-     */
     protected ?S $currentService = null;
 
     public function __construct(
@@ -93,8 +69,6 @@ class CreateProviderCommand extends Command
 
     /**
      * Execute the console command.
-     *
-     * @return int
      */
     public function handle(): int
     {
@@ -110,12 +84,12 @@ class CreateProviderCommand extends Command
                 }
 
                 // Handle service for internal provider
-                if (!$this->option('skip-service')) {
+                if (! $this->option('skip-service')) {
                     $this->handleInternalService();
                 }
 
                 // Handle service requests for internal provider
-                if (!$this->option('skip-srs')) {
+                if (! $this->option('skip-srs')) {
                     $this->handleInternalServiceRequests();
                 }
 
@@ -129,21 +103,22 @@ class CreateProviderCommand extends Command
             }
 
             // Ask about creating service for non-internal provider
-            if (!$this->option('skip-service')) {
+            if (! $this->option('skip-service')) {
                 $this->handleServicePrompt();
             }
 
             // Ask about creating service requests for non-internal provider
-            if (!$this->option('skip-srs')) {
+            if (! $this->option('skip-srs')) {
                 $this->handleServiceRequestsPrompt();
             }
 
             return 0;
         } catch (\Exception $e) {
-            $this->error('Error: ' . $e->getMessage());
+            $this->error('Error: '.$e->getMessage());
             if ($this->getOutput()->isVerbose()) {
                 $this->error($e->getTraceAsString());
             }
+
             return 1;
         }
     }
@@ -165,14 +140,16 @@ class CreateProviderCommand extends Command
             if (empty($email)) {
                 $this->error('❌ Email address is required.');
                 $attempts++;
+
                 continue;
             }
 
             $this->adminUser = User::where('email', $email)->first();
 
             if ($this->adminUser) {
-                $this->info("✓ Authenticated as: {$this->adminUser->name} ({$this->adminUser->email})");
+                $this->info("✓ Authenticated as: ({$this->adminUser->email})");
                 $this->newLine();
+
                 return;
             }
 
@@ -185,7 +162,7 @@ class CreateProviderCommand extends Command
             }
         }
 
-        throw new \Exception('Failed to authenticate after ' . $maxAttempts . ' attempts. Please check the user email and try again.');
+        throw new \Exception('Failed to authenticate after '.$maxAttempts.' attempts. Please check the user email and try again.');
     }
 
     /**
@@ -204,7 +181,7 @@ class CreateProviderCommand extends Command
      */
     protected function handleServiceRequestsPrompt(): void
     {
-        if (!$this->currentService) {
+        if (! $this->currentService) {
             $this->warn("\n⚠️  No service found. Please create a service first before creating service requests.");
             if ($this->confirm('Do you want to create a service now?', false)) {
                 $this->createOrUpdateService('default');
@@ -212,6 +189,7 @@ class CreateProviderCommand extends Command
                     $this->createServiceRequestsForProvider();
                 }
             }
+
             return;
         }
 
@@ -226,8 +204,9 @@ class CreateProviderCommand extends Command
      */
     protected function createServiceRequestsForProvider(): void
     {
-        if (!$this->currentService) {
+        if (! $this->currentService) {
             $this->error("❌ Cannot create service requests: No service found for provider {$this->currentProvider->name}");
+
             return;
         }
 
@@ -262,7 +241,7 @@ class CreateProviderCommand extends Command
      */
     protected function handleInternalServiceRequests(): void
     {
-        if (!$this->currentService) {
+        if (! $this->currentService) {
             $this->warn("\n⚠️  No service found. Please create a service first before creating service requests.");
             if ($this->confirm('Do you want to create the internal service now?', true)) {
                 $this->createOrUpdateService('internal');
@@ -270,6 +249,7 @@ class CreateProviderCommand extends Command
                     $this->createInternalServiceRequests();
                 }
             }
+
             return;
         }
 
@@ -290,8 +270,9 @@ class CreateProviderCommand extends Command
      */
     protected function createInternalServiceRequests(): void
     {
-        if (!$this->currentService) {
-            $this->error("❌ Cannot create service requests: No service found.");
+        if (! $this->currentService) {
+            $this->error('❌ Cannot create service requests: No service found.');
+
             return;
         }
 
@@ -312,8 +293,9 @@ class CreateProviderCommand extends Command
         $serviceName = $type === 'internal' ? 'internal' : $this->promptForServiceName();
         $serviceLabel = $type === 'internal' ? 'Internal Service' : $this->promptForServiceLabel($serviceName);
 
-        if (!$serviceName) {
+        if (! $serviceName) {
             $this->warn('⚠️  Service creation skipped.');
+
             return;
         }
 
@@ -328,10 +310,11 @@ class CreateProviderCommand extends Command
                 false
             );
 
-            if (!$overwrite) {
+            if (! $overwrite) {
                 $this->info("   Keeping existing service '{$serviceName}'.");
                 $this->currentService = $existingService;
                 $this->newLine();
+
                 return;
             }
 
@@ -357,7 +340,7 @@ class CreateProviderCommand extends Command
                     $this->error("   ✗ Failed to update service '{$serviceName}'.");
                 }
             } catch (\Exception $e) {
-                $this->error("   ✗ Error updating service '{$serviceName}': " . $e->getMessage());
+                $this->error("   ✗ Error updating service '{$serviceName}': ".$e->getMessage());
             }
         } else {
             // Create new service
@@ -379,7 +362,7 @@ class CreateProviderCommand extends Command
                     $this->error("   ✗ Failed to create service '{$serviceName}'.");
                 }
             } catch (\Exception $e) {
-                $this->error("   ✗ Error creating service '{$serviceName}': " . $e->getMessage());
+                $this->error("   ✗ Error creating service '{$serviceName}': ".$e->getMessage());
             }
         }
 
@@ -406,7 +389,7 @@ class CreateProviderCommand extends Command
                     return false; // Allow cancellation
                 }
 
-                if (!preg_match('/^[a-z][a-z0-9_\-]*$/', $value)) {
+                if (! preg_match('/^[a-z][a-z0-9_\-]*$/', $value)) {
                     return 'Service name must start with a letter and only contain lowercase letters, numbers, underscores, or hyphens.';
                 }
 
@@ -436,13 +419,14 @@ class CreateProviderCommand extends Command
      */
     protected function createOrUpdateServiceRequest(SrType $srType): void
     {
-        if (!$this->currentService) {
+        if (! $this->currentService) {
             $this->error("   ✗ Cannot create service request '{$srType->value}': No service available.");
+
             return;
         }
 
         $srName = "{$this->currentProvider->name}_{$srType->value}";
-        $srLabel = ucfirst(str_replace('_', ' ', $this->currentProvider->name)) . " {$srType->label()}";
+        $srLabel = ucfirst(str_replace('_', ' ', $this->currentProvider->name))." {$srType->label()}";
 
         // Check if service request already exists
         $existingSr = Sr::where('name', $srName)
@@ -457,9 +441,10 @@ class CreateProviderCommand extends Command
                 false
             );
 
-            if (!$overwrite) {
+            if (! $overwrite) {
                 $this->info("   Skipped updating '{$srName}'.");
                 $this->newLine();
+
                 return;
             }
 
@@ -478,7 +463,7 @@ class CreateProviderCommand extends Command
                     $this->error("   ✗ Failed to update service request '{$srName}'.");
                 }
             } catch (\Exception $e) {
-                $this->error("   ✗ Error updating service request '{$srName}': " . $e->getMessage());
+                $this->error("   ✗ Error updating service request '{$srName}': ".$e->getMessage());
             }
         } else {
             // Create new service request
@@ -498,7 +483,7 @@ class CreateProviderCommand extends Command
                     $this->error("   ✗ Failed to create service request '{$srName}'.");
                 }
             } catch (\Exception $e) {
-                $this->error("   ✗ Error creating service request '{$srName}': " . $e->getMessage());
+                $this->error("   ✗ Error creating service request '{$srName}': ".$e->getMessage());
             }
         }
 
@@ -538,8 +523,6 @@ class CreateProviderCommand extends Command
 
     /**
      * Create the internal provider
-     *
-     * @return int
      */
     protected function createInternalProvider(): int
     {
@@ -558,13 +541,14 @@ class CreateProviderCommand extends Command
                 false
             );
 
-            if (!$overwrite) {
+            if (! $overwrite) {
                 $this->info('❌ Operation cancelled.');
+
                 return 1;
             }
 
             $this->warn("🗑️  Deleting existing provider '{$providerName}'...");
-            if (!$this->providerService->deleteProvider($existingProvider)) {
+            if (! $this->providerService->deleteProvider($existingProvider)) {
                 throw new \Exception("Failed to delete existing provider '{$providerName}'.");
             }
             $this->info("✓ Existing provider '{$providerName}' deleted.");
@@ -577,7 +561,7 @@ class CreateProviderCommand extends Command
             $this->currentProvider = $this->createNewProvider($providerName);
         }
 
-        if (!$this->currentProvider) {
+        if (! $this->currentProvider) {
             throw new \Exception("Failed to create provider '{$providerName}'.");
         }
 
@@ -606,14 +590,15 @@ class CreateProviderCommand extends Command
                 ['Label', $providerData['label']],
                 ['Global', 'Yes'],
                 ['Categories', implode(', ', $this->getCategoryNames($providerData['categories']))],
-                ['Created By', $this->adminUser->name . ' (' . $this->adminUser->email . ')'],
+                ['Created By', '('.$this->adminUser->email.')'],
             ]
         );
         $this->newLine();
 
         // Confirm creation
-        if (!$this->confirm('Do you want to create this provider?', true)) {
+        if (! $this->confirm('Do you want to create this provider?', true)) {
             $this->info('❌ Operation cancelled.');
+
             return null;
         }
 
@@ -627,7 +612,7 @@ class CreateProviderCommand extends Command
             DB::commit();
             $this->newLine();
             $this->info("✅ Provider '{$providerName}' created successfully!");
-            $this->info("   You can now use this provider for service requests.");
+            $this->info('   You can now use this provider for service requests.');
 
             return Provider::where('name', $providerName)->first();
         } catch (\Exception $e) {
@@ -638,8 +623,6 @@ class CreateProviderCommand extends Command
 
     /**
      * Create a provider with interactive prompts
-     *
-     * @return int
      */
     protected function createInteractiveProvider(): int
     {
@@ -659,14 +642,15 @@ class CreateProviderCommand extends Command
                 ['Label', $providerData['label']],
                 ['Global', $providerData['global'] ? 'Yes' : 'No'],
                 ['Categories', implode(', ', $this->getCategoryNames($providerData['categories'] ?? []))],
-                ['Created By', $this->adminUser->name . ' (' . $this->adminUser->email . ')'],
+                ['Created By', '('.$this->adminUser->email.')'],
             ]
         );
         $this->newLine();
 
         // Confirm creation
-        if (!$this->confirm('Do you want to create this provider?', true)) {
+        if (! $this->confirm('Do you want to create this provider?', true)) {
             $this->info('❌ Operation cancelled.');
+
             return 1;
         }
 
@@ -683,11 +667,12 @@ class CreateProviderCommand extends Command
 
             $this->newLine();
             $this->info("✅ Provider '{$providerData['name']}' created successfully!");
-            $this->info("   You can now:");
-            $this->info("   • Create a service for this provider");
-            $this->info("   • Add service requests to this provider");
-            $this->info("   • Configure provider properties");
-            $this->info("   • Assign permissions to users");
+            $this->info('   You can now:');
+            $this->info('   • Create a service for this provider');
+            $this->info('   • Add service requests to this provider');
+            $this->info('   • Configure provider properties');
+            $this->info('   • Assign permissions to users');
+
             return 0;
         } catch (\Exception $e) {
             DB::rollBack();
@@ -697,8 +682,6 @@ class CreateProviderCommand extends Command
 
     /**
      * Prompt for provider details interactively
-     *
-     * @return array
      */
     protected function promptProviderDetails(): array
     {
@@ -726,7 +709,7 @@ class CreateProviderCommand extends Command
                     return "Provider with name '{$value}' already exists. Please choose a different name.";
                 }
 
-                if (!preg_match('/^[a-z][a-z0-9_\-]*$/', $value)) {
+                if (! preg_match('/^[a-z][a-z0-9_\-]*$/', $value)) {
                     return 'Provider name must start with a letter and only contain lowercase letters, numbers, underscores, or hyphens.';
                 }
 
@@ -770,8 +753,6 @@ class CreateProviderCommand extends Command
 
     /**
      * Prompt for category selection
-     *
-     * @return array
      */
     protected function promptCategories(): array
     {
@@ -783,7 +764,7 @@ class CreateProviderCommand extends Command
             $this->info('You can create categories later using: php artisan category:create');
             $this->newLine();
 
-            if (!$this->confirm('Continue without categories?', true)) {
+            if (! $this->confirm('Continue without categories?', true)) {
                 $this->info('❌ Operation cancelled.');
                 exit(0);
             }
@@ -817,6 +798,7 @@ class CreateProviderCommand extends Command
 
         if (empty($selectedIds)) {
             $this->info('No categories selected.');
+
             return [];
         }
 
@@ -829,18 +811,13 @@ class CreateProviderCommand extends Command
             }
         }
 
-        $this->info("✓ Selected " . count($selectedCategoryIds) . " category(ies)");
+        $this->info('✓ Selected '.count($selectedCategoryIds).' category(ies)');
 
         return $selectedCategoryIds;
     }
 
     /**
      * Ask a question with validation
-     *
-     * @param string $question
-     * @param string $field
-     * @param callable $validator
-     * @return string|null
      */
     protected function askValid(string $question, string $field, callable $validator): ?string
     {
@@ -856,15 +833,13 @@ class CreateProviderCommand extends Command
                 return null;
             }
 
-            $this->error("❌ " . $result);
+            $this->error('❌ '.$result);
             $value = $this->ask($question);
         }
     }
 
     /**
      * Get default categories for internal provider
-     *
-     * @return array
      */
     protected function getDefaultCategories(): array
     {
@@ -884,9 +859,6 @@ class CreateProviderCommand extends Command
 
     /**
      * Get category names from IDs
-     *
-     * @param array $categoryIds
-     * @return array
      */
     protected function getCategoryNames(array $categoryIds): array
     {
@@ -895,6 +867,7 @@ class CreateProviderCommand extends Command
         }
 
         $categories = Category::whereIn('id', $categoryIds)->get();
+
         return $categories->pluck('name')->toArray();
     }
 }
