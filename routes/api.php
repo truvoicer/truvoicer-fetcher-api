@@ -24,6 +24,7 @@ use App\Http\Controllers\Api\Backend\Services\SrResponseKeyOrderSearchPriorityCo
 use App\Http\Controllers\Api\Backend\Services\SrResponseKeySrController;
 use App\Http\Controllers\Api\Backend\Tools\Ai\AiAssistantController;
 use App\Http\Controllers\Api\Backend\Tools\Ai\AiImportPromptController;
+use App\Http\Controllers\Api\Backend\Tools\Database\DatabaseIndexController;
 use App\Http\Controllers\Api\Backend\Tools\Encoding\MbEncodingController;
 use App\Http\Controllers\Api\Backend\Tools\EntityController;
 use App\Http\Controllers\Api\Backend\Tools\EnumController;
@@ -302,6 +303,23 @@ Route::middleware(['auth:sanctum', 'ability:api:admin,api:superuser,api:super_ad
             Route::get('/{service:name}/providers', [ServiceController::class, 'getServiceProviders'])->name('detail.name.provider.list');
         });
         Route::prefix('tools')->name('tools.')->group(function () {
+            Route::prefix('/database')->name('database.')->group(function () {
+                Route::prefix('/indexes')->name('indexes.')->group(function () {
+                    Route::get('/', [DatabaseIndexController::class, 'index'])->name('index');
+                    Route::prefix('{service}')->group(function () {
+                        Route::get('/', [DatabaseIndexController::class, 'show'])->name('show');
+                        Route::post('/store', [DatabaseIndexController::class, 'store'])->name('store');
+                        Route::put('/update', [DatabaseIndexController::class, 'update'])->name('update');
+                        Route::delete('/delete', [DatabaseIndexController::class, 'destroy'])->name('delete');
+                        Route::prefix('/collections')->name('collections.')->group(function () {
+                            Route::prefix('{collection}')->group(function () {
+                                Route::get('/indexes', [DatabaseIndexController::class, 'collectionIdxIndex'])->name('indexes');
+                                Route::get('/indexes/{indexName}', [DatabaseIndexController::class, 'collectionIdxShow'])->name('indexes.show');
+                            });
+                        });
+                    });
+                });
+            });
             Route::get('/export/list', [ImportExportController::class, 'getExportList'])->name('export.list');
             Route::post('/export', [ImportExportController::class, 'runExport'])->name('export');
             Route::prefix('/import')->name('import.')->group(function () {

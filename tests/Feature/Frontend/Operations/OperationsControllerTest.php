@@ -262,6 +262,12 @@ class OperationsControllerTest extends TestCase
             'service' => $s->name,
             'sort_by' => 'created_at',
             'sort_order' => 'desc',
+            'provider' => [
+                [
+                    'provider_name' => $provider->name,
+                    'provider_fetch_fallback' => true,
+                ],
+            ],
         ];
 
         Http::fake([
@@ -449,6 +455,12 @@ class OperationsControllerTest extends TestCase
             'service' => $s->name,
             'sort_by' => 'created_at',
             'sort_order' => 'desc',
+            'provider' => [
+                [
+                    'provider_name' => $provider->name,
+                    'provider_fetch_fallback' => true,
+                ],
+            ],
         ];
 
         $response = $this->post(
@@ -585,7 +597,6 @@ class OperationsControllerTest extends TestCase
 
             return true;
         });
-
     }
 
     private function mockSrResponseService(): void
@@ -747,6 +758,12 @@ class OperationsControllerTest extends TestCase
             'service' => $s->name,
             'sort_by' => 'created_at',
             'sort_order' => 'desc',
+            'provider' => [
+                [
+                    'provider_name' => $provider->name,
+                    'provider_fetch_fallback' => true,
+                ],
+            ],
         ];
 
         $response = $this->post(

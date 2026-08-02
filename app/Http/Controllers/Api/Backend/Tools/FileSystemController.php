@@ -9,9 +9,7 @@ use App\Services\Tools\FileSystem\FileSystemService;
 use Illuminate\Http\Request;
 
 /**
- * Contains api endpoint functions for exporting tasks
- *
- * Require ROLE_ADMIN for *every* controller method in this class.
+ * Contains api endpoint functions for file system operations
  */
 class FileSystemController extends Controller
 {

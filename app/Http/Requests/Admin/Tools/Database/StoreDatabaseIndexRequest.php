@@ -1,13 +1,12 @@
 <?php
 
-namespace App\Http\Requests\User\Setting;
+namespace App\Http\Requests\Admin\Tools\Database;
 
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
-use Truvoicer\TfDbReadCore\Enums\User\Setting\OpenMode;
-use Truvoicer\TfDbReadCore\Enums\User\Setting\Theme;
+use Truvoicer\TfDbReadCore\Enums\Sr\SrType;
 
-class UpdateUserSettingRequest extends FormRequest
+class StoreDatabaseIndexRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -25,14 +24,15 @@ class UpdateUserSettingRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'theme' => [
-                'sometimes',
-                Rule::enum(Theme::class),
+            'keys' => 'required|array',
+            'keys.*' => 'required|in:1,-1',
+            'sr_type' => [
+                'required',
+                Rule::enum(SrType::class),
             ],
-            'open_mode' => [
-                'sometimes',
-                Rule::enum(OpenMode::class),
-            ],
+            'options' => 'nullable|array',
+            'options.unique' => 'nullable|boolean',
+            'options.name' => 'nullable|string',
         ];
     }
 }
