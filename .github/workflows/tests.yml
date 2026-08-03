@@ -87,7 +87,7 @@ jobs:
 
       - name: PHPStan Static Analysis
         run: |
-          ./vendor/bin/phpstan analyse --memory-limit=2G
+          ./vendor/bin/phpstan analyse -b vendor/autoload.php --memory-limit=2G
 
       - name: Tests
         run: php artisan test
