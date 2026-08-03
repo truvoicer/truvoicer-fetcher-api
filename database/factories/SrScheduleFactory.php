@@ -7,7 +7,7 @@ use Illuminate\Support\Carbon;
 use Truvoicer\TfDbReadCore\Models\SrSchedule;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\Truvoicer\TfDbReadCore\Models\SrSchedule>
+ * @extends Factory<SrSchedule>
  */
 class SrScheduleFactory extends Factory
 {

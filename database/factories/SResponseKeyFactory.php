@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Factories\Factory;
 use Truvoicer\TfDbReadCore\Models\SResponseKey;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\Truvoicer\TfDbReadCore\Models\SResponseKey>
+ * @extends Factory<SResponseKey>
  */
 class SResponseKeyFactory extends Factory
 {

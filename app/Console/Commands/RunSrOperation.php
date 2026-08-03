@@ -7,6 +7,7 @@ use App\Services\Provider\ProviderEventService;
 use Illuminate\Console\Command;
 use Symfony\Component\Console\Command\Command as CommandAlias;
 use Truvoicer\TfDbReadCore\Models\Provider;
+use Truvoicer\TfDbReadCore\Models\Sr;
 use Truvoicer\TfDbReadCore\Models\User;
 use Truvoicer\TfDbReadCore\Repositories\SrResponseKeySrRepository;
 
@@ -48,7 +49,7 @@ class RunSrOperation extends Command
 
             return CommandAlias::FAILURE;
         }
-        /** @var \Truvoicer\TfDbReadCore\Models\Provider|null $provider */
+        /** @var Provider|null $provider */
         $provider = Provider::where('name', '=', $providerName)->first();
         if (! $provider) {
             $this->error('Provider not found');
@@ -56,7 +57,7 @@ class RunSrOperation extends Command
             return CommandAlias::FAILURE;
         }
 
-        /** @var \Truvoicer\TfDbReadCore\Models\Sr|null $sr */
+        /** @var Sr|null $sr */
         $sr = $provider->sr()->where('name', '=', $srName)->first();
         if (! $sr) {
             $this->error('Sr not found');

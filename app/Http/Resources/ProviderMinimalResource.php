@@ -4,9 +4,10 @@ namespace App\Http\Resources;
 
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
+use Truvoicer\TfDbReadCore\Models\Provider;
 
 /**
- * @mixin \Truvoicer\TfDbReadCore\Models\Provider
+ * @mixin Provider
  */
 class ProviderMinimalResource extends JsonResource
 {

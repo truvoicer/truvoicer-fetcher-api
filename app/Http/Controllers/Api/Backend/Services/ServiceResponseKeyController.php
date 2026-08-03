@@ -8,6 +8,7 @@ use App\Http\Requests\Service\ResponseKey\DeleteBatchSResponseKeyRequest;
 use App\Http\Requests\Service\ResponseKey\UpdateSResponseKeyRequest;
 use App\Http\Resources\Service\ServiceResponseKeyCollection;
 use App\Http\Resources\Service\ServiceResponseKeyResource;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Truvoicer\TfDbReadCore\Models\Provider;
 use Truvoicer\TfDbReadCore\Models\S;
@@ -230,7 +231,7 @@ class ServiceResponseKeyController extends Controller
         Provider $provider,
         Sr $serviceRequest,
         DeleteBatchSResponseKeyRequest $request
-    ): \Illuminate\Http\JsonResponse {
+    ): JsonResponse {
         $this->setAccessControlUser($request->user());
         if (
             ! $this->accessControlService->checkPermissionsForEntity(

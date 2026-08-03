@@ -9,6 +9,7 @@ use App\Http\Requests\Service\UpdateSRequest;
 use App\Http\Resources\ProviderCollection;
 use App\Http\Resources\Service\ServiceCollection;
 use App\Http\Resources\Service\ServiceResource;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Truvoicer\TfDbReadCore\Models\S;
 use Truvoicer\TfDbReadCore\Services\ApiServices\ApiService;
@@ -36,7 +37,7 @@ class ServiceController extends Controller
      * Get service list function
      * returns a list of api services based on the request query parameters
      */
-    public function getServices(Request $request): \Illuminate\Http\JsonResponse
+    public function getServices(Request $request): JsonResponse
     {
         $this->setAccessControlUser($request->user());
         if ($this->accessControlService->inAdminGroup()) {
@@ -64,7 +65,7 @@ class ServiceController extends Controller
         );
     }
 
-    public function getServiceProviders(S $service, Request $request): \Illuminate\Http\JsonResponse
+    public function getServiceProviders(S $service, Request $request): JsonResponse
     {
         $this->setAccessControlUser($request->user());
         if (
@@ -91,7 +92,7 @@ class ServiceController extends Controller
      * Get a single api service
      * Returns a single api service based on the id passed in the request url
      */
-    public function getService(S $service, Request $request): \Illuminate\Http\JsonResponse
+    public function getService(S $service, Request $request): JsonResponse
     {
         $this->setAccessControlUser($request->user());
         if (
@@ -119,7 +120,7 @@ class ServiceController extends Controller
      * Returns json success message and api service data on successful creation
      * Returns error response and message on fail
      */
-    public function createService(CreateSRequest $request): \Illuminate\Http\JsonResponse
+    public function createService(CreateSRequest $request): JsonResponse
     {
         $create = $this->apiServicesService->createService(
             $request->user(),
@@ -143,7 +144,7 @@ class ServiceController extends Controller
      * Returns json success message and api service data on successful update
      * Returns error response and message on fail
      */
-    public function updateService(S $service, UpdateSRequest $request): \Illuminate\Http\JsonResponse
+    public function updateService(S $service, UpdateSRequest $request): JsonResponse
     {
         $this->setAccessControlUser($request->user());
         if (
@@ -181,7 +182,7 @@ class ServiceController extends Controller
      * Returns json success message and api service data on successful delete
      * Returns error response and message on fail
      */
-    public function deleteService(S $service, Request $request): \Illuminate\Http\JsonResponse
+    public function deleteService(S $service, Request $request): JsonResponse
     {
         $this->setAccessControlUser($request->user());
         if (
@@ -211,7 +212,7 @@ class ServiceController extends Controller
 
     public function deleteBatch(
         DeleteBatchSRequest $request
-    ): \Illuminate\Http\JsonResponse {
+    ): JsonResponse {
         if (! $this->apiServicesService->deleteBatch($request->get('ids'))) {
             return $this->sendErrorResponse(
                 'Error deleting services',

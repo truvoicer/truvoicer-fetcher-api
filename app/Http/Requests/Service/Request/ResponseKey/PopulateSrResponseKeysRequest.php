@@ -3,6 +3,7 @@
 namespace App\Http\Requests\Service\Request\ResponseKey;
 
 use App\Enums\Ai\AiClient;
+use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
@@ -26,7 +27,7 @@ class PopulateSrResponseKeysRequest extends FormRequest
     /**
      * Get the validation rules that apply to the request.
      *
-     * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
+     * @return array<string, ValidationRule|array<mixed>|string>
      */
     public function rules(SrConfigService $srConfigService): array
     {
@@ -95,7 +96,7 @@ class PopulateSrResponseKeysRequest extends FormRequest
             }),
         ];
 
-        /** @var array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string> $allRules */
+        /** @var array<string, ValidationRule|array<mixed>|string> $allRules */
         $allRules = array_merge($fieldRules, $staticRules, $srRules);
 
         return $allRules;

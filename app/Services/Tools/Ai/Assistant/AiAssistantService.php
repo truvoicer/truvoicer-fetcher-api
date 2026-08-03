@@ -144,7 +144,7 @@ class AiAssistantService
         foreach (array_reverse($this->createdEntities['category_attachments']) as $attachment) {
             try {
                 $attachment['entity']->categories()->detach($attachment['category_id']);
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
                 // Log but continue rollback
                 logger()->error('Failed to detach category', [
                     'error' => $e->getMessage(),
@@ -157,7 +157,7 @@ class AiAssistantService
         foreach (array_reverse($this->createdEntities['sr_parameters']) as $parameter) {
             try {
                 $this->srParametersService->deleteRequestParameter($parameter);
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
                 logger()->error('Failed to delete SR parameter', [
                     'error' => $e->getMessage(),
                     'parameter_id' => $parameter->id,
@@ -169,7 +169,7 @@ class AiAssistantService
         foreach (array_reverse($this->createdEntities['sr_configs']) as $config) {
             try {
                 $this->srConfigService->getRequestConfigRepo()->setModel($config)->delete();
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
                 logger()->error('Failed to delete SR config', [
                     'error' => $e->getMessage(),
                     'config_id' => $config->id,
@@ -181,7 +181,7 @@ class AiAssistantService
         foreach (array_reverse($this->createdEntities['service_requests']) as $sr) {
             try {
                 $this->srService->getServiceRequestRepository()->setModel($sr)->delete();
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
                 logger()->error('Failed to delete service request', [
                     'error' => $e->getMessage(),
                     'sr_id' => $sr->id,
@@ -193,7 +193,7 @@ class AiAssistantService
         foreach (array_reverse($this->createdEntities['provider_properties']) as $property) {
             try {
                 $this->providerService->getProviderPropertyRepository()->setModel($property)->delete();
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
                 logger()->error('Failed to delete provider property', [
                     'error' => $e->getMessage(),
                     'property_id' => $property->id,
@@ -205,7 +205,7 @@ class AiAssistantService
         foreach (array_reverse($this->createdEntities['providers']) as $provider) {
             try {
                 $this->providerService->getProviderRepository()->setModel($provider)->delete();
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
                 logger()->error('Failed to delete provider', [
                     'error' => $e->getMessage(),
                     'provider_id' => $provider->id,
@@ -217,7 +217,7 @@ class AiAssistantService
         foreach (array_reverse($this->createdEntities['categories']) as $category) {
             try {
                 $this->categoryService->getCategoryRepository()->setModel($category)->delete();
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
                 logger()->error('Failed to delete category', [
                     'error' => $e->getMessage(),
                     'category_id' => $category->id,
@@ -229,7 +229,7 @@ class AiAssistantService
         foreach (array_reverse($this->createdEntities['services']) as $service) {
             try {
                 $this->sService->getServiceRepository()->setModel($service)->delete();
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
                 logger()->error('Failed to delete service', [
                     'error' => $e->getMessage(),
                     'service_id' => $service->id,
@@ -257,7 +257,7 @@ class AiAssistantService
     {
         try {
             return $callback();
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->rollback();
             throw $e;
         }

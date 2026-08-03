@@ -81,5 +81,13 @@ jobs:
           timeout 30 bash -c 'while ! nc -z localhost 27017; do sleep 1; done'
           echo "MongoDB is ready!"
 
+      - name: Pint test
+        run: |
+          ./vendor/bin/pint --test
+
+      - name: PHPStan Static Analysis
+        run: |
+          ./vendor/bin/phpstan analyse --memory-limit=2G
+
       - name: Tests
         run: php artisan test

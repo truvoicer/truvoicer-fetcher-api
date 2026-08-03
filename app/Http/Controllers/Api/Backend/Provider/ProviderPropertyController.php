@@ -8,6 +8,7 @@ use App\Http\Requests\Provider\Property\SaveProviderPropertyRequest;
 use App\Http\Resources\PropertyResource;
 use App\Http\Resources\PropertyWithProviderPropertyCollection;
 use App\Http\Resources\PropertyWithProviderPropertyResource;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Truvoicer\TfDbReadCore\Models\Property;
 use Truvoicer\TfDbReadCore\Models\Provider;
@@ -34,7 +35,7 @@ class ProviderPropertyController extends Controller
      * Gets a list of related provider property objects based on the get request
      * query parameters
      */
-    public function getProviderPropertyList(Provider $provider, Request $request): \Illuminate\Http\JsonResponse
+    public function getProviderPropertyList(Provider $provider, Request $request): JsonResponse
     {
         $this->setAccessControlUser($request->user());
         if (
@@ -69,7 +70,7 @@ class ProviderPropertyController extends Controller
         Provider $provider,
         Property $property,
         Request $request
-    ): \Illuminate\Http\JsonResponse {
+    ): JsonResponse {
         $this->setAccessControlUser($request->user());
         if (
             ! $this->accessControlService->checkPermissionsForEntity(
@@ -97,7 +98,7 @@ class ProviderPropertyController extends Controller
      * - provider_id
      * - property_id
      */
-    public function saveProviderProperty(Provider $provider, Property $property, SaveProviderPropertyRequest $request): \Illuminate\Http\JsonResponse
+    public function saveProviderProperty(Provider $provider, Property $property, SaveProviderPropertyRequest $request): JsonResponse
     {
         $this->setAccessControlUser($request->user());
         if (
@@ -141,7 +142,7 @@ class ProviderPropertyController extends Controller
         Provider $provider,
         Property $property,
         Request $request
-    ): \Illuminate\Http\JsonResponse {
+    ): JsonResponse {
         $this->setAccessControlUser($request->user());
         if (
             ! $this->accessControlService->checkPermissionsForEntity(
@@ -170,7 +171,7 @@ class ProviderPropertyController extends Controller
     public function deleteBatch(
         Provider $provider,
         DeleteBatchPropertyRequest $request
-    ): \Illuminate\Http\JsonResponse {
+    ): JsonResponse {
         $this->setAccessControlUser($request->user());
         if (
             ! $this->accessControlService->checkPermissionsForEntity(

@@ -11,6 +11,7 @@ use App\Http\Resources\PersonalAccessTokenResource;
 use App\Http\Resources\RoleResource;
 use App\Http\Resources\UserCollection;
 use App\Http\Resources\UserResource;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Laravel\Sanctum\PersonalAccessToken;
 use Truvoicer\TfDbReadCore\Models\User;
@@ -271,7 +272,7 @@ class AdminController extends Controller
 
     public function deleteBatchUser(
         DeleteBatchUserRequest $request
-    ): \Illuminate\Http\JsonResponse {
+    ): JsonResponse {
         $this->setAccessControlUser($request->user());
 
         if (! $this->userService->deleteBatchUser($request->get('ids'))) {

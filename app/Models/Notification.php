@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 
 /**
@@ -9,7 +10,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property string $notifiable_type
  * @property int $notifiable_id
  * @property array $data
- * @property \Carbon\Carbon|null $read_at
+ * @property Carbon|null $read_at
  */
 class Notification extends Model
 {

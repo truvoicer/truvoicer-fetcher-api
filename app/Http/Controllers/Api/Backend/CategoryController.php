@@ -8,6 +8,7 @@ use App\Http\Requests\Category\DeleteBatchCategoryRequest;
 use App\Http\Requests\Category\UpdateCategoryRequest;
 use App\Http\Resources\CategoryCollection;
 use App\Http\Resources\CategoryResource;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Truvoicer\TfDbReadCore\Models\Category;
 use Truvoicer\TfDbReadCore\Services\Auth\AuthService;
@@ -138,7 +139,7 @@ class CategoryController extends Controller
 
     public function deleteBatch(
         DeleteBatchCategoryRequest $request
-    ): \Illuminate\Http\JsonResponse {
+    ): JsonResponse {
         $this->setAccessControlUser($request->user());
 
         if (! $this->categoryService->deleteBatch($request->get('ids'))) {

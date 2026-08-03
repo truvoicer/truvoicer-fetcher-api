@@ -25,7 +25,7 @@ class UploadsFileSystemService extends FileSystemServiceBase
 
         try {
             return $uploadedFile->move($this->getRootPath(), $uploadedFile->getFileName());
-        } catch (\Exception $exception) {
+        } catch (Exception $exception) {
             throw new Exception($exception->getMessage().' '.$uploadedFile->getPath());
         }
     }

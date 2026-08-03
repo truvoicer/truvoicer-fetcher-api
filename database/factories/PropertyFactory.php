@@ -9,7 +9,7 @@ use Truvoicer\TfDbReadCore\Models\Property;
 use Truvoicer\TfDbReadCore\Services\ApiManager\Data\DataConstants;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\Truvoicer\TfDbReadCore\Models\Property>
+ * @extends Factory<Property>
  */
 class PropertyFactory extends Factory
 {

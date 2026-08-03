@@ -7,7 +7,7 @@ use Truvoicer\TfDbReadCore\Models\Permission;
 use Truvoicer\TfDbReadCore\Services\Permission\PermissionService;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\Truvoicer\TfDbReadCore\Models\Permission>
+ * @extends Factory<Permission>
  */
 class PermissionFactory extends Factory
 {

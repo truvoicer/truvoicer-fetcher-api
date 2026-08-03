@@ -1,5 +1,7 @@
 <?php
 
+use Truvoicer\TfDbReadCore\Models\User;
+
 return [
 
     /*
@@ -62,7 +64,7 @@ return [
     'providers' => [
         'users' => [
             'driver' => 'eloquent',
-            'model' => Truvoicer\TfDbReadCore\Models\User::class,
+            'model' => User::class,
         ],
 
         // 'users' => [

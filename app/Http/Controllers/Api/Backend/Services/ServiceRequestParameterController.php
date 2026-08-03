@@ -9,6 +9,7 @@ use App\Http\Requests\Service\Request\Parameter\UpdateServiceRequestParameterReq
 use App\Http\Resources\Service\ServiceRequest\ServiceRequestParameterCollection;
 use App\Http\Resources\Service\ServiceRequest\ServiceRequestParameterResource;
 use App\Http\Resources\Service\ServiceRequest\ServiceRequestResource;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Truvoicer\TfDbReadCore\Models\Provider;
 use Truvoicer\TfDbReadCore\Models\Sr;
@@ -228,7 +229,7 @@ class ServiceRequestParameterController extends Controller
         Provider $provider,
         Sr $serviceRequest,
         DeleteBatchSrParameterRequest $request
-    ): \Illuminate\Http\JsonResponse {
+    ): JsonResponse {
         $this->setAccessControlUser($request->user());
         if (
             ! $this->accessControlService->checkPermissionsForEntity(

@@ -4,9 +4,10 @@ namespace App\Http\Resources\Service\ServiceRequest;
 
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
+use Truvoicer\TfDbReadCore\Models\SResponseKey;
 
 /**
- * @mixin \Truvoicer\TfDbReadCore\Models\SResponseKey
+ * @mixin SResponseKey
  */
 class SrResponseKeyWithServiceMinimalResource extends JsonResource
 {

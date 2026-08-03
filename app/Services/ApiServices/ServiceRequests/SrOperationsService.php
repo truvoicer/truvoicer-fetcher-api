@@ -2,6 +2,7 @@
 
 namespace App\Services\ApiServices\ServiceRequests;
 
+use Illuminate\Database\Eloquent\Collection;
 use Truvoicer\TfDbReadCore\Models\Provider;
 use Truvoicer\TfDbReadCore\Models\SrSchedule;
 use Truvoicer\TfDbReadCore\Repositories\MongoDB\MongoDBRepository;
@@ -55,7 +56,7 @@ class SrOperationsService extends ServiceRequestsSrOperationsService
 
     public function providerSrSchedule(string $interval)
     {
-        /** @var \Illuminate\Database\Eloquent\Collection<\Truvoicer\TfDbReadCore\Models\Provider> $providers */
+        /** @var Collection<Provider> $providers */
         $providers = $this->providerService->getProviderRepository()->findAll();
         foreach ($providers as $provider) {
             $this->runSrOperationsByInterval($provider, $interval);

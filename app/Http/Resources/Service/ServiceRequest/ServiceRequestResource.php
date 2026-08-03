@@ -9,8 +9,9 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Truvoicer\TfDbReadCore\Enums\Api\ApiListKey;
 use Truvoicer\TfDbReadCore\Enums\FormatOptions;
+use Truvoicer\TfDbReadCore\Models\Sr;
 
-/** @mixin \Truvoicer\TfDbReadCore\Models\Sr */
+/** @mixin Sr */
 class ServiceRequestResource extends JsonResource
 {
     /**

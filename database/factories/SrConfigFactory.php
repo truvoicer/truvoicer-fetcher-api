@@ -7,7 +7,7 @@ use Truvoicer\TfDbReadCore\Models\Property;
 use Truvoicer\TfDbReadCore\Models\SrConfig;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\Truvoicer\TfDbReadCore\Models\SrConfig>
+ * @extends Factory<SrConfig>
  */
 class SrConfigFactory extends Factory
 {

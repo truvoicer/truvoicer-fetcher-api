@@ -2,6 +2,7 @@
 
 namespace App\Models\Mongo;
 
+use Carbon\Carbon;
 use Database\Factories\Mongo\EntityFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use MongoDB\Laravel\Eloquent\Model;
@@ -19,8 +20,8 @@ use MongoDB\Laravel\Eloquent\Model;
  * @property array|null $keywords
  * @property string|null $location
  * @property string|null $location_name
- * @property \Carbon\Carbon|null $date_expires
- * @property \Carbon\Carbon|null $date_added
+ * @property Carbon|null $date_expires
+ * @property Carbon|null $date_added
  * @property string|null $external_url
  * @property string|null $website
  * @property string|null $contact_email
@@ -204,22 +205,22 @@ class Entity extends Model
         $this->location_name = $locationName;
     }
 
-    public function getDateExpires(): ?\Carbon\Carbon
+    public function getDateExpires(): ?Carbon
     {
         return $this->date_expires;
     }
 
-    public function setDateExpires(?\Carbon\Carbon $dateExpires): void
+    public function setDateExpires(?Carbon $dateExpires): void
     {
         $this->date_expires = $dateExpires;
     }
 
-    public function getDateAdded(): ?\Carbon\Carbon
+    public function getDateAdded(): ?Carbon
     {
         return $this->date_added;
     }
 
-    public function setDateAdded(?\Carbon\Carbon $dateAdded): void
+    public function setDateAdded(?Carbon $dateAdded): void
     {
         $this->date_added = $dateAdded;
     }

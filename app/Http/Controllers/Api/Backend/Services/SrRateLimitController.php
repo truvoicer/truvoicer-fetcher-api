@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Service\Request\RateLimit\CreateSrRateLimitRequest;
 use App\Http\Requests\Service\Request\RateLimit\UpdateSrRateLimitRequest;
 use App\Http\Resources\SrRateLimitResource;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Truvoicer\TfDbReadCore\Models\Provider;
 use Truvoicer\TfDbReadCore\Models\Sr;
@@ -31,7 +32,7 @@ class SrRateLimitController extends Controller
         Sr $serviceRequest,
         SrRateLimit $srRateLimit,
         Request $request
-    ): \Illuminate\Http\JsonResponse {
+    ): JsonResponse {
         $this->setAccessControlUser($request->user());
         if (
             ! $this->accessControlService->checkPermissionsForEntity(
@@ -60,7 +61,7 @@ class SrRateLimitController extends Controller
         Provider $provider,
         Sr $serviceRequest,
         CreateSrRateLimitRequest $request
-    ): \Illuminate\Http\JsonResponse {
+    ): JsonResponse {
         $this->setAccessControlUser($request->user());
         if (
             ! $this->accessControlService->checkPermissionsForEntity(
@@ -102,7 +103,7 @@ class SrRateLimitController extends Controller
         Sr $serviceRequest,
         SrRateLimit $srRateLimit,
         UpdateSrRateLimitRequest $request
-    ): \Illuminate\Http\JsonResponse {
+    ): JsonResponse {
         $this->setAccessControlUser($request->user());
         if (
             ! $this->accessControlService->checkPermissionsForEntity(
@@ -143,7 +144,7 @@ class SrRateLimitController extends Controller
         Sr $serviceRequest,
         SrRateLimit $srRateLimit,
         Request $request
-    ): \Illuminate\Http\JsonResponse {
+    ): JsonResponse {
         $this->setAccessControlUser($request->user());
         if (
             ! $this->accessControlService->checkPermissionsForEntity(

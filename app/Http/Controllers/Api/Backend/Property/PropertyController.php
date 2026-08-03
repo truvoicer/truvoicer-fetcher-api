@@ -8,6 +8,7 @@ use App\Http\Requests\Property\DeleteBatchPropertyRequest;
 use App\Http\Requests\Property\UpdatePropertyRequest;
 use App\Http\Resources\PropertyCollection;
 use App\Http\Resources\PropertyResource;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Truvoicer\TfDbReadCore\Models\Property;
 use Truvoicer\TfDbReadCore\Repositories\PropertyRepository;
@@ -116,7 +117,7 @@ class PropertyController extends Controller
 
     public function deleteBatch(
         DeleteBatchPropertyRequest $request
-    ): \Illuminate\Http\JsonResponse {
+    ): JsonResponse {
         $this->setAccessControlUser($request->user());
 
         if (! $this->propertyService->deleteBatch($request->get('ids'))) {
