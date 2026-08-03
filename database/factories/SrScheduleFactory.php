@@ -27,8 +27,12 @@ class SrScheduleFactory extends Factory
         if ($has_start_date) {
             $start_date = Carbon::make($this->faker->dateTime());
         }
-        if ($has_end_date && $has_start_date) {
-            $end_date = $start_date->addDays(2);
+
+        if ($has_start_date) {
+            $start_date = Carbon::make($this->faker->dateTime());
+            if ($has_end_date) {
+                $end_date = $start_date->copy()->addDays(2);
+            }
         } elseif ($has_end_date) {
             $end_date = Carbon::make($this->faker->dateTime());
         }
