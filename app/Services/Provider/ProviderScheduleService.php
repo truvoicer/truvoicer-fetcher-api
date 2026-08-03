@@ -118,18 +118,13 @@ class ProviderScheduleService
 
             return;
         }
-        if (! $isChild) {
-            if ($schedule->disabled && $schedule->disable_child_srs) {
-                return;
-            } elseif ($schedule->disabled && ! $schedule->disable_child_srs) {
-                $this->runChildSrSchedule($sr);
 
-                return;
+        if ($schedule->disabled) {
+            if (! $isChild && ! $schedule->disable_child_srs) {
+                $this->runChildSrSchedule($sr);
             }
-        } else {
-            if ($schedule->disabled) {
-                return;
-            }
+
+            return;
         }
         if (! empty($schedule->has_start_date) && ! empty($schedule->start_date) && $schedule->start_date <= $this->today->toDateString()) {
             return;
