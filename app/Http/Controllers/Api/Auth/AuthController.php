@@ -9,6 +9,7 @@ use App\Http\Resources\PersonalAccessTokenResource;
 use App\Http\Resources\RoleResource;
 use App\Http\Resources\UserResource;
 use App\Services\User\UserSettingService;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Symfony\Component\HttpFoundation\Response;
@@ -24,7 +25,7 @@ class AuthController extends Controller
         parent::__construct();
     }
 
-    public function login(LoginRequest $request): \Illuminate\Http\JsonResponse
+    public function login(LoginRequest $request): JsonResponse
     {
         $user = User::where('email', $request->get('email'))->first();
         if (! $user) {
@@ -55,14 +56,14 @@ class AuthController extends Controller
         );
     }
 
-    public function validateToken(): \Illuminate\Http\JsonResponse
+    public function validateToken(): JsonResponse
     {
         return $this->sendSuccessResponse(
             'Authenticated'
         );
     }
 
-    public function getRoleList(Request $request): \Illuminate\Http\JsonResponse
+    public function getRoleList(Request $request): JsonResponse
     {
         return $this->sendSuccessResponse(
             'Authenticated',
@@ -72,7 +73,7 @@ class AuthController extends Controller
         );
     }
 
-    public function getSingleUserByApiToken(Request $request): \Illuminate\Http\JsonResponse
+    public function getSingleUserByApiToken(Request $request): JsonResponse
     {
         $this->userSettingService->setUser($request->user());
         $userSettings = $this->userSettingService->findUserSettings();
@@ -86,14 +87,14 @@ class AuthController extends Controller
         );
     }
 
-    public function getAccountDetails(Request $request): \Illuminate\Http\JsonResponse
+    public function getAccountDetails(Request $request): JsonResponse
     {
         $user = $this->userAdminService->getUserByEmail($request->get('email'));
 
         return $this->sendSuccessResponse('Success', $user);
     }
 
-    public function newToken(Request $request): \Illuminate\Http\JsonResponse
+    public function newToken(Request $request): JsonResponse
     {
         $generateToken = $this->userAdminService->createUserTokenByRoleId(
             $request->user(),

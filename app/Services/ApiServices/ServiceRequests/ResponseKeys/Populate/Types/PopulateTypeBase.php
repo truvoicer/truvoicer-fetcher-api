@@ -335,7 +335,7 @@ class PopulateTypeBase
             'show_in_response' => true,
         ];
 
-        /** @var \Truvoicer\TfDbReadCore\Models\SResponseKey|null $responseKey */
+        /** @var SResponseKey|null $responseKey */
         $responseKey = $responseKeys->firstWhere('name', $sResponseKeyName);
         if (! $responseKey) {
             $createSResponseKey = $this->responseKeyRepository->createServiceResponseKey(

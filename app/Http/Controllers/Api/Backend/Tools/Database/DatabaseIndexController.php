@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Api\Backend\Tools\Database;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Admin\Tools\Database\CreateDefaultDBIndexesRequest;
+use App\Http\Requests\Admin\Tools\Database\CreateMongoDBCollectionRequest;
 use App\Http\Requests\Admin\Tools\Database\DestroyDatabaseIndexRequest;
 use App\Http\Requests\Admin\Tools\Database\FetchDatabaseIndexRequest;
 use App\Http\Requests\Admin\Tools\Database\StoreDatabaseIndexRequest;
@@ -10,13 +12,15 @@ use App\Http\Requests\Admin\Tools\Database\UpdateDatabaseIndexRequest;
 use App\Http\Resources\Service\SDBCollectionIndexCollection;
 use App\Http\Resources\Service\ServiceDatabaseIndexCollection;
 use App\Http\Resources\Service\ServiceDatabaseIndexResource;
+use App\Services\Database\DBIndexingService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Pagination\LengthAwarePaginator;
-use Illuminate\Support\Facades\DB;
-use Truvoicer\TfDbReadCore\Enums\Sr\SrType;
 use Truvoicer\TfDbReadCore\Models\S as Service;
+use Truvoicer\TfDbReadCore\Repositories\MongoDB\MongoDBQuery;
+use Truvoicer\TfDbReadCore\Repositories\MongoDB\MongoDBRepository;
 use Truvoicer\TfDbReadCore\Services\ApiServices\ApiService;
+use Truvoicer\TfDbReadCore\Services\ApiServices\ServiceRequests\SrOperationsService;
 
 /**
  * Contains api endpoint functions for database index operations
@@ -24,84 +28,12 @@ use Truvoicer\TfDbReadCore\Services\ApiServices\ApiService;
 class DatabaseIndexController extends Controller
 {
     public function __construct(
-        private ApiService $apiServicesService
+        private ApiService $apiServicesService,
+        private DBIndexingService $dbIndexingService,
+        private MongoDBQuery $mongoDBQuery,
+        private MongoDBRepository $mongoDBRepository,
     ) {
         parent::__construct();
-    }
-
-    /**
-     * Helper to retrieve formatted index metadata array for a given collection.
-     */
-    private function getCollectionIndexesData(Service $service, \MongoDB\Database $mongoDb, string $collectionName): array
-    {
-        $indexes = [];
-
-        try {
-            $rawCollection = $mongoDb->selectCollection($collectionName);
-            $collectionIndexes = $rawCollection->listIndexes();
-
-            foreach ($collectionIndexes as $indexInfo) {
-                $indexes[] = [
-                    's_id' => $service->id,
-                    'name' => $indexInfo->getName(),
-                    'key' => iterator_to_array($indexInfo->getKey()),
-                    'unique' => $indexInfo->isUnique(),
-                ];
-            }
-        } catch (\Throwable $e) {
-            logger()->error(sprintf('Failed to fetch indexes for collection %s: %s', $collectionName, $e->getMessage()));
-        }
-
-        return $indexes;
-    }
-
-    /**
-     * Helper method to build index_data array across all SrTypes for a given Service.
-     */
-    private function buildServiceIndexData(Service $service, \MongoDB\Database $mongoDb, array $existingCollections): array
-    {
-        $indexData = [];
-
-        foreach (SrType::cases() as $srTypeEnum) {
-            $collectionName = sprintf('%s_%s', $service->name, $srTypeEnum->value);
-            $exists = in_array($collectionName, $existingCollections, true);
-
-            $indexData[] = [
-                's_id' => $service->id,
-                'sr_type' => $srTypeEnum->value,
-                'collection' => $collectionName,
-                'exists' => $exists,
-                'indexes' => $exists ? $this->getCollectionIndexesData($service, $mongoDb, $collectionName) : [],
-            ];
-        }
-
-        return $indexData;
-    }
-
-    /**
-     * Verify if a given collection name matches a valid SrType for the service.
-     */
-    private function isServiceCollection(Service $service, string $collection): bool
-    {
-        foreach (SrType::cases() as $srTypeEnum) {
-            if ($collection === sprintf('%s_%s', $service->name, $srTypeEnum->value)) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    /**
-     * Helper to get target SrTypes for store/update/destroy operations.
-     */
-    private function getTargetSrTypes(?string $targetSrType): array
-    {
-        $srTypes = $targetSrType
-            ? [SrType::tryFrom($targetSrType)]
-            : SrType::cases();
-
-        return array_filter($srTypes);
     }
 
     public function index(FetchDatabaseIndexRequest $request)
@@ -136,13 +68,10 @@ class DatabaseIndexController extends Controller
      */
     public function show(Service $service): JsonResponse
     {
-        /** @var \MongoDB\Laravel\Connection $mongoConnection */
-        $mongoConnection = DB::connection('mongodb');
-        $mongoDb = $mongoConnection->getMongoDB();
 
-        $existingCollections = iterator_to_array($mongoDb->listCollectionNames());
+        $existingCollections = $this->mongoDBQuery->getAllCollectionNames();
 
-        $service->setAttribute('index_data', $this->buildServiceIndexData($service, $mongoDb, $existingCollections));
+        $service->setAttribute('index_data', $this->dbIndexingService->buildServiceIndexData($service, $existingCollections));
 
         return $this->sendSuccessResponse(
             'Service index data retrieved successfully.',
@@ -156,16 +85,12 @@ class DatabaseIndexController extends Controller
     public function collectionIdxIndex(Request $request, Service $service, string $collection): JsonResponse
     {
         // 1. Verify the requested collection belongs to the service
-        if (! $this->isServiceCollection($service, $collection)) {
+        if (! $this->dbIndexingService->isServiceCollection($service, $collection)) {
             return $this->sendErrorResponse('The requested collection does not belong to this service.', [], [], 422);
         }
 
-        /** @var \MongoDB\Laravel\Connection $mongoConnection */
-        $mongoConnection = DB::connection('mongodb');
-        $mongoDb = $mongoConnection->getMongoDB();
-
         // 2. Verify collection exists in MongoDB
-        if (! $this->collectionExists($mongoDb, $collection)) {
+        if (! $this->dbIndexingService->collectionExists($collection)) {
             return $this->sendErrorResponse(
                 sprintf('Collection [%s] does not exist in the database.', $collection),
                 [],
@@ -175,7 +100,7 @@ class DatabaseIndexController extends Controller
         }
 
         // 3. Get all index entries for the collection
-        $allIndexes = $this->getCollectionIndexesData($service, $mongoDb, $collection);
+        $allIndexes = $this->dbIndexingService->getCollectionIndexesData($service, $collection);
 
         // 4. Handle Pagination
         $page = (int) $request->input('page', 1);
@@ -205,16 +130,12 @@ class DatabaseIndexController extends Controller
     public function collectionIdxShow(Request $request, Service $service, string $collection, string $indexName): JsonResponse
     {
         // 1. Verify the requested collection belongs to the service
-        if (! $this->isServiceCollection($service, $collection)) {
+        if (! $this->dbIndexingService->isServiceCollection($service, $collection)) {
             return $this->sendErrorResponse('The requested collection does not belong to this service.', [], [], 422);
         }
 
-        /** @var \MongoDB\Laravel\Connection $mongoConnection */
-        $mongoConnection = DB::connection('mongodb');
-        $mongoDb = $mongoConnection->getMongoDB();
-
         // 2. Verify collection exists in MongoDB
-        if (! $this->collectionExists($mongoDb, $collection)) {
+        if (! $this->dbIndexingService->collectionExists($collection)) {
             return $this->sendErrorResponse(
                 sprintf('Collection [%s] does not exist in the database.', $collection),
                 [],
@@ -224,7 +145,7 @@ class DatabaseIndexController extends Controller
         }
 
         // 3. Get all index entries for the collection
-        $allIndexes = $this->getCollectionIndexesData($service, $mongoDb, $collection);
+        $allIndexes = $this->dbIndexingService->getCollectionIndexesData($service, $collection);
 
         // 4. Find the specific index by name
         foreach ($allIndexes as $index) {
@@ -247,29 +168,96 @@ class DatabaseIndexController extends Controller
     /**
      * Create a new index on a service collection.
      */
+    public function createCollection(Service $service, CreateMongoDBCollectionRequest $request): JsonResponse
+    {
+        $targetSrType = $request->input('sr_type');
+
+        $collectionName = $this->mongoDBRepository->getCollectionNameByService($service, $targetSrType);
+
+        try {
+
+            if ($this->mongoDBQuery->collectionExists($collectionName)) {
+                return $this->sendErrorResponse(
+                    sprintf('Collection [%s] already exists.', $collectionName),
+                    [],
+                    [],
+                    409
+                );
+            }
+            $this->mongoDBQuery->createCollectionIfNotExists($collectionName);
+        } catch (\Throwable $e) {
+            return $this->sendErrorResponse(
+                sprintf('Failed to create collection [%s].', $collectionName),
+                [],
+                [],
+                500
+            );
+        }
+
+        return $this->sendSuccessResponse(
+            sprintf('Collection [%s] created successfully.', $collectionName),
+            []
+        );
+    }
+
+    public function createDefaultIndexes(Service $service, CreateDefaultDBIndexesRequest $request): JsonResponse
+    {
+        $targetSrType = $request->input('sr_type');
+
+        $collectionName = $this->mongoDBRepository->getCollectionNameByService($service, $targetSrType);
+
+        try {
+            if (! $this->mongoDBQuery->collectionExists($collectionName)) {
+                return $this->sendErrorResponse(
+                    sprintf('Collection [%s] not found.', $collectionName),
+                    [],
+                    [],
+                    404
+                );
+            }
+            $this->mongoDBQuery->setCollection($collectionName)
+                ->ensureCollectionIndexes(
+                    SrOperationsService::DEFAULT_MONGODB_INDEXES
+                );
+        } catch (\Throwable $e) {
+            return $this->sendErrorResponse(
+                sprintf('Failed to create default indexes for collection [%s].', $collectionName),
+                [],
+                [],
+                500
+            );
+        }
+
+        return $this->sendSuccessResponse(
+            sprintf('Default indexes created successfully for collection [%s].', $collectionName),
+            []
+        );
+    }
+
+    /**
+     * Create a new index on a service collection.
+     */
     public function store(StoreDatabaseIndexRequest $request, Service $service): JsonResponse
     {
         $keys = $request->input('keys');
         $options = $request->input('options', []);
         $targetSrType = $request->input('sr_type');
 
-        /** @var \MongoDB\Laravel\Connection $mongoConnection */
-        $mongoConnection = DB::connection('mongodb');
-        $mongoDb = $mongoConnection->getMongoDB();
+        $mongoDb = $this->mongoDBQuery->getMongoDatabase();
 
         $processedCollections = [];
-        $srTypes = $this->getTargetSrTypes($targetSrType);
+        $srTypes = $this->dbIndexingService->getTargetSrTypes($targetSrType);
 
         foreach ($srTypes as $srTypeEnum) {
             $collectionName = sprintf('%s_%s', $service->name, $srTypeEnum->value);
 
-            if ($this->collectionExists($mongoDb, $collectionName)) {
+            if ($this->dbIndexingService->collectionExists($collectionName)) {
                 try {
                     $rawCollection = $mongoDb->selectCollection($collectionName);
 
                     $expectedIndexName = $options['name'] ?? null;
 
-                    if ($expectedIndexName && $this->hasIndex($rawCollection, $expectedIndexName)) {
+                    if ($expectedIndexName && $this->dbIndexingService->hasIndex($rawCollection, $expectedIndexName)) {
                         $processedCollections[] = [
                             'collection' => $collectionName,
                             'sr_type' => $srTypeEnum->value,
@@ -280,11 +268,11 @@ class DatabaseIndexController extends Controller
                         continue;
                     }
 
-                    if ($this->hasIndexWithKeys($rawCollection, $keys)) {
+                    if ($this->dbIndexingService->hasIndexWithKeys($rawCollection, $keys)) {
                         $processedCollections[] = [
                             'collection' => $collectionName,
                             'sr_type' => $srTypeEnum->value,
-                            'index_name' => $this->getIndexNameByKeys($rawCollection, $keys),
+                            'index_name' => $this->dbIndexingService->getIndexNameByKeys($rawCollection, $keys),
                             'status' => 'already_exists',
                         ];
 
@@ -334,20 +322,18 @@ class DatabaseIndexController extends Controller
         $options = $request->input('options', []);
         $targetSrType = $request->input('sr_type');
 
-        /** @var \MongoDB\Laravel\Connection $mongoConnection */
-        $mongoConnection = DB::connection('mongodb');
-        $mongoDb = $mongoConnection->getMongoDB();
+        $mongoDb = $this->mongoDBQuery->getMongoDatabase();
 
         $processedCollections = [];
-        $srTypes = $this->getTargetSrTypes($targetSrType);
+        $srTypes = $this->dbIndexingService->getTargetSrTypes($targetSrType);
 
         foreach ($srTypes as $srTypeEnum) {
             $collectionName = sprintf('%s_%s', $service->name, $srTypeEnum->value);
 
-            if ($this->collectionExists($mongoDb, $collectionName)) {
+            if ($this->dbIndexingService->collectionExists($collectionName)) {
                 try {
                     $rawCollection = $mongoDb->selectCollection($collectionName);
-                    if ($this->hasIndex($rawCollection, $oldIndexName)) {
+                    if ($this->dbIndexingService->hasIndex($rawCollection, $oldIndexName)) {
                         $rawCollection->dropIndex($oldIndexName);
                     }
 
@@ -388,21 +374,19 @@ class DatabaseIndexController extends Controller
             return $this->sendErrorResponse('Cannot drop default _id_ index.', [], [], 422);
         }
 
-        /** @var \MongoDB\Laravel\Connection $mongoConnection */
-        $mongoConnection = DB::connection('mongodb');
-        $mongoDb = $mongoConnection->getMongoDB();
+        $mongoDb = $this->mongoDBQuery->getMongoDatabase();
 
         $processedCollections = [];
-        $srTypes = $this->getTargetSrTypes($targetSrType);
+        $srTypes = $this->dbIndexingService->getTargetSrTypes($targetSrType);
 
         foreach ($srTypes as $srTypeEnum) {
             $collectionName = sprintf('%s_%s', $service->name, $srTypeEnum->value);
 
-            if ($this->collectionExists($mongoDb, $collectionName)) {
+            if ($this->dbIndexingService->collectionExists($collectionName)) {
                 try {
                     $rawCollection = $mongoDb->selectCollection($collectionName);
 
-                    if ($this->hasIndex($rawCollection, $indexName)) {
+                    if ($this->dbIndexingService->hasIndex($rawCollection, $indexName)) {
                         $rawCollection->dropIndex($indexName);
 
                         $processedCollections[] = [
@@ -426,61 +410,5 @@ class DatabaseIndexController extends Controller
         return $this->sendSuccessResponse('Index deleted successfully.', [
             'results' => $processedCollections,
         ]);
-    }
-
-    /**
-     * Helper to check if a collection exists in MongoDB.
-     */
-    private function collectionExists(\MongoDB\Database $mongoDb, string $collectionName): bool
-    {
-        $collections = iterator_to_array($mongoDb->listCollectionNames());
-
-        return in_array($collectionName, $collections, true);
-    }
-
-    /**
-     * Helper to check if a specific index exists on a collection by name.
-     */
-    private function hasIndex(\MongoDB\Collection $collection, string $indexName): bool
-    {
-        foreach ($collection->listIndexes() as $indexInfo) {
-            if ($indexInfo->getName() === $indexName) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    /**
-     * Check if a collection has an index matching the given keys specification.
-     */
-    private function hasIndexWithKeys(\MongoDB\Collection $collection, array $targetKeys): bool
-    {
-        foreach ($collection->listIndexes() as $indexInfo) {
-            $existingKey = iterator_to_array($indexInfo->getKey());
-
-            if ($existingKey === $targetKeys) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    /**
-     * Get the name of an existing index by its key specification.
-     */
-    private function getIndexNameByKeys(\MongoDB\Collection $collection, array $targetKeys): ?string
-    {
-        foreach ($collection->listIndexes() as $indexInfo) {
-            $existingKey = iterator_to_array($indexInfo->getKey());
-
-            if ($existingKey === $targetKeys) {
-                return $indexInfo->getName();
-            }
-        }
-
-        return null;
     }
 }

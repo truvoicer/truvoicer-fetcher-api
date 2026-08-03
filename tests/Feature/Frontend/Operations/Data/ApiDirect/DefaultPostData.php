@@ -3,6 +3,7 @@
 namespace Tests\Feature\Frontend\Operations\Data\ApiDirect;
 
 use App\Enums\Api\ApiType;
+use Illuminate\Http\Client\Response;
 use Illuminate\Testing\TestResponse;
 use Mockery;
 use Mockery\MockInterface;
@@ -290,7 +291,7 @@ class DefaultPostData
 
                 $srConfigs = self::srConfigs($index)[$index];
                 // Create a mocked response object first
-                $mockedResponse = Mockery::mock(\Illuminate\Http\Client\Response::class);
+                $mockedResponse = Mockery::mock(Response::class);
 
                 $mockedResponse->shouldReceive('json')
                     ->andReturn(
@@ -322,7 +323,7 @@ class DefaultPostData
 
                 $srConfigs = self::srConfigs($index)[$index];
                 // Create a mocked response object first
-                $mockedResponse = Mockery::mock(\Illuminate\Http\Client\Response::class);
+                $mockedResponse = Mockery::mock(Response::class);
 
                 $mockedResponse->shouldReceive('json')
                     ->andReturn(

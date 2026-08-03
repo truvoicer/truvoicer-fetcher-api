@@ -6,6 +6,7 @@ use App\Services\Provider\ProviderEventService;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\App;
 use RuntimeException;
+use Truvoicer\TfDbReadCore\Models\Provider;
 use Truvoicer\TfDbReadCore\Models\Sr;
 use Truvoicer\TfDbReadCore\Models\SrSchedule;
 use Truvoicer\TfDbReadCore\Models\User;
@@ -106,7 +107,7 @@ class SrScheduleService extends BaseService
             return false;
         }
 
-        /** @var \Truvoicer\TfDbReadCore\Models\Provider|null $provider */
+        /** @var Provider|null $provider */
         $provider = $sr->provider()->first();
 
         if (! $provider) {

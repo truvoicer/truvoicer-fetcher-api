@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\User\Setting;
 
+use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 use Truvoicer\TfDbReadCore\Enums\User\Setting\OpenMode;
@@ -20,7 +21,7 @@ class UpdateUserSettingRequest extends FormRequest
     /**
      * Get the validation rules that apply to the request.
      *
-     * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
+     * @return array<string, ValidationRule|array<mixed>|string>
      */
     public function rules(): array
     {

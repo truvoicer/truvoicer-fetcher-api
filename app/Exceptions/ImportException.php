@@ -3,6 +3,7 @@
 namespace App\Exceptions;
 
 use Exception;
+use Illuminate\Http\JsonResponse;
 
 class ImportException extends Exception
 {
@@ -14,7 +15,7 @@ class ImportException extends Exception
         parent::__construct($message);
     }
 
-    public function render($request): \Illuminate\Http\JsonResponse
+    public function render($request): JsonResponse
     {
         return response()->json([
             'status' => 'error',

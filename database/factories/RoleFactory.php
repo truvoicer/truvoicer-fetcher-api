@@ -7,7 +7,7 @@ use Truvoicer\TfDbReadCore\Models\Role;
 use Truvoicer\TfDbReadCore\Services\Auth\AuthService;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\Truvoicer\TfDbReadCore\Models\Role>
+ * @extends Factory<Role>
  */
 class RoleFactory extends Factory
 {

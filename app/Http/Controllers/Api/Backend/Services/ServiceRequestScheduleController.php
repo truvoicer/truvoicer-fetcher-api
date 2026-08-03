@@ -8,6 +8,7 @@ use App\Http\Requests\Service\Request\Schedule\UpdateSrScheduleRequest;
 use App\Http\Resources\Service\ServiceRequest\ServiceRequestConfigResource;
 use App\Http\Resources\SrScheduleResource;
 use App\Services\ApiServices\ServiceRequests\SrScheduleService;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Truvoicer\TfDbReadCore\Models\Provider;
 use Truvoicer\TfDbReadCore\Models\Sr;
@@ -30,7 +31,7 @@ class ServiceRequestScheduleController extends Controller
         Provider $provider,
         Sr $serviceRequest,
         Request $request
-    ): \Illuminate\Http\JsonResponse {
+    ): JsonResponse {
         $this->setAccessControlUser($request->user());
         if (
             ! $this->accessControlService->checkPermissionsForEntity(
@@ -74,7 +75,7 @@ class ServiceRequestScheduleController extends Controller
         Provider $provider,
         Sr $serviceRequest,
         CreateSrRateLimitRequest $request
-    ): \Illuminate\Http\JsonResponse {
+    ): JsonResponse {
         $this->setAccessControlUser($request->user());
         if (
             ! $this->accessControlService->checkPermissionsForEntity(
@@ -117,7 +118,7 @@ class ServiceRequestScheduleController extends Controller
         Provider $provider,
         Sr $serviceRequest,
         UpdateSrScheduleRequest $request
-    ): \Illuminate\Http\JsonResponse {
+    ): JsonResponse {
         $this->setAccessControlUser($request->user());
         if (
             ! $this->accessControlService->checkPermissionsForEntity(
@@ -158,7 +159,7 @@ class ServiceRequestScheduleController extends Controller
         Provider $provider,
         Sr $serviceRequest,
         Request $request
-    ): \Illuminate\Http\JsonResponse {
+    ): JsonResponse {
         $this->setAccessControlUser($request->user());
         if (
             ! $this->accessControlService->checkPermissionsForEntity(

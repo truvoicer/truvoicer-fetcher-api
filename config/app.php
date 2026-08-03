@@ -1,7 +1,13 @@
 <?php
 
+use App\Providers\AppServiceProvider;
+use App\Providers\AuthServiceProvider;
+use App\Providers\BroadcastServiceProvider;
+use App\Providers\EventServiceProvider;
+use App\Providers\RouteServiceProvider;
 use Illuminate\Support\Facades\Facade;
 use Illuminate\Support\ServiceProvider;
+use MongoDB\Laravel\MongoDBServiceProvider;
 
 return [
 
@@ -163,13 +169,13 @@ return [
         /*
          * Application Service Providers...
          */
-        App\Providers\AppServiceProvider::class,
-        App\Providers\AuthServiceProvider::class,
-        App\Providers\EventServiceProvider::class,
-        App\Providers\RouteServiceProvider::class,
+        AppServiceProvider::class,
+        AuthServiceProvider::class,
+        EventServiceProvider::class,
+        RouteServiceProvider::class,
 
-        MongoDB\Laravel\MongoDBServiceProvider::class,
-        App\Providers\BroadcastServiceProvider::class,
+        MongoDBServiceProvider::class,
+        BroadcastServiceProvider::class,
     ])->toArray(),
 
     /*

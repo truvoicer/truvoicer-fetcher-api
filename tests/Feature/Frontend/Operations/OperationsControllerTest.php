@@ -575,7 +575,7 @@ class OperationsControllerTest extends TestCase
             $this->assertTrue($job->runResponseKeySrRequests);
 
             // Assert the response DTO was created correctly
-            $this->assertInstanceOf(\Truvoicer\TfDbReadCore\Dto\SrResponseDto::class, $job->srResponseDto);
+            $this->assertInstanceOf(SrResponseDto::class, $job->srResponseDto);
             $this->assertEquals('local', $job->srResponseDto->disk);
             $this->assertStringStartsWith('sr-responses/', $job->srResponseDto->path);
             $this->assertTrue($job->srResponseDto->gzipped);

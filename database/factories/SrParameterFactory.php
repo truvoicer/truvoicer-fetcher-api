@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Factories\Factory;
 use Truvoicer\TfDbReadCore\Models\SrParameter;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\Truvoicer\TfDbReadCore\Models\SrParameter>
+ * @extends Factory<SrParameter>
  */
 class SrParameterFactory extends Factory
 {

@@ -5,9 +5,10 @@ namespace App\Http\Resources\Service\ServiceRequest;
 use App\Http\Resources\ProviderMinimalResource;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
+use Truvoicer\TfDbReadCore\Models\Sr;
 
 /**
- * @mixin \Truvoicer\TfDbReadCore\Models\Sr
+ * @mixin Sr
  */
 class SrTreeViewResource extends JsonResource
 {

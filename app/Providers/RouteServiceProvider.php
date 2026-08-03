@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use Illuminate\Routing\Route as RoutingRoute;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\Route;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Truvoicer\TfDbReadCore\Models\Provider;
 use Truvoicer\TfDbReadCore\Models\Sr;
 use Truvoicer\TfDbReadCore\Models\User;
@@ -34,17 +35,17 @@ class RouteServiceProvider extends ServiceProvider
         /**
          * Bind serviceRequest to a provider's service requests.
          *
-         * @throws \Symfony\Component\HttpKernel\Exception\NotFoundHttpException
+         * @throws NotFoundHttpException
          */
         Route::bind('serviceRequest', function (string $value, RoutingRoute $route) {
-            /** @var \Truvoicer\TfDbReadCore\Models\Provider|null $provider */
+            /** @var Provider|null $provider */
             $provider = $route->parameter('provider');
 
             if (! $provider instanceof Provider) {
                 abort(404, 'Provider not found or invalid.');
             }
 
-            /** @var \Truvoicer\TfDbReadCore\Models\Sr|null $serviceRequest */
+            /** @var Sr|null $serviceRequest */
             $serviceRequest = $provider->serviceRequest()
                 ->where('id', $value)
                 ->first();
@@ -59,17 +60,17 @@ class RouteServiceProvider extends ServiceProvider
         /**
          * Bind childSr to a service request's child service requests.
          *
-         * @throws \Symfony\Component\HttpKernel\Exception\NotFoundHttpException
+         * @throws NotFoundHttpException
          */
         Route::bind('childSr', function (string $value, RoutingRoute $route) {
-            /** @var \Truvoicer\TfDbReadCore\Models\Sr|null $serviceRequest */
+            /** @var Sr|null $serviceRequest */
             $serviceRequest = $route->parameter('serviceRequest');
 
             if (! $serviceRequest instanceof Sr) {
                 abort(404, 'Service request not found or invalid.');
             }
 
-            /** @var \Truvoicer\TfDbReadCore\Models\Sr|null $childSr */
+            /** @var Sr|null $childSr */
             $childSr = $serviceRequest->childSrs()
                 ->where('sr_child_id', $value)
                 ->first();

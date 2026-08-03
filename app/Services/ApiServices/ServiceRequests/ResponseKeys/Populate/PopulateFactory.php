@@ -6,6 +6,7 @@ use App\Services\ApiServices\ServiceRequests\ResponseKeys\Populate\Types\Populat
 use App\Services\ApiServices\ServiceRequests\ResponseKeys\Populate\Types\PopulateTypeXml;
 use Illuminate\Support\Arr;
 use Truvoicer\TfDbReadCore\Enums\Property\PropertyType;
+use Truvoicer\TfDbReadCore\Models\Provider;
 use Truvoicer\TfDbReadCore\Models\Sr;
 use Truvoicer\TfDbReadCore\Repositories\SrRepository;
 use Truvoicer\TfDbReadCore\Services\ApiManager\Response\ResponseManager;
@@ -51,7 +52,7 @@ class PopulateFactory
         foreach ($fetchSourceSrs as $sr) {
             $provider = $sr->provider;
 
-            /** @var \Truvoicer\TfDbReadCore\Models\Provider|null $provider */
+            /** @var Provider|null $provider */
             $entityProvider = $this->providerService->getProviderEntityFromProviderProperties(
                 $provider
             );

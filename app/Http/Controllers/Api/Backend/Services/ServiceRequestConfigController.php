@@ -7,6 +7,7 @@ use App\Http\Requests\Service\Request\Config\CreateServiceRequestConfigRequest;
 use App\Http\Requests\Service\Request\Config\DeleteBatchSrConfigRequest;
 use App\Http\Resources\Service\ServiceRequest\ServiceRequestConfigCollection;
 use App\Http\Resources\Service\ServiceRequest\ServiceRequestConfigResource;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Truvoicer\TfDbReadCore\Models\Property;
 use Truvoicer\TfDbReadCore\Models\Provider;
@@ -31,7 +32,7 @@ class ServiceRequestConfigController extends Controller
      * Get list of service request configs function
      * Returns a list of service request configs based on the request query parameters
      */
-    public function getRequestConfigList(Provider $provider, Sr $serviceRequest, Request $request): \Illuminate\Http\JsonResponse
+    public function getRequestConfigList(Provider $provider, Sr $serviceRequest, Request $request): JsonResponse
     {
         $this->setAccessControlUser($request->user());
         if (
@@ -66,7 +67,7 @@ class ServiceRequestConfigController extends Controller
         Sr $serviceRequest,
         Property $property,
         Request $request
-    ): \Illuminate\Http\JsonResponse {
+    ): JsonResponse {
         $this->setAccessControlUser($request->user());
         if (
             ! $this->accessControlService->checkPermissionsForEntity(
@@ -98,7 +99,7 @@ class ServiceRequestConfigController extends Controller
         Sr $serviceRequest,
         Property $property,
         CreateServiceRequestConfigRequest $request
-    ): \Illuminate\Http\JsonResponse {
+    ): JsonResponse {
         $this->setAccessControlUser($request->user());
         if (
             ! $this->accessControlService->checkPermissionsForEntity(
@@ -142,7 +143,7 @@ class ServiceRequestConfigController extends Controller
         Sr $serviceRequest,
         Property $property,
         Request $request
-    ): \Illuminate\Http\JsonResponse {
+    ): JsonResponse {
         $this->setAccessControlUser($request->user());
         if (
             ! $this->accessControlService->checkPermissionsForEntity(
@@ -170,7 +171,7 @@ class ServiceRequestConfigController extends Controller
         Provider $provider,
         Sr $serviceRequest,
         DeleteBatchSrConfigRequest $request
-    ): \Illuminate\Http\JsonResponse {
+    ): JsonResponse {
         $this->setAccessControlUser($request->user());
         if (
             ! $this->accessControlService->checkPermissionsForEntity(

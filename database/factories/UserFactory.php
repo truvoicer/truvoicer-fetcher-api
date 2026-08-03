@@ -8,7 +8,7 @@ use Illuminate\Support\Str;
 use Truvoicer\TfDbReadCore\Models\User;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\Truvoicer\TfDbReadCore\Models\User>
+ * @extends Factory<User>
  */
 class UserFactory extends Factory
 {

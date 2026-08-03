@@ -22,7 +22,7 @@ class UserSettingService extends BaseService
      */
     public function initialiseUserSettings(): UserSetting
     {
-        /** @var \Truvoicer\TfDbReadCore\Models\UserSetting $settings */
+        /** @var UserSetting $settings */
         $settings = $this->user->settings()->create();
 
         return $settings;
@@ -35,7 +35,7 @@ class UserSettingService extends BaseService
      */
     public function updateUserSettings(array $data): UserSetting
     {
-        /** @var \Truvoicer\TfDbReadCore\Models\UserSetting $settings */
+        /** @var UserSetting $settings */
         $settings = $this->user->settings()->updateOrCreate(
             [
                 'user_id' => $this->user->id,

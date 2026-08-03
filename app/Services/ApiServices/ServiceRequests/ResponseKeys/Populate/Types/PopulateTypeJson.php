@@ -5,6 +5,7 @@ namespace App\Services\ApiServices\ServiceRequests\ResponseKeys\Populate\Types;
 use Illuminate\Support\Arr;
 use Truvoicer\TfDbReadCore\Enums\Api\ApiListKey;
 use Truvoicer\TfDbReadCore\Enums\Sr\SrType;
+use Truvoicer\TfDbReadCore\Models\Provider;
 use Truvoicer\TfDbReadCore\Models\Sr;
 use Truvoicer\TfDbReadCore\Services\ApiManager\Data\DataConstants;
 use Truvoicer\TfDbReadCore\Services\ApiManager\Operations\ApiRequestService;
@@ -31,7 +32,7 @@ class PopulateTypeJson extends PopulateTypeBase
 
     public function runSrRequest(Sr $sr, ?array $query = []): ApiDetailedResponse
     {
-        /** @var \Truvoicer\TfDbReadCore\Models\Provider|null $provider */
+        /** @var Provider|null $provider */
         $provider = $sr->provider()->first();
         if ($provider) {
             $this->requestOperation->setProviderName($provider->name);

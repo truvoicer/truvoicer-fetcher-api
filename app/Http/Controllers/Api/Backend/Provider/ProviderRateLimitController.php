@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Provider\RateLimit\CreateProviderRateLimitRequest;
 use App\Http\Requests\Provider\RateLimit\UpdateProviderRateLimitRequest;
 use App\Http\Resources\ProviderRateLimitResource;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Truvoicer\TfDbReadCore\Models\Provider;
 use Truvoicer\TfDbReadCore\Models\ProviderRateLimit;
@@ -35,7 +36,7 @@ class ProviderRateLimitController extends Controller
         Provider $provider,
         ProviderRateLimit $providerRateLimit,
         Request $request
-    ): \Illuminate\Http\JsonResponse {
+    ): JsonResponse {
         $this->setAccessControlUser($request->user());
         if (
             ! $this->accessControlService->checkPermissionsForEntity(
@@ -63,7 +64,7 @@ class ProviderRateLimitController extends Controller
     public function createProviderRateLimit(
         Provider $provider,
         CreateProviderRateLimitRequest $request
-    ): \Illuminate\Http\JsonResponse {
+    ): JsonResponse {
         $this->setAccessControlUser($request->user());
         if (
             ! $this->accessControlService->checkPermissionsForEntity(
@@ -104,7 +105,7 @@ class ProviderRateLimitController extends Controller
         Provider $provider,
         ProviderRateLimit $providerRateLimit,
         UpdateProviderRateLimitRequest $request
-    ): \Illuminate\Http\JsonResponse {
+    ): JsonResponse {
         $this->setAccessControlUser($request->user());
         if (
             ! $this->accessControlService->checkPermissionsForEntity(
@@ -144,7 +145,7 @@ class ProviderRateLimitController extends Controller
         Provider $provider,
         ProviderRateLimit $providerRateLimit,
         Request $request
-    ): \Illuminate\Http\JsonResponse {
+    ): JsonResponse {
         $this->setAccessControlUser($request->user());
         if (
             ! $this->accessControlService->checkPermissionsForEntity(

@@ -7,7 +7,7 @@ use Truvoicer\TfDbReadCore\Models\Sr;
 use Truvoicer\TfDbReadCore\Models\SrResponseKey;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\Truvoicer\TfDbReadCore\Models\SrResponseKey>
+ * @extends Factory<SrResponseKey>
  */
 class SrResponseKeyFactory extends Factory
 {

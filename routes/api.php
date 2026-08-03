@@ -308,6 +308,8 @@ Route::middleware(['auth:sanctum', 'ability:api:admin,api:superuser,api:super_ad
                     Route::get('/', [DatabaseIndexController::class, 'index'])->name('index');
                     Route::prefix('{service}')->group(function () {
                         Route::get('/', [DatabaseIndexController::class, 'show'])->name('show');
+                        Route::post('/create-collection', [DatabaseIndexController::class, 'createCollection'])->name('create-collection');
+                        Route::post('/create-default-indexes', [DatabaseIndexController::class, 'createDefaultIndexes'])->name('create-default-indexes');
                         Route::post('/store', [DatabaseIndexController::class, 'store'])->name('store');
                         Route::put('/update', [DatabaseIndexController::class, 'update'])->name('update');
                         Route::delete('/delete', [DatabaseIndexController::class, 'destroy'])->name('delete');

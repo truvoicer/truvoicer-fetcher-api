@@ -10,6 +10,7 @@ use App\Http\Requests\Provider\UpdateProviderRequest;
 use App\Http\Resources\ProviderCollection;
 use App\Http\Resources\ProviderResource;
 use App\Services\Tools\VariablesService;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Truvoicer\TfDbReadCore\Models\Provider;
@@ -69,7 +70,7 @@ class ProviderController extends Controller
     /**
      * Gets a single provider from the database based on the id in the get request url
      */
-    public function getProvider(Provider $provider, Request $request): \Illuminate\Http\JsonResponse
+    public function getProvider(Provider $provider, Request $request): JsonResponse
     {
         $this->setAccessControlUser($request->user());
 
@@ -97,7 +98,7 @@ class ProviderController extends Controller
     /**
      * Creates a provider in the database based on the post request data
      */
-    public function createProvider(CreateProviderRequest $request): \Illuminate\Http\JsonResponse
+    public function createProvider(CreateProviderRequest $request): JsonResponse
     {
         $name = $request->validated('name');
         $user = $request->user();
@@ -127,7 +128,7 @@ class ProviderController extends Controller
     /**
      * Updates a provider in the database based on the post request data
      */
-    public function updateProvider(Provider $provider, UpdateProviderRequest $request): \Illuminate\Http\JsonResponse
+    public function updateProvider(Provider $provider, UpdateProviderRequest $request): JsonResponse
     {
         $updateProvider = $this->providerService->updateProvider(
             $request->user(),
@@ -148,7 +149,7 @@ class ProviderController extends Controller
     /**
      * Deletes a provider in the database based on the post request data
      */
-    public function deleteProvider(Provider $provider, Request $request): \Illuminate\Http\JsonResponse
+    public function deleteProvider(Provider $provider, Request $request): JsonResponse
     {
         $delete = $this->providerService->deleteProvider($provider);
         if (! $delete) {
@@ -165,7 +166,7 @@ class ProviderController extends Controller
     public function deleteBatchProviders(
         Provider $provider,
         DeleteBatchProvidersRequest $request
-    ): \Illuminate\Http\JsonResponse {
+    ): JsonResponse {
         $this->setAccessControlUser($request->user());
 
         if (! $this->providerService->deleteBatchProvider($request->get('ids'))) {

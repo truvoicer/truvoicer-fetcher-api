@@ -5,9 +5,10 @@ namespace App\Http\Resources;
 use App\Http\Resources\User\Setting\UserSettingResource;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
+use Truvoicer\TfDbReadCore\Models\User;
 
 /**
- * @mixin \Truvoicer\TfDbReadCore\Models\User
+ * @mixin User
  */
 class UserResource extends JsonResource
 {

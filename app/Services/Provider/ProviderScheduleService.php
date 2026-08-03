@@ -7,8 +7,10 @@ use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Log;
+use Truvoicer\TfDbReadCore\Models\Provider;
 use Truvoicer\TfDbReadCore\Models\Sr;
 use Truvoicer\TfDbReadCore\Models\SrSchedule;
+use Truvoicer\TfDbReadCore\Models\User;
 use Truvoicer\TfDbReadCore\Services\ApiServices\ServiceRequests\SrService;
 use Truvoicer\TfDbReadCore\Services\Provider\ProviderService;
 use Truvoicer\TfDbReadCore\Traits\User\UserTrait;
@@ -75,7 +77,7 @@ class ProviderScheduleService
         }
         $this->providerService->getUserRepository()->addWhere('email', $scheduleUserEmail);
 
-        /** @var \Truvoicer\TfDbReadCore\Models\User|null $findUser */
+        /** @var User|null $findUser */
         $findUser = $this->providerService->getUserRepository()->findOne();
         if (! $findUser) {
             Log::log('info', 'No schedule user found');
@@ -85,7 +87,7 @@ class ProviderScheduleService
 
         $this->setUser($findUser);
 
-        /** @var \Illuminate\Database\Eloquent\Collection<\Truvoicer\TfDbReadCore\Models\Provider> $providers */
+        /** @var Collection<Provider> $providers */
         $providers = $this->providerService->getProviderRepository()->findAll();
         foreach ($providers as $provider) {
             $srs = $this->srService->getServiceRequestRepository()->findSrsWithSchedule($provider);
@@ -97,12 +99,12 @@ class ProviderScheduleService
     }
 
     /**
-     * @property \Illuminate\Database\Eloquent\Collection<\Truvoicer\TfDbReadCore\Models\Sr> $srs
+     * @property Collection<Sr> $srs
      */
     private function runBatchSrs(Collection $srs, ?bool $isChild = false)
     {
         foreach ($srs as $serviceRequest) {
-            /** @var \Truvoicer\TfDbReadCore\Models\Sr $serviceRequest */
+            /** @var Sr $serviceRequest */
             $this->runScheduleForSr($serviceRequest, $isChild);
         }
     }

@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Factories\Factory;
 use Truvoicer\TfDbReadCore\Models\ProviderRateLimit;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\Truvoicer\TfDbReadCore\Models\ProviderRateLimit>
+ * @extends Factory<ProviderRateLimit>
  */
 class ProviderRateLimitFactory extends Factory
 {
